@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제2장: 데이터 요약 — Summarizing Data</title>
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var attempts = 0;
+    function init() {
+        if (typeof sagecell !== "undefined") {
+            sagecell.makeSagecell({
+                inputLocation: "div.compute",
+                languages: ["python"],
+                evalButtonText: "실행 (Run)",
+                hide: ["permalink","fullScreen"],
+                autoeval: false
+            });
+        } else if (attempts < 30) { attempts++; setTimeout(init, 500); }
+    }
+    init();
+});
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1a2332;--deep:#2c3e6b;--blue:#4a7cc9;--gold:#d4a843;--red:#c0392b;--cream:#faf8f5;--bg:#f0ede8;--txt:#2c2c2c;--txt2:#5a5a5a;--brd:#d8d2c8;--sage:#5b8a72}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Sans KR",sans-serif;background:var(--cream);color:var(--txt);line-height:1.85;font-size:16px}
+.ctn{max-width:960px;margin:0 auto;background:#fff;box-shadow:0 0 60px rgba(0,0,0,.08)}
+.hero{background:var(--navy);padding:60px 50px 50px}
+.hero-label{color:var(--gold);font-size:.85em;letter-spacing:4px;text-transform:uppercase;font-weight:700}
+.hero h1{color:#fff;font-family:"Noto Serif KR",serif;font-size:2.8em;margin:15px 0 8px;font-weight:900}
+.hero .sub{color:var(--blue);font-family:"Noto Serif KR",serif;font-size:1.3em;font-style:italic}
+.hero .desc{color:#8899aa;margin-top:20px;font-size:.95em;line-height:1.7}
+.gbar{height:4px;background:var(--gold)}
+.toc{padding:40px 50px;background:var(--bg);border-bottom:1px solid var(--brd)}
+.toc h2{font-family:"Noto Serif KR",serif;font-size:1.4em;color:var(--navy);margin-bottom:20px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ti{display:flex;align-items:center;gap:12px;padding:10px 15px;background:#fff;border-radius:6px;border-left:4px solid var(--blue);cursor:pointer;text-decoration:none;color:var(--txt);transition:all .2s;font-size:.9em}
+.ti:hover{transform:translateX(5px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.ti.c{border-left-color:var(--sage)}.ti.r{border-left-color:var(--red)}.ti.g{border-left-color:var(--gold)}
+.tn{font-family:"Noto Serif KR",serif;font-weight:700;color:var(--blue);min-width:40px}
+.ti.c .tn{color:var(--sage)}.ti.r .tn{color:var(--red)}.ti.g .tn{color:var(--gold)}
+.sec{padding:50px 50px 40px;border-bottom:1px solid var(--brd)}
+.sh{display:flex;align-items:center;gap:15px;margin-bottom:30px}
+.sn{background:var(--blue);color:#fff;font-family:"Noto Serif KR",serif;font-weight:900;font-size:1.1em;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sn.c{background:var(--sage)}.sn.r{background:var(--red)}.sn.g{background:var(--gold)}
+.st{font-family:"Noto Serif KR",serif;font-size:1.6em;font-weight:700;color:var(--navy)}
+.sst{font-family:"Noto Serif KR",serif;font-size:1.2em;font-weight:600;color:var(--deep);margin:35px 0 15px;padding-left:15px;border-left:3px solid var(--gold)}
+p,.tb{margin-bottom:15px}
+.fm{background:#f8f6f2;border:1px solid var(--brd);border-radius:6px;padding:15px 20px;margin:15px 0;font-family:"JetBrains Mono",monospace;font-size:.95em;text-align:center;color:var(--deep)}
+.ib{background:#e8f0fe;border-left:4px solid var(--blue);padding:15px 20px;margin:15px 0;border-radius:0 6px 6px 0;font-size:.95em}
+.ib.w{background:#fef3e8;border-left-color:var(--gold)}
+.ib.d{background:#fde8e8;border-left-color:var(--red)}
+table.dt{width:100%;border-collapse:collapse;margin:15px 0;font-size:.9em}
+table.dt th{background:var(--navy);color:#fff;padding:10px 15px;text-align:center;font-weight:600}
+table.dt td{padding:8px 15px;border-bottom:1px solid #eee}
+table.dt tr:nth-child(even) td{background:#fafafa}
+table.dt td:first-child{font-weight:600}
+.eb{border:1px solid var(--brd);border-radius:8px;margin:20px 0;overflow:hidden}
+.eh{background:var(--bg);padding:12px 20px;display:flex;align-items:center;gap:10px}
+.badge{padding:3px 12px;border-radius:15px;font-size:.8em;font-weight:700;color:#fff;white-space:nowrap}
+.badge.ex{background:var(--blue)}.badge.gp{background:var(--sage)}.badge.hw{background:var(--red)}.badge.try{background:#8e44ad}
+.et{font-family:"Noto Serif KR",serif;font-weight:600;color:var(--navy)}
+.ebody{padding:20px}
+.prob{background:#fff;padding:15px;border-left:3px solid var(--blue);margin-bottom:15px;line-height:1.8}
+details.ans{background:#f0f7ff;padding:12px 18px;border-radius:6px;cursor:pointer;border:1px solid #d0e0f0;margin-top:10px}
+details.ans summary{font-weight:700;color:var(--blue);outline:none}
+details.ans .ac{margin-top:10px;padding:12px;background:#fff;border-radius:5px;line-height:1.8}
+.cl{font-size:.8em;color:var(--blue);font-weight:700;letter-spacing:1px;margin:15px 0 5px;font-family:"JetBrains Mono",monospace}
+.psp{background:linear-gradient(135deg,#1a2332 0%,#2c3e6b 100%);border-radius:10px;padding:25px 30px;margin:30px 0;color:#fff}
+.psp .ph{color:var(--gold);font-family:"Noto Serif KR",serif;font-weight:700;font-size:1.1em;margin-bottom:12px}
+.psp p{color:#c8d0dc;line-height:1.8;margin-bottom:10px}
+.psp strong{color:#fff}
+.psp code{color:var(--gold)}
+.psp ol,.psp ul{color:#c8d0dc;margin:10px 0 10px 20px}
+.psp li{margin-bottom:5px}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:15px 0}
+.tc{background:var(--bg);padding:8px 12px;border-radius:6px;font-size:.85em;text-align:center;border:1px solid var(--brd)}
+.trybox{border:2px dashed #8e44ad;border-radius:10px;padding:20px;margin:20px 0;background:#faf5ff}
+.trybox .trylabel{color:#8e44ad;font-weight:700;font-size:.95em;margin-bottom:10px}
+.ft{background:var(--navy);color:#fff;padding:40px 50px;text-align:center}
+.ft h3{font-family:"Noto Serif KR",serif;margin-bottom:10px}
+.ft p{color:#8899aa;font-size:.9em}
+</style>
+</head>
+<body>
+<div class="ctn">
+
+
+<div class="hero">
+<div class="hero-label">CHAPTER 2</div>
+<h1>데이터 요약</h1>
+<div class="sub">Summarizing Data</div>
+<div style="width:120px;height:3px;background:var(--gold);margin-top:20px"></div>
+<div class="desc">이 장에서는 요약 통계량과 그래프의 구성 및 작성 방법에 초점을 맞춘다. 통계 소프트웨어를 사용하여 요약 통계량과 그래프를 생성하지만, 처음 접하는 독자를 위해 그 작성 방법을 상세히 설명한다. 이 장에서 제시하는 내용의 숙달은 이후 장에서 소개되는 방법과 기법을 이해하는 데 필수적이다.</div>
+</div>
+<div class="gbar"></div>
+
+
+<div class="toc">
+<h2>목차</h2>
+<div class="toc-grid">
+<a class="ti" href="#s21"><span class="tn">2.1</span>수치형 데이터 탐색 (60분)</a>
+<a class="ti" href="#s211"><span class="tn">2.1.1</span>산점도</a>
+<a class="ti" href="#s212"><span class="tn">2.1.2</span>점도표와 평균</a>
+<a class="ti" href="#s213"><span class="tn">2.1.3</span>히스토그램과 분포의 형태</a>
+<a class="ti" href="#s214"><span class="tn">2.1.4</span>분산과 표준편차</a>
+<a class="ti" href="#s215"><span class="tn">2.1.5</span>상자그림, 사분위수, 중앙값</a>
+<a class="ti" href="#s216"><span class="tn">2.1.6</span>강건한 통계량</a>
+<a class="ti" href="#s217"><span class="tn">2.1.7</span>데이터 변환 / 매핑</a>
+<a class="ti c" href="#s22"><span class="tn">2.2</span>범주형 데이터 (40분)</a>
+<a class="ti c" href="#s223"><span class="tn">2.2.3</span>막대그래프 유형 비교</a>
+<a class="ti c" href="#s224"><span class="tn">2.2.4</span>모자이크 그래프</a>
+<a class="ti c" href="#s225"><span class="tn">2.2.5</span>원 그래프</a>
+<a class="ti c" href="#s226"><span class="tn">2.2.6</span>그룹 간 비교</a>
+<a class="ti r" href="#s23"><span class="tn">2.3</span>사례 연구: 말라리아 백신 (30분)</a>
+<a class="ti r" href="#s232"><span class="tn">2.3.2</span>시뮬레이션 기반 가설검정</a>
+<a class="ti g" href="#s24"><span class="tn">2.4</span>장 복습 및 연습문제 (15분)</a>
+<a class="ti g" href="#sexer"><span class="tn">연습</span>종합 연습문제</a>
+</div>
+</div>
+
+
+<div class="sec" id="s21">
+<div class="sh"><div class="sn">2.1</div><h2 class="st">수치형 데이터 탐색</h2></div>
+<p>이 절에서는 수치형 변수를 요약하는 기법을 탐구한다. 예를 들어, loan50 데이터셋의 대출 금액(loan amount) 변수는 50건의 대출 규모를 나타낸다. 두 대출의 규모 차이를 수치적으로 논의할 수 있으므로 이 변수는 수치형이다. 반면, 지역번호나 우편번호는 수치형이 아닌 범주형 변수이다.</p>
+<p>이 절과 다음 절에서는 제1장에서 소개한 loan50과 county 데이터셋을 사용한다.</p>
+
+<!-- ==================== 2.1.1 산점도 ==================== -->
+<h3 class="sst" id="s211">2.1.1 쌍을 이룬 데이터의 산점도</h3>
+<p><strong>산점도(scatterplot)</strong>는 두 수치형 변수에 대해 사례별 관점을 제공한다. 산점도에서 각 점은 하나의 사례를 나타낸다. loan50 데이터셋에는 50개의 사례가 있으므로 50개의 점이 표시된다.</p>
+<p>차입자의 총소득(total income)과 대출 금액(loan amount)을 비교하는 산점도를 살펴보면, 소득이 $100,000 미만인 차입자가 그래프 왼쪽에 많이 분포하고, 소득이 $250,000 이상인 차입자는 소수에 불과하다.</p>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.1</span><span class="et">중위 가구소득과 빈곤율의 관계</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 3,142개 카운티의 중위 가구소득과 빈곤율의 관계를 보여주는 산점도에서 무엇을 알 수 있는가?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+poverty_rate = np.random.uniform(5, 50, 200)
+median_income = 120000 / (1 + 0.05 * poverty_rate) + np.random.normal(0, 5000, 200)
+
+plt.figure(figsize=(10, 6))
+plt.scatter(poverty_rate, median_income, alpha=0.5, edgecolors='black', linewidth=0.5)
+plt.xlabel('빈곤율 (Poverty Rate, %)', fontsize=12)
+plt.ylabel('중위 가구소득 ($)', fontsize=12)
+plt.title('카운티별 빈곤율과 중위 가구소득의 관계', fontsize=14)
+
+x_smooth = np.linspace(5, 50, 100)
+y_smooth = 120000 / (1 + 0.05 * x_smooth)
+plt.plot(x_smooth, y_smooth, 'r--', linewidth=2, label='추세선')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">점선으로 강조된 것처럼 관계가 <strong>비선형(nonlinear)</strong>임을 알 수 있다. 이전에 살펴본 산점도들과 달리 추세에서 곡률이 관찰된다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.2</span><span class="et">산점도의 유용성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 산점도는 데이터에 대해 무엇을 보여주며, 어떻게 유용한가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">산점도는 변수 간의 연관성을 빠르게 파악하는 데 유용하다. 단순한 추세 형태의 연관성이든, 복잡한 관계이든 시각적으로 확인할 수 있다. 또한 이상치(outlier)의 존재, 선형/비선형 관계, 데이터의 분산 정도 등을 한눈에 파악할 수 있다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.3</span><span class="et">말굽 모양 연관성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 산점도에서 말굽 모양(∩ 또는 ∪) 연관성을 가질 두 변수를 설명하라.</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">세로축이 "좋은 것"을 나타내고 가로축이 "적당히 좋은 것"을 나타내는 경우를 고려하자. 건강과 물 섭취량이 이 설명에 부합한다: 생존을 위해 일정량의 물이 필요하지만, 과도하게 섭취하면 독성을 띠어 사망에 이를 수 있다.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.1 — 산점도의 역사적 의의</div>
+<p>산점도는 19세기 프랜시스 골턴(Francis Galton)에 의해 체계화된 통계 시각화 도구이다. 골턴은 부모와 자녀의 키 관계를 연구하면서 산점도를 활용하여 <strong>"평균으로의 회귀(regression to the mean)"</strong> 현상을 발견했다. 이는 현대 회귀분석의 시초가 되었다.</p>
+<p>산점도를 해석할 때 기억해야 할 핵심 원칙:</p>
+<ol>
+<li><strong>상관관계 ≠ 인과관계</strong>: 두 변수가 함께 움직인다고 해서 하나가 다른 하나를 야기하는 것은 아니다.</li>
+<li><strong>맥락의 중요성</strong>: 통계적 패턴은 반드시 연구 배경과 함께 해석해야 한다.</li>
+<li><strong>제3의 변수</strong>: 숨겨진 교란변수가 관찰된 관계를 설명할 수 있다.</li>
+</ol>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 산점도의 다양한 패턴</div>
+<p>아래 코드에서 <code>relationship</code> 값을 변경하여 다양한 산점도 패턴을 관찰해 보라. <code>'linear'</code>, <code>'quadratic'</code>, <code>'none'</code>, <code>'exponential'</code> 중 선택할 수 있다.</p>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+#  아래 값을 'linear', 'quadratic', 'none', 'exponential' 중 하나로 변경해 보라 
+relationship = 'linear'
+
+np.random.seed(42)
+x = np.random.uniform(0, 10, 100)
+noise = np.random.normal(0, 2, 100)
+
+if relationship == 'linear':
+    y = 2 * x + 3 + noise
+    title = '선형 관계 (y = 2x + 3)'
+elif relationship == 'quadratic':
+    y = 0.5 * x**2 - 3*x + 10 + noise
+    title = '이차 관계 (y = 0.5x² - 3x + 10)'
+elif relationship == 'exponential':
+    y = 2 * np.exp(0.3 * x) + noise * 3
+    title = '지수 관계 (y = 2·e^(0.3x))'
+else:
+    y = np.random.normal(5, 3, 100)
+    title = '무관계 (랜덤)'
+
+corr = np.corrcoef(x, y)[0,1]
+plt.figure(figsize=(8, 5))
+plt.scatter(x, y, alpha=0.6, edgecolors='black')
+plt.title(f'{title}  |  상관계수 r = {corr:.3f}')
+plt.xlabel('X'); plt.ylabel('Y')
+plt.grid(True, alpha=0.3)
+plt.show()
+</div>
+</div>
+
+<!-- ==================== 2.1.2 점도표와 평균 ==================== -->
+<h3 class="sst" id="s212">2.1.2 점도표와 평균</h3>
+<p>때때로 두 변수는 너무 많아 하나의 변수만 관심 대상이 될 수 있다. 이런 경우, <strong>점도표(dot plot)</strong>가 가장 기본적인 표시 방법이다.</p>
+<p>평균(mean)은 표본의 산술 평균으로, 관측값을 모두 더한 후 관측치 수로 나눈 값이다.</p>
+<div class="fm">x̄ = (x₁ + x₂ + ··· + xₙ) / n</div>
+<p>여기서 x̄는 "x-bar"로 읽으며 표본평균을 나타낸다. 개별 관측값은 x₁, x₂, …, xₙ으로, 총 n개의 관측치가 있다.</p>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.4</span><span class="et">이자율 평균 계산</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> loan50 데이터셋의 이자율 평균을 계산하라.</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+mean_rate = np.mean(interest_rates)
+print(f"이자율의 합: {sum(interest_rates):.2f}")
+print(f"관측치 수: {len(interest_rates)}")
+print(f"평균 이자율: {mean_rate:.2f}%")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">50건의 대출에서 이자율을 모두 더하고 50으로 나누면, 평균 이자율은 약 <strong>11.57%</strong>이다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.5</span><span class="et">평균 계산 공식</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 다음 표본 데이터의 평균을 구하라: 5, 10, 15, 20, 25</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+data = [5, 10, 15, 20, 25]
+mean_value = sum(data) / len(data)
+print(f"합계: {sum(data)}")
+print(f"관측치 수: {len(data)}")
+print(f"평균: {mean_value}")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">x̄ = (5 + 10 + 15 + 20 + 25) / 5 = 75 / 5 = <strong>15</strong></div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.6</span><span class="et">모집단 평균 추정</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 전체 모집단의 평균 이자율을 표본 데이터로 추정할 때, 합리적인 추정치는 무엇인가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">50건 대출 표본의 표본평균 <strong>11.57%</strong>가 모집단 평균 μₓ의 합리적인 추정치이다. 완벽하진 않지만, 전체 대출의 평균 이자율에 대한 최선의 추측이다. 제5장 이후에서 점추정치의 정확도를 특성화하는 도구를 개발한다. 큰 표본에 기반한 점추정치가 작은 표본보다 정확한 경향이 있다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.7</span><span class="et">평균의 유용성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 평균이 비교를 위해 유용한 두 가지 예를 제시하라.</div>
+<div class="cl">PYTHON — 예시 1: 신약 효과 비교</div>
+<div class="compute">
+# 예시 1: 천식 발작 치료
+new_drug_attacks = 200 / 500   # 신약: 500명 중 200건
+standard_attacks = 300 / 1000  # 표준: 1000명 중 300건
+
+print("=== 신약 vs 표준 약물 ===")
+print(f"신약 환자당 평균 발작 수: {new_drug_attacks}")
+print(f"표준 약물 환자당 평균 발작 수: {standard_attacks}")
+print(f"→ 표준 약물이 더 효과적! (단순 200 vs 300 비교는 잘못)")
+
+# 예시 2: 에밀리오의 시급
+earnings = 11000
+hours = 625
+hourly_wage = earnings / hours
+print(f"
+=== 에밀리오의 푸드트럭 ===")
+print(f"총 수입: ${earnings:,}, 총 근무시간: {hours}시간")
+print(f"평균 시급: ${hourly_wage:.2f}/시간")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac"><strong>예시 1</strong>: 그룹 크기가 다를 때 단순 합계 비교는 오류를 초래한다. 환자당 평균을 비교해야 한다. <strong>예시 2</strong>: 평균 시급($17.60)을 알면 다른 직업과 쉽게 비교할 수 있다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.8</span><span class="et">가중평균 (Weighted Mean)</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 미국의 1인당 평균 소득을 계산하려면 3,142개 카운티의 1인당 소득을 단순 평균하면 될까?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+
+populations = [5000, 50000, 500000, 5000000]
+incomes = [25000, 28000, 32000, 35000]
+
+simple_mean = np.mean(incomes)
+weighted_mean = np.average(incomes, weights=populations)
+
+print(f"단순 평균: ${simple_mean:,.0f}")
+print(f"가중 평균: ${weighted_mean:,.0f}")
+print(f"차이: ${weighted_mean - simple_mean:,.0f}")
+print(f"
+→ 5,000명과 5,000,000명을 동등하게 취급하면 안 된다!")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">county 데이터셋은 각 카운티가 실제로 많은 개인을 대표한다. 각 카운티의 총소득을 계산하고 전체 인구수로 나누면 미국의 1인당 소득은 <strong>$30,861</strong>이다. 단순 평균은 <strong>$26,093</strong>에 불과하다. 이것이 <strong>가중평균(weighted mean)</strong>이다.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.2 — 모수와 통계량: 그리스 문자 vs 라틴 문자</div>
+<p>통계학에서 <strong>모수(parameter)</strong>와 <strong>통계량(statistic)</strong>은 기호 체계부터 구분된다:</p>
+<p>• <strong>모수</strong> (모집단의 참값): μ(평균), σ(표준편차), p(비율) — <strong>그리스 문자</strong></p>
+<p>• <strong>통계량</strong> (표본에서 계산): x̄(평균), s(표준편차), p̂(비율) — <strong>라틴 문자</strong></p>
+<p>이 기호 체계 자체가 '알려진 것(추정 대상)'과 '계산으로 추정하는 것'의 본질적 차이를 반영한다.</p>
+</div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.3 — 평균의 물리적 의미</div>
+<p>평균을 이해하는 직관적인 방법은 <strong>무게중심(center of mass)</strong>으로 생각하는 것이다. 데이터를 수평 막대 위에 놓인 무게추라고 상상하자. 평균은 막대가 균형을 이루는 지점(받침점)이다.</p>
+<p>이 물리적 해석은 왜 이상치가 평균에 큰 영향을 미치는지 설명한다: 받침점에서 멀리 떨어진 무게추는 더 큰 레버 효과를 가지므로, 균형점을 자신 쪽으로 끌어당긴다.</p>
+<p>수학적으로, 평균은 편차의 합이 0이 되는 유일한 점이다: <code>Σ(xᵢ − x̄) = 0</code></p>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 평균과 가중평균 비교</div>
+<p>아래 데이터를 자유롭게 변경하여, 단순 평균과 가중 평균의 차이를 관찰해 보라.</p>
+<div class="compute">
+import numpy as np
+
+#  아래 값들을 자유롭게 변경해 보라 
+regions = ['지역A', '지역B', '지역C', '지역D']
+populations = [1000, 50000, 200000, 3000000]   # 인구
+avg_incomes = [20000, 30000, 40000, 50000]     # 1인당 소득
+
+simple = np.mean(avg_incomes)
+weighted = np.average(avg_incomes, weights=populations)
+
+print(f"{'지역':<8} {'인구':>10} {'소득':>10}")
+print("-" * 30)
+for r, p, i in zip(regions, populations, avg_incomes):
+    print(f"{r:<8} {p:>10,} ${i:>9,}")
+print("-" * 30)
+print(f"단순 평균: ${simple:>12,.0f}")
+print(f"가중 평균: ${weighted:>12,.0f}")
+print(f"차이:      ${weighted - simple:>12,.0f}")
+</div>
+</div>
+
+
+<h3 class="sst" id="s213">2.1.3 히스토그램과 분포의 형태</h3>
+<p>점도표는 각 관측값의 정확한 값을 보여주므로 소규모 데이터셋에 유용하지만, 표본 크기가 커지면 해석하기 어려워진다. 관측값을 특정 <strong>구간(bin)</strong>에 속하는 것으로 생각하는 것이 효과적이다.</p>
+<p>예를 들어, loan50 데이터셋에서 이자율이 5.0%-7.5% 사이인 대출 수, 7.5%-10.0% 사이인 대출 수를 세는 방식이다. 이러한 구간별 도수를 막대로 나타낸 것이 <strong>히스토그램(histogram)</strong>이다.</p>
+
+<table class="dt">
+<tr><th>이자율 구간</th><th>5.0%-7.5%</th><th>7.5%-10.0%</th><th>10.0%-12.5%</th><th>12.5%-15.0%</th><th>…</th><th>25.0%-27.5%</th></tr>
+<tr><td>도수(Count)</td><td>11</td><td>15</td><td>8</td><td>4</td><td>…</td><td>1</td></tr>
+</table>
+
+<div class="cl">PYTHON — 이자율 히스토그램</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+plt.figure(figsize=(10, 6))
+plt.hist(interest_rates, bins=np.arange(5, 30, 2.5), edgecolor='black', alpha=0.7)
+plt.xlabel('이자율 (Interest Rate, %)', fontsize=12)
+plt.ylabel('도수 (Frequency)', fontsize=12)
+plt.title('loan50 데이터셋 이자율 히스토그램', fontsize=14)
+plt.axvline(np.mean(interest_rates), color='red', linestyle='--',
+            label=f'평균: {np.mean(interest_rates):.2f}%')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+</div>
+
+<p>히스토그램은 <strong>데이터 밀도(data density)</strong>의 관점을 제공한다. 높은 막대는 데이터가 상대적으로 더 흔한 곳을 나타낸다.</p>
+
+<h4>분포의 형태: 비대칭성</h4>
+<p>데이터가 한쪽으로 길게 뻗어 있을 때 분포는 <strong>비대칭(skewed)</strong>이라 한다.</p>
+<div class="ib"><strong>오른쪽 치우침(Right skewed)</strong>: 오른쪽 꼬리가 길다 (양의 비대칭) &nbsp;|&nbsp; <strong>왼쪽 치우침(Left skewed)</strong>: 왼쪽 꼬리가 길다 &nbsp;|&nbsp; <strong>대칭(Symmetric)</strong>: 양쪽이 비슷</div>
+<div class="ib w">긴 꼬리로 비대칭성 파악하기: 데이터가 한 방향으로 길게 뻗어 있으면 분포에 긴 꼬리가 있다. 왼쪽 꼬리가 길면 왼쪽 치우침, 오른쪽 꼬리가 길면 오른쪽 치우침이다.</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.9</span><span class="et">히스토그램에서 비대칭성 확인</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 이자율의 점도표와 히스토그램에서 비대칭성을 확인할 수 있는가? 어느 것에서 더 쉽게 파악할 수 있는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">세 가지 도표 모두에서 비대칭성을 볼 수 있지만, 평평한 점도표는 가장 유용성이 낮다. 누적 점도표와 히스토그램이 비대칭성을 식별하는 데 도움이 된다. <strong>히스토그램</strong>은 전체적인 분포 형태를 빠르게 파악하는 데 가장 효과적이다.</div></details>
+</div></div>
+
+<h4>최빈값과 다봉성</h4>
+<p>히스토그램은 분포의 형태뿐만 아니라 <strong>최빈값(mode)</strong>을 식별하는 데도 사용할 수 있다. 최빈값은 분포에서 두드러진 봉우리를 나타낸다.</p>
+<ul style="margin:10px 0 10px 25px;">
+<li><strong>단봉분포(Unimodal)</strong>: 하나의 두드러진 봉우리</li>
+<li><strong>이봉분포(Bimodal)</strong>: 두 개의 두드러진 봉우리</li>
+<li><strong>다봉분포(Multimodal)</strong>: 세 개 이상의 두드러진 봉우리</li>
+</ul>
+
+<div class="cl">PYTHON — 단봉/이봉/다봉 분포 비교</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+np.random.seed(42)
+
+unimodal = np.random.normal(10, 2, 500)
+axes[0].hist(unimodal, bins=20, edgecolor='black', alpha=0.7)
+axes[0].set_title('단봉분포 (Unimodal)')
+axes[0].set_xlabel('값'); axes[0].set_ylabel('도수')
+
+bimodal = np.concatenate([np.random.normal(8, 1.5, 300), np.random.normal(15, 1.5, 300)])
+axes[1].hist(bimodal, bins=20, edgecolor='black', alpha=0.7, color='orange')
+axes[1].set_title('이봉분포 (Bimodal)')
+axes[1].set_xlabel('값')
+
+multimodal = np.concatenate([np.random.normal(5, 1, 200), np.random.normal(12, 1, 200), np.random.normal(18, 1, 200)])
+axes[2].hist(multimodal, bins=20, edgecolor='black', alpha=0.7, color='green')
+axes[2].set_title('다봉분포 (Multimodal)')
+axes[2].set_xlabel('값')
+
+plt.tight_layout()
+plt.show()
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.11</span><span class="et">분포의 봉우리 수 파악</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 이자율 히스토그램에서 단 하나의 두드러진 봉우리가 나타난다. 이 분포는 단봉, 이봉, 다봉 중 어느 것인가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac"><strong>단봉분포(Unimodal)</strong>이다. 'uni'는 1을 의미한다(외발자전거 unicycle 생각). 'bi'는 2를 의미한다(자전거 bicycle 생각).</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.12</span><span class="et">봉우리 수 예측</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> K-3 초등학교에서 어린 학생들과 성인 교사들의 키를 측정했다. 이 키 데이터에서 몇 개의 봉우리를 예상하는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">두 개의 키 그룹이 데이터에서 보일 수 있다: 학생들의 그룹과 성인들의 그룹. 즉, 데이터는 아마도 <strong>이봉분포(bimodal)</strong>일 것이다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.14</span><span class="et">분포 설명하기</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 이자율 변수의 히스토그램을 사용하여 분포를 설명하라. 설명에는 분포의 중심, 산포도, 형태가 포함되어야 하며, 맥락에 맞게 배치해야 한다.</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+mean_r = np.mean(interest_rates)
+std_r = np.std(interest_rates, ddof=1)
+
+plt.figure(figsize=(10, 6))
+plt.hist(interest_rates, bins=np.arange(5, 30, 2.5), edgecolor='black', alpha=0.7)
+plt.axvline(mean_r, color='red', linestyle='--', linewidth=2, label=f'평균: {mean_r:.2f}%')
+plt.axvline(mean_r - std_r, color='orange', linestyle=':', label=f'평균-1SD: {mean_r-std_r:.2f}%')
+plt.axvline(mean_r + std_r, color='orange', linestyle=':', label=f'평균+1SD: {mean_r+std_r:.2f}%')
+plt.xlabel('이자율 (%)')
+plt.ylabel('도수')
+plt.title('이자율 분포: 단봉, 오른쪽 치우침')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+skewness = stats.skew(interest_rates)
+print(f"비대칭도(Skewness): {skewness:.2f}")
+print(f"비대칭도 > 0 → 오른쪽 치우침 확인")
+plt.show()
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">이자율 분포는 <strong>단봉이며 고금리 쪽으로 치우쳐 있다(오른쪽 치우침)</strong>. 많은 이자율이 평균 11.57% 근처에 있고, 대부분이 평균의 1 표준편차(5.05%) 이내에 있다. 표본에서 20%를 초과하는 예외적으로 높은 이자율이 몇 개 있다.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.4 — 히스토그램의 구간 너비 선택</div>
+<p>히스토그램에서 <strong>구간 너비(bin width)</strong>의 선택은 데이터 해석에 큰 영향을 미친다.</p>
+<p><strong>구간이 너무 좁으면</strong>: 노이즈가 많아져 패턴 파악이 어렵다.<br>
+<strong>구간이 너무 넓으면</strong>: 중요한 세부사항이 사라진다.</p>
+<p>경험 법칙으로 <strong>Sturges' Rule</strong> k = 1 + log₂(n), <strong>Freedman-Diaconis Rule</strong> h = 2·IQR·n^(-1/3) 이 있다. 이러한 규칙은 시작점일 뿐이다.</p>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 구간 너비에 따른 히스토그램 변화</div>
+<p><code>num_bins</code> 값을 5, 10, 20, 50, 100 등으로 변경하여 같은 데이터가 얼마나 다르게 보이는지 확인해 보라.</p>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+#  아래 num_bins 값을 변경해 보라 (5, 10, 20, 50, 100 등) 
+num_bins = 20
+
+np.random.seed(42)
+data = np.concatenate([np.random.normal(30, 5, 500), np.random.normal(50, 3, 300)])
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+axes[0].hist(data, bins=num_bins, edgecolor='black', alpha=0.7)
+axes[0].set_title(f'bins = {num_bins}')
+axes[0].set_xlabel('값'); axes[0].set_ylabel('도수')
+
+# 자동 선택과 비교
+axes[1].hist(data, bins='auto', edgecolor='black', alpha=0.7, color='orange')
+auto_bins = len(np.histogram(data, bins='auto')[0])
+axes[1].set_title(f"bins = 'auto' ({auto_bins}개)")
+axes[1].set_xlabel('값')
+
+plt.tight_layout()
+plt.show()
+
+# 구간 수 규칙 비교
+n = len(data)
+iqr = np.percentile(data, 75) - np.percentile(data, 25)
+sturges = int(1 + np.log2(n))
+fd_width = 2 * iqr / (n ** (1/3))
+fd_bins = int((data.max() - data.min()) / fd_width)
+print(f"Sturges' Rule: {sturges}개")
+print(f"Freedman-Diaconis: {fd_bins}개 (너비={fd_width:.2f})")
+</div>
+</div>
+
+
+<h3 class="sst" id="s214">2.1.4 분산과 표준편차</h3>
+<p>평균이 데이터의 중심을 설명하는 방법으로 소개되었다면, <strong>산포도(variability)</strong>도 중요하다. 여기서 두 가지 산포도 측정치를 소개한다: <strong>분산(variance)</strong>과 <strong>표준편차(standard deviation)</strong>.</p>
+<p>표준편차는 대략적으로 <strong>관측값이 평균에서 얼마나 떨어져 있는지</strong>를 설명한다.</p>
+
+<h4>편차, 분산, 표준편차 계산</h4>
+<div class="fm">편차ᵢ = xᵢ − x̄ &nbsp;&nbsp;&nbsp; s² = Σ(xᵢ − x̄)² / (n−1) &nbsp;&nbsp;&nbsp; s = √s²</div>
+<div class="ib w"><strong>왜 n−1로 나누는가?</strong> n 대신 n−1로 나누는 것을 <strong>베셀의 수정(Bessel's correction)</strong>이라 하며, 표본분산이 모분산의 불편추정량이 되도록 한다.</div>
+
+<div class="cl">PYTHON — 분산과 표준편차 계산</div>
+<div class="compute">
+import numpy as np
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+mean_rate = np.mean(interest_rates)
+variance = np.var(interest_rates, ddof=1)
+std_dev = np.std(interest_rates, ddof=1)
+
+print(f"평균: {mean_rate:.2f}%")
+print(f"분산 (s²): {variance:.2f}")
+print(f"표준편차 (s): {std_dev:.2f}%")
+print(f"\n평균 ± 1SD: ({mean_rate-std_dev:.2f}%, {mean_rate+std_dev:.2f}%)")
+print(f"평균 ± 2SD: ({mean_rate-2*std_dev:.2f}%, {mean_rate+2*std_dev:.2f}%)")
+
+within_1sd = sum(1 for x in interest_rates if abs(x - mean_rate) <= std_dev)
+within_2sd = sum(1 for x in interest_rates if abs(x - mean_rate) <= 2*std_dev)
+print(f"\n1SD 이내: {within_1sd}/50 = {within_1sd/50*100:.0f}%")
+print(f"2SD 이내: {within_2sd}/50 = {within_2sd/50*100:.0f}%")
+
+# 수동 계산 확인
+deviations = [(x - mean_rate)**2 for x in interest_rates]
+manual_var = sum(deviations) / (len(interest_rates) - 1)
+print(f"\n수동 계산 분산: {manual_var:.2f}")
+</div>
+
+<div class="ib">모집단의 분산과 표준편차는 특별한 기호를 사용한다: 모분산 σ² (시그마 제곱), 모표준편차 σ (시그마). 보통 데이터의 약 <strong>70%</strong>가 평균에서 1 표준편차 이내에 있고, 약 <strong>95%</strong>가 2 표준편차 이내에 있다.</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.13</span><span class="et">분포 설명의 중요성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 분포의 형태에 대한 좋은 설명은 봉우리 수(modality)와 대칭 여부를 포함해야 한다. 왜 중요한가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">평균, 분산, 표준편차가 모두 같지만 매우 다르게 보이는 세 분포가 있을 수 있다. 봉우리 수로 이봉분포와 단봉분포를, 비대칭성으로 치우침과 대칭을 구별할 수 있다. 히스토그램이 더 완전한 이야기를 전달하지만, 형태 정보가 기본적인 특성화를 제공한다.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.5 — 체비셰프 부등식과 경험적 규칙</div>
+<p>"70%와 95% 규칙"은 <strong>경험적 규칙(Empirical Rule, 68-95-99.7 규칙)</strong>이라 불리며, 정규분포에 적용된다.</p>
+<p>하지만 <strong>모든 분포</strong>에 적용되는 더 일반적인 결과가 있다: <strong>체비셰프의 부등식</strong></p>
+<p><code>P(|X − μ| ≥ kσ) ≤ 1/k²</code></p>
+<p>비교표:</p>
+<table style="width:80%;margin:10px auto;color:#c8d0dc;border-collapse:collapse;font-size:0.95em;">
+<tr style="border-bottom:1px solid #445566;"><th style="padding:6px;">k</th><th>경험적 규칙 (정규)</th><th>체비셰프 (모든 분포)</th></tr>
+<tr><td style="text-align:center;padding:6px;">1σ</td><td style="text-align:center;">~68%</td><td style="text-align:center;">0% (보장 없음)</td></tr>
+<tr><td style="text-align:center;padding:6px;">2σ</td><td style="text-align:center;">~95%</td><td style="text-align:center;">≥75%</td></tr>
+<tr><td style="text-align:center;padding:6px;">3σ</td><td style="text-align:center;">~99.7%</td><td style="text-align:center;">≥89%</td></tr>
+</table>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 표준편차의 의미 체감</div>
+<p><code>std_dev</code> 값을 1, 5, 10, 20 등으로 변경하여, 표준편차가 분포의 퍼짐에 미치는 영향을 관찰해 보라.</p>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+#  표준편차를 변경해 보라 
+mean_val = 50
+std_dev = 10
+
+np.random.seed(42)
+data = np.random.normal(mean_val, std_dev, 1000)
+
+plt.figure(figsize=(10, 5))
+plt.hist(data, bins=30, edgecolor='black', alpha=0.7, density=True)
+plt.axvline(mean_val, color='red', linestyle='--', linewidth=2, label=f'평균={mean_val}')
+for k in [1, 2, 3]:
+    plt.axvline(mean_val + k*std_dev, color='orange', linestyle=':', alpha=0.7)
+    plt.axvline(mean_val - k*std_dev, color='orange', linestyle=':', alpha=0.7)
+plt.title(f'평균={mean_val}, 표준편차={std_dev}')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+for k in [1, 2, 3]:
+    within = sum(1 for x in data if abs(x - mean_val) <= k * std_dev) / len(data) * 100
+    cheby = max(0, (1 - 1/k**2)*100) if k > 1 else 0
+    print(f"{k}σ 이내: {within:.1f}% (경험적 규칙: ~{[68,95,99.7][k-1]}%, 체비셰프: ≥{cheby:.0f}%)")
+</div>
+</div>
+
+
+<h3 class="sst" id="s215">2.1.5 상자그림, 사분위수, 중앙값</h3>
+<p><strong>상자그림(box plot)</strong>은 다섯 가지 통계량을 사용하여 데이터셋을 요약하면서 비정상적인 관측값도 표시한다.</p>
+
+<h4>중앙값</h4>
+<p><strong>중앙값(median)</strong>은 데이터를 절반으로 나눈다. 데이터가 가장 작은 값에서 가장 큰 값으로 정렬되면, 중앙값은 정확히 중간에 있는 관측값이다. 관측치 수가 짝수이면 두 중간값의 평균이다.</p>
+
+<div class="cl">PYTHON — 중앙값과 사분위수 계산</div>
+<div class="compute">
+import numpy as np
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+sorted_rates = sorted(interest_rates)
+n = len(sorted_rates)
+median = np.median(interest_rates)
+print(f"정렬된 데이터의 25번째 값: {sorted_rates[24]}")
+print(f"정렬된 데이터의 26번째 값: {sorted_rates[25]}")
+print(f"중앙값 = ({sorted_rates[24]} + {sorted_rates[25]}) / 2 = {median:.2f}%")
+
+Q1 = np.percentile(interest_rates, 25)
+Q3 = np.percentile(interest_rates, 75)
+IQR = Q3 - Q1
+print(f"\nQ1 (제1사분위수): {Q1:.2f}%")
+print(f"Q3 (제3사분위수): {Q3:.2f}%")
+print(f"IQR (사분위범위): {IQR:.2f}%")
+</div>
+
+<h4>사분위범위(IQR)와 이상치</h4>
+<div class="fm">IQR = Q₃ − Q₁ &nbsp;&nbsp;&nbsp; 이상치 경계: Q₁ − 1.5·IQR ~ Q₃ + 1.5·IQR</div>
+<p>수염(whiskers)은 상자 바깥의 데이터를 포착하려 하지만, 길이는 1.5×IQR을 초과할 수 없다. 수염을 넘어서는 관측값은 점으로 표시되며, 이를 <strong>이상치(outliers)</strong>라 부른다.</p>
+
+<div class="cl">PYTHON — 상자그림과 이상치 탐지</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+interest_rates = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+                  7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+                  21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+                  6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+                  21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+                  6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+                  9.93, 7.26]
+
+Q1 = np.percentile(interest_rates, 25)
+Q3 = np.percentile(interest_rates, 75)
+IQR = Q3 - Q1
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+outliers = [x for x in interest_rates if x < lower or x > upper]
+
+print(f"Q1={Q1:.2f}, Q3={Q3:.2f}, IQR={IQR:.2f}")
+print(f"이상치 경계: [{lower:.2f}, {upper:.2f}]")
+print(f"이상치: {outliers}")
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].scatter(interest_rates, np.random.uniform(-0.3, 0.3, len(interest_rates)), alpha=0.6, edgecolors='black')
+axes[0].set_xlabel('이자율 (%)'); axes[0].set_title('점도표'); axes[0].set_yticks([])
+axes[0].axvline(np.mean(interest_rates), color='red', linestyle='--', label='평균')
+axes[0].legend()
+
+bp = axes[1].boxplot(interest_rates, vert=True, patch_artist=True)
+bp['boxes'][0].set_facecolor('lightblue')
+axes[1].set_ylabel('이자율 (%)'); axes[1].set_title('상자그림')
+axes[1].annotate(f'Q3={Q3:.1f}', xy=(1.15, Q3)); axes[1].annotate(f'Med={np.median(interest_rates):.1f}', xy=(1.15, np.median(interest_rates))); axes[1].annotate(f'Q1={Q1:.1f}', xy=(1.15, Q1))
+plt.tight_layout()
+plt.show()
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.15</span><span class="et">사분위수 사이의 데이터</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> Q₁과 중앙값 사이에 데이터의 몇 퍼센트가 있는가? 중앙값과 Q₃ 사이에는?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">Q₁과 Q₃가 중간 50%의 데이터를 포착하고 중앙값이 데이터를 중간에서 나누므로, <strong>25%</strong>가 Q₁과 중앙값 사이에, 또 다른 <strong>25%</strong>가 중앙값과 Q₃ 사이에 있다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.16</span><span class="et">상자그림에서 값 추정</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 이자율 상자그림에서 (a) Q₁, (b) Q₃, (c) IQR을 추정하라.</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">시각적 추정: Q₁ ≈ 8%, Q₃ ≈ 14%, IQR ≈ 6%. (실제 값: Q₁ = 7.96%, Q₃ = 13.72%, IQR = 5.76%)</div></details>
+</div></div>
+
+
+<h3 class="sst" id="s216">2.1.6 강건한 통계량</h3>
+<p>이자율 데이터셋의 표본 통계량은 관측값 26.3%에 의해 어떤 영향을 받는가? 이 대출이 15%였다면? 35%였다면?</p>
+
+<div class="cl">PYTHON — 이상치가 통계량에 미치는 영향</div>
+<div class="compute">
+import numpy as np
+
+original = [10.90, 9.92, 26.30, 9.43, 9.92, 9.43, 17.09, 6.08,
+            7.97, 18.06, 5.89, 14.08, 12.61, 17.09, 5.32, 12.61,
+            21.45, 6.08, 13.59, 15.23, 9.93, 9.93, 6.72, 6.72,
+            6.08, 8.90, 9.99, 17.09, 7.26, 5.31, 10.59, 12.62,
+            21.45, 14.08, 9.93, 6.71, 5.99, 20.00, 7.51, 5.89,
+            6.08, 7.97, 26.30, 7.09, 12.61, 6.72, 24.85, 9.43,
+            9.93, 7.26]
+
+scenario1 = original.copy(); scenario1[2] = 15.0
+scenario2 = original.copy(); scenario2[2] = 35.0
+
+def show(data, name):
+    med = np.median(data)
+    iqr = np.percentile(data,75) - np.percentile(data,25)
+    mn = np.mean(data)
+    sd = np.std(data, ddof=1)
+    print(f"{name:20s} 중앙값={med:6.2f}  IQR={iqr:5.2f}  평균={mn:6.2f}  SD={sd:5.2f}")
+
+show(original, "원본 데이터")
+show(scenario1, "26.3→15 변경")
+show(scenario2, "26.3→35 변경")
+print("\n→ 중앙값과 IQR은 변하지 않았다! (강건한 통계량)")
+print("→ 평균과 표준편차는 크게 변했다. (극단값에 민감)")
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.17</span><span class="et">강건성 비교</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> (a) 평균과 중앙값 중 극단적 관측값에 더 영향을 받는 것은? (b) 표준편차와 IQR 중은?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">(a) <strong>평균</strong>이 더 영향받는다. (b) <strong>표준편차</strong>가 더 영향받는다. 중앙값과 IQR은 <strong>강건한 통계량(robust statistics)</strong>이다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.18</span><span class="et">강건성의 이유</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 세 시나리오에서 중앙값과 IQR이 변하지 않은 이유는?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">중앙값과 IQR은 Q₁, 중앙값, Q₃ 근처의 숫자에만 민감하다. 이 영역의 값들이 세 데이터셋에서 안정적이므로, 추정치도 안정적이다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.19</span><span class="et">전형적인 대출 규모</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> loan50 대출 금액 분포는 오른쪽으로 치우쳐 있다. 전형적인 대출 규모를 이해하려면 평균과 중앙값 중 어느 것이 더 유용한가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">전형적인 개별 대출을 이해하려면 <strong>중앙값</strong>이 유용하다. 1,000건 대출의 총 금액을 추정하려면 <strong>평균</strong>이 유용하다. 답변은 분석 목적에 따라 달라진다!</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.6 — 평균과 중앙값의 선택</div>
+<p><strong>중앙값이 적합한 경우:</strong> 소득, 주택 가격처럼 극단적으로 치우친 분포 / 이상치의 영향을 최소화하고 싶을 때 / "전형적인" 값을 찾고 싶을 때</p>
+<p><strong>평균이 적합한 경우:</strong> 총합이나 전체 양을 추정할 때 / 대칭 분포일 때 / 추론 통계(가설 검정, 신뢰구간)를 수행할 때</p>
+<p>실제로 두 통계량을 모두 보고하고 그 차이를 해석하는 것이 가장 좋다. 평균이 중앙값보다 훨씬 크다면 분포가 오른쪽으로 치우쳐 있음을 시사한다.</p>
+</div>
+
+
+<h3 class="sst" id="s217">2.1.7 데이터 변환 (특별 주제)</h3>
+<p>데이터가 매우 강하게 치우쳐 있을 때, 모델링을 더 쉽게 하기 위해 <strong>변환(transformation)</strong>을 적용한다.</p>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.20</span><span class="et">변환의 필요성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 미국 모든 카운티의 인구 히스토그램은 극단적인 비대칭성을 보인다. 이 그래프에서 유용하지 않은 점은?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">거의 모든 데이터가 가장 왼쪽 구간에 속하며, 극단적인 비대칭성이 데이터의 잠재적으로 흥미로운 세부사항을 가린다.</div></details>
+</div></div>
+
+<div class="cl">PYTHON — 로그 변환</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+np.random.seed(42)
+populations = np.random.lognormal(mean=10, sigma=1.5, size=3000)
+populations = populations[populations > 100]
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+axes[0].hist(populations, bins=50, edgecolor='black', alpha=0.7)
+axes[0].set_xlabel('인구'); axes[0].set_ylabel('도수')
+axes[0].set_title('(a) 원본 인구 분포')
+
+log_pop = np.log10(populations)
+axes[1].hist(log_pop, bins=50, edgecolor='black', alpha=0.7, color='green')
+axes[1].set_xlabel('log10(인구)'); axes[1].set_ylabel('도수')
+axes[1].set_title('(b) 로그 변환된 인구 분포')
+
+plt.tight_layout()
+plt.show()
+print(f"원본 비대칭도: {stats.skew(populations):.2f}")
+print(f"로그 변환 비대칭도: {stats.skew(log_pop):.2f}")
+</div>
+
+<h4>2.1.8 데이터 매핑 (특별 주제)</h4>
+<p><strong>지리적 데이터</strong>는 지도 위에 색상으로 표시하여 시각화할 수 있다. 이를 <strong>코로플레스 지도(choropleth map)</strong>라 한다.</p>
+<div class="cl">PYTHON — 지역별 데이터 시각화</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+regions = ['서울', '부산', '대구', '인천', '광주', '대전', '울산']
+commute = [45, 32, 28, 38, 25, 22, 30]
+
+plt.figure(figsize=(10, 6))
+colors = plt.cm.YlOrRd(np.array(commute)/50)
+plt.barh(regions, commute, color=colors)
+plt.xlabel('평균 출퇴근 시간 (분)')
+plt.title('한국 주요 도시별 평균 출퇴근 시간')
+plt.tight_layout()
+plt.show()
+</div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.7 — 변환의 해석: 산술평균 vs 기하평균</div>
+<p>로그 척도에서의 차이는 원래 척도에서의 <strong>비율</strong>에 해당한다. 로그 변환된 데이터의 평균을 역변환하면 <strong>기하평균(geometric mean)</strong>이 된다.</p>
+<p><strong>주의사항:</strong> 변환된 데이터에서 계산된 평균을 역변환하면 원래 데이터의 평균이 되지 않는다.</p>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 산술평균 vs 기하평균</div>
+<div class="compute">
+import numpy as np
+
+#  아래 데이터를 자유롭게 변경해 보라 
+data = [100, 1000, 10000]
+
+arithmetic = np.mean(data)
+geometric = np.exp(np.mean(np.log(data)))
+log10_geo = 10 ** np.mean(np.log10(data))
+
+print(f"데이터: {data}")
+print(f"산술평균: {arithmetic:,.0f}")
+print(f"기하평균: {geometric:,.0f}")
+print(f"\n→ 기하평균이 비율/배수 데이터에 더 적절하다!")
+print(f"\n예: 연간 수익률 +50%, -33%")
+print(f"산술평균 수익률: {(0.5 + (-0.33))/2*100:.1f}% (과대평가)")
+print(f"기하평균 수익률: {(1.5*0.67)**0.5 - 1:.4f} = 약 0% (정확!)")
+</div>
+</div>
+
+</div><!-- end section 2.1 -->
+
+
+<div class="sec" id="s22">
+<div class="sh"><div class="sn c">2.2</div><h2 class="st">범주형 데이터</h2></div>
+
+<h3 class="sst" id="s223">2.2.3 두 변수를 사용한 막대그래프</h3>
+<p>분할표의 행 또는 열 비율은 두 범주형 변수의 관계를 살펴보는 데 특히 유용하다.</p>
+
+<div class="cl">PYTHON — 세 가지 막대그래프 유형 비교</div>
+<div class="compute">
+import matplotlib.pyplot as plt
+import numpy as np
+
+categories = ['rent', 'mortgage', 'own']
+individual = [3496, 3839, 1170]
+joint = [362, 950, 183]
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+axes[0].bar(categories, individual, label='individual', color='#3498db')
+axes[0].bar(categories, joint, bottom=individual, label='joint', color='#e74c3c')
+axes[0].set_ylabel('도수'); axes[0].set_title('(a) 누적 막대그래프'); axes[0].legend()
+
+x = np.arange(len(categories)); width = 0.35
+axes[1].bar(x-width/2, individual, width, label='individual', color='#3498db')
+axes[1].bar(x+width/2, joint, width, label='joint', color='#e74c3c')
+axes[1].set_xticks(x); axes[1].set_xticklabels(categories)
+axes[1].set_ylabel('도수'); axes[1].set_title('(b) 병렬 막대그래프'); axes[1].legend()
+
+totals = [i+j for i,j in zip(individual, joint)]
+ip = [i/t for i,t in zip(individual, totals)]
+jp = [j/t for j,t in zip(joint, totals)]
+axes[2].bar(categories, ip, label='individual', color='#3498db')
+axes[2].bar(categories, jp, bottom=ip, label='joint', color='#e74c3c')
+axes[2].set_ylabel('비율'); axes[2].set_title('(c) 표준화 누적'); axes[2].legend()
+
+plt.tight_layout()
+plt.show()
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.27</span><span class="et">막대그래프 유형 비교</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 세 가지 막대그래프 중 언제 각각이 가장 유용한가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac"><strong>누적</strong>: 설명변수/반응변수 구분이 합리적일 때. <strong>병렬</strong>: 여섯 가지 그룹 조합의 사례 수를 쉽게 파악. 두 그룹 크기가 매우 다를 때 연관성 파악 어려움. <strong>표준화 누적</strong>: 관측치가 불균형할 때 유용. 단점은 사례 수 감각을 잃음.</div></details>
+</div></div>
+
+<h3 class="sst" id="s224">2.2.4 모자이크 그래프</h3>
+<p><strong>모자이크 그래프(mosaic plot)</strong>는 표준화 누적 막대그래프와 유사하지만 주요 변수의 상대적 그룹 크기도 볼 수 있다는 장점이 있다.</p>
+
+<div class="cl">PYTHON — 모자이크 그래프</div>
+<div class="compute">
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import Rectangle, Patch
+
+categories = ['rent', 'mortgage', 'own']
+individual = [3496, 3839, 1170]
+joint = [362, 950, 183]
+totals = [i+j for i,j in zip(individual, joint)]
+grand = sum(totals)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+widths = [t/grand for t in totals]
+x = 0
+for w, total, ind, jo, cat in zip(widths, totals, individual, joint, categories):
+    ip = ind/total; jp = jo/total
+    ax.add_patch(Rectangle((x, jp), w, ip, facecolor='#3498db', edgecolor='black'))
+    ax.add_patch(Rectangle((x, 0), w, jp, facecolor='#e74c3c', edgecolor='black'))
+    ax.text(x+w/2, -0.05, f'{cat}\n({total:,})', ha='center', va='top', fontsize=9)
+    ax.text(x+w/2, jp+ip/2, f'{ip:.1%}', ha='center', color='white', fontsize=9)
+    ax.text(x+w/2, jp/2, f'{jp:.1%}', ha='center', color='white', fontsize=9)
+    x += w
+ax.set_xlim(0,1); ax.set_ylim(-0.12,1); ax.set_xticks([]); ax.set_yticks([])
+ax.set_title('homeownership × app_type 모자이크 그래프')
+ax.legend(handles=[Patch(facecolor='#3498db', label='individual'), Patch(facecolor='#e74c3c', label='joint')])
+plt.show()
+print("→ mortgage 그룹에서 joint 비율이 가장 높다.")
+</div>
+
+<h3 class="sst" id="s225">2.2.5 원 그래프</h3>
+<div class="ib w"><strong>원 그래프보다 막대그래프를 선호하는 이유:</strong> 인간의 시각 체계는 각도보다 길이를 비교하는 데 더 능숙하다.</div>
+
+<div class="cl">PYTHON — 원 그래프 vs 막대그래프</div>
+<div class="compute">
+import matplotlib.pyplot as plt
+
+categories = ['rent', 'mortgage', 'own']
+counts = [3858, 4789, 1353]
+colors = ['#3498db', '#2ecc71', '#e74c3c']
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].pie(counts, labels=categories, autopct='%1.1f%%', colors=colors, startangle=90, explode=(0, 0.05, 0))
+axes[0].set_title('원 그래프')
+
+axes[1].bar(categories, counts, color=colors, edgecolor='black')
+axes[1].set_ylabel('도수'); axes[1].set_title('막대그래프')
+for i, c in enumerate(counts):
+    axes[1].annotate(f'{c}', (i, c+100), ha='center')
+
+plt.tight_layout()
+plt.show()
+</div>
+
+<h3 class="sst" id="s226">2.2.6 그룹 간 수치형 데이터 비교</h3>
+<p>가장 흥미로운 분석 중 일부는 그룹 간 수치형 데이터를 비교하는 것이다: <strong>병렬 상자그림</strong>과 <strong>빈 히스토그램(hollow histogram)</strong>.</p>
+
+<div class="cl">PYTHON — 병렬 상자그림과 빈 히스토그램</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+income_gain = np.clip(np.random.normal(52000, 12000, 100), 20000, 120000)
+income_no = np.clip(np.random.normal(42000, 10000, 50), 20000, 100000)
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+bp = axes[0].boxplot([income_gain/1000, income_no/1000], labels=['인구 증가', '인구 비증가'], patch_artist=True)
+bp['boxes'][0].set_facecolor('#3498db'); bp['boxes'][1].set_facecolor('#e74c3c')
+axes[0].set_ylabel('중위 가구소득 ($1000)'); axes[0].set_title('(a) 병렬 상자그림'); axes[0].grid(True, alpha=0.3)
+
+axes[1].hist(income_gain/1000, bins=15, histtype='step', linewidth=2, label='인구 증가', color='#3498db')
+axes[1].hist(income_no/1000, bins=15, histtype='step', linewidth=2, label='인구 비증가', color='#e74c3c')
+axes[1].set_xlabel('중위 가구소득 ($1000)'); axes[1].set_title('(b) 빈 히스토그램'); axes[1].legend(); axes[1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+print(f"인구 증가: 중앙값=${np.median(income_gain):,.0f}")
+print(f"인구 비증가: 중앙값=${np.median(income_no):,.0f}")
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.28</span><span class="et">그룹 간 비교</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 두 그래프를 사용하여 두 그룹의 중심, 산포도, 형태, 이상치를 비교하라.</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac"><strong>중심</strong>: 인구 증가 카운티가 더 높은 소득. <strong>산포</strong>: 인구 증가 그룹에서 더 크다. <strong>형태</strong>: 두 분포 모두 약간 오른쪽 치우침, 단봉. <strong>병렬 상자그림</strong>은 중심과 퍼짐 비교에, <strong>빈 히스토그램</strong>은 분포 형태에 유용하다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.29</span><span class="et">그래프 구성요소의 유용성</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 각 그래프에서 어떤 구성요소가 가장 유용한가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac"><strong>병렬 상자그림</strong>: 중심과 퍼짐을 비교하는 데 특히 유용. <strong>빈 히스토그램</strong>: 분포 형태, 비대칭성, 잠재적 이상을 보는 데 더 유용.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.8 — 심슨의 역설 (Simpson's Paradox)</div>
+<p>전체 데이터에서 관찰되는 경향이 데이터를 그룹으로 나눌 때 <strong>역전</strong>되는 현상이다.</p>
+<p><strong>예시: 1973년 UC Berkeley 대학원 입학</strong></p>
+<p>전체: 남성 합격률 44%, 여성 35% → 성별 차별처럼 보인다.</p>
+<p>하지만 학과별로 보면 대부분의 학과에서 여성 합격률이 같거나 높았다! 여성이 경쟁이 치열한 학과에 더 많이 지원했기 때문이다.</p>
+<p><strong>교훈</strong>: 항상 잠재적인 <strong>교란변수(confounding variable)</strong>를 고려해야 한다.</p>
+</div>
+
+<div class="cl">PYTHON — 심슨의 역설 시뮬레이션</div>
+<div class="compute">
+import pandas as pd
+
+data = {
+    '학과': ['A', 'A', 'B', 'B'],
+    '성별': ['남', '여', '남', '여'],
+    '지원자': [825, 108, 560, 25],
+    '합격자': [512, 89, 353, 17]
+}
+df = pd.DataFrame(data)
+df['합격률'] = df['합격자'] / df['지원자']
+
+print("학과별 합격률:")
+print(df.pivot(index='학과', columns='성별', values='합격률').round(3))
+
+total = df.groupby('성별').agg({'지원자': 'sum', '합격자': 'sum'})
+total['전체_합격률'] = total['합격자'] / total['지원자']
+print("\n전체 합격률:")
+print(total['전체_합격률'].round(3))
+print("\n→ 학과별로는 여성 합격률이 높지만, 전체로 합치면 역전된다!")
+</div>
+
+<h4>2.2절 연습문제</h4>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.21</span><span class="et">어린이의 항생제 사용</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> (a) 막대그래프에서는 명확하지만 원 그래프에서는 명확하지 않은 특징은? (b) 원 그래프에서만 명확한 특징은? (c) 어떤 그래프를 선호하는가?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import matplotlib.pyplot as plt
+
+conditions = ['미숙아', '심혈관', '호흡기', '외마', '신경근육', '유전/대사', '면역저하', '위장관']
+freq = [0.28, 0.22, 0.18, 0.12, 0.08, 0.06, 0.04, 0.02]
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+axes[0].barh(conditions, freq, color='steelblue', edgecolor='black')
+axes[0].set_xlabel('상대 빈도'); axes[0].set_title('막대그래프'); axes[0].invert_yaxis()
+axes[1].pie(freq, labels=conditions, autopct='%1.0f%%', startangle=90)
+axes[1].set_title('원 그래프')
+plt.tight_layout()
+plt.show()
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">(a) 막대그래프에서 범주의 순서와 상대 빈도를 정확히 비교하기 쉽다. (b) 원 그래프에서만 명확한 특징은 없다. (c) 범주의 상대 빈도를 볼 수 있으므로 <strong>막대그래프</strong>를 선호한다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.23</span><span class="et">DREAM Act에 대한 견해</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 모자이크 그래프에 따르면, DREAM Act에 대한 견해와 정치적 이념이 독립적으로 보이는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">이념적 그룹이 Yes, No, Not Sure 범주로 나뉘는 수직 위치가 다르며, 이는 DREAM Act 지지 가능성이 정치적 이념에 따라 다름을 나타낸다. 두 변수가 <strong>종속적</strong>일 수 있음을 시사한다.</div></details>
+</div></div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 분할표 만들기</div>
+<p>데이터를 변경하여 다양한 분할표와 비율을 계산해 보라.</p>
+<div class="compute">
+import pandas as pd
+
+#  아래 데이터를 자유롭게 변경해 보라 
+data = {
+    'Class': ['1st','1st','1st','1st','2nd','2nd','2nd','3rd','3rd','3rd','3rd','3rd'],
+    'Survived': [1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0]
+}
+df = pd.DataFrame(data)
+
+print("=== 분할표 ===")
+table = pd.crosstab(df['Class'], df['Survived'], margins=True)
+print(table)
+
+print("\n=== 행 비율 (각 클래스별 생존율) ===")
+row_prop = pd.crosstab(df['Class'], df['Survived'], normalize='index')
+print(row_prop.round(3))
+</div>
+</div>
+
+</div><!-- end section 2.2 -->
+
+
+<div class="sec" id="s23">
+<div class="sh"><div class="sn r">2.3</div><h2 class="st">사례 연구: 말라리아 백신</h2></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.30</span><span class="et">그룹 간 비율 차이</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 교수가 수업에서 학생을 왼쪽/오른쪽으로 나누었다. p̂_L과 p̂_R이 각각 왼쪽과 오른쪽의 Apple 제품 소유 비율을 나타낸다면, 정확히 같을까?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">비율이 서로 비슷하겠지만, 정확히 같을 가능성은 낮다. <strong>우연에 의해</strong> 작은 차이가 관찰될 것이다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.31</span><span class="et">독립 가정</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 앉은 위치가 Apple 제품 소유와 관련이 없다고 생각한다면, 어떤 가정을 하는 것인가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">두 변수가 <strong>독립(independent)</strong>이라고 가정하는 것이다.</div></details>
+</div></div>
+
+<h3 class="sst">2.3.1 데이터 내의 변동성</h3>
+<p>PfSPZ라는 새로운 말라리아 백신에 대한 연구이다. 자원자 20명이 무작위 배정: <strong>14명</strong> 백신, <strong>6명</strong> 위약. 19주 후 모두 말라리아 기생충에 노출되었다.</p>
+
+<table class="dt">
+<tr><th>결과</th><th>감염</th><th>비감염</th><th>합계</th></tr>
+<tr><td>백신</td><td>5</td><td>9</td><td>14</td></tr>
+<tr><td>위약</td><td>6</td><td>0</td><td>6</td></tr>
+<tr><td><strong>합계</strong></td><td><strong>11</strong></td><td><strong>9</strong></td><td><strong>20</strong></td></tr>
+</table>
+
+<div class="ib d">백신 감염률: 5/14 = <strong>35.7%</strong> &nbsp;|&nbsp; 위약 감염률: 6/6 = <strong>100%</strong> &nbsp;|&nbsp; 차이: <strong>64.3%</strong></div>
+
+<div class="cl">PYTHON — 관찰된 결과</div>
+<div class="compute">
+vaccine_rate = 5 / 14
+placebo_rate = 6 / 6
+observed_diff = placebo_rate - vaccine_rate
+
+print("관찰된 결과:")
+print(f"  백신 그룹 감염률: {vaccine_rate:.1%}")
+print(f"  위약 그룹 감염률: {placebo_rate:.1%}")
+print(f"  차이: {observed_diff:.1%}")
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.32</span><span class="et">연구 유형 판별</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 이것은 관찰 연구인가 실험인가? 연구 유형이 추론에 어떤 영향을 미치는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">이 연구는 <strong>실험</strong>이다. 환자들이 실험 그룹에 무작위로 배정되었기 때문이다. 실험이므로 <strong>인과 관계</strong>를 평가하는 데 사용할 수 있다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.33</span><span class="et">증거의 강도 평가</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 관찰된 감염률 차이가 백신의 효과를 나타내는지 단순히 우연인지 어떻게 판단하는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">표본 데이터에는 약간의 변동이 있으며, 백신과 감염률이 독립적이더라도 표본 비율이 정확히 같을 것으로 기대하지 않는다. 이렇게 작은 표본(n=20)에서 무작위 분배만으로도 큰 차이가 관찰될 수 있다!</div></details>
+</div></div>
+
+<h3 class="sst">경쟁 가설</h3>
+<div class="ib"><strong>H₀ (귀무가설)</strong>: 독립 모형. 백신과 감염률은 독립. 64.3% 차이는 우연 때문이다.</div>
+<div class="ib d"><strong>Hₐ (대립가설)</strong>: 대립 모형. 변수들은 독립이 아니다. 백신이 감염률에 영향을 미쳤다.</div>
+
+<h3 class="sst" id="s232">2.3.2 연구 시뮬레이션</h3>
+<p>시뮬레이션: 20장의 카드(감염 11장, 비감염 9장)를 섞어 14장(백신)과 6장(위약)에 배분한다.</p>
+
+<div class="cl">PYTHON — 100회 시뮬레이션</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+def simulate_trial():
+    patients = ['infected'] * 11 + ['not_infected'] * 9
+    np.random.shuffle(patients)
+    vaccine = patients[:14]; placebo = patients[14:]
+    return placebo.count('infected')/6 - vaccine.count('infected')/14
+
+np.random.seed(42)
+sim_100 = [simulate_trial() for _ in range(100)]
+
+plt.figure(figsize=(12, 5))
+for i, diff in enumerate(sim_100):
+    plt.scatter(diff, i % 10, c='blue', alpha=0.6, s=50)
+plt.axvline(0.643, color='red', linestyle='--', linewidth=2, label='관찰된 차이: 64.3%')
+plt.xlabel('감염률 차이 (위약 - 백신)')
+plt.title('100번 시뮬레이션에서의 감염률 차이 분포')
+plt.legend()
+plt.grid(True, alpha=0.3)
+extreme = sum(1 for d in sim_100 if d >= 0.643)
+print(f"64.3% 이상의 차이: {extreme}/100")
+plt.show()
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge gp">유도 연습 2.34</span><span class="et">시뮬레이션 결과 비교</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 시뮬레이션 결과에서 두 그룹 간 감염률 차이의 한 예: 백신 7/14, 위약 4/6이면 차이는? 실제 64.3%와 비교하라.</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+sim_v = 7/14; sim_p = 4/6
+sim_diff = sim_p - sim_v
+print(f"시뮬레이션: 백신={sim_v:.1%}, 위약={sim_p:.1%}, 차이={sim_diff:.1%}")
+print(f"관찰된 차이: 64.3%")
+print(f"→ 우연에 의한 차이({sim_diff:.1%})는 실제 차이(64.3%)보다 훨씬 작다!")
+</div>
+</div></div>
+
+<h3 class="sst">2.3.3 독립성 검정</h3>
+<p>시뮬레이션을 10,000번으로 확대하여 우연만으로 발생하는 차이의 분포를 정밀하게 파악한다.</p>
+
+<div class="cl">PYTHON — 10,000회 시뮬레이션과 p-값 계산</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+def simulate_trial():
+    patients = ['infected'] * 11 + ['not_infected'] * 9
+    np.random.shuffle(patients)
+    vaccine = patients[:14]; placebo = patients[14:]
+    return placebo.count('infected')/6 - vaccine.count('infected')/14
+
+np.random.seed(42)
+n_sim = 10000
+sim_diffs = [simulate_trial() for _ in range(n_sim)]
+
+plt.figure(figsize=(12, 6))
+plt.hist(sim_diffs, bins=30, edgecolor='black', alpha=0.7, density=True)
+plt.axvline(0.643, color='red', linestyle='--', linewidth=2, label='관찰된 차이: 64.3%')
+plt.axvline(0, color='green', linestyle='-', linewidth=2, label='기대값: 0')
+plt.xlabel('감염률 차이 (위약 - 백신)')
+plt.ylabel('밀도')
+plt.title(f'{n_sim:,}번 시뮬레이션에서의 감염률 차이 분포')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+p_value = sum(1 for d in sim_diffs if d >= 0.643) / n_sim
+print(f"p-값: {p_value:.4f} ({p_value*100:.2f}%)")
+print(f"\n{'='*50}")
+if p_value < 0.05:
+    print("결론: H₀를 기각한다.")
+    print("백신이 감염률 감소에 효과적이라는 통계적 증거가 있다.")
+else:
+    print("결론: H₀를 기각할 수 없다.")
+</div>
+
+<div class="eb">
+<div class="eh"><span class="badge ex">예제 2.35</span><span class="et">시뮬레이션 결과 해석</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 시뮬레이션에 따르면 최소 64.3%의 차이를 얼마나 자주 관찰하겠는가?</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">우연만으로 최소 64.3%의 차이가 발생하는 것은 약 <strong>2%</strong>의 확률이다. 이렇게 낮은 확률은 <strong>드문 사건</strong>을 나타내므로, H₀를 기각하고 백신이 효과적이라는 대립가설을 지지한다.</div></details>
+</div></div>
+
+<div class="psp">
+<div class="ph"> 새로운 시각 2.9 — 통계적 추론의 기초: 시뮬레이션에서 공식으로</div>
+<p>이 사례 연구는 <strong>통계적 추론</strong>의 핵심 아이디어를 소개한다:</p>
+<ol>
+<li><strong>귀무가설(H₀)</strong>: "효과가 없다"는 기본 가정</li>
+<li><strong>대립가설(Hₐ)</strong>: 우리가 증거를 찾고자 하는 주장</li>
+<li><strong>p-값</strong>: H₀가 참일 때 관찰된 결과가 발생할 확률</li>
+<li><strong>유의수준</strong>: H₀를 기각하기 위한 임계값 (일반적으로 0.05)</li>
+</ol>
+<p><strong>중요한 점:</strong></p>
+<ul>
+<li>통계적으로 유의하다고 해서 실용적으로 중요하다는 것을 의미하지는 않는다</li>
+<li>p-값이 작다고 해서 효과 크기가 크다는 것을 의미하지 않는다</li>
+<li>통계적 검정은 인과관계를 증명하지 않는다 (단, 무작위 실험의 경우 인과 추론이 가능)</li>
+</ul>
+<p>제5장 이후에서 이러한 개념을 더 형식적으로 다룬다.</p>
+</div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 시뮬레이션 횟수 변경</div>
+<p><code>n_sim</code>을 100, 1000, 10000, 50000 등으로 변경하여 p-값의 안정성을 관찰해 보라.</p>
+<div class="compute">
+import numpy as np
+
+def simulate_trial():
+    patients = ['infected'] * 11 + ['not_infected'] * 9
+    np.random.shuffle(patients)
+    return patients[14:].count('infected')/6 - patients[:14].count('infected')/14
+
+#  시뮬레이션 횟수를 변경해 보라 
+n_sim = 1000
+
+np.random.seed(42)
+diffs = [simulate_trial() for _ in range(n_sim)]
+p = sum(1 for d in diffs if d >= 0.643) / n_sim
+print(f"시뮬레이션 {n_sim:,}회 → p-값: {p:.4f}")
+print(f"→ 횟수가 많을수록 p-값이 안정적이 된다!")
+</div>
+</div>
+
+</div><!-- end section 2.3 -->
+
+
+<div class="sec" id="s24">
+<div class="sh"><div class="sn g">2.4</div><h2 class="st">장 복습 및 연습문제</h2></div>
+
+<h3 class="sst">핵심 요약</h3>
+<p>수치형 데이터를 탐색할 때는 산점도, 점도표, 히스토그램, 상자그림 등 시각화 도구와 평균, 분산, 표준편차, 중앙값, IQR 등 요약 통계량을 조합하여 사용한다. 분포의 형태(대칭/치우침, 봉우리 수)를 파악하고, 이에 적합한 중심 측도와 산포 측도를 선택해야 한다. 범주형 데이터에서는 분할표, 막대그래프, 모자이크 그래프를 활용하되 심슨의 역설에 유의해야 한다.</p>
+
+<h3 class="sst">핵심 용어</h3>
+<div class="tg">
+
+<div class="tc">산점도</div>
+<div class="tc">점도표</div>
+<div class="tc">평균</div>
+<div class="tc">가중평균</div>
+<div class="tc">히스토그램</div>
+<div class="tc">비대칭(치우침)</div>
+<div class="tc">단봉/이봉/다봉</div>
+<div class="tc">분산</div>
+<div class="tc">표준편차</div>
+<div class="tc">상자그림</div>
+<div class="tc">중앙값</div>
+<div class="tc">사분위수</div>
+<div class="tc">IQR</div>
+<div class="tc">이상치</div>
+<div class="tc">백분위수</div>
+<div class="tc">강건한 통계량</div>
+<div class="tc">로그 변환</div>
+<div class="tc">기하평균</div>
+<div class="tc">분할표</div>
+<div class="tc">행/열 비율</div>
+<div class="tc">누적 막대그래프</div>
+<div class="tc">모자이크 그래프</div>
+<div class="tc">원 그래프</div>
+<div class="tc">심슨의 역설</div>
+<div class="tc">귀무가설(H₀)</div>
+<div class="tc">대립가설(Hₐ)</div>
+<div class="tc">p-값</div>
+<div class="tc">통계적 유의성</div>
+<div class="tc">모수(μ, σ)</div>
+<div class="tc">통계량(x̄, s)</div>
+<div class="tc">체비셰프 부등식</div>
+<div class="tc">경험적 규칙</div>
+</div>
+
+<h3 class="sst" id="sexer">종합 연습문제</h3>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.7</span><span class="et">휴가 일수와 평균</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 노동자들의 평균 휴가 7일, 표준편차 2일. 평균을 높이려면 어떤 직원 10명을 해고해야 하는가?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+np.random.seed(42)
+vacation = np.clip(np.random.normal(7, 2, 50).astype(int), 0, 14)
+print(f"해고 전 평균: {np.mean(vacation):.2f}일")
+remaining = np.delete(vacation, np.argsort(vacation)[:10])
+print(f"가장 적게 쓴 10명 해고 후 평균: {np.mean(remaining):.2f}일")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">평균보다 <strong>낮은</strong> 휴가를 사용하는 직원을 해고해야 한다. 가장 적은 휴가를 사용하는 10명을 해고하면 평균이 증가한다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.9</span><span class="et">분포 비교</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 각 쌍의 평균과 표준편차를 비교하라.</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+
+pairs = [
+    ("(a)", [3,5,5,5,8,11,11,11,13], [3,5,5,5,8,11,11,11,20]),
+    ("(b)", [-20,0,0,0,15,25,30,30], [-40,0,0,0,15,25,30,30]),
+    ("(c)", [0,2,4,6,8,10], [20,22,24,26,28,30]),
+    ("(d)", [100,200,300,400,500], [0,50,300,550,600])
+]
+for label, d1, d2 in pairs:
+    print(f"{label} 분포1: 평균={np.mean(d1):.1f}, SD={np.std(d1,ddof=1):.1f}")
+    print(f"    분포2: 평균={np.mean(d2):.1f}, SD={np.std(d2,ddof=1):.1f}")
+    print()
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">(a) 분포2가 평균, SD 모두 높다. (b) 분포1이 평균 높고 분포2의 SD가 더 높다. (c) 분포2가 평균 높지만 SD는 <strong>같다</strong>(평행 이동). (d) 평균은 <strong>같지만</strong>(300) 분포2의 SD가 더 높다.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.11</span><span class="et">대기질 지수(AQI)</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> AQI 분포에서 (a) 중앙값 추정, (b) 평균 vs 중앙값, (c) Q₁, Q₃, IQR 추정, (d) 이상치 유무</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+
+np.random.seed(42)
+aqi = np.clip(np.random.normal(32, 12, 91), 5, 65)
+
+Q1 = np.percentile(aqi, 25); med = np.median(aqi)
+Q3 = np.percentile(aqi, 75); IQR = Q3 - Q1; mn = np.mean(aqi)
+
+print(f"(a) 중앙값: {med:.1f}")
+print(f"(b) 평균: {mn:.1f} → 평균이 중앙값보다 {'높다' if mn > med else '낮다'}")
+print(f"(c) Q1={Q1:.1f}, Q3={Q3:.1f}, IQR={IQR:.1f}")
+lower = Q1 - 1.5*IQR; upper = Q3 + 1.5*IQR
+outliers = [x for x in aqi if x < lower or x > upper]
+print(f"(d) 이상치 경계: [{lower:.1f}, {upper:.1f}]")
+print(f"    이상치 수: {len(outliers)}")
+</div>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.15</span><span class="et">분포와 적절한 통계량</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> (a) 가구당 애완동물 수, (b) 출퇴근 거리, (c) 성인 남성 키 — 각 분포의 치우침과 적절한 통계량은?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+np.random.seed(42)
+
+pets = np.random.poisson(1.5, 1000)
+axes[0].hist(pets, bins=range(0, 10), edgecolor='black', alpha=0.7)
+axes[0].set_title(f'(a) 애완동물 수\n중앙값={np.median(pets):.0f}, IQR={np.percentile(pets,75)-np.percentile(pets,25):.0f}')
+
+dist = np.random.exponential(15, 1000)
+axes[1].hist(dist, bins=30, edgecolor='black', alpha=0.7, color='orange')
+axes[1].set_title(f'(b) 출퇴근 거리\n중앙값={np.median(dist):.1f}km')
+
+heights = np.random.normal(175, 7, 1000)
+axes[2].hist(heights, bins=30, edgecolor='black', alpha=0.7, color='green')
+axes[2].set_title(f'(c) 남성 키\n평균={np.mean(heights):.1f}, SD={np.std(heights):.1f}')
+
+plt.tight_layout()
+plt.show()
+print("치우친 분포 → 중앙값+IQR  |  대칭 분포 → 평균+SD")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">(a), (b)는 0에 자연 경계가 있고 극단값이 드물므로 <strong>오른쪽 치우침</strong>, 중앙값+IQR. (c) 성인 남성 키는 <strong>대칭</strong>, 평균+표준편차.</div></details>
+</div></div>
+
+<div class="eb">
+<div class="eh"><span class="badge hw">연습 2.27</span><span class="et">재시험</span></div>
+<div class="ebody">
+<div class="prob"><strong>문제:</strong> 25명 중 24명이 평균 74점, SD 8.9점. 재시험 학생 64점. (a) 평균 변화? (b) 새 평균? (c) SD 변화?</div>
+<div class="cl">PYTHON</div>
+<div class="compute">
+n = 24; mean_orig = 74; sd_orig = 8.9; new_score = 64
+new_mean = (n * mean_orig + new_score) / (n + 1)
+deviation = abs(new_score - new_mean)
+
+print(f"(a) {new_score}점 < 기존 평균 {mean_orig}점 → 평균을 낮춘다")
+print(f"(b) 새 평균: (24×74 + 64) / 25 = {new_mean:.1f}점")
+print(f"(c) 새 점수의 편차: {deviation:.1f}점 > 기존 SD {sd_orig}점 → SD를 높인다")
+</div>
+<details class="ans"><summary> 풀이 보기</summary>
+<div class="ac">(a) 평균을 <strong>낮춘다</strong>. (b) 새 평균 = <strong>73.6점</strong>. (c) 64점은 새 평균에서 9.6점 떨어져 있으며, 기존 SD(8.9)보다 크므로 표준편차를 <strong>높인다</strong>.</div></details>
+</div></div>
+
+<div class="trybox">
+<div class="trylabel"> 직접 해보기: 자신만의 데이터로 요약 통계량 계산</div>
+<p>아래 <code>my_data</code> 리스트에 원하는 숫자를 넣고 모든 요약 통계량을 한 번에 확인해 보라.</p>
+<div class="compute">
+import numpy as np
+from scipy import stats
+
+#  원하는 데이터를 입력하라 
+my_data = [23, 45, 12, 67, 34, 89, 56, 78, 90, 11, 33, 55, 77, 99, 44]
+
+data = np.array(my_data)
+print(f"데이터: {sorted(my_data)}")
+print(f"{'='*40}")
+print(f"관측치 수:  {len(data)}")
+print(f"평균:       {np.mean(data):.2f}")
+print(f"중앙값:     {np.median(data):.2f}")
+print(f"분산:       {np.var(data, ddof=1):.2f}")
+print(f"표준편차:   {np.std(data, ddof=1):.2f}")
+print(f"Q1:         {np.percentile(data, 25):.2f}")
+print(f"Q3:         {np.percentile(data, 75):.2f}")
+print(f"IQR:        {np.percentile(data, 75) - np.percentile(data, 25):.2f}")
+print(f"최솟값:     {data.min()}")
+print(f"최댓값:     {data.max()}")
+print(f"범위:       {data.max() - data.min()}")
+print(f"비대칭도:   {stats.skew(data):.2f}")
+
+# 이상치 확인
+Q1 = np.percentile(data, 25); Q3 = np.percentile(data, 75)
+IQR = Q3 - Q1
+outliers = data[(data < Q1-1.5*IQR) | (data > Q3+1.5*IQR)]
+print(f"이상치:     {list(outliers) if len(outliers) > 0 else '없음'}")
+</div>
+</div>
+
+</div><!-- end section 2.4 -->
+
+
+<div class="ft">
+<h3>제2장 완료 — 데이터 요약</h3>
+<p>OpenIntro Statistics 기반 | 수치형 데이터 탐색, 범주형 데이터 분석, 시뮬레이션 기반 추론</p>
+<p style="margin-top:10px;font-size:0.85em;">다음 장: 제3장 — 확률</p>
+</div>
+</div><!-- container -->
+</body>
+</html>
