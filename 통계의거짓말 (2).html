@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통계의 거짓말: 미디어 속 데이터 오용과 분석</title>
+
+<!-- SageMath Cell 연동 스크립트 -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+    sagecell.makeSagecell({
+        inputLocation:  'div.compute',
+        languages:      ["python"], /* 파이썬 코드를 실행하도록 설정 */
+        evalButtonText: '파이썬 코드 실행 (Run)',
+        hide:           ["permalink", "fullScreen"], 
+        autoeval:       false 
+    });
+</script>
+
+<!-- 수식 렌더링을 위한 MathJax -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+    body { 
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; 
+        margin: 40px auto; 
+        max-width: 1000px; 
+        line-height: 1.6;
+        color: #333;
+        background-color: #f8f9fa;
+    }
+    h1 { text-align: center; color: #1e293b; border-bottom: 3px solid #1e293b; padding-bottom: 15px;}
+    h2 { font-size: 1.2em; color: #64748b; text-align: center; margin-bottom: 40px; }
+    
+    /* 문제/소제목 스타일 */
+    h3 { 
+        color: #0284c7; 
+        margin-top: 50px; 
+        border-left: 7px solid #0284c7; 
+        padding-left: 15px; 
+        background-color: #e0f2fe;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    /* 설명 및 본문 박스 */
+    .description { 
+        background-color: #fff; 
+        padding: 25px; 
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 2px 4px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* 수식 박스 */
+    .formula-box {
+        background-color: #fdfefe;
+        border: 2px dashed #cbd5e1;
+        padding: 15px;
+        text-align: center;
+        margin: 20px 0;
+        border-radius: 8px;
+        font-size: 1.2em;
+    }
+
+    /* 경고/알림 박스 */
+    .alert-box {
+        background-color: #fef2f2;
+        border-left: 5px solid #ef4444;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* 코드 에디터 간격 */
+    .compute { margin-bottom: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+    
+    /* 강조 코드 */
+    code { background-color: #f1f5f9; padding: 3px 6px; border-radius: 4px; font-family: monospace; color: #b91c1c; font-weight: bold;}
+    
+    /* 링크 스타일 */
+    a { color: #0284c7; text-decoration: none; font-weight: bold; }
+    a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+    <h1>📊 통계의 거짓말: 미디어 속 데이터 오용과 분석</h1>
+    <h2>뉴스는 어떻게 데이터를 왜곡하고, 우리는 어떻게 진실을 찾아야 하는가?</h2>
+
+    <div class="description" style="background-color: #fffbeb; border-color: #fde68a;">
+        <strong>💡 [실습 안내]</strong><br>
+        본 교안은 단순한 텍스트가 아닙니다. 하단에 제시된 <strong>[파이썬 코드 실행]</strong> 버튼을 누르면, 클라우드 서버(SageMath)가 즉시 데이터를 분석하여 신문 기사의 조작 여부를 수학적으로 증명해 냅니다. 코드를 직접 수정하며 변수(당원 수, 유의수준 등)에 따른 결과 변화를 확인해 보세요!
+    </div>
+
+    <h3>1. 미디어 통계의 함정: 우리는 왜 숫자에 속는가?</h3>
+    <div class="description">
+        <p><strong>숫자가 주는 '객관성의 환상'</strong><br>
+        대중은 텍스트로 된 주장에는 의심을 품지만, '숫자'나 '그래프'가 제시되면 무의식적으로 이를 과학적이고 객관적인 '팩트(Fact)'로 받아들이는 경향이 있습니다. 언론과 이익집단은 이 심리를 적극적으로 이용합니다.</p>
+        
+        <div class="alert-box">
+            <strong style="color: #ef4444;">🚨 기계적 중립(Mechanical Neutrality)의 함정</strong><br>
+            과학적으로 명백히 검증된 사실과 조작된(혹은 빈약한 표본의) 주장을 50대 50의 비중으로 나란히 보도하여, 마치 두 주장이 동등한 가치를 지닌 것처럼 대중을 기만하는 행위입니다.
+        </div>
+        
+        <p><strong>언론이 통계를 왜곡하는 구조적 이유</strong></p>
+        <ul>
+            <li><strong>주장의 정당화:</strong> 특정 정치적 성향이나 경제적 이익을 대변하기 위해, 결론을 미리 정해놓고 데이터만 끼워 맞춥니다.</li>
+            <li><strong>클릭 저널리즘(Clickbait):</strong> "미세한 변화"로는 시선을 끌 수 없으므로 "폭등", "충격" 등의 자극적인 단어와 함께 수치를 과장합니다.</li>
+        </ul>
+        <p style="color: #0284c7; font-weight: bold;">결론: 통계적 리터러시가 없다면, 우리는 누군가 편집한 '가짜 현실'을 진짜로 착각하는 수동적 소비자로 전락합니다.</p>
+    </div>
+
+    <h3>2. 미디어 오용 3대 라벨 분석</h3>
+    <div class="description">
+        <p><strong>① 선택 편향 (Selection Bias)</strong><br>
+        특정 커뮤니티나 자발적 참여자(비확률 표본)의 의견을 전체 모집단으로 일반화하는 오류입니다. 강한 불만을 가진 사람일수록 자발적 조사(Opt-in poll)에 적극적으로 참여하므로 표본이 심각하게 오염됩니다.<br>
+        <em>- 기사 사례: "충격! 직장인 80%, '주 4일제 도입 시 임금 삭감 동의'" (실제론 특정 재테크 카페 대상 설문)</em></p>
+
+        <p><strong>② 지표 정의 오류</strong><br>
+        통계값을 도출할 때 <strong>분모(전체 대상)</strong>와 <strong>분자(관찰 집단)</strong>의 기준이 논리적으로 연결되지 않는 현상입니다.<br>
+        <em>- 기사 사례: "A시, 청년 실업률 전국 최저 1%대 달성!" (실업률의 분모인 '경제활동인구' 대신 일할 생각조차 없는 학생, 군인까지 모조리 분모에 넣어 수치를 낮추는 꼼수)</em></p>
+
+        <p><strong>③ 기준 및 척도 오용 (% vs %p)</strong><br>
+        변화 비율인 '증감률(%)'과 단순 산술 차이인 '퍼센트 포인트(%p)'를 교묘하게 혼용하여 착시를 유발합니다.<br>
+        <em>- 기사 사례: 금리가 2%에서 3%가 된 것을 "고작 1% 올랐다"고 보도함. (실제 가계 이자 부담은 50% 폭등한 것임)</em></p>
+    </div>
+
+    <h3>3. [검증 실습 1] 특정 집단의 과대 대표성과 Z-점수</h3>
+    <div class="description">
+        <p><strong>[분석 대상]</strong> 특정 정당의 책임당원 중 발생한 특이값(중복 등)을 전체 여론이 오염된 것처럼 과장한 기사.<br>
+        이는 분모(4,400만 전체 유권자)와 분자(특정 정당에 가입한 강한 성향의 표본)가 어긋난 <strong>'지표 정의 오류'</strong>이자 <strong>'선택 편향'</strong>입니다.</p>
+        
+        <p>이를 증명하기 위해, 조작이 없는 무작위 상태에서 특정 당원이 뽑힐 확률을 <strong>초기하분포(Hypergeometric)</strong>로 계산합니다.</p>
+        <div class="formula-box">
+            $$ E(X) = n \times \frac{B}{N} $$
+            <span style="font-size: 0.8em; color: #64748b;">(N: 총 유권자, B: 타겟 당원 수, n: 추출된 표본 수)</span>
+        </div>
+
+        <p>기사에서 주장하는 관측값이 정상 기대값으로부터 표준편차(\(\sigma\))의 몇 배나 멀리 있는지 <strong>Z-점수</strong>로 산출합니다. 통상 Z-점수가 3을 넘어가면 우연히 발생할 수 없는 조작된 수치로 간주합니다.</p>
+        
+        <p>👇 <strong>[실행해 보기]</strong> 아래 코드의 <code>[실행]</code> 버튼을 눌러 시나리오별로 Z-점수가 어떻게 폭발하는지 확인하세요!</p>
+    </div>
+
+    <div class="compute">
+import math
+
+def check_news_claim(N, B, n, observed_k, scenario_name):
+    # 1. 기대값(평균) 계산: 완벽한 무작위 상황에서 정상적으로 겹쳐야 하는 수
+    expected_k = n * (B / N)
+    
+    # 2. 분산 계산: 유권자 조사는 비복원 추출이므로 유한모집단 수정계수 적용
+    variance = n * (B / N) * ((N - B) / N) * ((N - n) / (N - 1))
+    std_dev = math.sqrt(variance)
+    
+    # 3. Z-점수 계산: 관측값이 기대값에서 표준편차의 몇 배나 벗어났는가?
+    z_score = (observed_k - expected_k) / std_dev
+    
+    print(f"📊 [{scenario_name}]")
+    print(f" - 수학적 정상 기대 겹침수: 약 {expected_k:,.1f}명")
+    print(f" - 기사에서 주장하는 특이값: {observed_k:,}명")
+    print(f" - 🚨 Z-점수(이례성 지표): {z_score:,.2f} σ")
+    
+    if z_score > 3:
+        print(" => [결론] 통계적으로 자연 상태에서 발생 불가능한 수치입니다.")
+        print(" => 누군가 의도적으로 표본을 조작했거나 심각한 '선택 편향'이 개입되었습니다.\n")
+    else:
+        print(" => [결론] 통계적 오차 범위 내에서 발생 가능한 현상입니다.\n")
+
+# --- [실데이터 셋팅] ---
+N_total = 44000000 # 선관위 발표 총 대한민국 유권자 수
+n_sample = 120000  # 문제가 된 여론조사의 총 표본 수
+obs_k = 90000      # 기사에서 "특정 세력이 9만명이나 중복됐다"고 과장한 수치
+
+print("="*65)
+print("📰 기사 팩트체크: '특정 당원 9만 명 중복 여론조사 참여 충격!'\n")
+
+# 실험 1: 기사 논조에 유리하게 분모를 넉넉히 잡았을 때 (누적당원 500만명 기준)
+check_news_claim(N_total, 5000000, n_sample, obs_k, "시나리오 A: 분모를 누적당원 500만 명으로 넓게 잡은 경우")
+
+# 실험 2: 객관적 진실에 가깝게 실제 활동하는 분모만 잡았을 때 (실효당원 75만명 기준)
+check_news_claim(N_total, 750000, n_sample, obs_k, "시나리오 B: 분모를 실효당원 75만 명으로 엄격히 좁힌 경우")
+print("="*65)
+    </div>
+
+    <h3>4. [검증 실습 2] 전세의 월세화 분석 (박현수 학생)</h3>
+    <div class="description">
+        <p><strong>[분석 대상]</strong> <em>"전세 시대 끝났다… 9월 서울 아파트 월세 비중 역대 최고 폭증!"</em><br>
+        이 기사는 두 가지 치명적인 오류를 품고 있습니다.</p>
+        
+        <ul>
+            <li><strong>비교 축 오류 (MoM vs YoY):</strong> 이사철(가을)과 비수기(여름)의 강력한 <strong>계절성</strong>을 무시하고, 단순히 8월 대비 9월(전월 대비, MoM) 수치를 비교하여 폭등한 것처럼 왜곡했습니다.</li>
+            <li><strong>구성효과의 함정:</strong> 고금리로 인해 전체 거래량이 줄어들며 '전세 건수'가 폭락하자, 가만히 있던 '월세 건수'의 <strong>비중(%)</strong>만 상대적으로 껑충 뛰어오른 착시 현상입니다.</li>
+        </ul>
+
+        <p><strong>해결책 (Time Alignment & Dual Axis)</strong><br>
+        계절성을 통제하기 위해 매년 동일한 달(9월, YoY)만 추출하여 비교합니다. 또한 '비중(%)'과 '절대 건수'를 한 화면에 겹쳐 그리는 <strong>더블 축 시각화</strong>를 통해 진실을 밝혀냅니다.</p>
+
+        <p>👇 <strong>[실행해 보기]</strong> 국토교통부 실거래가 데이터를 파이썬으로 직접 시각화하여 기사의 거짓말을 확인하세요!</p>
+    </div>
+
+    <div class="compute">
+import matplotlib.pyplot as plt
+import numpy as np
+import urllib.request
+import os
+import matplotlib.font_manager as fm
+
+# --- [클라우드 서버 한글 폰트 깨짐 방지 로직] ---
+font_path = 'NanumGothic.ttf'
+if not os.path.exists(font_path):
+    url = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+    urllib.request.urlretrieve(url, font_path)
+fm.fontManager.addfont(font_path)
+plt.rcParams['font.family'] = 'NanumGothic'
+plt.rcParams['axes.unicode_minus'] = False
+
+# --- [국토교통부 실거래가 데이터 셋팅 (매년 9월 추출)] ---
+years = ['2023.09', '2024.09', '2025.09']
+jeonse_vol = np.array([12000, 10000, 9000])  # 전세 거래량 (고금리로 하락세)
+wolse_vol = np.array([8000, 8180, 9000])     # 월세 거래량 (비교적 완만한 유지)
+
+# 기사가 왜곡한 '월세 비중(%)' 계산
+total_vol = jeonse_vol + wolse_vol
+wolse_ratio = (wolse_vol / total_vol) * 100
+
+# --- [더블 축 시각화 구현] ---
+fig, ax1 = plt.subplots(figsize=(10, 6))
+fig.patch.set_facecolor('#f8fafc') 
+
+x = np.arange(len(years))
+width = 0.35
+
+# 1. 좌측 Y축: 전세/월세 절대 거래량 (막대 그래프)
+bar1 = ax1.bar(x - width/2, jeonse_vol, width, label='전세 건수 (절대량)', color='#38bdf8', alpha=0.9)
+bar2 = ax1.bar(x + width/2, wolse_vol, width, label='월세 건수 (절대량)', color='#f59e0b', alpha=0.9)
+
+ax1.set_ylabel('절대 거래량 (건수)', fontsize=12, fontweight='bold', color='#1e293b')
+ax1.set_ylim(0, 15000)
+ax1.set_xticks(x)
+ax1.set_xticklabels(years, fontsize=11, fontweight='bold')
+
+# 2. 우측 Y축: 월세 비중 (선 그래프)
+ax2 = ax1.twinx()
+line1 = ax2.plot(x, wolse_ratio, color='#ef4444', marker='o', markersize=8, linewidth=3, label='월세 비중 (%) 착시')
+
+ax2.set_ylabel('월세 비중 (%)', fontsize=12, fontweight='bold', color='#ef4444')
+ax2.set_ylim(0, 100)
+ax2.tick_params(axis='y', colors='#ef4444')
+
+# 선 그래프 위에 퍼센트 라벨 추가
+for i, ratio in enumerate(wolse_ratio):
+    ax2.annotate(f'{ratio:.1f}%', (x[i], ratio + 3), ha='center', color='#ef4444', fontweight='bold', fontsize=11)
+
+# 범례(Legend) 깔끔하게 통합
+bars = [bar1, bar2]
+labels = [bar.get_label() for bar in bars] + [line1[0].get_label()]
+plots = [bar1, bar2, line1[0]]
+ax1.legend(plots, labels, loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3, frameon=False)
+
+plt.title("전세의 월세화 분석: '비중 착시'를 깨는 절대량 교차 검증", fontsize=15, fontweight='bold', pad=30)
+plt.tight_layout()
+plt.grid(axis='y', linestyle='--', alpha=0.3)
+
+# 그래프 출력
+plt.show()
+
+print("\n💡 [데이터 팩트체크 결론]")
+print("반박 논리: 파이썬 시각화 확인 결과, 월세 절대 건수는 미미하게 올랐을 뿐 폭증하지 않았습니다.")
+print("단지 전체 파이에서 '전세 거래량이 폭락'했기 때문에, 가만히 있던 월세의 파이(비중)가 역대급으로 치솟은 것처럼 보이는 '구성효과의 함정'입니다.")
+    </div>
+
+    <h3>5. 종합 토론  안내</h3>
+    <div class="description">
+        <p><strong>[마무리 토론 의제]</strong><br>
+        <em>"통계는 거짓말을 하지 않지만, 거짓말쟁이들은 통계를 사랑한다."</em><br>
+        언론이 데이터를 인용할 때 분모/분자 기준 명시와 신뢰구간 병기를 법제화해야 하는가?</p>
+        <p><strong>[토론 포인트]</strong></p>
+        <ul>
+            <li>통계적 리터러시 교육의 중요성: 학교에서부터 '통계적 사고'를 가르쳐야 하는가?</li>
+            <li>언론의 책임과 윤리: 데이터 저널리즘의 기준과 가이드라인을 마련해야 하는가?</li>
+            <li>소비자의 역할: 독자들이 스스로 데이터를 해석하고 검증하는 능력을 키우려면 어떻게 해야 할까?</li>
+
+        
+    </div>
+
+</body>
+</html>
