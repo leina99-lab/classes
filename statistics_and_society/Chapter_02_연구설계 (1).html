@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제2장 연구 설계 (Study Design)</title>
+
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var initCells = function() {
+        if (typeof sagecell !== "undefined") {
+            sagecell.makeSagecell({
+                inputLocation: 'div.compute',
+                languages: ["python"],
+                evalButtonText: '실습 실행 (Run)',
+                hide: ["permalink","fullScreen"],
+                autoeval: false
+            });
+        } else {
+            setTimeout(initCells, 500);
+        }
+    };
+    initCells();
+});
+</script>
+
+<style>
+    body { font-family: "Pretendard","Malgun Gothic",sans-serif; background:#f4f6f8; margin:0; padding:0; color:#333; line-height:1.8; }
+    .container { max-width:1000px; margin:0 auto; background:#fff; min-height:100vh; padding-bottom:100px; box-shadow:0 0 20px rgba(0,0,0,.1); }
+
+    /* 헤더 */
+    .header { background:linear-gradient(135deg,#1a252f 0%,#2c3e50 100%); color:#fff; padding:50px 40px; text-align:center; }
+    .header h1 { margin:0; font-size:2.4em; letter-spacing:1px; }
+    .header .subtitle { color:#bdc3c7; margin-top:8px; font-size:1.1em; }
+    .header .chapter-num { display:inline-block; background:#e74c3c; padding:4px 18px; border-radius:20px; font-size:.85em; margin-bottom:12px; }
+
+    /* 목차 */
+    .toc { padding:30px 40px; background:#f8f9fa; border-bottom:2px solid #eee; }
+    .toc h2 { font-size:1.3em; color:#2c3e50; margin-bottom:15px; border-left:5px solid #2c3e50; padding-left:12px; }
+    .toc ul { list-style:none; padding:0; }
+    .toc li { margin:4px 0; }
+    .toc li a { text-decoration:none; color:#2980b9; font-weight:600; }
+    .toc li a:hover { text-decoration:underline; }
+    .toc li.sub { margin-left:24px; }
+    .toc li.sub a { font-weight:400; color:#555; }
+
+    /* 섹션 */
+    .section { padding:40px; border-bottom:1px solid #eee; }
+    .section-title { font-size:1.8em; font-weight:bold; color:#2c3e50; border-left:6px solid #3498db; padding-left:15px; margin-bottom:20px; }
+    .subsection-title { font-size:1.4em; font-weight:bold; color:#34495e; margin-top:30px; margin-bottom:15px; padding-bottom:8px; border-bottom:2px solid #ecf0f1; }
+
+    /* 본문 */
+    p { margin:10px 0; text-align:justify; }
+
+    /* 정의 박스 */
+    .definition-box { background:#eaf2f8; border-left:5px solid #2980b9; padding:20px 25px; border-radius:0 8px 8px 0; margin:20px 0; }
+    .definition-box .term { font-weight:bold; color:#1a5276; font-size:1.05em; }
+
+    /* 새로운 시각 박스 */
+    .insight-box { background:linear-gradient(135deg,#fef9e7 0%,#fdebd0 100%); border:1px solid #f0c27f; border-radius:10px; padding:25px 30px; margin:25px 0; position:relative; }
+    .insight-box::before { content:"[새로운 시각]"; display:inline-block; background:#e67e22; color:#fff; padding:3px 14px; border-radius:15px; font-size:.8em; font-weight:bold; margin-bottom:12px; }
+    .insight-box h4 { color:#d35400; margin:10px 0; font-size:1.15em; }
+
+    /* 예제/연습 박스 */
+    .exercise-box { border:2px solid #e0e0e0; border-radius:12px; padding:30px; margin:30px 0; background:#fafafa; }
+    .ex-label { display:inline-block; background:#e74c3c; color:#fff; padding:4px 14px; border-radius:18px; font-size:.82em; font-weight:bold; margin-bottom:12px; }
+    .ex-label.gp { background:#27ae60; }
+    .ex-label.example { background:#8e44ad; }
+    .ex-title { font-size:1.2em; font-weight:bold; color:#2c3e50; margin-bottom:12px; display:block; }
+    .problem-desc { background:#fff; padding:18px; border-left:4px solid #3498db; margin-bottom:18px; line-height:1.7; }
+
+    /* 퀴즈 토글 */
+    details.quiz { background:#e8f6f3; padding:15px 20px; border-radius:8px; cursor:pointer; border:1px solid #a3d9c8; margin-top:12px; }
+    details.quiz summary { font-weight:bold; color:#1a8a6a; outline:none; }
+    details.quiz .answer { margin-top:12px; padding:15px; background:#fff; border-radius:6px; color:#333; line-height:1.7; }
+
+    /* 표 */
+    table { width:100%; border-collapse:collapse; margin:15px 0; font-size:.95em; }
+    th { background:#2c3e50; color:#fff; padding:10px 12px; text-align:left; }
+    td { padding:10px 12px; border-bottom:1px solid #e0e0e0; }
+    tr:nth-child(even) { background:#f8f9fa; }
+
+    /* SageMath 셀 래퍼 */
+    .compute { margin:15px 0; }
+
+    /* 네비게이션 바 */
+    .nav-bar { position:fixed; bottom:20px; right:20px; background:rgba(44,62,80,.9); color:#fff; padding:12px 24px; border-radius:25px; font-weight:bold; font-size:.85em; box-shadow:0 5px 15px rgba(0,0,0,.3); z-index:999; cursor:pointer; }
+
+    /* 그림 캡션 */
+    .figure-cap { text-align:center; color:#7f8c8d; font-size:.9em; margin:8px 0 20px; font-style:italic; }
+
+    /* 요약 박스 */
+    .summary-box { background:#eaf2f8; border:2px solid #2980b9; border-radius:10px; padding:25px; margin:20px 0; }
+    .summary-box h3 { color:#1a5276; margin-top:0; }
+</style>
+</head>
+<body>
+
+<a id="top"></a>
+<div class="nav-bar" onclick="window.scrollTo({top:0,behavior:'smooth'})">맨 위로</div>
+
+<div class="container">
+
+<!-- ===== 헤더 ===== -->
+<div class="header">
+    <span class="chapter-num">Chapter 2</span>
+    <h1>연구 설계</h1>
+    <p class="subtitle">Study Design &mdash; 표집, 실험, 관찰 연구의 원리</p>
+</div>
+
+<!-- ===== 목차 ===== -->
+<div class="toc">
+    <h2>목차</h2>
+    <ul>
+        <li><a href="#sec2-1">2.1 표집 원리와 전략</a></li>
+        <li class="sub"><a href="#sec2-1-1">2.1.1 모집단과 표본</a></li>
+        <li class="sub"><a href="#sec2-1-2">2.1.2 모수와 통계량</a></li>
+        <li class="sub"><a href="#sec2-1-3">2.1.3 일화적 증거</a></li>
+        <li class="sub"><a href="#sec2-1-4">2.1.4 모집단에서 표집하기</a></li>
+        <li><a href="#sec2-2">2.2 실험</a></li>
+        <li class="sub"><a href="#sec2-2-1">2.2.1 실험 설계의 원리</a></li>
+        <li class="sub"><a href="#sec2-2-2">2.2.2 인간 실험에서 편향 줄이기</a></li>
+        <li><a href="#sec2-3">2.3 관찰 연구</a></li>
+        <li><a href="#sec2-4">2.4 장 복습</a></li>
+        <li class="sub"><a href="#sec2-4-1">2.4.1 요약</a></li>
+        <li class="sub"><a href="#sec2-4-2">2.4.2 용어</a></li>
+        <li><a href="#exercises">연습문제</a></li>
+    </ul>
+</div>
+
+<!-- ============================================================ -->
+<!--  2.1 표집 원리와 전략                                         -->
+<!-- ============================================================ -->
+<div class="section" id="sec2-1">
+    <div class="section-title">2.1 표집 원리와 전략</div>
+
+    <p>데이터를 다루는 세부 사항으로 들어가기 전에, 데이터가 어떻게 생성되는지에 대해 먼저 생각해 보아야 한다. 데이터가 광범위하고 완전한 결론을 도출하는 데 사용된다면, 데이터가 누구를 또는 무엇을 대표하는지 이해하는 것이 중요하다. 데이터 출처의 한 가지 중요한 측면은 <strong>표집</strong>(sampling)이다. 관측 단위가 더 큰 집단에서 어떻게 선택되었는지 알면 데이터가 무작위로 선택된 모집단으로 다시 일반화할 수 있다. 또한, 연구의 구조를 이해함으로써 인과 관계를 단순한 연관 관계와 구분할 수 있다.</p>
+
+    <p>데이터를 다루기 전에 스스로에게 물어야 할 좋은 질문은 "이 관측치들은 어떻게 수집되었는가?"이다. 데이터의 출처를 이해하면 데이터에 대해 많은 것을 배울 수 있다.</p>
+
+    <!-- 2.1.1 모집단과 표본 -->
+    <div id="sec2-1-1">
+        <div class="subsection-title">2.1.1 모집단과 표본</div>
+
+        <p>연구를 수행하는 첫 번째 단계는 조사할 주제나 질문을 식별하는 것이다. 다음 세 가지 연구 질문을 고려하자.</p>
+
+        <ol>
+            <li>대서양의 황새치에 함유된 평균 수은 농도는 얼마인가?</li>
+            <li>지난 5년간 듀크대학교 학부생의 평균 졸업 소요 시간은 얼마인가?</li>
+            <li>새로운 약물이 중증 심장 질환 환자의 사망 수를 줄이는가?</li>
+        </ol>
+
+        <div class="definition-box">
+            <p><span class="term">모집단(population):</span> 연구 질문이 대상으로 하는 전체 케이스의 집합이다.</p>
+            <p><span class="term">전수조사(census):</span> 모집단의 모든 케이스에 대해 데이터를 수집하는 것이다.</p>
+            <p><span class="term">표본(sample):</span> 모집단에서 선택된 부분 집합으로, 실제로 우리가 가지고 있는 데이터이다.</p>
+        </div>
+
+        <p>각 연구 질문은 목표 모집단을 언급한다. 첫 번째 질문에서 목표 모집단은 대서양의 모든 황새치이며, 각 물고기가 하나의 케이스를 나타낸다. 모집단의 모든 케이스에 대해 데이터를 수집하는 것이 실현 가능하지 않은 경우가 많다. 전수조사가 어려운 이유는 비용이 너무 비쌀 수 있기 때문이지만, 관심 있는 전체 모집단을 식별하는 것이 어렵거나 불가능할 수도 있기 때문이다.</p>
+
+        <!-- GP 2.1 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.1</span>
+            <span class="ex-title">모집단과 케이스 식별하기</span>
+            <div class="problem-desc">
+                위의 두 번째와 세 번째 질문에 대해 목표 모집단과 개별 케이스가 무엇인지 식별하라.
+            </div>
+            <div class="compute">
+# Guided Practice 2.1: 모집단과 케이스 식별
+import pandas as pd
+
+print("=" * 70)
+print("Guided Practice 2.1: 모집단과 케이스 식별")
+print("=" * 70)
+
+questions = [
+    {
+        "번호": 1,
+        "질문": "대서양의 황새치에 함유된 평균 수은 농도는?",
+        "모집단": "대서양의 모든 황새치",
+        "케이스": "각 황새치 (물고기 한 마리)",
+        "비고": "원본 예시"
+    },
+    {
+        "번호": 2,
+        "질문": "지난 5년간 듀크대학교 학부생의 평균 졸업 소요 시간은?",
+        "모집단": "지난 5년간 듀크대학교를 졸업한 모든 학부생",
+        "케이스": "각 졸업생",
+        "비고": "졸업하지 않은 학생은 제외됨"
+    },
+    {
+        "번호": 3,
+        "질문": "새로운 약물이 중증 심장 질환 환자의 사망을 줄이는가?",
+        "모집단": "중증 심장 질환을 가진 모든 사람",
+        "케이스": "중증 심장 질환을 가진 각 개인",
+        "비고": "현재와 미래 환자 모두 포함"
+    }
+]
+
+for q in questions:
+    print(f"\n질문 {q['번호']}: {q['질문']}")
+    print("-" * 60)
+    print(f"  목표 모집단: {q['모집단']}")
+    print(f"  개별 케이스: {q['케이스']}")
+    if q['비고']:
+        print(f"  참고사항: {q['비고']}")
+
+print("\n" + "=" * 70)
+print("요약 테이블")
+print("=" * 70)
+df = pd.DataFrame(questions)
+print(df[['번호', '모집단', '케이스']].to_string(index=False))
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p><strong>두 번째 질문:</strong> 목표 모집단은 지난 5년간 듀크대학교에서 졸업한 모든 학부생이며, 개별 케이스는 각 졸업생 한 명 한 명이다. 졸업하지 않은 학생에 대해서는 졸업 소요 시간의 평균을 계산할 수 없으므로 제외된다.</p>
+                    <p><strong>세 번째 질문:</strong> 목표 모집단은 중증 심장 질환을 가진 모든 사람(현재와 미래 포함)이며, 개별 케이스는 중증 심장 질환을 가진 각 개인이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각 2.1 -->
+        <div class="insight-box">
+            <h4>2.1: 모집단과 표본의 관계 &mdash; 왜 표본을 사용하는가?</h4>
+            <p>통계학에서 가장 근본적인 질문 중 하나는 "왜 전체를 조사하지 않고 일부만 조사하는가?"이다. 이에 대한 답은 실용적이면서도 깊은 통찰을 제공한다.</p>
+            <table>
+                <tr><th>이유</th><th>설명</th><th>예시</th></tr>
+                <tr><td><strong>비용</strong></td><td>모든 케이스를 조사하는 것은 경제적으로 불가능할 수 있다</td><td>미국 모든 가구의 소득을 직접 조사하는 것은 수십억 달러가 소요</td></tr>
+                <tr><td><strong>시간</strong></td><td>전수조사는 너무 오래 걸릴 수 있다</td><td>모든 대학 졸업생을 인터뷰하는 데 수년이 걸릴 수 있다</td></tr>
+                <tr><td><strong>파괴적 검사</strong></td><td>일부 측정은 대상을 파괴한다</td><td>황새치의 수은 농도를 측정하려면 물고기를 희생해야 한다</td></tr>
+                <tr><td><strong>접근 불가능</strong></td><td>일부 모집단은 정의상 접근이 불가능하다</td><td>미래의 모든 심장 질환 환자를 지금 연구할 수 없다</td></tr>
+                <tr><td><strong>무한 모집단</strong></td><td>일부 모집단은 이론적으로 무한하다</td><td>동전을 무한히 던질 수 있다</td></tr>
+            </table>
+            <p><strong>핵심 통찰:</strong> 좋은 표본은 작지만 모집단의 특성을 정확하게 반영할 수 있다. 이것이 통계학의 힘이다.</p>
+        </div>
+    </div>
+
+    <!-- 2.1.2 모수와 통계량 -->
+    <div id="sec2-1-2">
+        <div class="subsection-title">2.1.2 모수와 통계량</div>
+
+        <p>대부분의 통계 분석 절차에서 연구 질문은 수치적 요약을 이해하는 것으로 귀결된다. 수치적 요약은 관측치의 표본이나 전체 모집단에서 계산될 수 있다. 그러나 모집단의 모든 단위를 측정하는 것은 일반적으로 불가능하다.</p>
+
+        <div class="definition-box">
+            <p><span class="term">표본 통계량(sample statistic):</span> 데이터의 표본에서 계산된 숫자이다.</p>
+            <p><span class="term">모수(population parameter):</span> 전체 모집단에서 계산되거나 계산이 고려되는 숫자이다.</p>
+        </div>
+
+        <!-- 새로운 시각 2.2 -->
+        <div class="insight-box">
+            <h4>2.2: 모수와 통계량 &mdash; 그리스 문자 vs 라틴 문자</h4>
+            <p>통계학에서는 모수와 통계량을 구별하기 위해 다른 기호를 사용한다. 이 관례를 이해하면 나중에 추론 통계를 배울 때 큰 도움이 된다.</p>
+            <table>
+                <tr><th>개념</th><th>모수(Parameter)</th><th>통계량(Statistic)</th></tr>
+                <tr><td>정의</td><td>모집단 전체의 특성</td><td>표본에서 계산된 값</td></tr>
+                <tr><td>알 수 있는가?</td><td>보통 알 수 없음 (추정해야 함)</td><td>데이터로부터 계산 가능</td></tr>
+                <tr><td>기호 체계</td><td>그리스 문자</td><td>라틴 문자</td></tr>
+                <tr><td>평균</td><td>&mu; (뮤, mu)</td><td>x&#772; (x바, x-bar)</td></tr>
+                <tr><td>표준편차</td><td>&sigma; (시그마, sigma)</td><td>s</td></tr>
+                <tr><td>비율</td><td>p 또는 &pi;</td><td>p&#770; (p햇, p-hat)</td></tr>
+                <tr><td>상관계수</td><td>&rho; (로, rho)</td><td>r</td></tr>
+            </table>
+            <p><strong>기억하는 팁:</strong> <strong>P</strong>arameter는 <strong>P</strong>opulation과 함께, <strong>S</strong>tatistic은 <strong>S</strong>ample과 함께 간다.</p>
+        </div>
+
+        <div class="compute">
+# 모수와 통계량의 관계 시뮬레이션
+import numpy as np
+
+# 모집단 생성 (실제로는 알 수 없지만, 시뮬레이션에서는 알 수 있음)
+np.random.seed(42)
+population = np.random.normal(loc=100, scale=15, size=100000)  # mu=100, sigma=15
+
+# 모수 (실제 값)
+mu = population.mean()
+sigma = population.std()
+
+print(f"모수 (실제로는 알 수 없음):")
+print(f"  mu (모집단 평균) = {mu:.2f}")
+print(f"  sigma (모집단 표준편차) = {sigma:.2f}")
+
+# 표본 추출 및 통계량 계산
+sample = np.random.choice(population, size=100, replace=False)
+x_bar = sample.mean()
+s = sample.std(ddof=1)
+
+print(f"\n통계량 (표본에서 계산):")
+print(f"  x-bar (표본 평균) = {x_bar:.2f}")
+print(f"  s (표본 표준편차) = {s:.2f}")
+
+print(f"\n추정 오차:")
+print(f"  평균 추정 오차: {abs(x_bar - mu):.2f}")
+print(f"  표준편차 추정 오차: {abs(s - sigma):.2f}")
+
+# [실습] 표본 크기(size)를 30, 500, 5000으로 바꾸어 실행해 보라.
+# 표본 크기가 커질수록 추정 오차가 작아지는 것을 관찰할 수 있다.
+        </div>
+    </div>
+
+    <!-- 2.1.3 일화적 증거 -->
+    <div id="sec2-1-3">
+        <div class="subsection-title">2.1.3 일화적 증거</div>
+
+        <p>세 가지 연구 질문에 대한 다음과 같은 가능한 응답을 고려하자.</p>
+        <ol>
+            <li>뉴스에 나온 한 남자가 황새치를 먹고 수은 중독에 걸렸으므로, 황새치의 평균 수은 농도는 위험하게 높을 것이다.</li>
+            <li>듀크대학교를 졸업하는 데 7년 이상 걸린 두 학생을 만났으므로, 듀크에서 졸업하는 데는 다른 많은 대학보다 더 오래 걸릴 것이다.</li>
+            <li>내 친구의 아버지가 새로운 심장병 약을 먹은 후 심장마비로 돌아가셨으므로, 그 약은 효과가 없을 것이다.</li>
+        </ol>
+        <p>각 결론은 데이터에 기반한다. 그러나 두 가지 문제가 있다. 첫째, 데이터는 한두 개의 케이스만 대표한다. 둘째, 그리고 더 중요하게, 이 케이스들이 실제로 모집단을 대표하는지 불분명하다.</p>
+
+        <div class="definition-box">
+            <p><span class="term">일화적 증거(anecdotal evidence):</span> 즉흥적으로 수집된 데이터에 주의하라. 그러한 증거는 진실이고 검증 가능할 수 있지만, 예외적인 케이스만 대표할 수 있으므로 모집단의 좋은 대표가 아닐 수 있다.</p>
+        </div>
+
+        <!-- 새로운 시각 2.3 -->
+        <div class="insight-box">
+            <h4>2.3: 일화적 증거의 위험성 &mdash; 인지 편향과의 연결</h4>
+            <p>인간의 뇌는 추상적인 통계보다 구체적인 이야기에 더 잘 반응하도록 진화했다. 이것은 여러 인지 편향과 연결된다.</p>
+            <table>
+                <tr><th>인지 편향</th><th>설명</th><th>일화적 증거와의 연결</th></tr>
+                <tr><td><strong>생생함 효과</strong></td><td>생생하고 감정적인 정보가 더 잘 기억된다</td><td>개인적 이야기 &gt; 건조한 통계</td></tr>
+                <tr><td><strong>가용성 휴리스틱</strong></td><td>쉽게 떠오르는 예시가 더 흔하다고 착각</td><td>극적인 사례가 더 쉽게 떠오름</td></tr>
+                <tr><td><strong>확증 편향</strong></td><td>기존 믿음을 확인하는 정보를 선호</td><td>믿고 싶은 이야기를 더 잘 기억</td></tr>
+                <tr><td><strong>대표성 휴리스틱</strong></td><td>작은 표본이 전체를 대표한다고 착각</td><td>한두 사례로 전체를 판단</td></tr>
+            </table>
+        </div>
+
+        <div class="compute">
+# 일화적 증거 vs 체계적 데이터의 차이 시뮬레이션
+import numpy as np
+
+np.random.seed(42)
+
+# 실제 졸업 시간 분포 (대부분 4년, 일부 더 오래)
+graduation_times = np.concatenate([
+    np.random.normal(4, 0.3, 900),   # 90%는 약 4년
+    np.random.normal(5.5, 0.5, 80),  # 8%는 약 5.5년
+    np.random.normal(7.5, 0.5, 20)   # 2%는 약 7.5년
+])
+
+print("=" * 60)
+print("졸업 시간 분석: 일화 vs 체계적 데이터")
+print("=" * 60)
+
+print(f"\n전체 데이터 분석 (n={len(graduation_times)}):")
+print(f"  평균 졸업 시간: {graduation_times.mean():.2f}년")
+print(f"  중앙값: {np.median(graduation_times):.2f}년")
+print(f"  4년 이내 졸업 비율: {(graduation_times <= 4.5).mean()*100:.1f}%")
+print(f"  7년 이상 걸린 비율: {(graduation_times >= 7).mean()*100:.1f}%")
+
+extreme_cases = graduation_times[graduation_times >= 7]
+print(f"\n일화적 증거 (7년 이상 걸린 사례만 기억):")
+print(f"  사례 수: {len(extreme_cases)}명")
+print(f"  이들의 평균: {extreme_cases.mean():.2f}년")
+print(f"  -> '졸업하는 데 오래 걸린다'는 잘못된 인상을 줄 수 있음")
+
+# [실습] np.random.normal(4, 0.3, 900)에서 평균과 표준편차를 바꾸어
+# 분포가 달라지면 일화적 증거의 왜곡도 어떻게 변하는지 관찰하라.
+print("=" * 60)
+        </div>
+    </div>
+
+    <!-- 2.1.4 모집단에서 표집하기 -->
+    <div id="sec2-1-4">
+        <div class="subsection-title">2.1.4 모집단에서 표집하기</div>
+
+        <p>일반적으로 우리는 항상 모집단에서 <em>무작위로</em> 표본을 선택하려고 한다. 가장 기본적인 무작위 표본을 <strong>단순무작위표본</strong>(simple random sample)이라고 하며, 케이스를 선택하기 위해 모자에서 이름을 뽑는 것과 같다. 이것은 모집단의 각 케이스가 포함될 동일한 기회를 가지며 표본의 케이스들이 서로 관련되지 않음을 의미한다.</p>
+
+        <p>단순무작위표본을 추출하는 행위는 편향을 최소화하는 데 도움이 된다. 그러나 편향은 다른 방식으로도 발생할 수 있다. 사람들이 무작위로 선택되더라도 <strong>비응답률</strong>(non-response rate)이 높으면 주의해야 한다. 이 <strong>비응답 편향</strong>(non-response bias)은 결과를 왜곡할 수 있다.</p>
+
+        <p>또 다른 일반적인 함정은 <strong>편의표본</strong>(convenience sample)으로, 쉽게 접근 가능한 개인이 표본에 포함될 가능성이 더 높다.</p>
+
+        <!-- GP 2.2 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.2</span>
+            <span class="ex-title">편향된 표본 추출</span>
+            <div class="problem-desc">
+                영양학을 전공하는 학생에게 연구를 위해 여러 졸업생을 선택하도록 요청한다고 가정하자. 어떤 학생들을 선택할 것 같은가? 그들의 표본이 모든 졸업생을 대표할 것이라고 생각하는가?
+            </div>
+            <div class="compute">
+# Guided Practice 2.2: 편향된 표본 시뮬레이션
+import numpy as np
+import pandas as pd
+
+np.random.seed(42)
+
+print("=" * 70)
+print("Guided Practice 2.2: 편향된 표본 추출 시뮬레이션")
+print("=" * 70)
+
+majors = ['건강/의료', '공학', '인문학', '사회과학', '자연과학', '경영학', '예술']
+actual_proportions = [0.08, 0.22, 0.15, 0.18, 0.12, 0.20, 0.05]
+biased_proportions = [0.45, 0.08, 0.10, 0.12, 0.15, 0.08, 0.02]
+
+print("\n전공별 비율 비교:")
+print("-" * 55)
+print(f"{'전공':<12} {'실제 비율':>10} {'편향된 표본':>12} {'차이':>10}")
+print("-" * 55)
+
+for major, actual, biased in zip(majors, actual_proportions, biased_proportions):
+    diff = biased - actual
+    sign = "+" if diff > 0 else ""
+    print(f"{major:<12} {actual*100:>8.1f}% {biased*100:>10.1f}% {sign}{diff*100:>8.1f}%")
+
+n_sample = 50
+random_sample = np.random.choice(majors, size=n_sample, p=actual_proportions)
+biased_sample = np.random.choice(majors, size=n_sample, p=biased_proportions)
+
+print(f"\n표본 크기: {n_sample}명")
+print("\n무작위 표본 vs 편향된 표본:")
+print("-" * 55)
+for major in majors:
+    rc = (random_sample == major).sum()
+    bc = (biased_sample == major).sum()
+    print(f"{major:<12}: 무작위 {rc:>2}명 ({rc/n_sample*100:>5.1f}%)  "
+          f"편향 {bc:>2}명 ({bc/n_sample*100:>5.1f}%)")
+
+# [실습] biased_proportions 값을 수정하여 편향의 정도가 바뀌면
+# 표본의 대표성이 어떻게 달라지는지 관찰하라.
+print("=" * 70)
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p>영양학 전공 학생은 자신이 아는 사람들이나 자신과 비슷한 관심사를 가진 사람들을 선택할 가능성이 높다. 건강 관련 전공의 졸업생을 불균형적으로 많이 선택할 수 있으며, 이는 <strong>편향된 표본</strong>(biased sample)이 된다. 이 표본은 모든 졸업생을 대표하지 않을 것이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- GP 2.3 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.3</span>
+            <span class="ex-title">온라인 리뷰의 편향</span>
+            <div class="problem-desc">
+                제품에 대한 온라인 리뷰의 50%가 부정적이라면, 이것이 구매자의 50%가 제품에 불만족한다는 것을 의미하는가? 왜 그런가 또는 왜 그렇지 않은가?
+            </div>
+            <div class="compute">
+# Guided Practice 2.3: 온라인 리뷰 편향 시뮬레이션
+import numpy as np
+
+np.random.seed(42)
+
+print("=" * 70)
+print("Guided Practice 2.3: 온라인 리뷰 편향 시뮬레이션")
+print("=" * 70)
+
+n_customers = 10000
+true_satisfaction = np.random.choice(
+    [1, 2, 3, 4, 5],
+    size=n_customers,
+    p=[0.05, 0.08, 0.12, 0.45, 0.30]
+)
+
+review_probability = {1: 0.50, 2: 0.35, 3: 0.10, 4: 0.08, 5: 0.15}
+
+wrote_review = np.array([np.random.random() < review_probability[s]
+                         for s in true_satisfaction])
+reviewer_satisfaction = true_satisfaction[wrote_review]
+
+print(f"\n총 고객 수: {n_customers:,}명")
+print(f"리뷰 작성자 수: {wrote_review.sum():,}명 ({wrote_review.mean()*100:.1f}%)")
+
+print("\n만족도 분포 비교:")
+print("-" * 60)
+print(f"{'점수':<8} {'실제 고객':<15} {'리뷰 작성자':<15} {'차이':<10}")
+print("-" * 60)
+
+for score in [1, 2, 3, 4, 5]:
+    true_pct = (true_satisfaction == score).mean() * 100
+    review_pct = (reviewer_satisfaction == score).mean() * 100
+    diff = review_pct - true_pct
+    sign = "+" if diff > 0 else ""
+    print(f"{score}점      {true_pct:>10.1f}%    {review_pct:>10.1f}%    {sign}{diff:>6.1f}%")
+
+true_negative = (true_satisfaction <= 2).mean() * 100
+review_negative = (reviewer_satisfaction <= 2).mean() * 100
+
+print(f"\n부정적 리뷰 (1-2점) 비율:")
+print(f"  실제 불만족 고객 비율: {true_negative:.1f}%")
+print(f"  리뷰 기준 부정적 비율: {review_negative:.1f}%")
+print(f"  -> 리뷰가 부정적 의견을 {review_negative/true_negative:.1f}배 과대 대표")
+
+# [실습] review_probability 값을 수정하여 편향의 정도를 조절해 보라.
+# 예를 들어 모든 점수에서 동일한 확률(0.15)로 바꾸면 어떻게 되는가?
+print("=" * 70)
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p><strong>아니오.</strong> 온라인 리뷰의 50%가 부정적이라고 해서 구매자의 50%가 불만족한 것은 아니다. 자기 선택 편향과 부정성 편향으로 인해 불만족한 고객이 리뷰를 작성할 가능성이 2-3배 더 높다. 대부분의 만족한 고객은 침묵하는 다수에 해당한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각 2.4 -->
+        <div class="insight-box">
+            <h4>2.4: 표집 편향의 다양한 형태</h4>
+            <table>
+                <tr><th>편향 유형</th><th>설명</th><th>예시</th><th>해결 방법</th></tr>
+                <tr><td><strong>선택 편향</strong></td><td>특정 그룹이 표본에 포함될 확률이 다름</td><td>전화 설문에서 유선전화만 사용</td><td>다양한 접촉 방법 사용</td></tr>
+                <tr><td><strong>비응답 편향</strong></td><td>응답자와 비응답자의 특성이 다름</td><td>바쁜 직장인은 설문에 응답할 시간이 없음</td><td>추적 조사, 인센티브 제공</td></tr>
+                <tr><td><strong>자발적 응답 편향</strong></td><td>스스로 참여하는 사람들이 특정 특성을 가짐</td><td>온라인 리뷰는 극단적 의견 과대 대표</td><td>무작위 표집 사용</td></tr>
+                <tr><td><strong>편의 표집 편향</strong></td><td>쉽게 접근 가능한 대상만 선택</td><td>대학가에서 설문 &rarr; 학생 과대 대표</td><td>체계적 표집 설계</td></tr>
+                <tr><td><strong>생존자 편향</strong></td><td>살아남은/남아있는 대상만 관찰</td><td>성공한 기업만 연구 &rarr; 성공 요인 왜곡</td><td>실패한 케이스도 포함</td></tr>
+            </table>
+        </div>
+
+        <p>표집 방법에는 단순무작위표본 외에도 다양한 전략이 있다. <strong>층화표집</strong>(stratified sampling)에서는 모집단이 <strong>층</strong>(strata)이라는 유사한 케이스의 그룹으로 나뉘고, 각 층에서 표본이 추출된다. <strong>군집표집</strong>(cluster sampling)에서는 모집단이 군집으로 나뉘고, 일부 군집이 무작위로 선택된 후 선택된 군집의 모든 케이스가 표본에 포함된다. <strong>다단계표집</strong>(multistage sampling)은 군집표집과 유사하지만, 선택된 각 군집 내에서 무작위 표본을 수집한다.</p>
+
+        <!-- GP 2.5 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.5</span>
+            <span class="ex-title">말라리아 연구의 표집 방법 선택</span>
+            <div class="problem-desc">
+                인도네시아의 인구가 조밀한 열대 시골 지역에서 말라리아 발생률을 추정하려 한다. 30개의 마을이 있고, 각 마을은 다음 마을과 다소 비슷하지만 마을 간 거리가 상당하다. 150명을 검사하고 싶다. 어떤 표집 방법을 사용해야 하는가?
+            </div>
+            <div class="compute">
+# Guided Practice 2.5: 말라리아 연구 - 표집 방법 비교
+import numpy as np
+
+np.random.seed(42)
+
+print("=" * 70)
+print("Guided Practice 2.5: 인도네시아 말라리아 연구 표집 전략")
+print("=" * 70)
+
+n_villages = 30
+pop_per_village = 200
+target_sample = 150
+travel_cost_per_village = 100  # 만원
+test_cost_per_person = 5       # 만원
+
+print(f"\n연구 환경:")
+print(f"  마을 수: {n_villages}개")
+print(f"  마을당 인구: 약 {pop_per_village}명")
+print(f"  목표 표본 크기: {target_sample}명")
+
+# 1. 단순무작위표집
+srs_villages = n_villages * 0.9
+srs_cost = srs_villages * travel_cost_per_village + target_sample * test_cost_per_person
+print(f"\n1. 단순무작위표집:")
+print(f"   예상 방문 마을: ~{srs_villages:.0f}개")
+print(f"   총 비용: {srs_cost:,.0f}만원  -> 비용이 너무 높음")
+
+# 2. 군집표집
+cluster_villages = 5
+cluster_per_village = 30
+cluster_cost = cluster_villages * travel_cost_per_village + (cluster_villages * cluster_per_village) * test_cost_per_person
+print(f"\n2. 군집표집:")
+print(f"   선택 마을: {cluster_villages}개, 마을당 검사: {cluster_per_village}명")
+print(f"   총 비용: {cluster_cost:,.0f}만원  -> 비용 절감, 대표성 우려")
+
+# 3. 다단계표집 (권장)
+multi_villages = 15
+multi_per_village = 10
+multi_cost = multi_villages * travel_cost_per_village + target_sample * test_cost_per_person
+print(f"\n3. 다단계표집 (권장):")
+print(f"   선택 마을: {multi_villages}개, 마을당 검사: {multi_per_village}명")
+print(f"   총 비용: {multi_cost:,.0f}만원")
+print(f"   비용 절감: 단순무작위표집 대비 {(1 - multi_cost/srs_cost)*100:.1f}%")
+
+# [실습] travel_cost_per_village를 200, 50 등으로 바꾸어
+# 이동 비용이 표집 전략 선택에 미치는 영향을 확인하라.
+print("=" * 70)
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p><strong>다단계표집</strong>이 가장 적합한 방법이다. 1단계에서 30개 마을 중 15개를 무작위 선택하고, 2단계에서 선택된 각 마을에서 10명씩 무작위 선택하면, 비용을 크게 절감하면서도 신뢰할 수 있는 말라리아 발생률 추정이 가능하다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각 2.5 -->
+        <div class="insight-box">
+            <h4>2.5: 표집 방법 선택 가이드</h4>
+            <table>
+                <tr><th>상황</th><th>권장 방법</th><th>이유</th></tr>
+                <tr><td>모집단이 동질적이고 접근 용이</td><td><strong>단순무작위표집</strong></td><td>가장 단순하고 분석이 쉬움</td></tr>
+                <tr><td>모집단에 알려진 그룹이 있고, 그룹 간 차이가 큼</td><td><strong>층화표집</strong></td><td>모든 그룹의 대표성 보장, 정밀도 향상</td></tr>
+                <tr><td>케이스가 자연스러운 군집을 형성하고, 군집 간 유사</td><td><strong>군집표집</strong></td><td>비용 효율적, 특히 지리적 분산 경우</td></tr>
+                <tr><td>군집이 존재하지만 군집 내 모든 케이스 조사가 불필요</td><td><strong>다단계표집</strong></td><td>군집표집의 이점 + 추가적인 무작위화</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  2.2 실험                                                     -->
+<!-- ============================================================ -->
+<div class="section" id="sec2-2">
+    <div class="section-title">2.2 실험</div>
+
+    <p>연구자들이 케이스에 처치를 배정하는 연구를 <strong>실험</strong>(experiments)이라고 한다. 이 배정이 무작위화를 포함할 때, 이것을 <strong>무작위 실험</strong>(randomized experiment)이라고 한다. 무작위 실험은 두 변수 간의 인과 관계를 보여주려고 할 때 근본적으로 중요하다.</p>
+
+    <!-- 2.2.1 실험 설계의 원리 -->
+    <div id="sec2-2-1">
+        <div class="subsection-title">2.2.1 실험 설계의 원리</div>
+
+        <p><strong>1. 통제(Controlling).</strong> 연구자들은 케이스에 처치를 배정하고, 그룹 간의 다른 차이를 통제하기 위해 최선을 다한다. 예를 들어, 모든 환자에게 알약과 함께 동일한 양의 물을 마시도록 지시할 수 있다.</p>
+
+        <p><strong>2. 무작위화(Randomization).</strong> 연구자들은 통제할 수 없는 변수를 설명하기 위해 환자를 처치 그룹에 무작위로 배정한다.</p>
+
+        <div class="definition-box">
+            <p><span class="term">교란 변수(confounding variable):</span> 설명 변수와 반응 변수 모두와 연관된 변수이다. 두 변수 모두와 연관되어 있기 때문에, 설명 변수가 반응 변수를 야기했다고 연구가 결론 내리는 것을 방해한다. 예를 들어, 아이스크림 판매량과 보트 사고 수의 높은 상관관계에서 외부 온도가 교란 변수이다.</p>
+        </div>
+
+        <p><strong>3. 반복(Replication).</strong> 연구자들이 더 많은 케이스를 관찰할수록, 설명 변수가 반응에 미치는 효과를 더 정확하게 추정할 수 있다. <strong>재현 위기</strong>(replication crisis)라는 용어는 여러 분야의 과학 연구에서 과거 발견이 재현되지 못한 진행 중인 방법론적 위기를 말한다. <strong>의사반복</strong>(pseudoreplication)은 서로 다른 처치 하의 개별 관측치가 서로 심하게 의존할 때 발생한다.</p>
+
+        <p><strong>4. 블록화(Blocking).</strong> 연구자들은 때때로 처치 외의 변수가 반응에 영향을 미친다는 것을 알거나 의심한다. 이러한 상황에서, 먼저 이 변수를 기반으로 개인을 <strong>블록</strong>(blocks)으로 그룹화한 다음 각 블록 내에서 케이스를 처치 그룹에 무작위로 배정할 수 있다.</p>
+
+        <!-- 새로운 시각 2.6 -->
+        <div class="insight-box">
+            <h4>2.6: 실험 설계의 네 가지 원리</h4>
+            <table>
+                <tr><th>원리</th><th>목적</th><th>구현 방법</th><th>예시</th></tr>
+                <tr><td><strong>통제</strong></td><td>외부 요인 최소화</td><td>처치 외 조건을 동일하게 유지</td><td>모든 환자에게 같은 양의 물 제공</td></tr>
+                <tr><td><strong>무작위화</strong></td><td>교란 변수의 영향 균형화</td><td>동전 던지기, 난수 생성 등으로 그룹 배정</td><td>환자를 처치군/대조군에 무작위 배정</td></tr>
+                <tr><td><strong>반복</strong></td><td>추정의 정밀도 향상</td><td>충분히 큰 표본 크기 확보</td><td>각 처치 그룹에 최소 30명</td></tr>
+                <tr><td><strong>블록화</strong></td><td>알려진 변동 원인 통제</td><td>먼저 그룹화 후 그룹 내에서 무작위 배정</td><td>성별로 나눈 후 각 성별 내에서 무작위 배정</td></tr>
+            </table>
+            <p><strong>중요 포인트:</strong> 통제와 무작위화는 인과관계 확립을 위해 필수적이고, 반복은 정밀한 추정을 위해 필요하며, 블록화는 효율성 향상을 위한 선택적 전략이다.</p>
+        </div>
+    </div>
+
+    <!-- 2.2.2 인간 실험에서 편향 줄이기 -->
+    <div id="sec2-2-2">
+        <div class="subsection-title">2.2.2 인간 실험에서 편향 줄이기</div>
+
+        <p>무작위 실험은 오랫동안 데이터 수집의 황금 표준으로 여겨져 왔지만, 모든 경우에 원인-결과 관계에 대한 편향 없는 관점을 보장하지는 않는다. 연구에 참여한 사람이 처치군에 있다면, 자신을 도울 것으로 기대하는 새로운 약을 받게 되고, 대조군에 있는 사람은 약을 받지 않으므로 감정적 효과가 발생할 수 있다.</p>
+
+        <div class="definition-box">
+            <p><span class="term">맹검(blind):</span> 연구자들이 환자들에게 자신의 처치에 대해 알리지 않을 때의 설계이다.</p>
+            <p><span class="term">위약(placebo):</span> 대조군 환자에게 주어지는 가짜 처치이다.</p>
+            <p><span class="term">위약 효과(placebo effect):</span> 위약이 환자에게 약간이지만 실제적인 개선을 가져오는 현상이다.</p>
+            <p><span class="term">이중 맹검(double-blind):</span> 환자와 상호작용하는 의사나 연구자들도 누가 처치를 받고 있는지 알지 못하는 설계이다.</p>
+        </div>
+
+        <!-- GP 2.6 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.6</span>
+            <span class="ex-title">스텐트 연구의 맹검 분석</span>
+            <div class="problem-desc">
+                연구자들이 위험에 처한 환자에서 스텐트가 뇌졸중 감소에 효과적인지 테스트하고 있었다. 이것은 실험인가? 연구가 맹검되었는가? 이중 맹검이었는가?
+            </div>
+            <div class="compute">
+# Guided Practice 2.6: 스텐트 연구의 맹검 분석
+print("=" * 70)
+print("Guided Practice 2.6: 스텐트 연구 분석")
+print("=" * 70)
+
+study_characteristics = {
+    "처치 배정": "연구자가 환자를 그룹에 배정함",
+    "처치 유형": "수술적 처치 (스텐트 삽입)",
+    "환자 인식 가능성": "높음 - 수술 여부를 알 수 있음",
+    "의사 인식": "알고 있음 - 누가 수술받았는지 알아야 함"
+}
+
+print("\n[연구 특성]")
+for key, value in study_characteristics.items():
+    print(f"  {key}: {value}")
+
+print("\n[평가]")
+questions = [
+    ("이것은 실험인가?", True, "처치(스텐트)가 연구자에 의해 배정됨"),
+    ("연구가 맹검되었는가?", False, "환자가 수술 여부를 알 수 있음"),
+    ("이중 맹검이었는가?", False, "단일 맹검도 아니므로 이중 맹검 불가")
+]
+
+for question, answer, reason in questions:
+    status = "예" if answer else "아니오"
+    print(f"\n  Q: {question}")
+    print(f"  A: {status}")
+    print(f"  이유: {reason}")
+
+print("\n" + "=" * 70)
+print("결론: 스텐트 연구는 실험이지만 맹검되지 않았다.")
+print("      수술적 처치의 특성상 환자가 처치 여부를 알 수 있기 때문이다.")
+print("=" * 70)
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p><strong>실험이다.</strong> 연구자들이 환자들을 처치 그룹과 대조 그룹에 배정하였다. <strong>맹검되지 않았다.</strong> 스텐트는 수술 절차이므로, 환자들은 자신이 수술을 받았는지 안 받았는지 알 수 있다. <strong>이중 맹검이 아니다.</strong> 단일 맹검도 아니므로 이중 맹검일 수 없다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- GP 2.7 -->
+        <div class="exercise-box">
+            <span class="ex-label gp">Guided Practice 2.7</span>
+            <span class="ex-title">위약의 사용 가능성</span>
+            <div class="problem-desc">
+                위의 스텐트 연구에서, 연구자들이 위약을 사용할 수 있었는가? 그렇다면, 그 위약은 어떻게 생겼을 것인가?
+            </div>
+            <details class="quiz">
+                <summary>정답 및 해설 보기</summary>
+                <div class="answer">
+                    <p>예, 연구자들은 <strong>가짜 수술</strong>(sham surgery)을 위약으로 사용할 수 있었다. 환자를 마취시키고 피부에 작은 절개를 한 후 실제로는 스텐트를 삽입하지 않고 봉합하는 방법이다.</p>
+                    <p>그러나 가짜 수술에는 심각한 윤리적 문제가 있다: (1) 마취/절개/감염 위험이 발생하며, (2) 대조군 환자는 이익 없이 위험만 부담하고, (3) 기만의 윤리성 문제가 있다.</p>
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  2.3 관찰 연구                                                -->
+<!-- ============================================================ -->
+<div class="section" id="sec2-3">
+    <div class="section-title">2.3 관찰 연구</div>
+
+    <p>처치가 명시적으로 적용되지 않은(또는 명시적으로 보류되지 않은) 연구를 <strong>관찰 연구</strong>(observational studies)라고 한다. 실험에 기반하여 인과적 결론을 도출하는 것은 종종 합리적이다. 그러나 관찰 데이터에 기반하여 동일한 인과적 결론을 도출하는 것은 위험할 수 있으며 권장되지 않는다. 따라서 관찰 연구는 일반적으로 연관을 보여주거나 나중에 실험으로 확인할 수 있는 가설을 형성하는 데만 충분하다.</p>
+
+    <!-- 예제 2.1 -->
+    <div class="exercise-box">
+        <span class="ex-label example">예제 2.1</span>
+        <span class="ex-title">자외선 차단제와 피부암 &mdash; 교란 변수</span>
+        <div class="problem-desc">
+            관찰 연구가 자외선 차단제 사용과 피부암을 추적했고, 차단제를 더 많이 사용할수록 피부암에 걸릴 가능성이 더 높다는 것을 발견했다. 이것은 자외선 차단제가 피부암을 <em>야기</em>한다는 것을 의미하는가?
+        </div>
+        <div class="compute">
+# 예제 2.1: 자외선 차단제와 피부암 - 교란 변수 시뮬레이션
+import numpy as np
+from scipy import stats
+
+np.random.seed(42)
+
+print("=" * 70)
+print("예제 2.1: 자외선 차단제와 피부암 - 교란 변수의 효과")
+print("=" * 70)
+
+n = 1000
+
+# 진정한 인과 구조:
+# 자외선 노출 -> 자외선 차단제 사용 (양의 관계)
+# 자외선 노출 -> 피부암 위험 (양의 관계)
+# 자외선 차단제 -> 피부암 (실제로는 보호 효과)
+
+sun_exposure = np.clip(np.random.normal(50, 20, n), 0, 100)
+sunscreen_use = np.clip(0.3 * sun_exposure + np.random.normal(15, 10, n), 0, 100)
+skin_cancer_risk = np.clip(2.0 * sun_exposure - 0.5 * sunscreen_use + np.random.normal(0, 20, n), 0, 200)
+
+corr_simple, _ = stats.pearsonr(sunscreen_use, skin_cancer_risk)
+print("\n[단순 관찰 분석 - 교란 변수 무시]")
+print(f"  자외선 차단제 <-> 피부암 위험: r = {corr_simple:.3f}")
+print("  -> 양의 상관관계! 그러나 이것은 잘못된 결론!")
+
+corr_sun_cancer, _ = stats.pearsonr(sun_exposure, skin_cancer_risk)
+corr_sun_screen, _ = stats.pearsonr(sun_exposure, sunscreen_use)
+print("\n[교란 변수(자외선 노출) 고려]")
+print(f"  자외선 노출 <-> 피부암: r = {corr_sun_cancer:.3f}")
+print(f"  자외선 노출 <-> 차단제: r = {corr_sun_screen:.3f}")
+
+low = sun_exposure < np.percentile(sun_exposure, 33)
+high = sun_exposure > np.percentile(sun_exposure, 66)
+r_low, _ = stats.pearsonr(sunscreen_use[low], skin_cancer_risk[low])
+r_high, _ = stats.pearsonr(sunscreen_use[high], skin_cancer_risk[high])
+
+print("\n[자외선 노출 통제 후 분석]")
+print(f"  저노출 그룹: r = {r_low:.3f}")
+print(f"  고노출 그룹: r = {r_high:.3f}")
+print("  -> 통제하면 차단제의 보호 효과(음의 관계)가 드러남!")
+
+# [실습] n을 100, 5000으로 바꾸어 표본 크기 효과를 관찰하라.
+print("=" * 70)
+        </div>
+        <details class="quiz">
+            <summary>정답 및 해설 보기</summary>
+            <div class="answer">
+                <p><strong>아니오!</strong> 빠진 중요한 변수는 자외선 노출이다. 하루 종일 태양 아래 있는 사람은 차단제를 사용할 가능성이 높고 동시에 피부암에 걸릴 가능성도 높다. 자외선 노출은 교란 변수이며, 이것이 관찰 연구에서 인과적 주장을 하기 어렵게 만든다.</p>
+            </div>
+        </details>
+    </div>
+
+    <p>관찰 연구는 두 가지 형태로 나온다. <strong>전향적 연구</strong>(prospective study)는 개인을 식별하고 사건이 전개됨에 따라 정보를 수집한다. <strong>후향적 연구</strong>(retrospective studies)는 사건이 발생한 후에 데이터를 수집한다.</p>
+</div>
+
+<!-- ============================================================ -->
+<!--  2.4 장 복습                                                  -->
+<!-- ============================================================ -->
+<div class="section" id="sec2-4">
+    <div class="section-title">2.4 장 복습</div>
+
+    <div id="sec2-4-1">
+        <div class="subsection-title">2.4.1 요약</div>
+        <p>이 장에서는 무작위 실험과 모집단에서 좋은, 무작위, 대표적인 표본을 추출하는 것에 대해 논의하였다. 추론 방법에 대해 논의할 때, 도출할 수 있는 결론은 데이터가 어떻게 수집되었는지에 따라 달라질 것이다.</p>
+
+        <div class="summary-box">
+            <h3>추론의 범위 요약</h3>
+            <table>
+                <tr><th></th><th>무작위 배정 있음</th><th>무작위 배정 없음</th></tr>
+                <tr><td><strong>무작위 표집 있음</strong></td><td>인과관계 + 일반화</td><td>연관 관계 + 일반화</td></tr>
+                <tr><td><strong>무작위 표집 없음</strong></td><td>인과관계 (일반화 제한적)</td><td>연관 관계 (일반화 제한적)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="sec2-4-2">
+        <div class="subsection-title">2.4.2 용어</div>
+        <table>
+            <tr><th>영문</th><th>한국어</th><th>영문</th><th>한국어</th></tr>
+            <tr><td>anecdotal evidence</td><td>일화적 증거</td><td>experiment</td><td>실험</td></tr>
+            <tr><td>bias</td><td>편향</td><td>multistage sample</td><td>다단계표본</td></tr>
+            <tr><td>blind</td><td>맹검</td><td>non-response bias</td><td>비응답 편향</td></tr>
+            <tr><td>blocking</td><td>블록화</td><td>observational study</td><td>관찰 연구</td></tr>
+            <tr><td>census</td><td>전수조사</td><td>placebo</td><td>위약</td></tr>
+            <tr><td>cluster sampling</td><td>군집표집</td><td>placebo effect</td><td>위약 효과</td></tr>
+            <tr><td>confounding variable</td><td>교란 변수</td><td>population</td><td>모집단</td></tr>
+            <tr><td>control</td><td>통제</td><td>population parameter</td><td>모수</td></tr>
+            <tr><td>control group</td><td>대조군</td><td>prospective study</td><td>전향적 연구</td></tr>
+            <tr><td>convenience sample</td><td>편의표본</td><td>pseudoreplication</td><td>의사반복</td></tr>
+            <tr><td>double-blind</td><td>이중 맹검</td><td>randomized experiment</td><td>무작위 실험</td></tr>
+            <tr><td>replication</td><td>반복</td><td>representative</td><td>대표적인</td></tr>
+            <tr><td>retrospective study</td><td>후향적 연구</td><td>sample</td><td>표본</td></tr>
+            <tr><td>sample statistic</td><td>표본 통계량</td><td>simple random sample</td><td>단순무작위표본</td></tr>
+            <tr><td>strata</td><td>층</td><td>stratified sampling</td><td>층화표집</td></tr>
+            <tr><td>treatment group</td><td>처치군</td><td>replication crisis</td><td>재현 위기</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  연습문제                                                     -->
+<!-- ============================================================ -->
+<div class="section" id="exercises">
+    <div class="section-title">연습문제</div>
+
+    <!-- 연습문제 21 -->
+    <div class="exercise-box">
+        <span class="ex-label">연습문제 21</span>
+        <span class="ex-title">조명, 소음, 시험 성적</span>
+        <div class="problem-desc">
+            <p>소음 수준이 미치는 효과를 테스트하기 위한 연구가 설계되었다. 연구자는 조명과 소음 수준이 안경을 쓰는 사람과 쓰지 않는 사람에게 다른 효과를 가질 수 있다고 생각한다. 조명 처치는 형광등, 노란색 조명, 책상 램프만이며, 소음 처치는 소음 없음, 공사 소음, 사람 잡담이다.</p>
+            <p>(a) 연구 유형은? (b) 요인의 수는? (c) 안경 착용 변수의 역할은?</p>
+        </div>
+        <div class="compute">
+# 연습문제 21: 조명, 소음, 시험 성적
+import itertools
+
+print("=" * 70)
+print("연습문제 21: 조명, 소음, 시험 성적 (요인 실험)")
+print("=" * 70)
+
+light_levels = ["형광등", "노란색 조명", "책상 램프만"]
+noise_levels = ["소음 없음", "공사 소음", "사람 잡담"]
+
+print("\n(a) 연구 유형: 실험 (Experiment)")
+
+print("\n(b) 요인과 수준:")
+print("  요인 1: 조명 유형 (3수준)")
+print("  요인 2: 소음 유형 (3수준)")
+
+combinations = list(itertools.product(light_levels, noise_levels))
+print(f"\n  총 처치 조합: {len(light_levels)} x {len(noise_levels)} = {len(combinations)}개")
+for i, (l, n) in enumerate(combinations, 1):
+    print(f"    {i}. {l} + {n}")
+
+print("\n(c) 안경 착용 변수: 블록화 변수")
+print("  -> 안경 착용자/비착용자를 블록으로 나눈 후 각 블록 내에서 무작위 배정")
+
+# [실습] 소음 수준에 '음악 소음'을 추가하면 총 조합이 몇 개가 되는가?
+print("=" * 70)
+        </div>
+        <details class="quiz">
+            <summary>정답 확인</summary>
+            <div class="answer">
+                <p>(a) <strong>실험</strong> (b) <strong>2개 요인</strong>, 총 9개 처치 조합 (c) <strong>블록화 변수</strong></p>
+            </div>
+        </details>
+    </div>
+
+    <!-- 연습문제 25 -->
+    <div class="exercise-box">
+        <span class="ex-label">연습문제 25</span>
+        <span class="ex-title">치아씨드와 체중 감량</span>
+        <div class="problem-desc">
+            <p>38명의 남성과 38명의 여성이 처치군(하루 2회 25g 치아씨드) 또는 대조군(위약)에 무작위 배정되었다. 참가자들은 자원했다. 12주 후 통계적으로 유의한 차이가 없었다.</p>
+            <p>(a) 연구 유형? (b) 처치와 대조? (c) 블록화? (d) 맹검? (e) 인과관계 및 일반화?</p>
+        </div>
+        <div class="compute">
+# 연습문제 25: 치아씨드와 체중 감량
+print("=" * 70)
+print("연습문제 25: 치아씨드와 체중 감량 연구")
+print("=" * 70)
+
+print("\n(a) 무작위 실험 - 참가자가 무작위 배정됨")
+print("(b) 실험: 하루 2회 25g 치아씨드 / 대조: 위약")
+print("(c) 블록화: 예 - 성별 (남38/여38 각각 배정)")
+print("(d) 맹검: 예 - 위약 사용")
+print("(e) 인과관계: 가능 / 일반화: 제한적 (자원자)")
+
+# 블록 배정 시뮬레이션
+import numpy as np
+np.random.seed(42)
+
+print("\n[블록 배정 시뮬레이션]")
+for gender in ["남성", "여성"]:
+    assignment = np.random.permutation(["처치군"]*19 + ["대조군"]*19)
+    t = (assignment == "처치군").sum()
+    c = (assignment == "대조군").sum()
+    print(f"  {gender} (38명): 처치군 {t}명, 대조군 {c}명")
+
+# [실습] 남녀 각 100명으로 바꾸면 블록 구성이 어떻게 달라지는가?
+print("=" * 70)
+        </div>
+        <details class="quiz">
+            <summary>정답 확인</summary>
+            <div class="answer">
+                <p>(a) <strong>무작위 실험</strong> (b) 치아씨드 vs 위약 (c) <strong>예</strong>, 성별로 블록화 (d) <strong>예</strong> (e) 인과관계 확립 가능, 일반화는 제한적 (자원자 표본)</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- 연습문제 27 -->
+    <div class="exercise-box">
+        <span class="ex-label">연습문제 27</span>
+        <span class="ex-title">결함 있는 추론</span>
+        <div class="problem-desc">
+            <p>(a) 초등학교에서 부모 설문지를 보낸 결과, 응답 부모의 85%가 방과 후 시간에 어려움 없다고 답했다.</p>
+            <p>(b) 1,000명 출산 여성 중 3년 후 567명만 추적되었고, 연구자는 이들이 대표적이라고 보고했다.</p>
+            <p>(c) 정형외과 의사가 관절 문제가 없는 30명 중 20명이 달리기한다고 발견하고 달리기가 관절 보호 효과가 있다고 결론지었다.</p>
+        </div>
+        <details class="quiz">
+            <summary>정답 확인</summary>
+            <div class="answer">
+                <p><strong>(a) 비응답 편향</strong> &mdash; 바쁜 부모는 설문을 돌려보낼 시간이 없었을 가능성이 높다.</p>
+                <p><strong>(b) 탈락 편향</strong> &mdash; 이사한 433명은 다른 특성을 가질 수 있다.</p>
+                <p><strong>(c) 선택 편향 + 역인과관계</strong> &mdash; 정형외과 환자만 조사, 관절이 건강한 사람이 달리기를 할 수 있는 것이지 그 반대가 아닐 수 있다.</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- 연습문제 29 -->
+    <div class="exercise-box">
+        <span class="ex-label">연습문제 29</span>
+        <span class="ex-title">잘 먹고 기분 좋아지기</span>
+        <div class="problem-desc">
+            <p>참가자들이 세 그룹(평소 식단 / 문자+바우처 / 과일채소 직접 제공)에 무작위 배정되었다. 뉴질랜드 오타고 대학교 학생 자원자. 14일 후 세 번째 그룹만 웰빙 개선.</p>
+            <p>(a) 연구 유형? (b) 설명/반응 변수? (c) 일반화? (d) 인과관계?</p>
+        </div>
+        <div class="compute">
+# 연습문제 29: 과일/채소 섭취와 심리적 웰빙
+print("=" * 70)
+print("연습문제 29: 과일/채소 섭취와 심리적 웰빙")
+print("=" * 70)
+
+print("\n(a) 무작위 실험")
+print("(b) 설명변수: 식단 개입 유형 (3수준)")
+print("    반응변수: 심리적 웰빙")
+print("(c) 일반화: 제한적 (뉴질랜드 대학생 자원자)")
+print("(d) 인과관계: 확립 가능 (무작위 배정)")
+
+print("\n[추론 범위 판단]")
+print("  무작위 배정: 예 -> 인과관계 가능")
+print("  무작위 표집: 아니오 -> 일반화 제한적")
+print("  결론: 인과관계(O), 일반화(X)")
+
+# [실습] 이 연구를 무작위 표집+무작위 배정으로 개선하려면
+# 어떤 설계가 필요한지 생각해 보라.
+print("=" * 70)
+        </div>
+        <details class="quiz">
+            <summary>정답 확인</summary>
+            <div class="answer">
+                <p>(a) <strong>무작위 실험</strong> (b) 설명: 식단 개입(3수준), 반응: 심리적 웰빙 (c) <strong>제한적</strong> (d) <strong>인과관계 확립 가능</strong></p>
+            </div>
+        </details>
+    </div>
+</div>
+
+<!-- 완료 -->
+<div style="text-align:center; padding:60px 0; color:#7f8c8d;">
+    <h2>제2장 학습 완료</h2>
+    <p>연구 설계의 원리를 이해하는 것은 올바른 통계적 결론을 도출하기 위한 첫걸음이다.</p>
+    <p><a href="#top" style="color:#3498db; text-decoration:none;">맨 위로 돌아가기</a></p>
+</div>
+
+</div><!-- container -->
+</body>
+</html>

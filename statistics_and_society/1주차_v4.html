@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통계적 추론과 데이터 분석 (Master Courseware)</title>
+
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var initCells = function() {
+        if (typeof sagecell !== "undefined") {
+            sagecell.makeSagecell({
+                inputLocation: 'div.compute',
+                languages: ["python"],
+                evalButtonText: '실습 실행 (Run)',
+                hide: ["permalink", "fullScreen"],
+                autoeval: false
+            });
+        } else {
+            setTimeout(initCells, 500);
+        }
+    };
+    initCells();
+});
+</script>
+
+<style>
+    body { font-family: "Pretendard", "Malgun Gothic", sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; color: #333; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; min-height: 100vh; padding-bottom: 100px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    
+    /* 헤더 */
+    .header { background: #2c3e50; color: white; padding: 40px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 2.5em; }
+    .header p { color: #bdc3c7; margin-top: 10px; }
+
+    /* 슬라이드 이미지 */
+    .slide-wrapper { padding: 40px; border-bottom: 1px solid #eee; }
+    .slide-title { font-size: 1.5em; font-weight: bold; color: #2c3e50; border-left: 5px solid #3498db; padding-left: 15px; margin-bottom: 20px; }
+
+    /* 문제 박스 공통 */
+    .exercise-section { padding: 40px; background: #fff; }
+    .exercise-box { border: 2px solid #e0e0e0; border-radius: 12px; padding: 30px; margin-bottom: 40px; background: #fafafa; }
+    .ex-label { display: inline-block; background: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; margin-bottom: 15px; }
+    .ex-title { font-size: 1.3em; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: block; }
+    .problem-desc { background: white; padding: 20px; border-left: 4px solid #3498db; margin-bottom: 20px; line-height: 1.6; }
+    
+    /* 퀴즈 스타일 */
+    details.quiz { background: #e3f2fd; padding: 15px; border-radius: 8px; cursor: pointer; border: 1px solid #90caf9; margin-top: 10px; }
+    details.quiz summary { font-weight: bold; color: #1565c0; outline: none; }
+    .answer { margin-top: 10px; padding: 10px; background: white; border-radius: 5px; color: #333; }
+
+    /* 네비게이션 */
+    .nav-bar { position: fixed; bottom: 20px; right: 20px; background: rgba(44, 62, 80, 0.9); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 999; }
+</style>
+</head>
+
+<body>
+
+<div class="nav-bar">스크롤을 내려 문제를 풀어보세요</div>
+
+<div class="container">
+
+    <div class="header">
+        <h1>통계적 추론과 데이터 분석</h1>
+        <p>OpenIntro 교재 완전 정복 (실습 중심)</p>
+    </div>
+
+    <div class="slide-wrapper">
+        <div class="slide-title">1. 데이터와 변수 (Data Basics)</div>        <div class="exercise-box">
+            <span class="ex-label">Exercise 1.2</span>
+            <span class="ex-title">변수의 유형 구분하기 (Types of Variables)</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> <code>county</code> 데이터셋에는 다음과 같은 변수들이 있습니다.<br>
+                각 변수가 <strong>수치형(Numerical)</strong>인지 <strong>범주형(Categorical)</strong>인지 파이썬으로 확인해 봅시다.<br>
+                - <code>name</code> (도시 이름)<br>
+                - <code>income</code> (소득)<br>
+                - <code>unemployment_rate</code> (실업률)
+            </div>
+            <div class="compute">
+import pandas as pd
+
+# 가상 데이터 생성
+data = {
+    'name': ['Travis', 'Bexar', 'Dallas', 'Harris'],
+    'income': [50000, 45000, 52000, 48000],
+    'unemployment_rate': [0.04, 0.05, 0.03, 0.06],
+    'metro': ['yes', 'yes', 'yes', 'no']
+}
+
+df = pd.DataFrame(data)
+
+# [미션] 데이터의 타입(dtypes)을 출력하여 변수 유형을 확인하세요.
+print("=== 데이터 미리보기 ===")
+print(df.head())
+print("\n=== 변수 타입 정보 ===")
+print(df.dtypes)
+            </div>
+            <details class="quiz">
+                <summary>결과 해석하기 (정답 보기)</summary>
+                <div class="answer">
+                    - <code>object</code>는 주로 <strong>범주형</strong>(이름, 지역)입니다.<br>
+                    - <code>int64, float64</code>는 <strong>수치형</strong>(소득, 비율)입니다.
+                </div>
+            </details>
+        </div>
+
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 1.3</span>
+            <span class="ex-title">관찰 연구 vs 실험 (Observational vs Experiment)</span>
+            <div class="problem-desc">
+                <strong>[퀴즈]</strong> 연구자가 흡연과 폐암의 관계를 알아보기 위해, 지난 10년간의 병원 기록을 수집하여 분석했습니다.<br>
+                이 연구는 <strong>실험(Experiment)</strong>일까요, <strong>관찰 연구(Observational Study)</strong>일까요?
+            </div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <strong>정답: 관찰 연구 (Observational Study)</strong><br>
+                    연구자가 사람들에게 강제로 담배를 피우게(개입/Treatment) 하지 않고, 단순히 기록을 관찰했기 때문입니다.<br>
+                    따라서 <strong>"흡연이 폐암의 원인이다"</strong>라고 단정 짓는 인과관계 추론에는 주의해야 합니다.
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <div class="slide-wrapper">
+        <div class="slide-title">2. 수치형 데이터 요약 (Numerical Data)</div>
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 2.1</span>
+            <span class="ex-title">히스토그램과 비대칭도 (Skewness)</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 소득(Income) 데이터는 일반적으로 <strong>오른쪽 꼬리가 긴(Right-skewed)</strong> 분포를 보입니다.<br>
+                파이썬으로 이를 시각화하고 확인해 봅시다.
+            </div>
+            <div class="compute">
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 가상 데이터: 1000명의 소득 (오른쪽으로 치우친 분포 생성)
+income = np.random.exponential(scale=50000, size=1000)
+
+plt.figure(figsize=(8, 4))
+# [미션] bins 개수를 50으로 늘려서 더 자세히 관찰해 보세요.
+plt.hist(income, bins=20, color='skyblue', edgecolor='black')
+plt.title("Distribution of Income (Right Skewed)")
+plt.xlabel("Income ($)")
+plt.ylabel("Frequency")
+plt.show()
+
+print(">> 해석: 왼쪽(저소득)에 데이터가 몰려있고, 오른쪽(고소득)으로 꼬리가 길게 뻗어 있습니다.")
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 2.2</span>
+            <span class="ex-title">박스플롯과 이상치(Outlier) 탐지</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 두 학급(Class A, Class B)의 성적을 비교하려고 합니다.<br>
+                <strong>Boxplot</strong>을 그려서 어느 반의 성적이 더 안정적인지, 이상치는 없는지 확인하시오.
+            </div>
+            <div class="compute">
+import seaborn as sns
+import pandas as pd
+
+# 데이터 생성
+data = {
+    'Score': [60, 65, 70, 75, 80, 85, 90, 55, 100, 30] + [70, 72, 74, 76, 78, 80, 75, 77, 73, 79],
+    'Class': ['A']*10 + ['B']*10
+}
+df = pd.DataFrame(data)
+
+# [미션] 박스플롯 그리기
+sns.boxplot(x='Class', y='Score', data=df, palette="Set3")
+plt.title("Class A vs Class B")
+plt.show()
+            </div>
+            <details class="quiz">
+                <summary>결과 해석하기</summary>
+                <div class="answer">
+                    - <strong>Class A:</strong> 상자(Box)가 길고 점(이상치)이 보일 수 있습니다. 성적 편차가 큽니다.<br>
+                    - <strong>Class B:</strong> 상자가 짧고 모여 있습니다. 성적이 고르게 분포합니다.
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <div class="slide-wrapper">
+        <div class="slide-title">3. 범주형 데이터 요약 (Categorical Data)</div>
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 2.3</span>
+            <span class="ex-title">분할표(Contingency Table) 만들기</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 타이타닉 데이터에서 <strong>'좌석 등급(Class)'</strong>과 <strong>'생존 여부(Survived)'</strong>의 관계를 보려고 합니다.<br>
+                <code>pd.crosstab</code>을 사용하여 표를 만들어 보세요.
+            </div>
+            <div class="compute">
+import pandas as pd
+
+# 가상 데이터 (1=생존, 0=사망)
+data = {
+    'Class': ['1st', '1st', '1st', '2nd', '2nd', '3rd', '3rd', '3rd', '3rd', '3rd'],
+    'Survived': [1, 1, 0, 1, 0, 0, 0, 0, 1, 0]
+}
+df = pd.DataFrame(data)
+
+# [미션] 분할표 생성 (margins=True를 넣으면 합계도 나옵니다)
+table = pd.crosstab(df['Class'], df['Survived'], margins=True)
+
+print(table)
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 2.4</span>
+            <span class="ex-title">비율 비교 시각화 (Bar Plot)</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 위에서 만든 분할표를 눈으로 비교하기 쉽게 <strong>막대그래프</strong>로 그려봅시다.
+            </div>
+            <div class="compute">
+# 위에서 만든 데이터를 시각화
+table_plot = pd.crosstab(df['Class'], df['Survived'])
+table_plot.plot(kind='bar', stacked=True, color=['red', 'green'])
+plt.title("Survival by Class")
+plt.ylabel("Count")
+plt.show()
+
+print(">> 해석: 1st 클래스(맨 왼쪽)의 초록색(생존) 비율이 다른 클래스보다 높은가요?")
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide-wrapper">
+        <div class="slide-title">4. 두 변수의 관계 (Correlation)</div>
+        <div class="exercise-box">
+            <span class="ex-label">Exercise 4.1</span>
+            <span class="ex-title">상관계수 직접 계산하기</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 공부 시간(Time)과 성적(Score)의 관계입니다.<br>
+                1. 산점도(Scatter plot)를 그리고<br>
+                2. 상관계수(Correlation Coefficient)를 구하시오.
+            </div>
+            <div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+time = [2, 4, 6, 8, 10]
+score = [50, 60, 75, 80, 95]
+
+# [미션] 상관계수 계산
+corr = np.corrcoef(time, score)[0, 1]
+
+plt.scatter(time, score, color='purple')
+plt.title(f"Study Time vs Score (r = {corr:.2f})")
+plt.xlabel("Hours")
+plt.ylabel("Score")
+plt.grid(True)
+plt.show()
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; padding: 60px 0; color: #7f8c8d;">
+        <h2>교재 완전 정복!</h2>
+        <p>수고하셨습니다. 이론부터 실습까지 완벽하게 마스터하셨습니다.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
