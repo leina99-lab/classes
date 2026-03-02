@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Classroom 학생 가이드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #161822;
+            --surface-hover: #1c1f2e;
+            --border: #2a2d3e;
+            --text: #e2e4ed;
+            --text-muted: #8b8fa3;
+            --accent: #58a6ff;
+            --accent-dim: rgba(88, 166, 255, 0.12);
+            --green: #3fb950;
+            --green-dim: rgba(63, 185, 80, 0.12);
+            --orange: #d29922;
+            --orange-dim: rgba(210, 153, 34, 0.12);
+            --red: #f85149;
+            --purple: #bc8cff;
+            --purple-dim: rgba(188, 140, 255, 0.12);
+            --code-bg: #0d1117;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            font-size: 15px;
+            font-weight: 300;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 60px 20px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(88,166,255,0.08) 0%, transparent 70%);
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .header h1 .icon { font-size: 2rem; margin-right: 10px; }
+
+        .header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            font-weight: 300;
+            position: relative;
+        }
+
+        /* Navigation */
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+        }
+
+        .nav-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            color: var(--text);
+            border-bottom-color: var(--border);
+        }
+
+        .nav a.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* Main */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 56px;
+            animation: fadeUp 0.5s ease-out both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section h2 {
+            font-size: 1.55rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        /* Steps */
+        .step {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 16px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .step:hover {
+            border-color: #3a3d4e;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 1px;
+        }
+
+        .step-title {
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .step-body {
+            padding-left: 42px;
+        }
+
+        .step-body p {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: #c9d1d9;
+        }
+
+        .code-label {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 80px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--text-muted);
+        }
+
+        /* Inline code */
+        code.inline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Callouts */
+        .callout {
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            margin: 16px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 0.9rem;
+        }
+
+        .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+
+        .callout-tip {
+            background: var(--green-dim);
+            border: 1px solid rgba(63, 185, 80, 0.25);
+            color: var(--green);
+        }
+
+        .callout-warning {
+            background: var(--orange-dim);
+            border: 1px solid rgba(210, 153, 34, 0.25);
+            color: var(--orange);
+        }
+
+        .callout-info {
+            background: var(--accent-dim);
+            border: 1px solid rgba(88, 166, 255, 0.25);
+            color: var(--accent);
+        }
+
+        .callout-danger {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.25);
+            color: var(--red);
+        }
+
+        /* Visual flow */
+        .flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .flow-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            white-space: nowrap;
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Screenshot placeholder */
+        .screenshot {
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 16px 0;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 32px;
+            position: relative;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .checklist li:last-child { border-bottom: none; }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        th {
+            background: var(--surface);
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover td {
+            background: var(--surface-hover);
+        }
+
+        /* Divider */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 48px 0;
+        }
+
+        /* FAQ Toggle */
+        .faq-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .faq-q {
+            padding: 16px 22px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .faq-q:hover { background: var(--surface-hover); }
+
+        .faq-q::after {
+            content: '▼';
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .faq-item.open .faq-q::after {
+            transform: rotate(180deg);
+        }
+
+        .faq-a {
+            display: none;
+            padding: 0 22px 18px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .faq-item.open .faq-a {
+            display: block;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            .step { padding: 18px 16px; }
+            .step-body { padding-left: 0; padding-top: 8px; }
+            .nav a { padding: 12px 14px; font-size: 0.8rem; }
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Selection */
+        ::selection {
+            background: rgba(88, 166, 255, 0.3);
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .tag-required {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--red);
+        }
+
+        .tag-optional {
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1><span class="icon">📚</span> GitHub Classroom 학생 가이드</h1>
+    <p class="subtitle">과제 제출부터 자동 채점까지, 한 단계씩 따라하세요</p>
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+    <div class="nav-inner">
+        <a href="#prep" class="active">사전 준비</a>
+        <a href="#git-basics">Git 기초</a>
+        <a href="#python-submit">Python 과제 제출</a>
+        <a href="#codespaces">Codespaces</a>
+        <a href="#faq">FAQ</a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+
+    <!-- ===== Section 0: 사전 준비 ===== -->
+    <div class="section" id="prep">
+        <div class="section-number">0</div>
+        <h2>사전 준비</h2>
+        <p class="section-desc">과제를 시작하기 전에 아래 항목을 확인하세요.</p>
+
+        <ul class="checklist">
+            <li><strong>GitHub 계정</strong>이 있어야 합니다 → <a href="https://github.com/signup" style="color:var(--accent)">github.com/signup</a></li>
+            <li><strong>Git 설치</strong> (로컬 작업 시) → <a href="https://git-scm.com/downloads" style="color:var(--accent)">git-scm.com/downloads</a></li>
+            <li><strong>Python + Jupyter</strong> 설치 (Python 과제 시) → Anaconda 또는 VS Code 권장</li>
+            <li><strong>교수님이 공유한 초대 링크</strong>를 준비하세요</li>
+        </ul>
+
+        <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <div>Codespaces를 사용하면 Git, Python, Jupyter 설치 없이 <strong>브라우저만으로</strong> 과제를 할 수 있습니다. <a href="#codespaces" style="color:var(--accent)">Codespaces 섹션</a>을 참고하세요.</div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== Section 1: Git 기초 ===== -->
+    <div class="section" id="git-basics">
+        <div class="section-number">1</div>
+        <h2>Git 기초 명령어</h2>
+        <p class="section-desc">과제 제출에 필요한 Git 명령어 4가지만 알면 됩니다.</p>
+
+        <!-- 전체 흐름 -->
+        <div class="flow">
+            <span class="flow-item">clone</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">코드 작성</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">add</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">commit</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">push</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item" style="border-color:var(--green);color:var(--green)">자동 채점 ✓</span>
+        </div>
+
+        <!-- git clone -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">1</span>
+                <span class="step-title"><code class="inline">git clone</code> — 과제 저장소를 내 컴퓨터로 복사</span>
+            </div>
+            <div class="step-body">
+                <p>초대 링크를 통해 만들어진 내 저장소(repo)를 로컬로 다운로드합니다.</p>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git clone https://github.com/ORG이름/과제이름-내아이디.git</code>
+                </div>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <code>cd 과제이름-내아이디</code>
+                </div>
+                <div class="callout callout-tip">
+                    <span class="callout-icon">✅</span>
+                    <div>저장소 URL은 GitHub에서 <strong>"Code"</strong> 버튼을 눌러 복사할 수 있습니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- git add -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">2</span>
+                <span class="step-title"><code class="inline">git add</code> — 변경한 파일을 제출 목록에 추가</span>
+            </div>
+            <div class="step-body">
+                <p>코드를 작성한 뒤, 변경된 파일을 Git에 알려줍니다.</p>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code><span style="color:var(--text-muted)"># 모든 변경 파일 추가</span>
+git add .
+
+<span style="color:var(--text-muted)"># 또는 특정 파일만 추가</span>
+git add assignment.ipynb</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- git commit -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">3</span>
+                <span class="step-title"><code class="inline">git commit</code> — 변경 내용을 저장 (메시지와 함께)</span>
+            </div>
+            <div class="step-body">
+                <p>무엇을 변경했는지 메시지를 남기며 저장합니다.</p>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git commit -m "문제 1, 2 풀이 완료"</code>
+                </div>
+                <div class="callout callout-warning">
+                    <span class="callout-icon">⚠️</span>
+                    <div>commit 메시지는 <strong>따옴표 안에</strong> 작성해야 합니다. 한글도 괜찮습니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- git push -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">4</span>
+                <span class="step-title"><code class="inline">git push</code> — GitHub에 업로드 (제출!)</span>
+            </div>
+            <div class="step-body">
+                <p>로컬의 변경 사항을 GitHub 서버로 보냅니다. <strong>push를 해야 자동 채점이 시작됩니다.</strong></p>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git push origin main</code>
+                </div>
+                <div class="callout callout-tip">
+                    <span class="callout-icon">✅</span>
+                    <div>마감 전까지 여러 번 push할 수 있습니다. 마지막 push가 최종 제출이 됩니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 요약 테이블 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>명령어</th>
+                        <th>뜻</th>
+                        <th>비유</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code class="inline">git clone</code></td>
+                        <td>저장소 복사</td>
+                        <td>📋 시험지 받기</td>
+                    </tr>
+                    <tr>
+                        <td><code class="inline">git add .</code></td>
+                        <td>변경 파일 선택</td>
+                        <td>✏️ 답안지에 이름 쓰기</td>
+                    </tr>
+                    <tr>
+                        <td><code class="inline">git commit -m "메시지"</code></td>
+                        <td>변경 내용 저장</td>
+                        <td>📦 답안지 봉투에 넣기</td>
+                    </tr>
+                    <tr>
+                        <td><code class="inline">git push</code></td>
+                        <td>GitHub에 업로드</td>
+                        <td>📮 답안지 제출하기</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== Section 2: Python 과제 제출 ===== -->
+    <div class="section" id="python-submit">
+        <div class="section-number">2</div>
+        <h2>Python Notebook 과제 제출</h2>
+        <p class="section-desc">초대 링크 받기부터 자동 채점 결과 확인까지</p>
+
+        <!-- Step 1 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">1</span>
+                <span class="step-title">초대 링크 클릭 → 과제 수락</span>
+            </div>
+            <div class="step-body">
+                <p>교수님이 공유한 초대 링크를 클릭합니다.</p>
+                <p>처음이라면 <strong>본인 이름을 선택</strong>하고 → <strong>"Accept this assignment"</strong> 버튼을 클릭합니다.</p>
+                <div class="callout callout-warning">
+                    <span class="callout-icon">⚠️</span>
+                    <div>이름을 잘못 선택하면 나중에 성적이 꼬일 수 있으니 <strong>반드시 본인 이름</strong>을 선택하세요!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">2</span>
+                <span class="step-title">내 저장소가 자동 생성됨</span>
+            </div>
+            <div class="step-body">
+                <p>수락하면 나만의 저장소가 만들어지고, 링크가 표시됩니다.</p>
+                <p>예: <code class="inline">https://github.com/수업-org/과제1-홍길동</code></p>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">3</span>
+                <span class="step-title">저장소를 내 컴퓨터로 clone</span>
+            </div>
+            <div class="step-body">
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git clone https://github.com/수업-org/과제1-홍길동.git
+cd 과제1-홍길동</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">4</span>
+                <span class="step-title"><code class="inline">assignment.ipynb</code> 열어서 문제 풀기</span>
+            </div>
+            <div class="step-body">
+                <p>Jupyter Notebook 또는 VS Code에서 <code class="inline">assignment.ipynb</code> 파일을 엽니다.</p>
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code><span style="color:var(--text-muted)"># Jupyter로 열기</span>
+jupyter notebook assignment.ipynb
+
+<span style="color:var(--text-muted)"># 또는 VS Code로 열기</span>
+code assignment.ipynb</code>
+                </div>
+                <p>각 문제의 <code class="inline">pass</code>를 지우고 코드를 작성하세요.</p>
+                <div class="code-block">
+                    <span class="code-label">Python</span>
+                    <code><span style="color:var(--text-muted)"># ❌ 변경 전</span>
+def calculate_stats(data):
+    pass
+
+<span style="color:var(--text-muted)"># ✅ 변경 후</span>
+def calculate_stats(data):
+    mean = np.mean(data)
+    std = np.std(data)
+    return (mean, std)</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">5</span>
+                <span class="step-title">제출하기 (add → commit → push)</span>
+            </div>
+            <div class="step-body">
+                <div class="code-block">
+                    <span class="code-label">CMD / Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git add .
+git commit -m "과제 풀이 완료"
+git push origin main</code>
+                </div>
+                <div class="callout callout-tip">
+                    <span class="callout-icon">✅</span>
+                    <div>마감 전까지 <strong>몇 번이든 다시 push</strong>할 수 있습니다. 부분적으로 풀어도 먼저 push해 두는 것을 추천합니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">6</span>
+                <span class="step-title">자동 채점 결과 확인</span>
+            </div>
+            <div class="step-body">
+                <p>push 후 GitHub에서 내 저장소 페이지에 들어갑니다.</p>
+
+                <p><strong>방법 1:</strong> 저장소 메인 페이지 상단에 ✅ (초록) 또는 ❌ (빨강) 아이콘이 표시됩니다.</p>
+
+                <p><strong>방법 2:</strong> <strong>"Actions"</strong> 탭을 클릭하면 자세한 채점 결과를 볼 수 있습니다.</p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>아이콘</th>
+                                <th>의미</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="color:var(--green); font-size:1.2rem;">✅</td>
+                                <td>모든 테스트 통과 — 만점!</td>
+                            </tr>
+                            <tr>
+                                <td style="color:var(--red); font-size:1.2rem;">❌</td>
+                                <td>일부 또는 전체 테스트 실패 — Actions 탭에서 어떤 문제가 틀렸는지 확인</td>
+                            </tr>
+                            <tr>
+                                <td style="color:var(--orange); font-size:1.2rem;">🟡</td>
+                                <td>채점 진행 중 — 1~2분 기다리세요</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== Section 3: Codespaces ===== -->
+    <div class="section" id="codespaces">
+        <div class="section-number">3</div>
+        <h2>GitHub Codespaces로 과제하기 <span class="tag tag-optional">선택사항</span></h2>
+        <p class="section-desc">Git, Python, Jupyter를 설치하지 않고 브라우저에서 바로 과제를 할 수 있습니다.</p>
+
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">1</span>
+                <span class="step-title">Codespace 만들기</span>
+            </div>
+            <div class="step-body">
+                <p>내 저장소 페이지에서:</p>
+                <div class="flow">
+                    <span class="flow-item" style="color:var(--green);">Code 버튼 클릭</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">Codespaces 탭</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">Create codespace on main</span>
+                </div>
+                <p>잠시 기다리면 브라우저에서 VS Code가 열립니다.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">2</span>
+                <span class="step-title">노트북 열어서 문제 풀기</span>
+            </div>
+            <div class="step-body">
+                <p>왼쪽 파일 탐색기에서 <code class="inline">assignment.ipynb</code>를 클릭하면 노트북이 열립니다.</p>
+                <p>셀을 클릭하고 코드를 작성한 뒤, <strong>Shift + Enter</strong>로 실행할 수 있습니다.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <span class="step-num">3</span>
+                <span class="step-title">Codespace에서 제출하기</span>
+            </div>
+            <div class="step-body">
+                <p>Codespace 안에 터미널이 내장되어 있습니다. 상단 메뉴 <strong>Terminal → New Terminal</strong> 클릭 후:</p>
+                <div class="code-block">
+                    <span class="code-label">Terminal</span>
+                    <button class="copy-btn" onclick="copyCode(this)">복사</button>
+                    <code>git add .
+git commit -m "과제 풀이 완료"
+git push origin main</code>
+                </div>
+
+                <p>또는 왼쪽 사이드바의 <strong>소스 제어 (Source Control)</strong> 아이콘을 이용해서 GUI로도 제출할 수 있습니다:</p>
+
+                <div class="flow">
+                    <span class="flow-item">소스 제어 아이콘 클릭</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">+ 버튼 (Stage)</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">메시지 입력</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">✓ Commit</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-item">Sync Changes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div>
+                <strong>Codespaces 무료 사용량 주의</strong><br>
+                GitHub 무료 계정 기준 월 120시간 / 15GB 저장공간입니다. 사용하지 않을 때는 Codespace를 <strong>Stop</strong>하세요. (Codespace 목록에서 ··· → Stop 클릭)
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ===== FAQ ===== -->
+    <div class="section" id="faq">
+        <div class="section-number">?</div>
+        <h2>자주 묻는 질문</h2>
+        <p class="section-desc">문제가 생겼을 때 여기를 먼저 확인하세요.</p>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">push했는데 자동 채점이 안 돼요</div>
+            <div class="faq-a">
+                <p>Actions 탭에 들어가서 워크플로우 실행 상태를 확인하세요. "Autograding"이 보이지 않으면 교수님께 문의하세요. 간혹 GitHub 서버 지연으로 1~2분 걸릴 수 있습니다.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">git push가 안 돼요 (rejected 에러)</div>
+            <div class="faq-a">
+                <p>먼저 <code class="inline">git pull origin main</code>을 실행한 뒤 다시 push해 보세요. 다른 곳에서 변경한 내용이 있으면 이 에러가 발생합니다.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">GitHub 로그인 창이 계속 뜨는데요?</div>
+            <div class="faq-a">
+                <p>Git Credential Manager를 설정하면 매번 로그인하지 않아도 됩니다. Windows에서는 Git 설치 시 함께 설치됩니다. 또는 GitHub CLI (<code class="inline">gh auth login</code>)를 사용하세요.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">테스트는 통과했는데 점수가 안 나와요</div>
+            <div class="faq-a">
+                <p>GitHub Classroom 대시보드에서 점수가 반영되기까지 시간이 걸릴 수 있습니다. Actions 탭에서 ✅가 보이면 정상적으로 통과한 것입니다.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">마감 후에도 push할 수 있나요?</div>
+            <div class="faq-a">
+                <p>기술적으로 push는 가능하지만, 교수님 설정에 따라 마감 이후 제출은 인정되지 않을 수 있습니다. 반드시 마감 전에 제출하세요.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">Codespace가 안 만들어져요</div>
+            <div class="faq-a">
+                <p>무료 사용량을 초과했을 수 있습니다. <a href="https://github.com/settings/billing" style="color:var(--accent)">github.com/settings/billing</a>에서 사용량을 확인하세요. 초과 시 로컬에서 작업해야 합니다.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>문제가 해결되지 않으면 교수님께 문의하세요.</p>
+</div>
+
+<script>
+    // FAQ toggle
+    function toggleFaq(el) {
+        el.parentElement.classList.toggle('open');
+    }
+
+    // Copy code
+    function copyCode(btn) {
+        const codeBlock = btn.parentElement.querySelector('code');
+        const text = codeBlock.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '완료!';
+            setTimeout(() => btn.textContent = '복사', 1500);
+        });
+    }
+
+    // Nav active state
+    const navLinks = document.querySelectorAll('.nav a');
+    const sections = document.querySelectorAll('.section');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (scrollY >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
