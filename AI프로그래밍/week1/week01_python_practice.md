@@ -275,7 +275,7 @@ c o v i d _ K R _ 2 0 2 2 0 3 1 7 _ d a i l y . c s v
 
 ## Ping-Pong 5: 문자열 메서드와 f-string
 
-### Ping 5 (교수자 시연)
+### Ping 5
 
 ```python
 # 이메일 주소 분석
@@ -349,7 +349,7 @@ print(f"날짜: {date_part}")     # 2022-03-17.CSV
 
 ## Ping-Pong 6: f-string 고급 포맷팅
 
-### Ping 6 (교수자 시연)
+### Ping 6 
 
 ```python
 price = 29900
