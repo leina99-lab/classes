@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경사하강법(Gradient Descent) 인터랙티브 시각화</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#fff;color:#1a1a1a;line-height:1.6}
+.container{max-width:1000px;margin:0 auto;padding:40px 20px}
+h1{font-size:28px;font-weight:700;border-bottom:2px solid #1a1a1a;padding-bottom:12px;margin-bottom:8px}
+h1 span{color:#DC143C}
+.subtitle{font-size:14px;color:#666;margin-bottom:32px}
+h2{font-size:20px;margin:32px 0 16px;padding-left:12px;border-left:3px solid #DC143C}
+.section{margin-bottom:40px}
+canvas{border:1px solid #eee;border-radius:4px;display:block;margin:0 auto}
+.controls{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;align-items:center;justify-content:center}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-group label{font-size:13px;font-weight:600;white-space:nowrap}
+.control-group input[type=range]{width:160px}
+.val{font-family:Consolas;font-size:13px;color:#DC143C;font-weight:700;min-width:60px}
+button{padding:8px 20px;background:#DC143C;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;margin:2px}
+button:hover{background:#b01030}
+.btn-s{background:#666}.btn-s:hover{background:#444}
+.log-area{max-height:200px;overflow-y:auto;font-family:Consolas;font-size:12px;background:#f8f8f8;padding:12px;border-radius:4px;margin-top:12px}
+.log-area .log-line{padding:2px 0;border-bottom:1px solid #f0f0f0}
+.log-area .converged{color:#4CAF50;font-weight:700}
+.log-area .diverged{color:#DC143C;font-weight:700}
+.info-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px}
+.stat-card{flex:1;min-width:140px;background:#f8f8f8;padding:12px;border-radius:4px;text-align:center}
+.stat-card .num{font-size:24px;font-weight:700;color:#DC143C}
+.stat-card .lbl{font-size:11px;color:#666}
+.ai-box{background:#f0f4ff;border-left:3px solid #2196F3;padding:12px 16px;margin:20px 0;font-size:13px}
+.ai-box strong{color:#2196F3}
+.compare-area{display:flex;gap:16px;flex-wrap:wrap}
+.compare-area canvas{flex:1;min-width:300px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>경사하강법</span>(Gradient Descent) 인터랙티브 시각화</h1>
+<p class="subtitle">4주차 — 신경망 기초 | 손실 함수의 최솟값을 찾아가는 최적화 과정</p>
+
+<div class="section">
+<h2>1. 1D 경사하강법 시뮬레이터</h2>
+<p>학습률(learning rate)을 조절하면서 공이 골짜기(최솟값)를 찾아가는 과정을 관찰하라.</p>
+<p style="font-size:13px;color:#666;margin:8px 0;">손실 함수: L(w) = w² + 3·sin(w) &nbsp;&nbsp;(지역 최솟값이 있는 복잡한 지형)</p>
+
+<canvas id="canvas1d" width="800" height="350"></canvas>
+
+<div class="controls">
+<div class="control-group">
+<label>학습률 (η):</label>
+<input type="range" id="lrSlider" min="0.01" max="1.5" step="0.01" value="0.1" oninput="updateLR()">
+<span class="val" id="lrVal">0.10</span>
+</div>
+<div class="control-group">
+<label>시작점 (w₀):</label>
+<input type="range" id="startSlider" min="-4" max="4" step="0.1" value="3.5" oninput="resetGD()">
+<span class="val" id="startVal">3.50</span>
+</div>
+</div>
+<div class="controls">
+<button onclick="stepGD()">▶ 1 스텝</button>
+<button onclick="runGD()">▶▶ 자동 실행</button>
+<button class="btn-s" onclick="stopGD()">■ 정지</button>
+<button class="btn-s" onclick="resetGD()">↺ 초기화</button>
+</div>
+
+<div class="info-row" id="statsRow">
+<div class="stat-card"><div class="num" id="stepCount">0</div><div class="lbl">스텝</div></div>
+<div class="stat-card"><div class="num" id="currentW">3.50</div><div class="lbl">현재 w</div></div>
+<div class="stat-card"><div class="num" id="currentLoss">?</div><div class="lbl">현재 손실</div></div>
+<div class="stat-card"><div class="num" id="currentGrad">?</div><div class="lbl">기울기</div></div>
+</div>
+
+<div class="log-area" id="logArea"></div>
+</div>
+
+<div class="section">
+<h2>2. 학습률 비교 — 너무 크면? 너무 작으면?</h2>
+<p>세 가지 학습률의 결과를 동시에 비교한다.</p>
+<div class="compare-area">
+<canvas id="cmpSmall" width="300" height="220"></canvas>
+<canvas id="cmpGood" width="300" height="220"></canvas>
+<canvas id="cmpBig" width="300" height="220"></canvas>
+</div>
+<div class="controls">
+<button onclick="runComparison()">▶ 비교 실행</button>
+</div>
+
+<div class="ai-box">
+<strong>→ AI 연결:</strong> 실제 AI 학습에서는 Adam, AdamW 등 적응적 학습률 최적화기(optimizer)를 사용한다. 이들은 각 파라미터마다 학습률을 자동 조절하여, 위의 문제를 완화한다. GPT-3의 학습률은 약 0.0006이다.
+</div>
+</div>
+
+<div class="section">
+<h2>3. 2D 경사하강법 (등고선 맵)</h2>
+<p>2개의 파라미터 (w₁, w₂)를 동시에 최적화하는 과정을 등고선 위에서 확인한다.</p>
+<p style="font-size:13px;color:#666;">L(w₁, w₂) = w₁² + 3·w₂² (타원형 등고선)</p>
+
+<canvas id="canvas2d" width="500" height="500" style="cursor:crosshair"></canvas>
+<p style="font-size:12px;color:#666;text-align:center;margin-top:4px;">→ 등고선 위를 클릭하여 시작점을 지정하라</p>
+
+<div class="controls">
+<div class="control-group">
+<label>학습률:</label>
+<input type="range" id="lr2d" min="0.01" max="0.5" step="0.01" value="0.1" oninput="document.getElementById('lr2dVal').textContent=this.value">
+<span class="val" id="lr2dVal">0.1</span>
+</div>
+<button onclick="run2DGD()">▶ 실행</button>
+<button class="btn-s" onclick="draw2DContour()">↺ 초기화</button>
+</div>
+</div>
+
+</div>
+
+<script>
+// === 1D 경사하강법 ===
+const c1=document.getElementById('canvas1d').getContext('2d');
+const W1=800,H1=350;
+
+function lossF(w){return w*w+3*Math.sin(w);}
+function gradF(w){return 2*w+3*Math.cos(w);}
+
+let gd={w:3.5,step:0,history:[],lr:0.1,timer:null};
+
+function updateLR(){
+    gd.lr=parseFloat(document.getElementById('lrSlider').value);
+    document.getElementById('lrVal').textContent=gd.lr.toFixed(2);
+}
+
+function resetGD(){
+    stopGD();
+    gd.w=parseFloat(document.getElementById('startSlider').value);
+    document.getElementById('startVal').textContent=gd.w.toFixed(2);
+    gd.step=0;gd.history=[{w:gd.w,loss:lossF(gd.w)}];
+    document.getElementById('logArea').innerHTML='';
+    updateStats();
+    draw1D();
+}
+
+function stepGD(){
+    const g=gradF(gd.w);
+    const newW=gd.w-gd.lr*g;
+    const newL=lossF(newW);
+    const oldL=lossF(gd.w);
+    gd.w=newW;gd.step++;
+    gd.history.push({w:newW,loss:newL});
+    
+    const logArea=document.getElementById('logArea');
+    let cls='';
+    if(Math.abs(g)<0.01)cls='converged';
+    else if(Math.abs(newW)>10)cls='diverged';
+    logArea.innerHTML=`<div class="log-line ${cls}">Step ${gd.step}: w=${newW.toFixed(4)}, L=${newL.toFixed(4)}, ∇=${g.toFixed(4)}, Δ=${(newL-oldL).toFixed(4)}</div>`+logArea.innerHTML;
+    
+    updateStats();draw1D();
+    
+    if(Math.abs(newW)>10){stopGD();logArea.innerHTML=`<div class="log-line diverged">⚠ 발산! 학습률이 너무 크다.</div>`+logArea.innerHTML;}
+    if(Math.abs(g)<0.001){stopGD();logArea.innerHTML=`<div class="log-line converged">→ 수렴 완료! 최솟값 도달.</div>`+logArea.innerHTML;}
+}
+
+function runGD(){stopGD();gd.timer=setInterval(stepGD,200);}
+function stopGD(){if(gd.timer){clearInterval(gd.timer);gd.timer=null;}}
+
+function updateStats(){
+    document.getElementById('stepCount').textContent=gd.step;
+    document.getElementById('currentW').textContent=gd.w.toFixed(4);
+    document.getElementById('currentLoss').textContent=lossF(gd.w).toFixed(4);
+    document.getElementById('currentGrad').textContent=gradF(gd.w).toFixed(4);
+}
+
+function draw1D(){
+    c1.clearRect(0,0,W1,H1);
+    const xMin=-5,xMax=5,yMin=-3,yMax=20;
+    const tx=x=>(x-xMin)/(xMax-xMin)*W1;
+    const ty=y=>H1-(y-yMin)/(yMax-yMin)*H1;
+    
+    // 격자
+    c1.strokeStyle='#f5f5f5';c1.lineWidth=1;
+    for(let x=-4;x<=4;x++){c1.beginPath();c1.moveTo(tx(x),0);c1.lineTo(tx(x),H1);c1.stroke();}
+    for(let y=0;y<=18;y+=2){c1.beginPath();c1.moveTo(0,ty(y));c1.lineTo(W1,ty(y));c1.stroke();}
+    
+    // 축
+    c1.strokeStyle='#bbb';c1.lineWidth=1;
+    c1.beginPath();c1.moveTo(0,ty(0));c1.lineTo(W1,ty(0));c1.stroke();
+    
+    // 손실 곡선
+    c1.strokeStyle='#1a1a1a';c1.lineWidth=2.5;c1.beginPath();
+    for(let px=0;px<W1;px++){
+        const x=xMin+(xMax-xMin)*px/W1;
+        const y=lossF(x);
+        if(px===0)c1.moveTo(px,ty(y));else c1.lineTo(px,ty(y));
+    }
+    c1.stroke();
+    
+    // 경로
+    if(gd.history.length>1){
+        c1.strokeStyle='rgba(220,20,60,0.4)';c1.lineWidth=1.5;
+        c1.beginPath();
+        gd.history.forEach((h,i)=>{
+            const px=tx(h.w),py=ty(h.loss);
+            if(i===0)c1.moveTo(px,py);else c1.lineTo(px,py);
+        });
+        c1.stroke();
+        
+        // 각 점
+        gd.history.forEach((h,i)=>{
+            c1.fillStyle=i===gd.history.length-1?'#DC143C':'rgba(220,20,60,0.3)';
+            c1.beginPath();c1.arc(tx(h.w),ty(h.loss),i===gd.history.length-1?7:3,0,Math.PI*2);c1.fill();
+        });
+    }
+    
+    // 현재점 접선
+    const cw=gd.w,cl=lossF(cw),cg=gradF(cw);
+    c1.strokeStyle='#DC143C';c1.setLineDash([4,4]);c1.lineWidth=1;
+    c1.beginPath();
+    c1.moveTo(tx(cw-1),ty(cl-cg*1));c1.lineTo(tx(cw+1),ty(cl+cg*1));
+    c1.stroke();c1.setLineDash([]);
+    
+    // 화살표 (업데이트 방향)
+    if(gd.history.length>0){
+        const nextW=cw-gd.lr*cg;
+        if(Math.abs(nextW)<5){
+            c1.strokeStyle='#4CAF50';c1.lineWidth=2;
+            c1.beginPath();c1.moveTo(tx(cw),ty(cl)+20);c1.lineTo(tx(nextW),ty(cl)+20);c1.stroke();
+            // 화살표 머리
+            const dir=nextW>cw?1:-1;
+            c1.beginPath();c1.moveTo(tx(nextW),ty(cl)+20);
+            c1.lineTo(tx(nextW)-dir*8,ty(cl)+14);c1.lineTo(tx(nextW)-dir*8,ty(cl)+26);c1.fill();
+        }
+    }
+    
+    // 레이블
+    c1.fillStyle='#1a1a1a';c1.font='12px sans-serif';c1.textAlign='center';
+    c1.fillText('L(w) = w² + 3sin(w)',W1/2,20);
+    c1.fillStyle='#DC143C';
+    c1.fillText(`w=${cw.toFixed(2)}, L=${cl.toFixed(2)}`,tx(cw),ty(cl)-14);
+}
+
+// === 학습률 비교 ===
+function runComparison(){
+    const configs=[
+        {canvas:'cmpSmall',lr:0.01,label:'η=0.01 (너무 작음)',color:'#2196F3'},
+        {canvas:'cmpGood',lr:0.15,label:'η=0.15 (적절)',color:'#4CAF50'},
+        {canvas:'cmpBig',lr:0.9,label:'η=0.9 (너무 큼)',color:'#DC143C'}
+    ];
+    
+    configs.forEach(cfg=>{
+        const cv=document.getElementById(cfg.canvas);
+        const ct=cv.getContext('2d');
+        const cW=cv.width,cH=cv.height;
+        ct.clearRect(0,0,cW,cH);
+        
+        const xMin=-5,xMax=5,yMin=-3,yMax=20;
+        const tx=x=>(x-xMin)/(xMax-xMin)*cW;
+        const ty=y=>cH-(y-yMin)/(yMax-yMin)*cH;
+        
+        // 곡선
+        ct.strokeStyle='#ddd';ct.lineWidth=1.5;ct.beginPath();
+        for(let px=0;px<cW;px++){const x=xMin+(xMax-xMin)*px/cW;if(px===0)ct.moveTo(px,ty(lossF(x)));else ct.lineTo(px,ty(lossF(x)));}
+        ct.stroke();
+        
+        // 경사하강
+        let w=3.5;const hist=[{w,l:lossF(w)}];
+        for(let s=0;s<50;s++){
+            const g=gradF(w);w=w-cfg.lr*g;
+            if(Math.abs(w)>10)break;
+            hist.push({w,l:lossF(w)});
+        }
+        
+        ct.strokeStyle=cfg.color;ct.lineWidth=2;ct.beginPath();
+        hist.forEach((h,i)=>{if(i===0)ct.moveTo(tx(h.w),ty(h.l));else ct.lineTo(tx(h.w),ty(h.l));});
+        ct.stroke();
+        
+        hist.forEach((h,i)=>{
+            ct.fillStyle=i===hist.length-1?cfg.color:'rgba(0,0,0,0.2)';
+            ct.beginPath();ct.arc(tx(h.w),ty(h.l),i===hist.length-1?5:2,0,Math.PI*2);ct.fill();
+        });
+        
+        ct.fillStyle='#1a1a1a';ct.font='bold 12px sans-serif';ct.textAlign='center';
+        ct.fillText(cfg.label,cW/2,16);
+        ct.font='11px sans-serif';ct.fillStyle='#666';
+        ct.fillText(`${hist.length-1}스텝 → w=${hist[hist.length-1].w.toFixed(2)}`,cW/2,cH-8);
+    });
+}
+
+// === 2D 등고선 ===
+const c2=document.getElementById('canvas2d').getContext('2d');
+const S2=500;
+let path2d=[];
+
+function loss2d(w1,w2){return w1*w1+3*w2*w2;}
+function grad2d(w1,w2){return [2*w1,6*w2];}
+
+function draw2DContour(){
+    path2d=[];
+    c2.clearRect(0,0,S2,S2);
+    const range=4;
+    
+    // 등고선
+    const levels=[0.5,1,2,4,8,12,16,24,32];
+    const colors=['#FFF0F0','#FFE0E0','#FFC0C0','#FFA0A0','#FF8080','#FF6060','#FF4040','#FF2020','#DC143C'];
+    
+    // 배경 히트맵
+    const imgData=c2.createImageData(S2,S2);
+    for(let py=0;py<S2;py++){
+        for(let px=0;px<S2;px++){
+            const w1=-range+2*range*px/S2;
+            const w2=-range+2*range*(S2-py)/S2;
+            const l=loss2d(w1,w2);
+            const t=Math.min(1,l/32);
+            const r=255,g=Math.floor(255*(1-t*0.8)),b=Math.floor(255*(1-t*0.8));
+            const idx=(py*S2+px)*4;
+            imgData.data[idx]=r;imgData.data[idx+1]=g;imgData.data[idx+2]=b;imgData.data[idx+3]=80;
+        }
+    }
+    c2.putImageData(imgData,0,0);
+    
+    // 등고선
+    levels.forEach((lev,li)=>{
+        c2.strokeStyle=colors[li];c2.lineWidth=1;c2.beginPath();
+        for(let ang=0;ang<=360;ang+=1){
+            const rad=ang*Math.PI/180;
+            const r1=Math.sqrt(lev);
+            const r2=Math.sqrt(lev/3);
+            const w1=r1*Math.cos(rad),w2=r2*Math.sin(rad);
+            const px=(w1+range)/(2*range)*S2,py=S2-(w2+range)/(2*range)*S2;
+            if(ang===0)c2.moveTo(px,py);else c2.lineTo(px,py);
+        }
+        c2.stroke();
+    });
+    
+    // 축
+    c2.strokeStyle='#999';c2.lineWidth=1;
+    c2.beginPath();c2.moveTo(S2/2,0);c2.lineTo(S2/2,S2);c2.stroke();
+    c2.beginPath();c2.moveTo(0,S2/2);c2.lineTo(S2,S2/2);c2.stroke();
+    
+    c2.fillStyle='#666';c2.font='11px sans-serif';
+    c2.fillText('w₁',S2-20,S2/2-6);c2.fillText('w₂',S2/2+6,14);
+    c2.fillText('L(w₁,w₂) = w₁² + 3w₂²',10,S2-8);
+    
+    // 최솟값
+    c2.fillStyle='#4CAF50';c2.beginPath();c2.arc(S2/2,S2/2,5,0,Math.PI*2);c2.fill();
+    c2.fillStyle='#4CAF50';c2.font='11px sans-serif';c2.fillText('최솟값(0,0)',S2/2+8,S2/2-8);
+}
+
+document.getElementById('canvas2d').addEventListener('click',function(e){
+    const rect=this.getBoundingClientRect();
+    const px=e.clientX-rect.left,py=e.clientY-rect.top;
+    const range=4;
+    const w1=-range+2*range*px/S2;
+    const w2=-range+2*range*(S2-py)/S2;
+    path2d=[{w1,w2}];
+    draw2DContour();
+    // 시작점 표시
+    c2.fillStyle='#DC143C';c2.beginPath();c2.arc(px,py,6,0,Math.PI*2);c2.fill();
+});
+
+function run2DGD(){
+    if(path2d.length===0){path2d=[{w1:3,w2:2.5}];}
+    const lr=parseFloat(document.getElementById('lr2d').value);
+    const range=4;
+    let {w1,w2}=path2d[0];
+    path2d=[{w1,w2}];
+    
+    for(let s=0;s<100;s++){
+        const [g1,g2]=grad2d(w1,w2);
+        w1-=lr*g1;w2-=lr*g2;
+        path2d.push({w1,w2});
+        if(Math.abs(g1)<0.001&&Math.abs(g2)<0.001)break;
+    }
+    
+    draw2DContour();
+    
+    // 경로 그리기
+    c2.strokeStyle='#DC143C';c2.lineWidth=2;c2.beginPath();
+    path2d.forEach((p,i)=>{
+        const px=(p.w1+range)/(2*range)*S2;
+        const py=S2-(p.w2+range)/(2*range)*S2;
+        if(i===0)c2.moveTo(px,py);else c2.lineTo(px,py);
+    });
+    c2.stroke();
+    
+    path2d.forEach((p,i)=>{
+        const px=(p.w1+range)/(2*range)*S2;
+        const py=S2-(p.w2+range)/(2*range)*S2;
+        c2.fillStyle=i===path2d.length-1?'#DC143C':i===0?'#FF9800':'rgba(220,20,60,0.3)';
+        c2.beginPath();c2.arc(px,py,i===0||i===path2d.length-1?5:2,0,Math.PI*2);c2.fill();
+    });
+    
+    const last=path2d[path2d.length-1];
+    c2.fillStyle='#1a1a1a';c2.font='12px sans-serif';
+    c2.fillText(`${path2d.length-1}스텝 → (${last.w1.toFixed(3)}, ${last.w2.toFixed(3)})`,10,20);
+}
+
+// 초기화
+resetGD();
+draw2DContour();
+runComparison();
+</script>
+</body>
+</html>
