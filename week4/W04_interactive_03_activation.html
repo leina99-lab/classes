@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>활성화 함수(Activation Function) 인터랙티브 시각화</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;background:#fff;color:#1a1a1a;line-height:1.6}
+.container{max-width:1000px;margin:0 auto;padding:40px 20px}
+h1{font-size:28px;font-weight:700;border-bottom:2px solid #1a1a1a;padding-bottom:12px;margin-bottom:8px}
+h1 span{color:#DC143C}
+.subtitle{font-size:14px;color:#666;margin-bottom:32px}
+h2{font-size:20px;margin:32px 0 16px;padding-left:12px;border-left:3px solid #DC143C}
+.section{margin-bottom:40px}
+canvas{border:1px solid #eee;border-radius:4px;display:block;margin:0 auto}
+.func-btns{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;justify-content:center}
+.func-btn{padding:8px 16px;border:2px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.func-btn:hover{border-color:#DC143C}
+.func-btn.active{background:#DC143C;color:#fff;border-color:#DC143C}
+.info-panel{display:flex;gap:24px;flex-wrap:wrap;margin-top:20px}
+.info-card{flex:1;min-width:250px;background:#f8f8f8;padding:16px;border-radius:4px;border-top:3px solid #DC143C}
+.info-card h3{font-size:15px;margin-bottom:8px}
+.info-card .formula{font-family:'Consolas',monospace;font-size:14px;color:#DC143C;margin:8px 0}
+.slider-area{display:flex;gap:24px;align-items:center;margin:16px 0;justify-content:center;flex-wrap:wrap}
+.slider-area label{font-size:13px;font-weight:600}
+.slider-area input[type=range]{width:200px}
+.val-display{font-family:Consolas;font-size:14px;color:#DC143C;font-weight:700;min-width:80px}
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.compare-table th{background:#1a1a1a;color:#fff;padding:8px 12px;text-align:left}
+.compare-table td{padding:8px 12px;border-bottom:1px solid #eee}
+.compare-table tr:hover td{background:#FFF0F0}
+.ai-box{background:#f0f4ff;border-left:3px solid #2196F3;padding:12px 16px;margin:20px 0;font-size:13px}
+.ai-box strong{color:#2196F3}
+.deriv-toggle{margin:16px 0;font-size:13px}
+.deriv-toggle label{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>활성화 함수</span>(Activation Function) 인터랙티브 시각화</h1>
+<p class="subtitle">4주차 — 신경망 기초 | 비선형성(nonlinearity)을 부여하는 핵심 함수 6종</p>
+
+<div class="section">
+<h2>1. 함수 선택 및 그래프</h2>
+
+<div class="func-btns" id="funcBtns">
+<div class="func-btn active" onclick="selectFunc('sigmoid')">Sigmoid</div>
+<div class="func-btn" onclick="selectFunc('tanh')">Tanh</div>
+<div class="func-btn" onclick="selectFunc('relu')">ReLU</div>
+<div class="func-btn" onclick="selectFunc('leaky')">Leaky ReLU</div>
+<div class="func-btn" onclick="selectFunc('swish')">Swish</div>
+<div class="func-btn" onclick="selectFunc('gelu')">GELU</div>
+</div>
+
+<div class="deriv-toggle">
+<label><input type="checkbox" id="showDeriv" onchange="draw()"> 도함수(기울기) 함께 표시</label>
+&nbsp;&nbsp;
+<label><input type="checkbox" id="showAll" onchange="draw()"> 전체 비교 모드</label>
+</div>
+
+<canvas id="graph" width="800" height="400"></canvas>
+
+<div class="slider-area">
+<label>입력값 x =</label>
+<input type="range" id="xSlider" min="-5" max="5" step="0.1" value="0" oninput="updateSlider()">
+<div class="val-display" id="xVal">x = 0.0</div>
+<div class="val-display" id="yVal">f(x) = ?</div>
+</div>
+</div>
+
+<div class="section">
+<h2>2. 선택된 함수 상세 정보</h2>
+<div class="info-panel" id="infoPanel"></div>
+</div>
+
+<div class="section">
+<h2>3. 전체 비교표</h2>
+<table class="compare-table">
+<tr><th>함수</th><th>수식</th><th>출력 범위</th><th>장점</th><th>단점</th></tr>
+<tr><td><strong>Sigmoid</strong></td><td>1/(1+e<sup>-x</sup>)</td><td>(0, 1)</td><td>확률 해석 가능</td><td>기울기 소실</td></tr>
+<tr><td><strong>Tanh</strong></td><td>(e<sup>x</sup>-e<sup>-x</sup>)/(e<sup>x</sup>+e<sup>-x</sup>)</td><td>(-1, 1)</td><td>0 중심, 수렴 빠름</td><td>기울기 소실</td></tr>
+<tr><td><strong>ReLU</strong></td><td>max(0, x)</td><td>[0, ∞)</td><td>연산 빠름, 기울기 안정</td><td>죽은 뉴런(Dead Neuron)</td></tr>
+<tr><td><strong>Leaky ReLU</strong></td><td>max(0.01x, x)</td><td>(-∞, ∞)</td><td>죽은 뉴런 방지</td><td>α 선택 필요</td></tr>
+<tr><td><strong>Swish</strong></td><td>x · sigmoid(x)</td><td>≈(-0.28, ∞)</td><td>부드러운 곡선</td><td>연산량 증가</td></tr>
+<tr><td><strong>GELU</strong></td><td>x · Φ(x)</td><td>≈(-0.17, ∞)</td><td>GPT/BERT에서 사용</td><td>연산량 증가</td></tr>
+</table>
+
+<div class="ai-box">
+<strong>→ AI 연결:</strong> ReLU는 CNN에서, GELU는 GPT·BERT·Claude 등 Transformer 모델에서 주로 사용한다. 활성화 함수가 없으면 아무리 층을 쌓아도 선형 변환에 불과하여, 복잡한 패턴을 학습할 수 없다.
+</div>
+</div>
+
+</div>
+
+<script>
+const canvas=document.getElementById('graph');
+const ctx=canvas.getContext('2d');
+let currentFunc='sigmoid';
+const COLORS={sigmoid:'#DC143C',tanh:'#1a47DC',relu:'#4CAF50',leaky:'#FF9800',swish:'#9C27B0',gelu:'#00BCD4'};
+const NAMES={sigmoid:'Sigmoid',tanh:'Tanh',relu:'ReLU',leaky:'Leaky ReLU',swish:'Swish',gelu:'GELU'};
+
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function tanhF(x){return Math.tanh(x);}
+function relu(x){return Math.max(0,x);}
+function leaky(x){return x>0?x:0.01*x;}
+function swish(x){return x*sigmoid(x);}
+function gelu(x){return 0.5*x*(1+Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x)));}
+
+function dsigmoid(x){const s=sigmoid(x);return s*(1-s);}
+function dtanh(x){const t=tanhF(x);return 1-t*t;}
+function drelu(x){return x>0?1:0;}
+function dleaky(x){return x>0?1:0.01;}
+function dswish(x){const s=sigmoid(x);return s+x*s*(1-s);}
+function dgelu(x){const c=Math.sqrt(2/Math.PI);const t=Math.tanh(c*(x+0.044715*x*x*x));return 0.5*(1+t)+0.5*x*(1-t*t)*c*(1+3*0.044715*x*x);}
+
+const funcs={sigmoid,tanh:tanhF,relu,leaky,swish,gelu};
+const derivs={sigmoid:dsigmoid,tanh:dtanh,relu:drelu,leaky:dleaky,swish:dswish,gelu:dgelu};
+
+const INFO={
+sigmoid:{formula:'σ(x) = 1 / (1 + e^(-x))',range:'(0, 1)',use:'이진 분류의 출력층',issue:'|x|가 크면 기울기 → 0 (기울기 소실)'},
+tanh:{formula:'tanh(x) = (e^x - e^(-x)) / (e^x + e^(-x))',range:'(-1, 1)',use:'RNN의 은닉층, 0 중심 필요 시',issue:'|x|가 크면 기울기 → 0'},
+relu:{formula:'ReLU(x) = max(0, x)',range:'[0, ∞)',use:'CNN·대부분 은닉층의 기본',issue:'x<0이면 기울기=0 → 뉴런 사망'},
+leaky:{formula:'LeakyReLU(x) = max(αx, x), α=0.01',range:'(-∞, ∞)',use:'죽은 뉴런 문제 해결',issue:'α를 얼마로 설정할지 결정 필요'},
+swish:{formula:'Swish(x) = x · σ(x)',range:'≈(-0.28, ∞)',use:'EfficientNet, 자기 게이팅',issue:'sigmoid 계산 추가 비용'},
+gelu:{formula:'GELU(x) = x · Φ(x) ≈ 0.5x(1+tanh(...))',range:'≈(-0.17, ∞)',use:'GPT, BERT, ViT, Claude',issue:'근사식 사용, 연산량 증가'}
+};
+
+function selectFunc(name){
+    currentFunc=name;
+    document.querySelectorAll('.func-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    draw();
+    updateInfo();
+    updateSlider();
+}
+
+function draw(){
+    const W=canvas.width,H=canvas.height;
+    const showDeriv=document.getElementById('showDeriv').checked;
+    const showAll=document.getElementById('showAll').checked;
+    ctx.clearRect(0,0,W,H);
+    
+    // 좌표계 설정: x=-5..5, y=-2..2
+    const xMin=-5,xMax=5,yMin=-2,yMax=2;
+    const toX=x=>(x-xMin)/(xMax-xMin)*W;
+    const toY=y=>H-(y-yMin)/(yMax-yMin)*H;
+    
+    // 격자
+    ctx.strokeStyle='#f0f0f0';ctx.lineWidth=1;
+    for(let x=-4;x<=4;x++){ctx.beginPath();ctx.moveTo(toX(x),0);ctx.lineTo(toX(x),H);ctx.stroke();}
+    for(let y=-1.5;y<=1.5;y+=0.5){ctx.beginPath();ctx.moveTo(0,toY(y));ctx.lineTo(W,toY(y));ctx.stroke();}
+    
+    // 축
+    ctx.strokeStyle='#999';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(0,toY(0));ctx.lineTo(W,toY(0));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(toX(0),0);ctx.lineTo(toX(0),H);ctx.stroke();
+    
+    // 축 레이블
+    ctx.fillStyle='#999';ctx.font='11px sans-serif';ctx.textAlign='center';
+    for(let x=-4;x<=4;x++)if(x!==0)ctx.fillText(x,toX(x),toY(0)+14);
+    ctx.textAlign='right';
+    for(let y=-1.5;y<=1.5;y+=0.5)if(Math.abs(y)>0.01)ctx.fillText(y.toFixed(1),toX(0)-6,toY(y)+4);
+    
+    const toDraw=showAll?Object.keys(funcs):[currentFunc];
+    
+    toDraw.forEach(fname=>{
+        const fn=funcs[fname];
+        const color=COLORS[fname];
+        
+        // 함수 곡선
+        ctx.strokeStyle=color;
+        ctx.lineWidth=showAll?2:3;
+        ctx.beginPath();
+        for(let px=0;px<W;px++){
+            const x=xMin+(xMax-xMin)*px/W;
+            const y=fn(x);
+            if(px===0)ctx.moveTo(px,toY(y));else ctx.lineTo(px,toY(y));
+        }
+        ctx.stroke();
+        
+        // 레이블
+        if(showAll){
+            const lx=4.5,ly=fn(lx);
+            ctx.fillStyle=color;ctx.font='bold 11px sans-serif';ctx.textAlign='left';
+            ctx.fillText(NAMES[fname],toX(lx)-40,toY(ly)-8);
+        }
+        
+        // 도함수
+        if(showDeriv&&(fname===currentFunc||showAll)){
+            const dfn=derivs[fname];
+            ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.setLineDash([5,5]);
+            ctx.beginPath();
+            for(let px=0;px<W;px++){
+                const x=xMin+(xMax-xMin)*px/W;
+                const y=dfn(x);
+                if(px===0)ctx.moveTo(px,toY(y));else ctx.lineTo(px,toY(y));
+            }
+            ctx.stroke();ctx.setLineDash([]);
+        }
+    });
+    
+    // 현재 x 위치 마커
+    const xv=parseFloat(document.getElementById('xSlider').value);
+    const yv=funcs[currentFunc](xv);
+    ctx.fillStyle=COLORS[currentFunc];
+    ctx.beginPath();ctx.arc(toX(xv),toY(yv),6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(toX(xv),toY(yv),3,0,Math.PI*2);ctx.fill();
+    
+    // 점선 가이드
+    ctx.strokeStyle='#ddd';ctx.setLineDash([3,3]);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(toX(xv),toY(0));ctx.lineTo(toX(xv),toY(yv));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(toX(0),toY(yv));ctx.lineTo(toX(xv),toY(yv));ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function updateSlider(){
+    const x=parseFloat(document.getElementById('xSlider').value);
+    const y=funcs[currentFunc](x);
+    const dy=derivs[currentFunc](x);
+    document.getElementById('xVal').textContent=`x = ${x.toFixed(1)}`;
+    document.getElementById('yVal').innerHTML=`f(x) = ${y.toFixed(4)} &nbsp; f'(x) = ${dy.toFixed(4)}`;
+    draw();
+}
+
+function updateInfo(){
+    const info=INFO[currentFunc];
+    document.getElementById('infoPanel').innerHTML=`
+    <div class="info-card">
+        <h3>${NAMES[currentFunc]}</h3>
+        <div class="formula">${info.formula}</div>
+        <p><strong>출력 범위:</strong> ${info.range}</p>
+        <p><strong>주 사용처:</strong> ${info.use}</p>
+    </div>
+    <div class="info-card" style="border-top-color:#FF9800;">
+        <h3>주의할 점</h3>
+        <p>${info.issue}</p>
+        <p style="margin-top:8px;font-size:12px;color:#666;">
+        ${currentFunc==='relu'?'해결책: Leaky ReLU, PReLU, ELU 등 변형 사용':
+          currentFunc==='sigmoid'||currentFunc==='tanh'?'해결책: 은닉층에서는 ReLU 계열 사용':
+          currentFunc==='gelu'?'GPT-2/3/4, BERT, ViT 등 최신 모델의 표준':''}
+        </p>
+    </div>`;
+}
+
+draw();
+updateInfo();
+updateSlider();
+</script>
+</body>
+</html>
