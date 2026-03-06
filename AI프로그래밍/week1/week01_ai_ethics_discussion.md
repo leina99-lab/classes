@@ -9,7 +9,7 @@
 
 | 항목(Item) | 내용(Description) |
 |---|---|
-| 목표(Objective) | AI 코딩 도구 사용 시 **"한 단계 더 들어가기"**의 필요성을 체득한다 |
+| 목표(Objective) | AI 코딩 도구 사용 시 **한 단계 더 들어가기**의 필요성을 체득한다 |
 | 핵심 질문(Key Question) | "AI가 만든 코드를 그대로 쓰면 왜 위험한가?" |
 | 준비물(Materials) | Google Colab, 본 자료 |
 
