@@ -468,7 +468,7 @@ print(f"일본 최대 일일 확진: {df_jp['new_cases'].max():,.0f}명 "
 ```
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 **프롬프트 B**가 더 좋은 프롬프트이다.
 
@@ -502,7 +502,7 @@ print(f"몫: {a}, 나머지: {b}, 거듭제곱: {c}")
 (3) 만약 `x = -10, y = 3`이면 결과가 어떻게 달라지는지 예측하고 검증하라.
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 **(1) 손으로 예측:**
 - `x // y` = 10 // 3 = 3 (몫)
@@ -540,7 +540,7 @@ AI에게 다음 프롬프트를 보내고, 결과를 검증하라.
 (3) 만약 `"hello"` (소문자)도 포함하여 세려면 어떻게 수정해야 하는지 직접 작성하라.
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 ```python
 text = "Hello, World! Hello, Python!"
@@ -587,7 +587,7 @@ print(f"대소문자 무시 결과: {count_all}")  # 2
 조건: 개선된 프롬프트에는 (1) 구체적 데이터, (2) 변수명, (3) 검증 방법이 포함되어야 한다.
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 **개선된 프롬프트 예시:**
 ```
@@ -628,7 +628,7 @@ print(f"대소문자 무시 결과: {count_all}")  # 2
 (4) 15, 30, 45가 리스트에 **포함되지 않았는지** 확인하라 (이들은 3과 5의 공배수이다).
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 ```python
 # 코드
@@ -671,7 +671,7 @@ print(f"합계: {a + b}")
 (3) 올바른 코드로 수정하라.
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 **(1) 실행 결과:** `합계: 35` (8이 아니라 35가 출력된다!)
 
@@ -714,7 +714,7 @@ covid_seoul = {
 (4) 결과를 보고 "구체적 관찰" 한 문장을 작성하라 (일반론이 아닌, 이 데이터에서만 보이는 것).
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 ```python
 covid_seoul = {
@@ -780,7 +780,7 @@ print(f"퍼센트: {0.8567:.1%}")
 ```
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 ```
 Python의 최신 버전은 3.12이다. (2024년 기준)
@@ -822,7 +822,7 @@ Python
 - 검증 방법
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary> 해답(Solution)</summary>
 
 **모범 프롬프트 예시:**
 ```
@@ -875,7 +875,7 @@ print(f"소수 목록: {primes}")
 (4) `range(2, num)` 대신 `range(2, int(num**0.5) + 1)`로 바꾸면 왜 더 빠른지 설명하라.
 
 <details>
-<summary>📝 해답(Solution)</summary>
+<summary>해답(Solution)</summary>
 
 **(1) 실행 결과:** 25개 ✓ (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97)
 
