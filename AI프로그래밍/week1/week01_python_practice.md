@@ -857,7 +857,7 @@ print(f"{date} | {country} | 신규 {new_cases:,}명 | 사망 {new_deaths:,}명"
 
 ---
 
-# PART D. 심화 + 연습문제 (30분)
+# PART D. 심화 + 연습문제 
 
 ---
 
