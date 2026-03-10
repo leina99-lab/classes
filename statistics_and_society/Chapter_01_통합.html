@@ -911,8 +911,6 @@ if p_value < 0.05:
     <div class="compute">
 # 교란 변수 시뮬레이션: 아이스크림과 익사 사고
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 np.random.seed(42)
@@ -959,7 +957,7 @@ ax2.scatter(temperature, ice_cream_sales, c='#666666', s=60, edgecolor='white')
 z = np.polyfit(temperature, ice_cream_sales, 1)
 p = np.poly1d(z)
 ax2.plot(temperature, p(temperature), 'k--', linewidth=2)
-ax2.set_xlabel('Temperature (°C)', fontsize=11)
+ax2.set_xlabel('Temperature (C)', fontsize=11)
 ax2.set_ylabel('Ice Cream Sales', fontsize=11)
 ax2.set_title(f'True Cause\n(r = {corr_temp_ice:.2f})', fontsize=12, fontweight='bold')
 
@@ -969,12 +967,11 @@ ax3.scatter(temperature, drowning_incidents, c='#999999', s=60, edgecolor='white
 z = np.polyfit(temperature, drowning_incidents, 1)
 p = np.poly1d(z)
 ax3.plot(temperature, p(temperature), 'k--', linewidth=2)
-ax3.set_xlabel('Temperature (°C)', fontsize=11)
+ax3.set_xlabel('Temperature (C)', fontsize=11)
 ax3.set_ylabel('Drowning Incidents', fontsize=11)
 ax3.set_title(f'True Cause\n(r = {corr_temp_drowning:.2f})', fontsize=12, fontweight='bold')
 
 plt.tight_layout()
-plt.savefig('/tmp/confounding.png', dpi=100)
 plt.show()
     </div>
 
@@ -1005,8 +1002,6 @@ plt.show()
     <div class="compute">
 # M&M 표본추출 시뮬레이션
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 np.random.seed(123)
@@ -1031,7 +1026,8 @@ for color in colors_list:
 
 # 1. 단순 무작위 표본추출
 sample_size = 20
-srs_sample = np.random.choice(population, size=sample_size, replace=False)
+srs_indices = np.random.choice(len(population), size=sample_size, replace=False)
+srs_sample = population[srs_indices]
 print(f"\n1. 단순 무작위 표본 (n={sample_size}):")
 for color in colors_list:
     count = np.sum(srs_sample == color)
@@ -1041,12 +1037,12 @@ for color in colors_list:
 print(f"\n2. 층화 표본추출 (n={sample_size}):")
 stratified_sample = []
 for color in colors_list:
-    color_population = population[population == color]
-    n_to_sample = max(1, int(len(color_population) / population_size * sample_size))
-    if len(color_population) > 0:
-        sampled = np.random.choice(color_population, size=min(n_to_sample, len(color_population)), replace=False)
-        stratified_sample.extend(sampled)
-        print(f"  {color}: {len(sampled)}개 (모집단 {len(color_population)}개에서)")
+    color_indices = np.where(population == color)[0]
+    n_to_sample = max(1, int(len(color_indices) / population_size * sample_size))
+    if len(color_indices) > 0:
+        sampled_indices = np.random.choice(color_indices, size=min(n_to_sample, len(color_indices)), replace=False)
+        stratified_sample.extend(population[sampled_indices])
+        print(f"  {color}: {len(sampled_indices)}개 (모집단 {len(color_indices)}개에서)")
 
 # 3. 군집 표본추출
 print(f"\n3. 군집 표본추출:")
@@ -1096,7 +1092,6 @@ for bar, count in zip(bars3, cluster_counts):
              str(count), ha='center', fontsize=10)
 
 plt.tight_layout()
-plt.savefig('/tmp/sampling.png', dpi=100)
 plt.show()
 
 print("\n=== 교훈 ===")
@@ -1163,7 +1158,7 @@ print("군집: 비용이 적지만 편향될 수 있다")
     <div class="compute">
 # 블라인드 테스트 시뮬레이션
 import numpy as np
-from scipy import stats
+import matplotlib.pyplot as plt
 
 np.random.seed(456)
 
@@ -1174,27 +1169,35 @@ print("실제로 두 콜라는 거의 같은 맛이라고 가정\n")
 n_participants = 30
 
 # 시나리오 1: 눈가림 없음 (브랜드 공개)
-# 유명 브랜드에 대한 선입견으로 점수가 달라짐
 print("1. 눈가림 없음 (브랜드 공개)")
-brand_a_open = np.random.normal(7.5, 1.0, n_participants)  # 유명 브랜드 - 높은 점수
-brand_b_open = np.random.normal(6.0, 1.0, n_participants)  # 덜 유명 - 낮은 점수
-t_stat, p_value = stats.ttest_ind(brand_a_open, brand_b_open)
-print(f"   브랜드 A 평균: {brand_a_open.mean():.2f}")
-print(f"   브랜드 B 평균: {brand_b_open.mean():.2f}")
-print(f"   차이: {brand_a_open.mean() - brand_b_open.mean():.2f}")
-print(f"   p-value: {p_value:.4f} {'(유의함!)' if p_value < 0.05 else ''}")
-print("   → 브랜드 선입견 때문에 가짜 차이 발생!")
+brand_a_open = np.random.normal(7.5, 1.0, n_participants)  # 유명 브랜드
+brand_b_open = np.random.normal(6.0, 1.0, n_participants)  # 덜 유명
+
+# t-검정 (수동 계산)
+mean_diff = np.mean(brand_a_open) - np.mean(brand_b_open)
+pooled_std = np.sqrt((np.var(brand_a_open) + np.var(brand_b_open)) / 2)
+t_stat_1 = mean_diff / (pooled_std * np.sqrt(2/n_participants))
+
+print(f"   브랜드 A 평균: {np.mean(brand_a_open):.2f}")
+print(f"   브랜드 B 평균: {np.mean(brand_b_open):.2f}")
+print(f"   차이: {mean_diff:.2f}")
+print(f"   t-통계량: {t_stat_1:.2f}")
+print("   -> 브랜드 선입견 때문에 가짜 차이 발생!")
 
 # 시나리오 2: 이중 눈가림
 print("\n2. 이중 눈가림 (둘 다 모름)")
-brand_a_blind = np.random.normal(6.8, 1.2, n_participants)  # 실제 맛 평가
-brand_b_blind = np.random.normal(6.6, 1.2, n_participants)  # 거의 비슷
-t_stat, p_value = stats.ttest_ind(brand_a_blind, brand_b_blind)
-print(f"   컵 A 평균: {brand_a_blind.mean():.2f}")
-print(f"   컵 B 평균: {brand_b_blind.mean():.2f}")
-print(f"   차이: {brand_a_blind.mean() - brand_b_blind.mean():.2f}")
-print(f"   p-value: {p_value:.4f} {'(유의함!)' if p_value < 0.05 else '(유의하지 않음)'}")
-print("   → 선입견 제거 후 진짜 맛 차이만 측정!")
+brand_a_blind = np.random.normal(6.8, 1.2, n_participants)
+brand_b_blind = np.random.normal(6.6, 1.2, n_participants)
+
+mean_diff_2 = np.mean(brand_a_blind) - np.mean(brand_b_blind)
+pooled_std_2 = np.sqrt((np.var(brand_a_blind) + np.var(brand_b_blind)) / 2)
+t_stat_2 = mean_diff_2 / (pooled_std_2 * np.sqrt(2/n_participants))
+
+print(f"   컵 A 평균: {np.mean(brand_a_blind):.2f}")
+print(f"   컵 B 평균: {np.mean(brand_b_blind):.2f}")
+print(f"   차이: {mean_diff_2:.2f}")
+print(f"   t-통계량: {t_stat_2:.2f}")
+print("   -> 선입견 제거 후 진짜 맛 차이만 측정!")
 
 print("\n=== 결론 ===")
 print("눈가림 없이: 유명 브랜드가 '더 맛있다'는 결과 (가짜!)")
@@ -1202,10 +1205,6 @@ print("이중 눈가림: 실제로는 맛 차이가 거의 없음 (진짜!)")
 print("\n이것이 이중 눈가림이 중요한 이유!")
 
 # 시각화
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
 # 눈가림 없음
@@ -1217,7 +1216,7 @@ bp1['boxes'][1].set_facecolor('#cccccc')
 ax1.set_ylabel('Taste Score (1-10)', fontsize=11)
 ax1.set_title('Without Blinding\n(Brand Revealed)', fontsize=12, fontweight='bold')
 ax1.set_ylim(3, 10)
-ax1.axhline(y=6.7, color='black', linestyle='--', alpha=0.5, label='True taste')
+ax1.axhline(y=6.7, color='black', linestyle='--', alpha=0.5)
 
 # 이중 눈가림
 ax2 = axes[1]
@@ -1228,10 +1227,9 @@ bp2['boxes'][1].set_facecolor('#cccccc')
 ax2.set_ylabel('Taste Score (1-10)', fontsize=11)
 ax2.set_title('Double-Blind\n(Neither Knows)', fontsize=12, fontweight='bold')
 ax2.set_ylim(3, 10)
-ax2.axhline(y=6.7, color='black', linestyle='--', alpha=0.5, label='True taste')
+ax2.axhline(y=6.7, color='black', linestyle='--', alpha=0.5)
 
 plt.tight_layout()
-plt.savefig('/tmp/blinding.png', dpi=100)
 plt.show()
     </div>
 
