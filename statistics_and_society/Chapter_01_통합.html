@@ -122,6 +122,13 @@ document.addEventListener("DOMContentLoaded", function() {
         </li>
         <li><a href="#sec1-3">1.3 표본추출 원리와 전략</a></li>
         <li><a href="#sec1-4">1.4 실험</a></li>
+        <li><a href="#activities">참여 활동: 통계학 체험하기</a>
+            <ul class="sub">
+                <li><a href="#activities">활동 1: 교란 변수 찾기 게임</a></li>
+                <li><a href="#activities">활동 2: M&M 표본추출 시뮬레이션</a></li>
+                <li><a href="#activities">활동 3: 블라인드 테스트 체험</a></li>
+            </ul>
+        </li>
         <li><a href="#sec1-5">1.5 장 복습 및 연습문제</a></li>
     </ul>
 </div>
@@ -826,6 +833,423 @@ if p_value < 0.05:
 </div>
 
 <!-- 1.5 장 복습 및 연습문제 -->
+
+<!-- 참여 활동 섹션 -->
+<div class="section" id="activities">
+    <div class="section-title">참여 활동: 통계학 체험하기</div>
+
+    <div class="content">
+        <p>이론만으로는 부족하다. 직접 체험해보자! 아래 세 가지 활동을 통해 핵심 개념을 몸으로 익힐 수 있다.</p>
+    </div>
+
+    <!-- 활동 1: 교란 변수 찾기 게임 -->
+    <h3 class="subsection-title">활동 1: 교란 변수 찾기 게임</h3>
+    
+    <div class="content">
+        <p>아래 상관관계들은 모두 실제 데이터에서 관찰된 것이다. 하지만 이것이 인과관계일까? 숨겨진 <strong>교란 변수</strong>를 찾아보자!</p>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">퀴즈 1</span>
+        <span class="ex-title">신발 크기와 수학 점수</span>
+        <div class="problem-desc">
+            초등학교에서 조사한 결과, <strong>신발 크기가 큰 학생일수록 수학 점수가 높다</strong>는 상관관계가 발견되었다.<br><br>
+            신발이 크면 수학을 잘하게 되는 걸까? 숨겨진 교란 변수는 무엇일까?
+        </div>
+        <details class="quiz">
+            <summary>정답 보기</summary>
+            <div class="answer">
+                <p><strong>교란 변수: 나이(학년)</strong></p>
+                <p>나이가 많을수록(고학년일수록):</p>
+                <ul>
+                    <li>신발 크기가 크다 (성장)</li>
+                    <li>수학 점수가 높다 (더 많이 배웠으니까)</li>
+                </ul>
+                <p>신발 크기 자체가 수학 실력에 영향을 주는 것이 아니다!</p>
+            </div>
+        </details>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">퀴즈 2</span>
+        <span class="ex-title">소방관 수와 화재 피해액</span>
+        <div class="problem-desc">
+            화재 현장 데이터를 분석한 결과, <strong>출동한 소방관 수가 많을수록 화재 피해액이 크다</strong>는 상관관계가 있었다.<br><br>
+            소방관이 많이 오면 피해가 커지는 걸까? 소방관을 적게 보내야 할까?
+        </div>
+        <details class="quiz">
+            <summary>정답 보기</summary>
+            <div class="answer">
+                <p><strong>교란 변수: 화재 규모</strong></p>
+                <p>화재가 클수록:</p>
+                <ul>
+                    <li>더 많은 소방관이 출동한다</li>
+                    <li>피해액도 당연히 크다</li>
+                </ul>
+                <p>소방관이 피해를 키우는 게 아니라, 큰 화재에 많은 소방관이 필요한 것이다!</p>
+            </div>
+        </details>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">퀴즈 3</span>
+        <span class="ex-title">니콜라스 케이지 영화와 수영장 익사</span>
+        <div class="problem-desc">
+            실제 데이터: <strong>니콜라스 케이지가 출연한 영화 수와 수영장 익사 사고 수</strong> 사이에 높은 상관관계(r=0.67)가 있다!<br><br>
+            니콜라스 케이지 영화가 익사를 유발하는 걸까?
+        </div>
+        <details class="quiz">
+            <summary>정답 보기</summary>
+            <div class="answer">
+                <p><strong>이것은 우연의 일치(spurious correlation)이다!</strong></p>
+                <p>교란 변수가 아닌, 단순히 우연히 비슷한 패턴을 보이는 경우도 있다. 충분히 많은 변수를 비교하면, 관련 없는 것들 사이에서도 상관관계가 나타날 수 있다.</p>
+                <p><strong>교훈:</strong> 상관관계가 있다고 해서 반드시 인과관계나 교란 변수가 있는 것은 아니다. 때로는 그냥 우연이다!</p>
+            </div>
+        </details>
+    </div>
+
+    <div class="compute">
+# 교란 변수 시뮬레이션: 아이스크림과 익사 사고
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+# 12개월 데이터 생성
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+# 교란 변수: 기온
+temperature = np.array([2, 4, 10, 15, 20, 25, 30, 29, 24, 17, 10, 4])
+
+# 기온에 영향받는 변수들
+ice_cream_sales = 50 + 3 * temperature + np.random.normal(0, 5, 12)
+drowning_incidents = 2 + 0.3 * temperature + np.random.normal(0, 1, 12)
+
+# 상관계수 계산
+corr_ice_drowning = np.corrcoef(ice_cream_sales, drowning_incidents)[0,1]
+corr_temp_ice = np.corrcoef(temperature, ice_cream_sales)[0,1]
+corr_temp_drowning = np.corrcoef(temperature, drowning_incidents)[0,1]
+
+print("=== 교란 변수 시뮬레이션 ===")
+print(f"\n아이스크림 판매량 vs 익사 사고: r = {corr_ice_drowning:.3f} (강한 양의 상관!)")
+print(f"기온 vs 아이스크림 판매량: r = {corr_temp_ice:.3f}")
+print(f"기온 vs 익사 사고: r = {corr_temp_drowning:.3f}")
+print("\n결론: 아이스크림이 익사를 유발하는 게 아니라,")
+print("      '기온'이라는 교란 변수가 둘 다에 영향을 미친다!")
+
+# 시각화
+fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+
+# 1. 가짜 상관관계
+ax1 = axes[0]
+ax1.scatter(ice_cream_sales, drowning_incidents, c='#333333', s=60, edgecolor='white')
+z = np.polyfit(ice_cream_sales, drowning_incidents, 1)
+p = np.poly1d(z)
+ax1.plot(ice_cream_sales, p(ice_cream_sales), 'k--', linewidth=2)
+ax1.set_xlabel('Ice Cream Sales', fontsize=11)
+ax1.set_ylabel('Drowning Incidents', fontsize=11)
+ax1.set_title(f'Spurious Correlation\n(r = {corr_ice_drowning:.2f})', fontsize=12, fontweight='bold')
+
+# 2. 진짜 원인 1
+ax2 = axes[1]
+ax2.scatter(temperature, ice_cream_sales, c='#666666', s=60, edgecolor='white')
+z = np.polyfit(temperature, ice_cream_sales, 1)
+p = np.poly1d(z)
+ax2.plot(temperature, p(temperature), 'k--', linewidth=2)
+ax2.set_xlabel('Temperature (°C)', fontsize=11)
+ax2.set_ylabel('Ice Cream Sales', fontsize=11)
+ax2.set_title(f'True Cause\n(r = {corr_temp_ice:.2f})', fontsize=12, fontweight='bold')
+
+# 3. 진짜 원인 2
+ax3 = axes[2]
+ax3.scatter(temperature, drowning_incidents, c='#999999', s=60, edgecolor='white')
+z = np.polyfit(temperature, drowning_incidents, 1)
+p = np.poly1d(z)
+ax3.plot(temperature, p(temperature), 'k--', linewidth=2)
+ax3.set_xlabel('Temperature (°C)', fontsize=11)
+ax3.set_ylabel('Drowning Incidents', fontsize=11)
+ax3.set_title(f'True Cause\n(r = {corr_temp_drowning:.2f})', fontsize=12, fontweight='bold')
+
+plt.tight_layout()
+plt.savefig('/tmp/confounding.png', dpi=100)
+plt.show()
+    </div>
+
+    <!-- 활동 2: M&M 표본추출 시뮬레이션 -->
+    <h3 class="subsection-title">활동 2: M&M 초콜릿으로 배우는 표본추출</h3>
+    
+    <div class="content">
+        <p>M&M 초콜릿 한 봉지에는 여러 색깔이 섞여 있다. 이것을 이용해 표본추출 방법을 직접 체험해보자!</p>
+        
+        <div class="highlight-box info">
+            <strong>준비물:</strong> M&M 초콜릿 1봉지 (또는 색깔별 구슬, 레고 블록 등)
+        </div>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">실습</span>
+        <span class="ex-title">네 가지 표본추출 방법 비교</span>
+        <div class="problem-desc">
+            <strong>상황:</strong> M&M 100개가 있고, 전체 색깔 비율을 알고 싶다. 하지만 20개만 뽑아서 추정해야 한다!<br><br>
+            
+            <strong>방법 1 - 단순 무작위:</strong> 눈 감고 아무거나 20개 집기<br>
+            <strong>방법 2 - 층화:</strong> 색깔별로 나누고, 각 색깔에서 비율대로 뽑기<br>
+            <strong>방법 3 - 군집:</strong> 봉지를 5개 구역으로 나누고, 1개 구역 통째로 뽑기<br>
+            <strong>방법 4 - 다단계:</strong> 2개 구역 선택 후, 각 구역에서 10개씩 뽑기
+        </div>
+    </div>
+
+    <div class="compute">
+# M&M 표본추출 시뮬레이션
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+np.random.seed(123)
+
+# M&M 실제 색깔 비율 (미국 기준 추정)
+true_proportions = {
+    'Red': 0.13, 'Orange': 0.20, 'Yellow': 0.14,
+    'Green': 0.16, 'Blue': 0.24, 'Brown': 0.13
+}
+colors_list = list(true_proportions.keys())
+true_props = list(true_proportions.values())
+
+# 모집단 생성 (100개)
+population_size = 100
+population = np.random.choice(colors_list, size=population_size, p=true_props)
+
+print("=== M&M 표본추출 시뮬레이션 ===")
+print(f"\n모집단 (N={population_size}):")
+for color in colors_list:
+    count = np.sum(population == color)
+    print(f"  {color}: {count}개 ({count}%)")
+
+# 1. 단순 무작위 표본추출
+sample_size = 20
+srs_sample = np.random.choice(population, size=sample_size, replace=False)
+print(f"\n1. 단순 무작위 표본 (n={sample_size}):")
+for color in colors_list:
+    count = np.sum(srs_sample == color)
+    print(f"  {color}: {count}개 ({count/sample_size*100:.0f}%)")
+
+# 2. 층화 표본추출
+print(f"\n2. 층화 표본추출 (n={sample_size}):")
+stratified_sample = []
+for color in colors_list:
+    color_population = population[population == color]
+    n_to_sample = max(1, int(len(color_population) / population_size * sample_size))
+    if len(color_population) > 0:
+        sampled = np.random.choice(color_population, size=min(n_to_sample, len(color_population)), replace=False)
+        stratified_sample.extend(sampled)
+        print(f"  {color}: {len(sampled)}개 (모집단 {len(color_population)}개에서)")
+
+# 3. 군집 표본추출
+print(f"\n3. 군집 표본추출:")
+clusters = np.array_split(population, 5)  # 5개 군집
+selected_cluster = np.random.randint(0, 5)
+cluster_sample = clusters[selected_cluster]
+print(f"  5개 군집 중 {selected_cluster+1}번 군집 전체 선택: {len(cluster_sample)}개")
+for color in colors_list:
+    count = np.sum(cluster_sample == color)
+    if count > 0:
+        print(f"    {color}: {count}개")
+
+# 결과 비교 시각화
+fig, axes = plt.subplots(1, 3, figsize=(14, 5))
+
+# 모집단
+ax1 = axes[0]
+pop_counts = [np.sum(population == c) for c in colors_list]
+bars1 = ax1.bar(colors_list, pop_counts, color='#666666', edgecolor='black')
+ax1.set_title('Population (N=100)', fontsize=12, fontweight='bold')
+ax1.set_ylabel('Count')
+ax1.set_ylim(0, 30)
+for bar, count in zip(bars1, pop_counts):
+    ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
+             str(count), ha='center', fontsize=10)
+
+# 단순 무작위 표본
+ax2 = axes[1]
+srs_counts = [np.sum(srs_sample == c) for c in colors_list]
+bars2 = ax2.bar(colors_list, srs_counts, color='#999999', edgecolor='black')
+ax2.set_title('Simple Random Sample (n=20)', fontsize=12, fontweight='bold')
+ax2.set_ylabel('Count')
+ax2.set_ylim(0, 10)
+for bar, count in zip(bars2, srs_counts):
+    ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2, 
+             str(count), ha='center', fontsize=10)
+
+# 군집 표본
+ax3 = axes[2]
+cluster_counts = [np.sum(cluster_sample == c) for c in colors_list]
+bars3 = ax3.bar(colors_list, cluster_counts, color='#bbbbbb', edgecolor='black')
+ax3.set_title(f'Cluster Sample (Cluster {selected_cluster+1})', fontsize=12, fontweight='bold')
+ax3.set_ylabel('Count')
+ax3.set_ylim(0, 10)
+for bar, count in zip(bars3, cluster_counts):
+    ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2, 
+             str(count), ha='center', fontsize=10)
+
+plt.tight_layout()
+plt.savefig('/tmp/sampling.png', dpi=100)
+plt.show()
+
+print("\n=== 교훈 ===")
+print("표본추출 방법에 따라 결과가 달라질 수 있다!")
+print("단순 무작위: 가장 공정하지만 비용이 많이 든다")
+print("층화: 각 그룹이 반드시 포함되지만 설계가 복잡하다")
+print("군집: 비용이 적지만 편향될 수 있다")
+    </div>
+
+    <!-- 활동 3: 블라인드 테스트 -->
+    <h3 class="subsection-title">활동 3: 블라인드 테스트 체험</h3>
+    
+    <div class="content">
+        <p>이중 눈가림(double-blind)의 중요성을 직접 체험해보자!</p>
+        
+        <div class="highlight-box info">
+            <strong>준비물:</strong> 콜라 2종류(코카콜라, 펩시) 또는 커피 2종류, 종이컵, 숫자 스티커
+        </div>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">실습</span>
+        <span class="ex-title">음료 블라인드 테스트 설계</span>
+        <div class="problem-desc">
+            <strong>연구 질문:</strong> 사람들이 실제로 코카콜라와 펩시의 맛 차이를 구별할 수 있는가?<br><br>
+            
+            <strong>나쁜 실험 설계 (편향 있음):</strong><br>
+            - "이건 코카콜라, 이건 펩시예요. 뭐가 더 맛있어요?"<br>
+            - 문제: 브랜드 선입견이 맛 평가에 영향<br><br>
+            
+            <strong>단일 눈가림:</strong><br>
+            - 참가자는 어떤 컵이 어떤 음료인지 모름<br>
+            - 연구자는 알고 있음<br>
+            - 문제: 연구자가 무의식적으로 힌트를 줄 수 있음<br><br>
+            
+            <strong>이중 눈가림 (최선):</strong><br>
+            - 제3자가 컵에 A, B 라벨만 붙임<br>
+            - 참가자도 연구자도 정체를 모름<br>
+            - 모든 테스트 끝난 후에 공개
+        </div>
+    </div>
+
+    <div class="example-box">
+        <span class="ex-label">실습 가이드</span>
+        <span class="ex-title">교실에서 블라인드 테스트 진행하기</span>
+        <div class="problem-desc">
+            <strong>Step 1: 준비 (제3자가 진행)</strong><br>
+            - 동일한 컵 6개 준비<br>
+            - 컵 밑바닥에 1, 2, 3, 4, 5, 6 번호 표시<br>
+            - 홀수 컵에 음료 A, 짝수 컵에 음료 B (이 정보는 봉인)<br><br>
+            
+            <strong>Step 2: 테스트</strong><br>
+            - 참가자에게 6개 컵을 무작위 순서로 제시<br>
+            - 각 컵의 맛을 1-10점으로 평가하게 함<br>
+            - 연구자도 어떤 컵이 어떤 음료인지 모름<br><br>
+            
+            <strong>Step 3: 분석</strong><br>
+            - 봉인을 열어 정답 확인<br>
+            - 홀수 컵(음료 A) 평균 vs 짝수 컵(음료 B) 평균 비교<br>
+            - 통계적으로 유의한 차이가 있는지 검정
+        </div>
+    </div>
+
+    <div class="compute">
+# 블라인드 테스트 시뮬레이션
+import numpy as np
+from scipy import stats
+
+np.random.seed(456)
+
+print("=== 블라인드 테스트 시뮬레이션 ===")
+print("\n상황: 30명이 콜라 A와 B를 블라인드 테스트")
+print("실제로 두 콜라는 거의 같은 맛이라고 가정\n")
+
+n_participants = 30
+
+# 시나리오 1: 눈가림 없음 (브랜드 공개)
+# 유명 브랜드에 대한 선입견으로 점수가 달라짐
+print("1. 눈가림 없음 (브랜드 공개)")
+brand_a_open = np.random.normal(7.5, 1.0, n_participants)  # 유명 브랜드 - 높은 점수
+brand_b_open = np.random.normal(6.0, 1.0, n_participants)  # 덜 유명 - 낮은 점수
+t_stat, p_value = stats.ttest_ind(brand_a_open, brand_b_open)
+print(f"   브랜드 A 평균: {brand_a_open.mean():.2f}")
+print(f"   브랜드 B 평균: {brand_b_open.mean():.2f}")
+print(f"   차이: {brand_a_open.mean() - brand_b_open.mean():.2f}")
+print(f"   p-value: {p_value:.4f} {'(유의함!)' if p_value < 0.05 else ''}")
+print("   → 브랜드 선입견 때문에 가짜 차이 발생!")
+
+# 시나리오 2: 이중 눈가림
+print("\n2. 이중 눈가림 (둘 다 모름)")
+brand_a_blind = np.random.normal(6.8, 1.2, n_participants)  # 실제 맛 평가
+brand_b_blind = np.random.normal(6.6, 1.2, n_participants)  # 거의 비슷
+t_stat, p_value = stats.ttest_ind(brand_a_blind, brand_b_blind)
+print(f"   컵 A 평균: {brand_a_blind.mean():.2f}")
+print(f"   컵 B 평균: {brand_b_blind.mean():.2f}")
+print(f"   차이: {brand_a_blind.mean() - brand_b_blind.mean():.2f}")
+print(f"   p-value: {p_value:.4f} {'(유의함!)' if p_value < 0.05 else '(유의하지 않음)'}")
+print("   → 선입견 제거 후 진짜 맛 차이만 측정!")
+
+print("\n=== 결론 ===")
+print("눈가림 없이: 유명 브랜드가 '더 맛있다'는 결과 (가짜!)")
+print("이중 눈가림: 실제로는 맛 차이가 거의 없음 (진짜!)")
+print("\n이것이 이중 눈가림이 중요한 이유!")
+
+# 시각화
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# 눈가림 없음
+ax1 = axes[0]
+bp1 = ax1.boxplot([brand_a_open, brand_b_open], labels=['Brand A\n(Famous)', 'Brand B\n(Unknown)'],
+                   patch_artist=True)
+bp1['boxes'][0].set_facecolor('#888888')
+bp1['boxes'][1].set_facecolor('#cccccc')
+ax1.set_ylabel('Taste Score (1-10)', fontsize=11)
+ax1.set_title('Without Blinding\n(Brand Revealed)', fontsize=12, fontweight='bold')
+ax1.set_ylim(3, 10)
+ax1.axhline(y=6.7, color='black', linestyle='--', alpha=0.5, label='True taste')
+
+# 이중 눈가림
+ax2 = axes[1]
+bp2 = ax2.boxplot([brand_a_blind, brand_b_blind], labels=['Cup A', 'Cup B'],
+                   patch_artist=True)
+bp2['boxes'][0].set_facecolor('#888888')
+bp2['boxes'][1].set_facecolor('#cccccc')
+ax2.set_ylabel('Taste Score (1-10)', fontsize=11)
+ax2.set_title('Double-Blind\n(Neither Knows)', fontsize=12, fontweight='bold')
+ax2.set_ylim(3, 10)
+ax2.axhline(y=6.7, color='black', linestyle='--', alpha=0.5, label='True taste')
+
+plt.tight_layout()
+plt.savefig('/tmp/blinding.png', dpi=100)
+plt.show()
+    </div>
+
+    <div class="new-perspective">
+        <h3>참여 활동의 교훈</h3>
+        <p>이 세 가지 활동을 통해 다음을 체험할 수 있다:</p>
+        <ul>
+            <li><strong>교란 변수 찾기:</strong> 상관관계를 볼 때 항상 "숨겨진 제3의 변수"를 의심하라</li>
+            <li><strong>표본추출:</strong> 어떻게 뽑느냐에 따라 결과가 달라진다. 방법 선택이 중요!</li>
+            <li><strong>블라인드 테스트:</strong> 선입견을 제거해야 진짜 효과를 볼 수 있다</li>
+        </ul>
+        <blockquote>
+            <strong>핵심 메시지:</strong> 통계학은 "속지 않기 위한 기술"이다. 데이터가 말하는 것과 우리가 믿고 싶은 것을 구별하는 것이 통계적 사고의 핵심이다.
+        </blockquote>
+    </div>
+</div>
+
+
 <div class="section" id="sec1-5">
     <div class="section-title">1.5 장 복습 및 연습문제</div>
 
