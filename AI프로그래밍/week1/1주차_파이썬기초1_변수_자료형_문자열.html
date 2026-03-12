@@ -3,703 +3,1401 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>W01 · 파이썬 기초 ① — 변수 · 숫자형 · 문자열</title>
+<title>W01 — 파이썬 기초 1 : 변수 · 숫자형 · 문자열</title>
+
+<!-- SageCell (Python 실행) -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    sagecell.makeSagecell({
+      inputLocation:  '.sage-ping',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
+    });
+    sagecell.makeSagecell({
+      inputLocation:  '.sage-pong',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
+    });
+    sagecell.makeSagecell({
+      inputLocation:  '.sage-code',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
+    });
+  });
+</script>
+
 <style>
-  /* ── 기본 ── */
-  :root {
-    --beige:   #FAF7F2;
-    --cream:   #F5F0E8;
-    --crimson: #A02020;
-    --dark:    #2C2C2C;
-    --mid:     #555555;
-    --border:  #C8B8A2;
-    --blue:    #2E5FA3;
-    --amber:   #D4820A;
-    --green:   #1A7A4A;
-    --code-bg: #F0EDE8;
-    --table-hd:#8B1A1A;
-    --table-alt:#F5F0EB;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--beige);
-    font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple Gothic', sans-serif;
-    color: var(--dark);
-    line-height: 1.75;
-    font-size: 15px;
-  }
+/* ── 리셋 & 기본 ── */
+:root {
+  --beige:   #FAF7F2;
+  --cream:   #F5F0E8;
+  --crimson: #A02020;
+  --dark:    #2C2C2C;
+  --mid:     #666;
+  --border:  #C8B8A2;
+  --blue:    #2E5FA3;
+  --amber:   #D4820A;
+  --green:   #1A7A4A;
+  --ping-bg: #EEF4FF;
+  --pong-bg: #FFF8E7;
+  --code-bg: #F0EDE8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--beige);
+  font-family: 'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  color: var(--dark);
+  line-height: 1.8;
+  font-size: 15px;
+}
 
-  /* ── 레이아웃 ── */
-  .page-wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 60px; }
+/* ── 헤더 ── */
+.site-header {
+  background: var(--crimson);
+  color: #fff;
+  padding: 18px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.site-header .title { font-size: 16px; font-weight: 700; }
+.site-header .sub   { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+.week-badge {
+  background: #FAD4D4; color: var(--crimson);
+  font-weight: 700; font-size: 13px;
+  padding: 4px 16px; border-radius: 20px;
+}
 
-  /* ── 상단 헤더 ── */
-  .site-header {
-    background: var(--crimson);
-    color: #fff;
-    padding: 22px 32px;
-    margin-bottom: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .site-header .week-badge {
-    background: #FAD4D4;
-    color: var(--crimson);
-    font-weight: 700;
-    font-size: 13px;
-    padding: 4px 14px;
-    border-radius: 20px;
-  }
-  .site-header h1 {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-  }
-  .site-header .subtitle {
-    font-size: 12px;
-    opacity: 0.85;
-    margin-top: 3px;
-  }
+/* ── 레이아웃 ── */
+.wrap { max-width: 900px; margin: 0 auto; padding: 24px 24px 80px; }
 
-  /* ── 메타 배너 ── */
-  .meta-banner {
-    background: #FFF8E7;
-    border-left: 4px solid var(--amber);
-    padding: 12px 20px;
-    font-size: 13.5px;
-    color: #4A3000;
-    margin-bottom: 28px;
-  }
-  .meta-banner strong { color: var(--amber); }
+/* ── 목차 ── */
+.toc {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 24px;
+  margin: 20px 0 32px;
+  font-size: 13.5px;
+}
+.toc h4 { color: var(--crimson); margin-bottom: 8px; font-size: 14px; }
+.toc a  { color: var(--blue); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.toc li { margin: 3px 0; }
 
-  /* ── 제목들 ── */
-  h1.doc-title {
-    font-size: 26px;
-    color: var(--crimson);
-    margin: 32px 0 6px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--crimson);
-    font-weight: 700;
-  }
-  h2 {
-    font-size: 17px;
-    color: var(--crimson);
-    background: #FDF5F0;
-    border-left: 4px solid var(--crimson);
-    padding: 10px 16px;
-    margin: 32px 0 12px;
-    font-weight: 700;
-    border-radius: 0 4px 4px 0;
-  }
-  h3 {
-    font-size: 14.5px;
-    color: var(--blue);
-    margin: 22px 0 8px;
-    font-weight: 700;
-    padding-left: 10px;
-    border-left: 3px solid var(--blue);
-  }
+/* ── 제목 ── */
+h1.doc-title {
+  font-size: 24px; color: var(--crimson);
+  margin: 24px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 2.5px solid var(--crimson);
+}
+.section-header {
+  background: #FDF5F0;
+  border-left: 4px solid var(--crimson);
+  padding: 10px 18px;
+  margin: 32px 0 14px;
+  border-radius: 0 4px 4px 0;
+  font-size: 17px; font-weight: 700;
+  color: var(--crimson);
+  scroll-margin-top: 70px;
+}
+h3 {
+  font-size: 14.5px; color: var(--blue);
+  border-left: 3px solid var(--blue);
+  padding-left: 10px;
+  margin: 20px 0 8px;
+}
 
-  /* ── 본문 ── */
-  p {
-    margin: 8px 0;
-    color: var(--dark);
-    text-align: justify;
-  }
-  strong { font-weight: 700; }
-  em { font-style: italic; color: var(--mid); }
+/* ── 본문 ── */
+p  { margin: 6px 0; text-align: justify; }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+blockquote {
+  background: #FFF8E7;
+  border-left: 3.5px solid var(--amber);
+  padding: 10px 16px; margin: 12px 0;
+  color: #4A3000; font-size: 14px;
+  border-radius: 0 4px 4px 0;
+}
+ul, ol { padding-left: 22px; margin: 6px 0; }
+li { margin: 3px 0; }
+ul li::marker { color: var(--crimson); }
+code {
+  font-family: 'Nanum Gothic Coding','Consolas',monospace;
+  background: var(--code-bg); color: #1A1A6E;
+  padding: 1px 5px; border-radius: 3px;
+  font-size: 13px; border: 1px solid #D8D0C4;
+}
+strong { font-weight: 700; }
 
-  /* ── 코드 ── */
-  code {
-    font-family: 'Nanum Gothic Coding', 'Consolas', monospace;
-    background: var(--code-bg);
-    color: #1A1A6E;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 13.5px;
-    border: 1px solid #D8D0C4;
-  }
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-left: 3.5px solid var(--blue);
-    border-radius: 4px;
-    padding: 14px 18px;
-    overflow-x: auto;
-    margin: 14px 0;
-    font-size: 13px;
-    line-height: 1.65;
-  }
-  pre code {
-    background: none;
-    border: none;
-    padding: 0;
-    color: #1A1A6E;
-    font-size: inherit;
-  }
-  /* 주석 초록색 */
-  .comment { color: #2E7D32; }
+/* ── 표 ── */
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+thead th {
+  background: #8B1A1A; color: #fff;
+  padding: 8px 12px; text-align: left;
+  border: 1px solid var(--border);
+}
+tbody tr:nth-child(odd)  { background: #fff; }
+tbody tr:nth-child(even) { background: #F5F0EB; }
+tbody td { padding: 7px 12px; border: 1px solid var(--border); }
 
-  /* ── 인용구 (> ) ── */
-  blockquote {
-    background: #FFF8E7;
-    border-left: 3.5px solid var(--amber);
-    padding: 10px 18px;
-    margin: 14px 0;
-    color: #4A3000;
-    font-size: 14px;
-    border-radius: 0 4px 4px 0;
-  }
+/* ── Ping 카드 ── */
+.ping-card {
+  background: var(--ping-bg);
+  border: 1.5px solid #B8D0F0;
+  border-left: 5px solid var(--blue);
+  border-radius: 6px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+}
+.ping-label {
+  background: var(--blue); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 5px 14px; letter-spacing: 0.5px;
+}
+.ping-desc {
+  padding: 10px 16px 6px;
+  font-size: 14px; color: #1A3560;
+}
 
-  /* ── 함정/주의 박스 ── */
-  .warning-box {
-    background: #FFF3E0;
-    border: 1px solid var(--amber);
-    border-left: 3.5px solid var(--amber);
-    border-radius: 4px;
-    padding: 10px 16px;
-    margin: 12px 0;
-    font-size: 14px;
-    color: #7A3500;
-    font-weight: 600;
-  }
-  .warning-box::before { content: "▶ "; }
+/* ── Pong 카드 ── */
+.pong-card {
+  background: var(--pong-bg);
+  border: 1.5px solid #F0D090;
+  border-left: 5px solid var(--amber);
+  border-radius: 6px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+}
+.pong-label {
+  background: var(--amber); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 5px 14px; letter-spacing: 0.5px;
+}
+.pong-desc {
+  padding: 10px 16px 6px;
+  font-size: 14px; color: #5A3500;
+}
 
-  /* ── 목록 ── */
-  ul, ol {
-    padding-left: 24px;
-    margin: 8px 0;
-  }
-  li {
-    margin: 4px 0;
-    line-height: 1.7;
-  }
-  ul li::marker { color: var(--crimson); }
+/* ── 일반 코드 카드 ── */
+.code-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--mid);
+  border-radius: 6px;
+  margin: 10px 0;
+  overflow: hidden;
+}
 
-  /* ── 표 ── */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 13.5px;
-  }
-  thead th {
-    background: var(--table-hd);
-    color: #fff;
-    padding: 9px 12px;
-    font-weight: 700;
-    text-align: left;
-    border: 1px solid var(--border);
-  }
-  tbody tr:nth-child(odd)  { background: #fff; }
-  tbody tr:nth-child(even) { background: var(--table-alt); }
-  tbody td {
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    vertical-align: top;
-  }
-  tbody tr:hover { background: #FDF5F0; transition: 0.15s; }
+/* ── SageCell 공통 ── */
+.sage-ping, .sage-pong, .sage-code { padding: 8px 12px 10px; }
+.sagecell { font-size: 13px !important; }
 
-  /* ── 구분선 ── */
-  hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 24px 0;
-  }
+/* ── 정답 토글 ── */
+details {
+  background: #F0FAF4;
+  border: 1px solid #A8D8BC;
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  margin: 10px 0;
+  padding: 4px 0;
+}
+summary {
+  cursor: pointer;
+  padding: 8px 16px;
+  font-weight: 700;
+  color: var(--green);
+  font-size: 14px;
+  user-select: none;
+}
+summary:hover { background: #E0F5EA; }
+details[open] summary { border-bottom: 1px solid #A8D8BC; margin-bottom: 6px; }
+details pre {
+  margin: 8px 16px;
+  background: #1E1E1E; color: #D4D4D4;
+  padding: 12px 16px; border-radius: 4px;
+  font-size: 12.5px; overflow-x: auto;
+  line-height: 1.6; border: none;
+}
+details pre .comment { color: #6A9955; }
+details code { background: none; border: none; color: inherit; }
 
-  /* ── 다음 주 예고 박스 ── */
-  .preview-box {
-    background: #EEF4FF;
-    border: 1px solid #B8D0F0;
-    border-left: 4px solid var(--blue);
-    border-radius: 4px;
-    padding: 14px 20px;
-    margin: 20px 0;
-    color: #1A3A6E;
-    font-size: 14px;
-  }
-  .preview-box .preview-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--blue);
-    margin-bottom: 8px;
-  }
+/* ── 연습문제 박스 ── */
+.exercise-box {
+  background: #F4F0FF;
+  border: 1.5px solid #C0A8F0;
+  border-left: 5px solid #6040C0;
+  border-radius: 6px;
+  padding: 14px 20px;
+  margin: 14px 0;
+}
+.exercise-box .ex-label {
+  color: #6040C0; font-weight: 700;
+  font-size: 13px; margin-bottom: 6px;
+}
 
-  /* ── 출력 안내 ── */
-  .footnote {
-    margin-top: 40px;
-    padding-top: 14px;
-    border-top: 1px dashed var(--border);
-    font-size: 12px;
-    color: var(--mid);
-    text-align: center;
-    font-style: italic;
-  }
+/* ── 맨 위로 ── */
+#toTop {
+  position: fixed; bottom: 26px; right: 26px;
+  background: var(--crimson); color: #fff;
+  border: none; border-radius: 50%;
+  width: 44px; height: 44px;
+  font-size: 20px; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  display: none; align-items: center; justify-content: center;
+  text-decoration: none; line-height: 1;
+  transition: background 0.2s;
+}
+#toTop:hover { background: #800000; }
 
-  /* ── 맨 위로 버튼 ── */
-  .to-top {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: var(--crimson);
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 42px;
-    height: 42px;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    line-height: 1;
-  }
-  .to-top:hover { background: #800000; }
-
-  /* ── 반응형 ── */
-  @media (max-width: 600px) {
-    .site-header { flex-direction: column; gap: 8px; text-align: center; }
-    pre { font-size: 12px; padding: 10px; }
-    table { font-size: 12px; }
-  }
-
-  @media print {
-    .to-top, .site-header { display: none; }
-    body { font-size: 13px; background: #fff; }
-    pre { break-inside: avoid; }
-    h2, h3 { break-after: avoid; }
-  }
+/* ── 인쇄 ── */
+@media print {
+  .site-header, #toTop { display: none !important; }
+  .sage-ping .sagecell_input,
+  .sage-pong .sagecell_input,
+  .sage-code .sagecell_input { border: 1px solid #ccc !important; }
+  body { background: #fff; }
+}
 </style>
 </head>
 <body>
 
 <header class="site-header">
   <div>
-    <div class="site-header h1">W01 · 파이썬 기초 ① — 변수 · 숫자형 · 문자열</div>
-    <div class="subtitle">학생용 강의노트  |  AI · ML · DL 통합 커리큘럼</div>
+    <div class="title">W01 · 파이썬 기초 ① — 변수 · 숫자형 · 문자열</div>
+    <div class="sub">학생용 실습 파일 &nbsp;|&nbsp; AI · ML · DL 통합 커리큘럼</div>
   </div>
   <span class="week-badge">W01</span>
 </header>
 
-<div class="page-wrap">
-  <div class="meta-banner">
-    <strong>실습 데이터:</strong> 심장병 환자 임상 데이터 (heart.csv) &nbsp;|&nbsp;
-    <strong>실습 파일:</strong> W01_파이썬기초1_학생용_v3.ipynb
-  </div>
-
-<h1 class="doc-title">W01 · 파이썬 기초 ① — 변수 · 숫자형 · 문자열</h1>
-
-<blockquote><strong>대상 데이터:</strong> 심장병 환자 임상 데이터 (<code>heart.csv</code>)</blockquote>
-<blockquote><strong>학습 목표:</strong> 파이썬의 가장 기본 재료인 변수, 숫자, 문자열을 자유자재로 다룰 수 있다.</blockquote>
+<div class="wrap">
+<h1 class="doc-title">W01 — 파이썬 기초 1 : 변수 · 숫자형 · 문자열</h1>
+<h3>heart.csv — 심장질환 데이터로 배우는 파이썬</h3>
 
 <hr>
-
-<h2>이번 주를 시작하기 전에</h2>
-
-<p>파이썬(Python)을 처음 배울 때 가장 흔한 실수는 <strong>"어렵게 생각하는 것"</strong>이다.</p>
-
-<p>파이썬은 사실 영어로 된 <strong>메모장</strong>이다.</p>
-<p>우리가 수학 노트에 "사과 3개 = 3"이라고 적듯이, 파이썬도 컴퓨터에게 "이것을 기억해줘"라고 부탁하는 방식으로 작동한다.</p>
-
-<p>이번 주가 끝나면 다음 세 가지를 할 수 있다.</p>
-
-<ul>
-<li>변수를 만들고 값을 저장한다</li>
-<li>숫자를 계산하고 형 변환을 한다</li>
-<li>문자열을 다양하게 가공한다</li>
-</ul>
-
-<hr>
-
-<h2>1. 변수(Variable) — 컴퓨터의 메모지</h2>
-
-<h3>변수란 무엇인가</h3>
-
-<p>변수(Variable)란 <strong>값을 저장하는 이름표</strong>이다.</p>
-
-<p>마치 서랍에 라벨을 붙이는 것과 같다.</p>
-
-<pre><code>서랍 라벨: "나이"      --&gt; 서랍 안: 25
-서랍 라벨: "이름"      --&gt; 서랍 안: "홍길동"
-서랍 라벨: "키"        --&gt; 서랍 안: 175.3</code></pre>
-
-<p>파이썬에서는 이렇게 쓴다.</p>
-
-<pre><code>나이 = 25
-이름 = "홍길동"
-키 = 175.3</code></pre>
-
-<p>등호(<code>=</code>)는 수학의 "같다"가 <strong>아니다</strong>. 파이썬에서 <code>=</code>는 <strong>"오른쪽 값을 왼쪽 이름표에 넣어라"</strong>는 명령이다.</p>
-
-<hr>
-
-<h3>변수 이름 짓기 규칙</h3>
-
-<p>변수 이름에는 규칙이 있다. 어기면 파이썬이 오류를 낸다.</p>
+<blockquote><strong>학습 목표</strong></blockquote>
+<blockquote>1. <strong>변수(Variable)</strong> 에 데이터를 저장하고 자료형을 확인한다.</blockquote>
+<blockquote>2. <strong>숫자형(Numeric)</strong> 연산과 자료형 변환을 익힌다.</blockquote>
+<blockquote>3. <strong>문자열(String)</strong> 인덱싱·슬라이싱·함수를 활용한다.</blockquote>
+<blockquote>4. <strong>f-string</strong> 포맷팅으로 진단 보고서를 출력한다.</blockquote>
 
 <table><thead>
-<tr><th>규칙</th><th>예시</th></tr>
+<tr><th>섹션</th><th>내용</th><th>Ping-Pong</th></tr>
 </thead><tbody>
-<tr><td>영문자, 숫자, 밑줄(<code>_</code>)만 사용</td><td><code>age</code>, <code>patient_id</code>, <code>score1</code></td></tr>
-<tr><td>숫자로 시작 불가</td><td><code>1score</code> --&gt; <strong>오류!</strong></td></tr>
-<tr><td>공백 불가</td><td><code>my score</code> --&gt; <strong>오류!</strong></td></tr>
-<tr><td>파이썬 예약어 사용 불가</td><td><code>if</code>, <code>for</code>, <code>class</code> --&gt; <strong>오류!</strong></td></tr>
-<tr><td>대소문자 구별</td><td><code>Age</code>와 <code>age</code>는 <strong>다른 변수</strong></td></tr>
-</tbody></table>
-
-<p><strong>좋은 변수 이름의 조건:</strong> 읽었을 때 무슨 값인지 바로 알 수 있어야 한다.</p>
-
-<pre><code><span class="comment"># 나쁜 예</span>
-a = 63          # a가 무엇인지 모른다
-x = 1           # x가 무엇인지 모른다
-
-<span class="comment"># 좋은 예</span>
-patient_age = 63        # 환자의 나이임을 바로 안다
-has_heart_disease = 1   # 심장병 여부임을 바로 안다</code></pre>
-
-<hr>
-
-<h3>변수의 타입 확인 — <code>type()</code></h3>
-
-<p>파이썬의 모든 값에는 <strong>종류(타입)</strong>가 있다. <code>type()</code> 함수로 확인한다.</p>
-
-<pre><code>age = 63
-name = "Alice"
-height = 175.3
-has_disease = True
-
-print(type(age))      # &lt;class 'int'&gt;
-print(type(name))     # &lt;class 'str'&gt;
-print(type(height))   # &lt;class 'float'&gt;
-print(type(has_disease))  # &lt;class 'bool'&gt;</code></pre>
-
-<hr>
-
-<h2>2. 숫자형(Numeric Types) — 파이썬의 계산기</h2>
-
-<h3>정수(int)와 실수(float)</h3>
-
-<p>파이썬에는 두 가지 기본 숫자 타입이 있다.</p>
-
-<table><thead>
-<tr><th>타입</th><th>영어</th><th>예시</th><th>설명</th></tr>
-</thead><tbody>
-<tr><td><strong>정수형</strong>(int)</td><td>integer</td><td><code>1</code>, <code>25</code>, <code>-10</code>, <code>0</code></td><td>소수점 없는 수</td></tr>
-<tr><td><strong>실수형</strong>(float)</td><td>floating point</td><td><code>1.0</code>, <code>3.14</code>, <code>-0.5</code></td><td>소수점 있는 수</td></tr>
-</tbody></table>
-
-<pre><code><span class="comment"># 정수형 (int)</span>
-patient_count = 299
-age = 63
-
-<span class="comment"># 실수형 (float)</span>
-bmi = 22.5
-ejection_fraction = 38.0</code></pre>
-
-<hr>
-
-<h3>사칙연산과 특수 연산자</h3>
-
-<pre><code>a = 10
-b = 3
-
-print(a + b)   # 13  --&gt; 덧셈
-print(a - b)   # 7   --&gt; 뺄셈
-print(a * b)   # 30  --&gt; 곱셈
-print(a / b)   # 3.3333...  --&gt; 나눗셈 (항상 float 반환!)
-print(a // b)  # 3   --&gt; 몫 (정수 나눗셈)
-print(a % b)   # 1   --&gt; 나머지
-print(a ** b)  # 1000 --&gt; 거듭제곱 (10의 3제곱)</code></pre>
-
-<blockquote><strong>주의!</strong> <code>/</code>(나눗셈)은 항상 소수점을 포함한 결과를 반환한다. <code>10 / 2</code>는 <code>5</code>가 아니라 <code>5.0</code>이다.</blockquote>
-
-<hr>
-
-<h3>형 변환(Type Conversion) — 타입을 바꾸는 방법</h3>
-
-<p>때로는 숫자를 문자열로, 또는 문자열을 숫자로 바꿔야 한다.</p>
-
-<pre><code><span class="comment"># 정수 --&gt; 실수</span>
-x = int(3.9)    # 결과: 3  (소수점 이하 버림! 반올림이 아니다)
-y = int(3.1)    # 결과: 3
-
-<span class="comment"># 문자열 --&gt; 정수</span>
-age_str = "63"
-age_int = int(age_str)   # 결과: 63 (이제 계산 가능)
-
-<span class="comment"># 정수 --&gt; 문자열</span>
-num = 100
-num_str = str(num)   # 결과: "100"</code></pre>
-
-<blockquote><strong>함정 주의!</strong> <code>int(3.9)</code>는 <code>4</code>가 아니라 <code>3</code>이다. 파이썬은 소수점 이하를 <strong>버린다</strong>. 반올림하려면 <code>round()</code> 함수를 써야 한다.</blockquote>
-
-<pre><code>print(round(3.9))   # 4  --&gt; 반올림
-print(int(3.9))     # 3  --&gt; 버림</code></pre>
-
-<hr>
-
-<h3>유용한 숫자 함수들</h3>
-
-<pre><code>print(abs(-10))        # 10  --&gt; 절댓값
-print(max(3, 7, 1))    # 7   --&gt; 최댓값
-print(min(3, 7, 1))    # 1   --&gt; 최솟값
-print(round(3.567, 2)) # 3.57 --&gt; 소수점 둘째 자리까지 반올림</code></pre>
-
-<hr>
-
-<h2>3. 문자열(String) — 텍스트를 다루는 방법</h2>
-
-<h3>문자열이란</h3>
-
-<p><strong>문자열</strong>(String)이란 따옴표(<code>'</code> 또는 <code>"</code>)로 감싸인 텍스트이다.</p>
-
-<pre><code>name = "홍길동"
-disease = 'heart failure'
-message = "환자 ID: 001"</code></pre>
-
-<p>작은따옴표(<code>'</code>)와 큰따옴표(<code>"</code>)는 둘 다 사용할 수 있다. 단, <strong>시작과 끝을 같은 종류로</strong> 써야 한다.</p>
-
-<pre><code><span class="comment"># 올바른 예</span>
-s1 = "Hello"
-s2 = 'World'
-
-<span class="comment"># 오류 예</span>
-s3 = "Hello'  # --&gt; SyntaxError!</code></pre>
-
-<hr>
-
-<h3>문자열 연산 — 이어 붙이기와 반복</h3>
-
-<pre><code>first = "심장"
-second = "병원"
-
-<span class="comment"># 이어 붙이기 (+)</span>
-result = first + second
-print(result)   # 심장병원
-
-<span class="comment"># 반복 (*)</span>
-echo = "안녕 " * 3
-print(echo)     # 안녕 안녕 안녕</code></pre>
-
-<blockquote><strong>함정 주의!</strong> 숫자처럼 보여도 따옴표 안에 있으면 문자열이다.</blockquote>
-<blockquote><code>"63" + "10"</code>은 <code>73</code>이 아니라 <code>"6310"</code>이다!</blockquote>
-
-<pre><code>a = "63"
-b = "10"
-print(a + b)    # 6310  (이어 붙이기!)
-print(int(a) + int(b))  # 73  (숫자로 변환 후 덧셈)</code></pre>
-
-<hr>
-
-<h3>문자열 인덱싱(Indexing) — 글자 하나 꺼내기</h3>
-
-<p>문자열의 각 글자에는 <strong>번호(인덱스)</strong>가 붙어 있다.</p>
-
-<pre><code>문자열:  H  e  l  l  o
-인덱스:  0  1  2  3  4
-음수:   -5 -4 -3 -2 -1</code></pre>
-
-<pre><code>word = "Hello"
-
-print(word[0])    # H  --&gt; 첫 번째 글자
-print(word[4])    # o  --&gt; 다섯 번째 글자
-print(word[-1])   # o  --&gt; 마지막 글자
-print(word[-2])   # l  --&gt; 뒤에서 두 번째 글자</code></pre>
-
-<blockquote><strong>파이썬의 인덱스는 0부터 시작한다!</strong> 이것이 처음에는 어색하지만 금방 익숙해진다.</blockquote>
-
-<hr>
-
-<h3>문자열 슬라이싱(Slicing) — 일부 잘라내기</h3>
-
-<p><code>[시작:끝]</code> 형태로 문자열의 일부를 잘라낼 수 있다. <strong>끝 인덱스는 포함되지 않는다.</strong></p>
-
-<pre><code>word = "Hello World"
-
-print(word[0:5])    # Hello  --&gt; 0번부터 4번까지
-print(word[6:11])   # World  --&gt; 6번부터 10번까지
-print(word[:5])     # Hello  --&gt; 처음부터 4번까지
-print(word[6:])     # World  --&gt; 6번부터 끝까지
-print(word[::2])    # HloWrd --&gt; 2칸씩 건너뛰기
-print(word[::-1])   # dlroW olleH --&gt; 문자열 뒤집기</code></pre>
-
-<hr>
-
-<h3>문자열 메서드(Method) — 문자열을 변형하는 도구들</h3>
-
-<p>메서드(Method)는 점(<code>.</code>)을 붙여서 사용하는 <strong>문자열 전용 함수</strong>이다.</p>
-
-<pre><code>s = "  Hello, World!  "
-
-<span class="comment"># 대소문자 변환</span>
-print(s.upper())        # "  HELLO, WORLD!  "
-print(s.lower())        # "  hello, world!  "
-
-<span class="comment"># 공백 제거</span>
-print(s.strip())        # "Hello, World!"  --&gt; 양쪽 공백 제거
-print(s.lstrip())       # "Hello, World!  " --&gt; 왼쪽만
-print(s.rstrip())       # "  Hello, World!" --&gt; 오른쪽만
-
-<span class="comment"># 찾기와 바꾸기</span>
-print(s.replace("Hello", "Hi"))   # "  Hi, World!  "
-print(s.find("World"))            # 9  --&gt; 위치 반환 (없으면 -1)
-
-<span class="comment"># 분리와 결합</span>
-csv_line = "홍길동,25,남,서울"
-parts = csv_line.split(",")
-print(parts)   # ['홍길동', '25', '남', '서울']
-
-print(" / ".join(parts))   # 홍길동 / 25 / 남 / 서울
-
-<span class="comment"># 포함 여부 확인</span>
-print("World" in s)     # True
-print("Python" in s)    # False
-
-<span class="comment"># 길이</span>
-print(len(s))           # 17</code></pre>
-
-<hr>
-
-<h3>f-문자열(f-string) — 가장 세련된 출력 방법</h3>
-
-<p>파이썬 3.6부터 도입된 <strong>f-문자열</strong>(f-string)은 문자열 안에 변수를 직접 넣는 방법이다.</p>
-
-<pre><code>patient_id = "P001"
-age = 63
-ejection_fraction = 38.0
-status = "위험"
-
-<span class="comment"># 기존 방식 (번거로움)</span>
-print("환자 " + patient_id + ", 나이: " + str(age))
-
-<span class="comment"># f-string 방식 (깔끔!)</span>
-print(f"환자 {patient_id}, 나이: {age}세, 박출률: {ejection_fraction}%")
-<span class="comment"># 출력: 환자 P001, 나이: 63세, 박출률: 38.0%</span>
-
-<span class="comment"># 숫자 서식 지정</span>
-print(f"박출률: {ejection_fraction:.1f}%")   # 소수점 1자리
-print(f"나이: {age:&gt;5}세")                    # 5칸 오른쪽 정렬</code></pre>
-
-<hr>
-
-<h2>4. 실전 적용 — 심장병 환자 데이터 읽기</h2>
-
-<p>이번 주에 배운 내용을 심장병 데이터에 적용해 본다.</p>
-
-<pre><code><span class="comment"># 심장병 환자 한 명의 데이터를 변수로 저장</span>
-patient_id = "P001"
-age = 63
-ejection_fraction = 38      # 박출률 (%)
-serum_creatinine = 1.1      # 혈청 크레아티닌 (mg/dL)
-diabetes = 1                # 당뇨 여부 (1=있음, 0=없음)
-DEATH_EVENT = 1             # 사망 여부 (1=사망, 0=생존)
-
-<span class="comment"># 정보 출력</span>
-print(f"환자 정보 보고서")
-print(f"{'='*30}")
-print(f"환자 ID     : {patient_id}")
-print(f"나이        : {age}세")
-print(f"박출률      : {ejection_fraction}%")
-print(f"혈청크레아티닌: {serum_creatinine:.1f} mg/dL")
-print(f"당뇨 여부   : {'있음' if diabetes == 1 else '없음'}")
-print(f"생존 여부   : {'사망' if DEATH_EVENT == 1 else '생존'}")</code></pre>
-
-<p>출력 결과:</p>
-<pre><code>환자 정보 보고서
-==============================
-환자 ID     : P001
-나이        : 63세
-박출률      : 38%
-혈청크레아티닌: 1.1 mg/dL
-당뇨 여부   : 있음
-생존 여부   : 사망</code></pre>
-
-<hr>
-
-<h2>5. 핵심 정리</h2>
-
-<h3>변수(Variable)</h3>
-<ul>
-<li>값을 저장하는 이름표이다</li>
-<li><code>=</code>는 "오른쪽 값을 왼쪽에 저장하라"는 명령이다</li>
-<li><code>type()</code>으로 타입을 확인한다</li>
-</ul>
-
-<h3>숫자형(Numeric)</h3>
-<table><thead>
-<tr><th>연산</th><th>기호</th><th>예시</th></tr>
-</thead><tbody>
-<tr><td>덧셈</td><td><code>+</code></td><td><code>3 + 2 = 5</code></td></tr>
-<tr><td>뺄셈</td><td><code>-</code></td><td><code>3 - 2 = 1</code></td></tr>
-<tr><td>곱셈</td><td><code>*</code></td><td><code>3 * 2 = 6</code></td></tr>
-<tr><td>나눗셈</td><td><code>/</code></td><td><code>3 / 2 = 1.5</code></td></tr>
-<tr><td>몫</td><td><code>//</code></td><td><code>3 // 2 = 1</code></td></tr>
-<tr><td>나머지</td><td><code>%</code></td><td><code>3 % 2 = 1</code></td></tr>
-<tr><td>거듭제곱</td><td><code>**</code></td><td><code>3 ** 2 = 9</code></td></tr>
-</tbody></table>
-
-<h3>문자열(String)</h3>
-<table><thead>
-<tr><th>기능</th><th>코드</th><th>결과</th></tr>
-</thead><tbody>
-<tr><td>이어붙이기</td><td><code>"a" + "b"</code></td><td><code>"ab"</code></td></tr>
-<tr><td>반복</td><td><code>"a" * 3</code></td><td><code>"aaa"</code></td></tr>
-<tr><td>첫 글자</td><td><code>s[0]</code></td><td>첫 번째 글자</td></tr>
-<tr><td>마지막 글자</td><td><code>s[-1]</code></td><td>마지막 글자</td></tr>
-<tr><td>슬라이싱</td><td><code>s[1:4]</code></td><td>1~3번 글자</td></tr>
-<tr><td>대문자</td><td><code>s.upper()</code></td><td>모두 대문자</td></tr>
-<tr><td>공백 제거</td><td><code>s.strip()</code></td><td>양쪽 공백 제거</td></tr>
-<tr><td>분리</td><td><code>s.split(",")</code></td><td>쉼표로 나눠 리스트 반환</td></tr>
+<tr><td>1</td><td>변수와 자료형</td><td>Pong 1~4</td></tr>
+<tr><td>2</td><td>숫자형 연산</td><td>Pong 5~8</td></tr>
+<tr><td>3</td><td>자료형 변환</td><td>Pong 9~12</td></tr>
+<tr><td>4</td><td>문자열 기초</td><td>Pong 13~16</td></tr>
+<tr><td>5</td><td>문자열 함수·f-string</td><td>Pong 17~20</td></tr>
 </tbody></table>
 
 <hr>
+<div class="section-header">실습 데이터 — heart.csv (심장질환 데이터셋)</div>
 
-<h2>6. 자주 묻는 질문(FAQ)</h2>
+<p>UCI Machine Learning Repository의 심장질환 데이터셋이다.</p>
+<p>실제 환자 303명의 임상 검사 결과로 구성되어 있다.</p>
 
-<p><strong>Q. <code>=</code>와 <code>==</code>는 어떻게 다른가?</strong></p>
-<p>A. <code>=</code>는 <strong>저장</strong> 연산자이고, <code>==</code>는 <strong>비교</strong> 연산자이다. <code>age = 25</code>는 "age에 25를 저장해라"이고, <code>age == 25</code>는 "age가 25인가?"라고 묻는 것이다.</p>
+<pre><code><span class="comment"># 실제 환경에서 CSV 로드 방법</span>
+import pandas as pd
+df = pd.read_csv('heart.csv')</code></pre>
 
-<p><strong>Q. 문자열에서 인덱스가 왜 0부터 시작하는가?</strong></p>
-<p>A. 컴퓨터 메모리 주소 계산의 역사적 이유이다. 처음에는 어색하지만, 모든 프로그래밍 언어가 이 방식을 사용하므로 익숙해지는 것이 중요하다.</p>
+<table><thead>
+<tr><th>변수</th><th>의미</th><th>단위/범주</th></tr>
+</thead><tbody>
+<tr><td><code>age</code></td><td>나이</td><td>세</td></tr>
+<tr><td><code>sex</code></td><td>성별</td><td>1=남, 0=여</td></tr>
+<tr><td><code>trestbps</code></td><td>안정 혈압</td><td>mmHg</td></tr>
+<tr><td><code>chol</code></td><td>콜레스테롤</td><td>mg/dl</td></tr>
+<tr><td><code>thalach</code></td><td>최대 심박수</td><td>bpm</td></tr>
+<tr><td><code>oldpeak</code></td><td>ST 강하</td><td>mm</td></tr>
+<tr><td><code>target</code></td><td>심장질환 여부</td><td>1=있음, 0=없음</td></tr>
+</tbody></table>
 
-<p><strong>Q. <code>int(3.9)</code>가 4가 아닌 3인 이유는?</strong></p>
-<p>A. <code>int()</code>는 소수점 이하를 <strong>버린다</strong>. 반올림이 아니다. 반올림하려면 <code>round(3.9)</code>를 사용해야 한다.</p>
-
-<p><strong>Q. f-string 안에서 계산도 되는가?</strong></p>
-<p>A. 된다. <code>f"{2 + 3}"</code> --&gt; <code>"5"</code>, <code>f"{name.upper()}"</code> --&gt; 대문자 이름</p>
-
+<p>아래 샘플 데이터 10명으로 이번 주 전체를 실습한다.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># heart.csv 샘플 데이터 (10명)
+# age, sex, trestbps, chol, thalach, oldpeak, target
+patients = [
+    {'id':1,  'age':63, 'sex':1, 'trestbps':145, 'chol':233, 'thalach':150, 'oldpeak':2.3, 'target':1},
+    {'id':2,  'age':37, 'sex':1, 'trestbps':130, 'chol':250, 'thalach':187, 'oldpeak':3.5, 'target':0},
+    {'id':3,  'age':41, 'sex':0, 'trestbps':130, 'chol':204, 'thalach':172, 'oldpeak':1.4, 'target':1},
+    {'id':4,  'age':56, 'sex':1, 'trestbps':120, 'chol':236, 'thalach':178, 'oldpeak':0.8, 'target':1},
+    {'id':5,  'age':57, 'sex':0, 'trestbps':120, 'chol':354, 'thalach':163, 'oldpeak':0.6, 'target':1},
+    {'id':6,  'age':57, 'sex':1, 'trestbps':140, 'chol':192, 'thalach':148, 'oldpeak':0.4, 'target':0},
+    {'id':7,  'age':56, 'sex':0, 'trestbps':140, 'chol':294, 'thalach':153, 'oldpeak':1.3, 'target':0},
+    {'id':8,  'age':44, 'sex':1, 'trestbps':120, 'chol':263, 'thalach':173, 'oldpeak':0.0, 'target':1},
+    {'id':9,  'age':52, 'sex':1, 'trestbps':172, 'chol':199, 'thalach':162, 'oldpeak':0.5, 'target':1},
+    {'id':10, 'age':57, 'sex':1, 'trestbps':150, 'chol':168, 'thalach':174, 'oldpeak':1.6, 'target':0},
+]
+print(f'환자 {len(patients)}명 데이터 로드 완료')
+print(f'1번 환자: 나이={patients[0]["age"]}, 콜레스테롤={patients[0]["chol"]}')</script></div></div>
 <hr>
+<h1 class="doc-title">Section 1. 변수 (Variable)</h1>
 
-<h2>7. 다음 주 예고 — W02: 자료구조</h2>
+<div class="section-header">개념 설명</div>
 
-<p>다음 주에는 <strong>여러 개의 값을 함께 저장하는 방법</strong>을 배운다.</p>
+<p><strong>변수(variable)</strong>는 데이터를 저장하는 이름표이다.</p>
 
-<blockquote>"환자가 1명이면 변수 1개로 충분하다. 그런데 환자가 299명이라면?"</blockquote>
+<pre><code>변수명 = 값
+ age  = 63       → 정수(int)
+ chol = 233.5    → 실수(float)
+ name = 'Kim'    → 문자열(str)
+ has_disease = True  → 불리언(bool)</code></pre>
 
-<p>이 문제를 해결하는 것이 <strong>리스트</strong>(List), <strong>딕셔너리</strong>(Dictionary), <strong>튜플</strong>(Tuple), <strong>집합</strong>(Set)이다.</p>
+<table><thead>
+<tr><th>자료형</th><th>예시</th><th><code>type()</code></th></tr>
+</thead><tbody>
+<tr><td><code>int</code></td><td><code>63</code></td><td><code>&lt;class 'int'&gt;</code></td></tr>
+<tr><td><code>float</code></td><td><code>2.3</code></td><td><code>&lt;class 'float'&gt;</code></td></tr>
+<tr><td><code>str</code></td><td><code>'Male'</code></td><td><code>&lt;class 'str'&gt;</code></td></tr>
+<tr><td><code>bool</code></td><td><code>True</code></td><td><code>&lt;class 'bool'&gt;</code></td></tr>
+</tbody></table>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 1번 데이터 변수 저장
+patient_id  = 1
+age         = 63        # int — 나이
+trestbps    = 145       # int — 안정 혈압 (mmHg)
+chol        = 233       # int — 콜레스테롤 (mg/dl)
+oldpeak     = 2.3       # float — ST 강하
+sex_label   = 'Male'   # str — 성별 문자열
+has_disease = True      # bool — 심장질환 유무
 
+print(f'환자 {patient_id}: {age}세 {sex_label}')
+print(f'혈압={trestbps} 콜레스테롤={chol} ST강하={oldpeak}')
+print(f'심장질환: {has_disease}')
+print(type(age), type(oldpeak), type(sex_label), type(has_disease))</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 1 —  </div>
+  <div class="ping-desc"> : 환자 1번 변수 저장 및 자료형 확인</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
+age   = p['age']
+chol  = p['chol']
+label = 'Male' if p['sex']==1 else 'Female'
+has_d = bool(p['target'])
+
+print(f'나이: {age}  자료형: {type(age)}')
+print(f'콜레스테롤: {chol}  자료형: {type(chol)}')
+print(f'성별: {label}  자료형: {type(label)}')
+print(f'심장질환: {has_d}  자료형: {type(has_d)}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 1 — 학생 실습</div>
+  <div class="pong-desc">환자 5번(인덱스 4) 데이터를 변수에 저장하고 각 자료형을 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">patients = [{'id':1,'age':63,'sex':1,'trestbps':145,'chol':233,'thalach':150,'oldpeak':2.3,'target':1},{'id':2,'age':37,'sex':1,'trestbps':130,'chol':250,'thalach':187,'oldpeak':3.5,'target':0},{'id':3,'age':41,'sex':0,'trestbps':130,'chol':204,'thalach':172,'oldpeak':1.4,'target':1},{'id':4,'age':56,'sex':1,'trestbps':120,'chol':236,'thalach':178,'oldpeak':0.8,'target':1},{'id':5,'age':57,'sex':0,'trestbps':120,'chol':354,'thalach':163,'oldpeak':0.6,'target':1},{'id':6,'age':57,'sex':1,'trestbps':140,'chol':192,'thalach':148,'oldpeak':0.4,'target':0},{'id':7,'age':56,'sex':0,'trestbps':140,'chol':294,'thalach':153,'oldpeak':1.3,'target':0},{'id':8,'age':44,'sex':1,'trestbps':120,'chol':263,'thalach':173,'oldpeak':0.0,'target':1},{'id':9,'age':52,'sex':1,'trestbps':172,'chol':199,'thalach':162,'oldpeak':0.5,'target':1},{'id':10,'age':57,'sex':1,'trestbps':150,'chol':168,'thalach':174,'oldpeak':1.6,'target':0}]
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>p = patients[4]  # 환자 5번
+age    = p['age']
+chol   = p['chol']
+peak   = p['oldpeak']
+label  = 'Male' if p['sex']==1 else 'Female'
+has_d  = bool(p['target'])
+print(f'나이:{age} {type(age)}')
+print(f'콜레스테롤:{chol} {type(chol)}')
+print(f'ST강하:{peak} {type(peak)}')
+print(f'성별:{label}  심장질환:{has_d}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 2 —  </div>
+  <div class="ping-desc"> : 다중 할당 &amp; 변수 교환</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 두 환자 혈압 비교 후 교환
+bp_p1, bp_p2 = patients[0]['trestbps'], patients[1]['trestbps']
+print(f'교환 전: 환자1={bp_p1}, 환자2={bp_p2}')
+bp_p1, bp_p2 = bp_p2, bp_p1
+print(f'교환 후: 환자1={bp_p1}, 환자2={bp_p2}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 2 — 학생 실습</div>
+  <div class="pong-desc">환자 3·7·9번의 콜레스테롤을 다중 할당하고 최솟값과 최댓값을 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>chol3, chol7, chol9 = patients[2]['chol'], patients[6]['chol'], patients[8]['chol']
+print(f'환자3:{chol3}, 환자7:{chol7}, 환자9:{chol9}')
+print(f'최소:{min(chol3,chol7,chol9)}, 최대:{max(chol3,chol7,chol9)}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 3 —  </div>
+  <div class="ping-desc"> : 변수 재할당</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 정상 범위 판정 값 갱신
+chol_threshold = 200   # 초기 기준값
+print(f'기준: {chol_threshold}')
+chol_threshold = 240   # 고콜레스테롤 기준으로 갱신
+print(f'갱신: {chol_threshold}')
+high_chol_count = sum(1 for p in patients if p['chol'] > chol_threshold)
+print(f'고콜레스테롤({chol_threshold}+) 환자: {high_chol_count}명')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 3 — 학생 실습</div>
+  <div class="pong-desc">혈압 기준을 130으로 시작해 140, 150으로 순서대로 갱신하며 각 기준 이상 환자 수를 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for threshold in [130, 140, 150]:
+    cnt = sum(1 for p in patients if p['trestbps'] &gt;= threshold)
+    print(f'혈압 &gt;= {threshold}: {cnt}명')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 4 —  </div>
+  <div class="ping-desc"> : 변수 삭제 &amp; NameError</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">temp = 999   # 임시 변수
+print('삭제 전:', temp)
+del temp
+try:
+    print(temp)
+except NameError as e:
+    print(f'삭제 후: {e}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 4 — 학생 실습</div>
+  <div class="pong-desc"><code>draft_bp = 135</code> 를 만들고 출력 후 삭제한 뒤, 접근 시 오류를 잡아라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>draft_bp = 135
+print('삭제 전:', draft_bp)
+del draft_bp
+try:
+    print(draft_bp)
+except NameError as e:
+    print(f'오류: {e}')</code></pre>
+</details>
 <hr>
+<h1 class="doc-title">Section 2. 숫자형 연산 (Numeric Operations)</h1>
 
-<p><em>본 강의노트는 실습 노트북(<code>W01_파이썬기초1_학생용_v3.ipynb</code>)과 함께 사용한다.</em></p>
+<div class="section-header">개념 설명</div>
 
+<table><thead>
+<tr><th>연산자</th><th>이름</th><th>예</th><th>결과</th></tr>
+</thead><tbody>
+<tr><td><code>+</code> <code>-</code> <code>*</code></td><td>사칙</td><td><code>145 + 20</code></td><td><code>165</code></td></tr>
+<tr><td><code>/</code></td><td>실수 나눗셈</td><td><code>233 / 2</code></td><td><code>116.5</code></td></tr>
+<tr><td><code>//</code></td><td>몫</td><td><code>233 // 10</code></td><td><code>23</code></td></tr>
+<tr><td><code>%</code></td><td>나머지</td><td><code>63 % 10</code></td><td><code>3</code></td></tr>
+<tr><td><code>**</code></td><td>제곱</td><td><code>2 ** 8</code></td><td><code>256</code></td></tr>
+</tbody></table>
 
-  <div class="footnote">
-    본 강의노트는 W01_파이썬기초1_학생용_v3.ipynb와 함께 사용한다.
-  </div>
+<p><strong>임상 지표 공식:</strong></p>
+<pre><code>심박수 예비능 = 최대심박수 - 안정심박수(약 70)
+Framingham 위험점수 ≈ 콜레스테롤/100 + 혈압/10</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 1번 임상 지표 계산
+age       = 63
+trestbps  = 145
+chol      = 233
+thalach   = 150   # 최대 심박수
+
+# 최대 예상 심박수 공식: 220 - 나이
+max_hr_pred  = 220 - age
+# 실제 최대심박수 비율
+hr_ratio     = thalach / max_hr_pred * 100
+# 콜레스테롤 위험 비율
+chol_ratio   = chol / 200 * 100
+
+print(f'예상 최대심박수: {max_hr_pred}bpm')
+print(f'달성률: {hr_ratio:.1f}%')
+print(f'콜레스테롤 지수: {chol_ratio:.1f}% (기준 200 대비)')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 5 —  </div>
+  <div class="ping-desc"> : 콜레스테롤 위험 지수 계산</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 콜레스테롤 200 미만=정상, 200~239=경계, 240+=고위험
+for i, p in enumerate(patients[:5], 1):
+    chol = p['chol']
+    ratio = chol / 200 * 100
+    print(f'환자{i}: 콜레스테롤={chol} ({ratio:.1f}%)')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 5 — 학생 실습</div>
+  <div class="pong-desc">10명 전체 환자의 혈압 범위(최대-최소)와 평균을 계산하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>bps = [p['trestbps'] for p in patients]
+bp_range = max(bps) - min(bps)
+bp_avg   = sum(bps) / len(bps)
+print(f'혈압 최솟값: {min(bps)}, 최댓값: {max(bps)}, 범위: {bp_range}')
+print(f'평균 혈압: {bp_avg:.1f} mmHg')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 6 —  </div>
+  <div class="ping-desc"> : 최대심박수 달성률</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">for i, p in enumerate(patients[:5], 1):
+    max_pred = 220 - p['age']
+    ratio    = p['thalach'] / max_pred * 100
+    print(f'환자{i}: 예상최대={max_pred} 실제={p["thalach"]} 달성={ratio:.1f}%')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 6 — 학생 실습</div>
+  <div class="pong-desc">10명 전체의 심박수 달성률을 계산하고 80% 미만인 환자 수를 구하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>low_hr = 0
+for p in patients:
+    ratio = p['thalach'] / (220 - p['age']) * 100
+    if ratio &lt; 80:
+        low_hr += 1
+    print(f'환자{p["id"]}: {ratio:.1f}%')
+print(f'80% 미만: {low_hr}명')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 7 —  </div>
+  <div class="ping-desc"> : 몫·나머지로 연령대 분류</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">for p in patients[:5]:
+    decade = (p['age'] // 10) * 10   # 연령대: 60, 50, ...
+    over   = p['age'] % 10           # 연령대 내 나이
+    print(f'환자{p["id"]}: {p["age"]}세 → {decade}대 +{over}년')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 7 — 학생 실습</div>
+  <div class="pong-desc">10명 중 50대와 그 외 환자 수를 <code>//</code>와 <code>%</code>를 이용해 분류하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>fifties = sum(1 for p in patients if p['age']//10 == 5)
+others  = len(patients) - fifties
+print(f'50대: {fifties}명, 기타: {others}명')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 8 —  </div>
+  <div class="ping-desc"> : 할당 연산자로 누적 통계</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">total_chol = 0
+for p in patients:
+    total_chol += p['chol']
+avg_chol = total_chol / len(patients)
+print(f'총 콜레스테롤 합: {total_chol}')
+print(f'평균 콜레스테롤: {avg_chol:.1f} mg/dl')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 8 — 학생 실습</div>
+  <div class="pong-desc"><code>+=</code>를 사용해 심장질환 있는 환자(target=1)의 평균 나이를 계산하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>total_age = 0
+cnt       = 0
+for p in patients:
+    if p['target'] == 1:
+        total_age += p['age']
+        cnt += 1
+print(f'심장질환 환자 {cnt}명, 평균 나이: {total_age/cnt:.1f}세')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 3. 자료형 변환 (Type Conversion)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<table><thead>
+<tr><th>함수</th><th>역할</th><th>예</th></tr>
+</thead><tbody>
+<tr><td><code>int()</code></td><td>정수 변환</td><td><code>int('63')</code> → <code>63</code></td></tr>
+<tr><td><code>float()</code></td><td>실수 변환</td><td><code>float('2.3')</code> → <code>2.3</code></td></tr>
+<tr><td><code>str()</code></td><td>문자열 변환</td><td><code>str(145)</code> → <code>'145'</code></td></tr>
+<tr><td><code>round(x, n)</code></td><td>반올림</td><td><code>round(2.345, 2)</code> → <code>2.35</code></td></tr>
+</tbody></table>
+
+<blockquote>CSV 파일에서 읽어온 데이터는 모두 <strong>문자열(str)</strong>이다. 연산 전에 반드시 변환해야 한다.</blockquote>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: CSV에서 읽어온 문자열 → 숫자 변환
+raw_age  = '63'    # CSV에서 읽어온 값 → str
+raw_chol = '233'
+raw_peak = '2.3'
+
+age  = int(raw_age)
+chol = int(raw_chol)
+peak = float(raw_peak)
+
+print(type(raw_age), type(age))    # str → int
+print(type(raw_peak), type(peak))  # str → float
+print(f'BMI-like: 콜레스테롤/나이 = {chol/age:.2f}')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 9 —  </div>
+  <div class="ping-desc"> : CSV 한 줄 파싱 및 변환</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># CSV 한 줄: 'id,age,sex,trestbps,chol,thalach,oldpeak,target'
+line = '1,63,1,145,233,150,2.3,1'
+fields = line.split(',')
+pid    = int(fields[0])
+age    = int(fields[1])
+peak   = float(fields[6])
+target = int(fields[7])
+print(f'환자{pid}: {age}세, ST강하={peak}, 질환={bool(target)}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 9 — 학생 실습</div>
+  <div class="pong-desc"><code>'5,57,0,120,354,163,0.6,1'</code> 을 파싱하여 콜레스테롤 위험 비율(기준 200)을 계산하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">line = '5,57,0,120,354,163,0.6,1'
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>line   = '5,57,0,120,354,163,0.6,1'
+fields = line.split(',')
+pid    = int(fields[0])
+age    = int(fields[1])
+chol   = int(fields[4])
+ratio  = chol / 200 * 100
+print(f'환자{pid}({age}세): 콜레스테롤={chol}, 위험비율={ratio:.1f}%')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 10 —  </div>
+  <div class="ping-desc"> : 숫자 → 문자열 변환 &amp; 연결</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
+report = ('환자ID=' + str(p['id']) +
+          ' 나이=' + str(p['age']) +
+          ' 혈압=' + str(p['trestbps']))
+print(report)
+print('보고서 길이:', len(report), '글자')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 10 — 학생 실습</div>
+  <div class="pong-desc">환자 8번의 id·age·chol·target을 문자열 연결로 <code>'P008|44세|263mg/dl|양성'</code> 형식으로 만들어라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">p = patients[7]  # 환자 8번
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>p      = patients[7]
+result = ('P' + str(p['id']).zfill(3) + '|' +
+          str(p['age']) + '세|' +
+          str(p['chol']) + 'mg/dl|' +
+          ('양성' if p['target']==1 else '음성'))
+print(result)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 11 —  </div>
+  <div class="ping-desc"> : round로 정밀도 조절</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
+ratio = p['thalach'] / (220 - p['age']) * 100
+print(f'원본:      {ratio}')
+print(f'소수 1자리: {round(ratio, 1)}')
+print(f'소수 2자리: {round(ratio, 2)}')
+print(f'정수:      {round(ratio)}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 11 — 학생 실습</div>
+  <div class="pong-desc">10명 전체의 최대심박수 달성률을 소수 1자리로 반올림하여 리스트로 만들어라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>ratios = [round(p['thalach']/(220-p['age'])*100, 1) for p in patients]
+for i, r in enumerate(ratios, 1):
+    print(f'환자{i}: {r}%')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 12 —  </div>
+  <div class="ping-desc"> : int() 절삭 vs round() 반올림</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">peak = 2.7   # ST 강하 수치
+print(f'int():   {int(peak)}   <- 소수점 절삭')
+print(f'round(): {round(peak)} <- 반올림')
+print(f'round(,1): {round(peak, 1)}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 12 — 학생 실습</div>
+  <div class="pong-desc"><code>avg_chol = 244.6</code> 을 <code>int()</code>와 <code>round()</code>로 각각 변환하고 차이를 설명하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">avg_chol = 244.6
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>avg_chol = 244.6
+print(f'int():   {int(avg_chol)}  &lt;- 소수점 무조건 버림')
+print(f'round(): {round(avg_chol)} &lt;- 반올림 (244 또는 245)')
+print('차이: int()는 항상 내림(음수에서도), round()는 수학적 반올림')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 4. 문자열 기초 (String Basics)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<h3>인덱싱 &amp; 슬라이싱</h3>
+<pre><code> 문자열:  P  A  T  _  0  0  1  _  M
+ 인덱스:  0  1  2  3  4  5  6  7  8
+ 음수:   -9 -8 -7 -6 -5 -4 -3 -2 -1</code></pre>
+<pre><code>s[0]      # 'P'
+s[4:7]    # '001'
+s[-1]     # 'M'
+s[::-1]   # 뒤집기</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 파일명에서 정보 추출
+filename = 'PAT_001_M_63_HEART.csv'
+#           0123456789...
+
+prefix  = filename[0:3]     # 'PAT'
+pid     = filename[4:7]     # '001'
+sex     = filename[8]       # 'M'
+age     = filename[10:12]   # '63'
+ext     = filename[-3:]     # 'csv'
+
+print(f'환자ID: {pid}, 성별: {sex}, 나이: {age}, 확장자: .{ext}')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 13 —  </div>
+  <div class="ping-desc"> : 파일명 슬라이싱 파싱</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">fname = 'PAT_005_F_57_HEART.csv'
+code  = fname[0:3]
+pid   = fname[4:7]
+sex   = fname[8]
+age   = fname[10:12]
+print(f'코드:{code}  환자:{pid}  성:{sex}  나이:{age}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 13 — 학생 실습</div>
+  <div class="pong-desc"><code>'PAT_010_M_57_HEART.csv'</code> 에서 환자번호·성별·나이·확장자를 추출하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">fname = 'PAT_010_M_57_HEART.csv'
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>fname = 'PAT_010_M_57_HEART.csv'
+pid  = fname[4:7]
+sex  = fname[8]
+age  = fname[10:12]
+ext  = fname[-3:]
+print(f'환자:{pid}  성별:{sex}  나이:{age}  확장자:.{ext}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 14 —  </div>
+  <div class="ping-desc"> : 슬라이싱 응용 (뒤집기·간격)</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">code = 'HEART-001'
+print('뒤집기:', code[::-1])
+print('짝수 인덱스:', code[::2])
+print('끝 3글자:', code[-3:])</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 14 — 학생 실습</div>
+  <div class="pong-desc"><code>'CARDIAC-RISK-HIGH'</code> 에서 ①뒤집기 ②홀수 인덱스 ③첫 7글자 ④마지막 4글자를 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">s = 'CARDIAC-RISK-HIGH'
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>s = 'CARDIAC-RISK-HIGH'
+print('뒤집기:', s[::-1])
+print('홀수:', s[1::2])
+print('앞7:', s[:7])
+print('뒤4:', s[-4:])</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 15 —  </div>
+  <div class="ping-desc"> : 문자열 연결(+)과 반복(*)</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">header = '=' * 35
+title  = ' 심장질환 진단 보고서 '
+print(header)
+print(title)
+print(header)
+
+row = 'P001' + ' | ' + '63세' + ' | ' + '양성'
+print(row)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 15 — 학생 실습</div>
+  <div class="pong-desc"><code>'*'</code> 40개로 테두리를 만들고 중앙에 <code>' 환자 5번 진단 결과 '</code> 를 넣어라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>border = '*' * 40
+print(border)
+print(' 환자 5번 진단 결과 ')
+print(border)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 16 —  </div>
+  <div class="ping-desc"> : len &amp; in</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">fname = 'PAT_001_M_63_HEART.csv'
+print(f'파일명 길이: {len(fname)}글자')
+print(f'HEART 포함?: {"HEART" in fname}')
+print(f'LUNG 포함?:  {"LUNG" in fname}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 16 — 학생 실습</div>
+  <div class="pong-desc"><code>report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'</code> 에서 길이·'age' 포함 여부·'Positive' 포함 여부를 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'
+print(f'길이: {len(report)}글자')
+print(f'age 포함?: {"age" in report}')
+print(f'Positive 포함?: {"Positive" in report}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 5. 문자열 함수 &amp; f-string</h1>
+
+<div class="section-header">개념 설명</div>
+
+<table><thead>
+<tr><th>메서드</th><th>기능</th><th>예</th></tr>
+</thead><tbody>
+<tr><td><code>.upper()/.lower()</code></td><td>대소문자</td><td><code>'male'.upper()</code> → <code>'MALE'</code></td></tr>
+<tr><td><code>.strip()</code></td><td>공백 제거</td><td><code>' abc '.strip()</code> → <code>'abc'</code></td></tr>
+<tr><td><code>.replace(a,b)</code></td><td>치환</td><td><code>'M'.replace('M','Male')</code></td></tr>
+<tr><td><code>.split(sep)</code></td><td>분리</td><td><code>'a,b,c'.split(',')</code></td></tr>
+<tr><td><code>.find(s)</code></td><td>위치</td><td><code>'abc'.find('b')</code> → <code>1</code></td></tr>
+</tbody></table>
+
+<h3>f-string 포맷</h3>
+<pre><code>f'{값:,}'      # 천 단위 쉼표
+f'{값:.2f}'    # 소수점 2자리
+f'{값:&gt;10}'    # 오른쪽 정렬 10칸
+f'{값:+.1f}'   # 부호 포함</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: f-string 정렬 보고서
+p = patients[0]
+rate = p['thalach']/(220-p['age'])*100
+print(f'{"환자ID":<8} {"나이":>5} {"혈압":>6} {"콜레스테롤":>10} {"심박달성률":>10}')
+print('-' * 45)
+print(f'P{p["id"]:03d}     {p["age"]:>5}세 {p["trestbps"]:>6}mmHg {p["chol"]:>8}mg/dl {rate:>9.1f}%')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 17 —  </div>
+  <div class="ping-desc"> : .split()으로 CSV 파싱</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">line = '1,63,Male,145,233,150,2.3,Positive'
+f    = line.split(',')
+pid, age, sex = int(f[0]), int(f[1]), f[2]
+bp, chol = int(f[3]), int(f[4])
+print(f'환자{pid}({age}세 {sex}): 혈압={bp}, 콜={chol}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 17 — 학생 실습</div>
+  <div class="pong-desc"><code>'10,57,Male,150,168,174,1.6,Negative'</code> 을 파싱하여 진단 요약을 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">line = '10,57,Male,150,168,174,1.6,Negative'
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>line = '10,57,Male,150,168,174,1.6,Negative'
+f    = line.split(',')
+pid, age, sex = int(f[0]), int(f[1]), f[2]
+bp, chol, hr, peak, diag = int(f[3]), int(f[4]), int(f[5]), float(f[6]), f[7]
+print(f'환자{pid:02d}({age}세 {sex}): 혈압={bp} 콜레스테롤={chol} 심박수={hr} 진단={diag}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 18 —  </div>
+  <div class="ping-desc"> : .replace()로 데이터 정제</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">raw = '  233 mg/dl  '
+clean = raw.strip().replace(' mg/dl', '')
+chol  = int(clean)
+print(f'정제 전: "{raw}"')
+print(f'정제 후: {chol} (type={type(chol).__name__})') </script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 18 — 학생 실습</div>
+  <div class="pong-desc"><code>raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']</code> 를 정수 리스트로 변환하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']
+result = [int(s.strip().replace(' mmHg','')) for s in raw_list]
+print(result)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 19 —  </div>
+  <div class="ping-desc"> : 정렬 보고서 출력</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">print(f'{"환자":^5} {"나이":>5} {"혈압":>7} {"콜레스테롤":>11} {"진단":^6}')
+print('-' * 40)
+for p in patients[:5]:
+    diag = '양성' if p['target']==1 else '음성'
+    print(f'P{p["id"]:03d}  {p["age"]:>5}세 {p["trestbps"]:>6}  {p["chol"]:>9}     {diag:^6}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 19 — 학생 실습</div>
+  <div class="pong-desc">10명 전체에 최대심박수 달성률(%)을 추가한 정렬 보고서를 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>print(f'{"환자":^5} {"나이":&gt;5} {"혈압":&gt;6} {"달성률":&gt;7} {"진단":^5}')
+print('-' * 35)
+for p in patients:
+    ratio = p['thalach']/(220-p['age'])*100
+    diag  = '양성' if p['target']==1 else '음성'
+    print(f'P{p["id"]:03d}  {p["age"]:&gt;4}세 {p["trestbps"]:&gt;5}  {ratio:&gt;6.1f}%  {diag:^5}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 20 —  </div>
+  <div class="ping-desc"> : 종합 진단 보고서</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
+hr_ratio = p['thalach']/(220-p['age'])*100
+border   = '=' * 40
+print(border)
+print(f'  심장질환 진단 보고서 (환자 P{p["id"]:03d})')
+print(border)
+print(f'  {"나이":<12}: {p["age"]:>8}세')
+print(f'  {"성별":<12}: {"남성" if p["sex"]==1 else "여성":>8}')
+print(f'  {"안정 혈압":<12}: {p["trestbps"]:>8} mmHg')
+print(f'  {"콜레스테롤":<12}: {p["chol"]:>8} mg/dl')
+print(f'  {"최대 심박수":<12}: {p["thalach"]:>8} bpm')
+print(f'  {"심박달성률":<12}: {hr_ratio:>8.1f} %')
+print(f'  {"진단":<12}: {"[양성]" if p["target"]==1 else "[음성]":>8}')
+print(border)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 20 — 학생 실습</div>
+  <div class="pong-desc">환자 10번에 대해 동일 형식의 종합 진단 보고서를 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">p = patients[9]  # 환자 10번
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>p = patients[9]
+hr_ratio = p['thalach']/(220-p['age'])*100
+border   = '=' * 40
+print(border)
+print(f'  심장질환 진단 보고서 (환자 P{p["id"]:03d})')
+print(border)
+print(f'  {"나이":&lt;12}: {p["age"]:&gt;8}세')
+print(f'  {"성별":&lt;12}: {"남성" if p["sex"]==1 else "여성":&gt;8}')
+print(f'  {"안정 혈압":&lt;12}: {p["trestbps"]:&gt;8} mmHg')
+print(f'  {"콜레스테롤":&lt;12}: {p["chol"]:&gt;8} mg/dl')
+print(f'  {"최대 심박수":&lt;12}: {p["thalach"]:&gt;8} bpm')
+print(f'  {"심박달성률":&lt;12}: {hr_ratio:&gt;8.1f} %')
+print(f'  {"진단":&lt;12}: {"[양성]" if p["target"]==1 else "[음성]":&gt;8}')
+print(border)</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">연습문제 (10문제)</h1>
+<h3>문제 1. 평균 나이</h3>
+
+<p>10명 환자의 평균 나이를 계산하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>ages = [p['age'] for p in patients]
+print(f'평균 나이: {sum(ages)/len(ages):.1f}세')</code></pre>
+</details>
+<h3>문제 2. 고혈압 환자</h3>
+
+<p>혈압 140 이상 환자 수와 비율(%)을 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>cnt = sum(1 for p in patients if p['trestbps']&gt;=140)
+print(f'고혈압: {cnt}명 ({cnt/len(patients)*100:.0f}%)')</code></pre>
+</details>
+<h3>문제 3. 콜레스테롤 분류</h3>
+
+<p>콜레스테롤 200 미만/200~239/240+ 각 환자 수를 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for label,lo,hi in [('정상',0,200),('경계',200,240),('고위험',240,9999)]:
+    cnt=sum(1 for p in patients if lo&lt;=p['chol']&lt;hi)
+    print(f'{label}: {cnt}명')</code></pre>
+</details>
+<h3>문제 4. CSV 파싱</h3>
+
+<p>아래 CSV 줄을 파싱하여 심박달성률을 계산하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>line='8,44,1,120,263,173,0.0,1'
+f=line.split(',')
+age,hr=int(f[1]),int(f[5])
+print(f'달성률:{hr/(220-age)*100:.1f}%')</code></pre>
+</details>
+<h3>문제 5. 파일명 생성</h3>
+
+<p>patients 리스트의 각 환자에 대해 <code>PAT_001_M_63_HEART.csv</code> 형식 파일명을 만들어라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for p in patients:
+    sex='M' if p['sex']==1 else 'F'
+    fname=f'PAT_{p["id"]:03d}_{sex}_{p["age"]}_HEART.csv'
+    print(fname)</code></pre>
+</details>
+<h3>문제 6. 정렬 보고서</h3>
+
+<p>5명 이상의 데이터로 열 정렬된 보고서를 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>print(f'{'ID':^5}{'AGE':&gt;5}{'BP':&gt;6}{'CHOL':&gt;7}{'DIAG':^7}')
+print('-'*32)
+for p in patients[:6]:
+    d='Pos' if p['target']==1 else 'Neg'
+    print(f'P{p["id"]:03d}  {p["age"]:&gt;4} {p["trestbps"]:&gt;5} {p["chol"]:&gt;6}  {d:^7}')</code></pre>
+</details>
+<h3>문제 7. 최대심박수 예측 오차</h3>
+
+<p>실제 최대심박수와 예측값(220-나이) 차이의 절댓값 평균을 계산하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>errors=[abs(p['thalach']-(220-p['age'])) for p in patients]
+print(f'평균 오차: {sum(errors)/len(errors):.1f}bpm')</code></pre>
+</details>
+<h3>문제 8. 남녀 평균 콜레스테롤</h3>
+
+<p>남성과 여성의 평균 콜레스테롤을 각각 계산하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for sex,label in [(1,'남성'),(0,'여성')]:
+    vals=[p['chol'] for p in patients if p['sex']==sex]
+    if vals: print(f'{label}: {sum(vals)/len(vals):.1f} mg/dl ({len(vals)}명)')</code></pre>
+</details>
+<h3>문제 9. 데이터 정제</h3>
+
+<p><code>raw=['  145mmHg','  233mg/dl','  2.3mm']</code> 에서 단위를 제거하고 숫자로 변환하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>raw=['  145mmHg','  233mg/dl','  2.3mm']
+clean=[s.strip().rstrip('mmHgdl').rstrip('mg').rstrip('/') for s in raw]
+print([float(c) for c in clean])</code></pre>
+</details>
+<h3>문제 10. 종합 통계 보고서</h3>
+
+<p>심장질환 유/무 환자의 평균 나이·혈압·콜레스테롤을 비교 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for t,lb in [(1,'양성'),(0,'음성')]:
+    ps=[p for p in patients if p['target']==t]
+    if not ps: continue
+    print(f'[{lb}] n={len(ps)}: 나이={sum(p["age"] for p in ps)/len(ps):.1f}, 혈압={sum(p["trestbps"] for p in ps)/len(ps):.1f}, 콜레스테롤={sum(p["chol"] for p in ps)/len(ps):.1f}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">괄호 채우기 (8문제)</h1>
+<h3>1. 변수 할당 — int·float·str·bool 4가지</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">age=___; peak=___; sex=___; diag=___
+print(type(age),type(peak),type(sex),type(diag))
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>age=63; peak=2.3; sex='Male'; diag=True
+print(type(age),type(peak),type(sex),type(diag))</code></pre>
+</details>
+<h3>2. 사칙연산 — 심박달성률 계산</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">hr=150; age=63
+max_pred = 220 ___ age
+ratio = hr ___ max_pred ___ 100
+print(f'{ratio:.1f}%')
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>hr=150; age=63
+max_pred = 220 - age
+ratio = hr / max_pred * 100
+print(f'{ratio:.1f}%')</code></pre>
+</details>
+<h3>3. 자료형 변환 — CSV 문자열 → 숫자</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">raw_age='63'; raw_peak='2.3'
+age  = ___(raw_age)
+peak = ___(raw_peak)
+print(type(age), type(peak))
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>raw_age='63'; raw_peak='2.3'
+age  = int(raw_age)
+peak = float(raw_peak)
+print(type(age), type(peak))</code></pre>
+</details>
+<h3>4. 슬라이싱 — 파일명 파싱</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname='PAT_003_F_41_HEART.csv'
+pid = fname[___:___]
+sex = fname[___]
+age = fname[___:___]
+print(pid,sex,age)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>fname='PAT_003_F_41_HEART.csv'
+pid = fname[4:7]
+sex = fname[8]
+age = fname[10:12]
+print(pid,sex,age)</code></pre>
+</details>
+<h3>5. split 파싱 — CSV 한 줄 파싱</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">line='3,41,0,130,204,172,1.4,1'
+f = line.___(',') 
+age  = ___(f[1])
+chol = ___(f[4])
+print(age, chol)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>line='3,41,0,130,204,172,1.4,1'
+f = line.split(',') 
+age  = int(f[1])
+chol = int(f[4])
+print(age, chol)</code></pre>
+</details>
+<h3>6. f-string 포맷 — 정렬 출력</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">chol=233; hr=150; ratio=96.1
+print(f'콜레스테롤: {chol:___}mg/dl')
+print(f'달성률: {ratio:___}%')
+print(f'심박수: {hr:___}')
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>chol=233; hr=150; ratio=96.1
+print(f'콜레스테롤: {chol:,}mg/dl')
+print(f'달성률: {ratio:.1f}%')
+print(f'심박수: {hr:&gt;6}')</code></pre>
+</details>
+<h3>7. replace+strip — 데이터 정제</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">raw = '  233 mg/dl  '
+clean = raw.___().___(' mg/dl', '')
+chol  = ___(clean)
+print(chol, type(chol))
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>raw = '  233 mg/dl  '
+clean = raw.strip().replace(' mg/dl', '')
+chol  = int(clean)
+print(chol, type(chol))</code></pre>
+</details>
+<h3>8. 종합 — 진단 보고서</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = patients[0]
+border = '=' ___ 30
+diag   = '양성' ___ p['target']==1 ___ '음성'
+print(border)
+print(f'환자 P{p["id"]:03d}: {diag}')
+print(border)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>p = patients[0]
+border = '=' * 30
+diag   = '양성' if p['target']==1 else '음성'
+print(border)
+print(f'환자 P{p["id"]:03d}: {diag}')
+print(border)</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">[버그] 디버그 문제 (10문제)</h1>
+<h3>디버그 1. 대소문자</h3>
+
+<pre><code>Age = 63
+print(age)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">Age = 63
+print(age)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>Age = 63
+print(age)</code></pre>
+</details>
+<h3>디버그 2. str+int</h3>
+
+<pre><code>print('환자 나이: ' + 63)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">print('환자 나이: ' + 63)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>print('환자 나이: ' + 63)</code></pre>
+</details>
+<h3>디버그 3. 쉼표 있는 int</h3>
+
+<pre><code>chol = int('2,330')</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">chol = int('2,330')
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>chol = int('2,330')</code></pre>
+</details>
+<h3>디버그 4. 슬라이싱 끝 인덱스</h3>
+
+<pre><code>fname = 'PAT_001_M_63'
+pid = fname[4:6]  # '001' 추출 의도</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname = 'PAT_001_M_63'
+pid = fname[4:6]  # '001' 추출 의도
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>fname = 'PAT_001_M_63'
+pid = fname[4:6]  # '001' 추출 의도</code></pre>
+</details>
+<h3>디버그 5. 0 나눗셈</h3>
+
+<pre><code>max_pred = 220 - 220  # 나이가 220인 경우
+ratio = 150 / max_pred * 100</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">max_pred = 220 - 220  # 나이가 220인 경우
+ratio = 150 / max_pred * 100
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>max_pred = 220 - 220  # 나이가 220인 경우
+ratio = 150 / max_pred * 100</code></pre>
+</details>
+<h3>디버그 6. float → int 오해</h3>
+
+<pre><code>peak = 2.7
+print(int(peak))  # 반올림 기대</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">peak = 2.7
+print(int(peak))  # 반올림 기대
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>peak = 2.7
+print(int(peak))  # 반올림 기대</code></pre>
+</details>
+<h3>디버그 7. split 구분자</h3>
+
+<pre><code>line = '63-145-233'
+fields = line.split(',')  # 숫자 3개 분리 의도
+print(fields[1])</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">line = '63-145-233'
+fields = line.split(',')  # 숫자 3개 분리 의도
+print(fields[1])
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>line = '63-145-233'
+fields = line.split(',')  # 숫자 3개 분리 의도
+print(fields[1])</code></pre>
+</details>
+<h3>디버그 8. round 반환값</h3>
+
+<pre><code>peak = 2.345
+peak.round(2)  # 원본 수정 의도
+print(peak)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">peak = 2.345
+peak.round(2)  # 원본 수정 의도
+print(peak)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>peak = 2.345
+peak.round(2)  # 원본 수정 의도
+print(peak)</code></pre>
+</details>
+<h3>디버그 9. 할당 연산자</h3>
+
+<pre><code>total = 0
+for p in patients:
+    total =+ p['chol']  # 누적 의도
+print(total)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">total = 0
+for p in patients:
+    total =+ p['chol']  # 누적 의도
+print(total)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>total = 0
+for p in patients:
+    total =+ p['chol']  # 누적 의도
+print(total)</code></pre>
+</details>
+<h3>디버그 10. 인덱스 초과</h3>
+
+<pre><code>fname = 'PAT_001'
+last = fname[7]  # 마지막 글자 의도</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname = 'PAT_001'
+last = fname[7]  # 마지막 글자 의도
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>fname = 'PAT_001'
+last = fname[7]  # 마지막 글자 의도</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">인터랙티브: 심장 위험도 계산기</h1>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import ipywidgets as widgets
+from IPython.display import display, clear_output
+
+s_age  = widgets.IntSlider(value=55,min=30,max=80,description='나이:')
+s_bp   = widgets.IntSlider(value=130,min=80,max=200,step=5,description='혈압(mmHg):',
+                            style={'description_width':'initial'})
+s_chol = widgets.IntSlider(value=220,min=100,max=400,step=5,description='콜레스테롤:',
+                            style={'description_width':'initial'})
+s_hr   = widgets.IntSlider(value=150,min=60,max=200,description='최대심박수:',
+                            style={'description_width':'initial'})
+out = widgets.Output()
+
+def update(change):
+    with out:
+        clear_output(wait=True)
+        age, bp, chol, hr = s_age.value, s_bp.value, s_chol.value, s_hr.value
+        hr_ratio   = hr / (220 - age) * 100
+        chol_level = '고위험' if chol>=240 else ('경계' if chol>=200 else '정상')
+        bp_level   = '고혈압' if bp>=140 else ('주의' if bp>=130 else '정상')
+        risk = sum([chol>=240, bp>=140, hr_ratio<70, age>=60])
+        risk_label = ['낮음','보통','높음','매우 높음'][min(risk,3)]
+        print('=' * 35)
+        print(f'  나이: {age}세  혈압: {bp}mmHg [{bp_level}]')
+        print(f'  콜레스테롤: {chol}mg/dl [{chol_level}]')
+        print(f'  심박달성률: {hr_ratio:.1f}%')
+        print(f'  종합 위험도: [{risk_label}]')
+        print('=' * 35)
+
+for s in [s_age,s_bp,s_chol,s_hr]: s.observe(update,'value')
+update(None)
+display(widgets.VBox([s_age,s_bp,s_chol,s_hr,out]))</script></div></div>
 </div>
 
-<a class="to-top" id="toTop" href="#" title="맨 위로">↑</a>
+<a id="toTop" href="#" title="맨 위로">↑</a>
 <script>
-  const btn = document.getElementById('toTop');
-  window.addEventListener('scroll', () => {
-    btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
-  });
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    window.scrollTo({top:0, behavior:'smooth'});
-  });
+const btn = document.getElementById('toTop');
+window.addEventListener('scroll', () => {
+  btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+btn.addEventListener('click', e => {
+  e.preventDefault();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
 </script>
 </body>
 </html>
