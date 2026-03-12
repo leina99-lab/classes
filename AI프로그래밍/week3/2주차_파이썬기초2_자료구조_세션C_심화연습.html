@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>2주차 — 파이썬 기초 ②: 자료구조</title>
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+    sagecell.makeSagecell({
+        inputLocation: 'div.compute',
+        languages:     ["python"],
+        evalButtonText:'▶ 실행 (Run)',
+        hide:          ["permalink","fullScreen"],
+        autoeval:      false
+    });
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+    body {
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        margin: 40px auto; max-width: 960px;
+        line-height: 1.7; color: #2d2d2d; background: #f7f5f0;
+    }
+    h1 { text-align:center; color:#1a1a2e; border-bottom:4px solid #2980b9;
+         padding-bottom:18px; font-size:1.9em; }
+    h2 { font-size:1.05em; color:#666; text-align:center; margin-bottom:40px; font-weight:normal; }
+    h3 { color:#2980b9; margin-top:55px; border-left:7px solid #2980b9;
+         padding:12px 18px; background:#f0f7ff; font-size:1.15em; border-radius:0 5px 5px 0; }
+    h4 { color:#2c3e50; margin-top:25px; border-bottom:1px solid #ddd; padding-bottom:6px; }
+    .description { background:#fff; padding:22px 28px; border:1px solid #e0e0e0;
+        border-radius:8px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    .ping-box { background:#eaf4fb; border:2px solid #3498db; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .pong-box { background:#fef9e7; border:2px solid #f39c12; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .challenge-box { background:#f0fff4; border:2px solid #27ae60; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .debug-box { background:#fdf2f8; border:2px solid #8e44ad; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .tip-box { background:#fffde7; border-left:5px solid #f9a825; padding:12px 18px;
+        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
+    .warn-box { background:#fff3e0; border-left:5px solid #e65100; padding:12px 18px;
+        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
+    .compute { margin:10px 0 40px 0; border-radius:6px; overflow:hidden; }
+    code { background:#f0f0f0; padding:2px 7px; border-radius:4px;
+        font-family:"Consolas","D2Coding",monospace; color:#2980b9; font-size:0.93em; font-weight:bold; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:0.95em; }
+    th, td { border:1px solid #ddd; padding:9px 14px; }
+    th { background:#f2f2f2; font-weight:bold; }
+    tr:nth-child(even) td { background:#fafafa; }
+    .badge { display:inline-block; padding:2px 10px; border-radius:12px;
+        font-size:0.8em; font-weight:bold; margin-right:6px; }
+    .badge-ping { background:#3498db; color:white; }
+    .badge-pong { background:#f39c12; color:white; }
+    .badge-debug { background:#8e44ad; color:white; }
+    .badge-challenge { background:#27ae60; color:white; }
+    details summary { cursor:pointer; color:#2980b9; font-weight:bold;
+        padding:6px 10px; background:#eaf4fb; border:1px solid #b0d4f1;
+        border-radius:5px; margin-top:10px; }
+    details > div { background:#f5faff; border:1px solid #b0d4f1;
+        border-top:none; padding:14px 18px; border-radius:0 0 5px 5px; font-size:0.93em; }
+    hr.sep { border:none; border-top:2px dashed #ddd; margin:50px 0 30px; }
+    ol li, ul li { margin-bottom:6px; }
+    pre { background:#f8f8f8; padding:12px; border-radius:5px; font-size:0.88em; overflow-x:auto; }
+</style>
+</head>
+<body>
+
+<h1>2주차 — 파이썬 기초 ②: 자료구조</h1>
+<h2>세션 C — 오류 수정(Debug) + 연습문제 12문항 + 핵심 정리</h2>
+
+<!-- ===== 디버그 ===== -->
+<h3>PART 1. 오류 수정(Debug) 실습</h3>
+<div class="description">
+  <p>아래 코드에는 의도적으로 오류가 삽입되어 있다. 오류를 찾아 수정하라.</p>
+</div>
+
+<div class="debug-box">
+  <h4><span class="badge badge-debug">Debug ①</span> 리스트 — 3곳 수정</h4>
+  <p><em>힌트:</em> True 대소문자, 슬라이싱 범위, 내장 함수 vs 메서드</p>
+</div>
+<div class="compute">
+cases = [523, 681, 445, 892, 1023]
+cases.sort(reverse=true)    # 오류 1
+top3 = cases[1:3]           # 오류 2
+print("상위 3개국:", top3)
+total = cases.sum()         # 오류 3
+print("총 확진자:", total)
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>cases.sort(reverse=True)    # True (대문자)
+top3 = cases[:3]            # [0:3] 또는 [:3]
+total = sum(cases)          # 내장함수 sum()</pre>
+</div></details>
+
+<div class="debug-box">
+  <h4><span class="badge badge-debug">Debug ②</span> 딕셔너리 — 3곳 수정</h4>
+  <p><em>힌트:</em> 딕셔너리 접근 방식, 메서드 이름 단수/복수</p>
+</div>
+<div class="compute">
+covid = {"한국":5000,"미국":85000,"일본":15000}
+covid("영국") = 30000           # 오류 1
+all_values = covid.value()      # 오류 2
+max_country = max(covid, key=covid.get)
+print(f"최다: {max_country} ({covid[max_country]}명)")
+for country in covid.key():     # 오류 3
+    print(f"  {country}: {covid[country]:,}명")
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>covid["영국"] = 30000       # [] 사용
+all_values = covid.values()  # values() 복수
+for country in covid.keys(): # keys() 복수</pre>
+</div></details>
+
+<div class="debug-box">
+  <h4><span class="badge badge-debug">Debug ③</span> 튜플·집합 — 3곳 수정</h4>
+  <p><em>힌트:</em> 언패킹 변수 수, 교집합 연산자, 집합 추가 메서드</p>
+</div>
+<div class="compute">
+data = ("한국", 5000, 247)
+country, cases = data           # 오류 1
+
+A = {"사과","바나나","포도"}
+B = {"바나나","딸기","포도"}
+common = A and B                # 오류 2
+print("공통:", common)
+A.append("수박")                # 오류 3
+print("추가 후:", A)
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>country, cases, deaths = data   # 변수 3개
+common = A & B                  # & 연산자
+A.add("수박")                   # .add() 메서드</pre>
+</div></details>
+
+<div class="debug-box">
+  <h4><span class="badge badge-debug">Debug ④</span> 종합 — 4곳 수정</h4>
+</div>
+<div class="compute">
+countries  = ["한국","미국","일본"]
+cases_list = [5000, 85000, 15000]
+
+covid_dict = {}
+for i in range(len(countries)):
+    covid_dict[countries(i)] = cases_list[i]    # 오류 1
+
+total = sum(covid_dict.values)                   # 오류 2
+
+avg = total / len(covid_dict)
+above_avg = []
+for country, cases in covid_dict.items():
+    if cases > avg                               # 오류 3 (이 줄)
+        above_avg.append(country)
+
+print("평균 이상:", above_avg)
+print("결과: " + len(above_avg) + "개국")        # 오류 4
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>covid_dict[countries[i]] = ...   # [] 인덱싱
+total = sum(covid_dict.values()) # values() 호출
+if cases > avg:                  # 콜론 추가
+print("결과: " + str(len(above_avg)) + "개국")  # str() 변환</pre>
+</div></details>
+
+<!-- ===== 연습문제 ===== -->
+<h3>PART 2. 연습문제 12문항</h3>
+
+<div class="compute">
+# 문제 1. 리스트 인덱싱·슬라이싱
+data = [10,20,30,40,50,60,70,80,90,100]
+print(data[___])        # (a) 세 번째 요소
+print(data[___])        # (b) 마지막 세 요소
+print(data[___])        # (c) 짝수 인덱스 (0,2,4...)
+print(data[___])        # (d) 역순
+</div>
+<details><summary>▶ 정답</summary>
+<div><pre>data[2] / data[-3:] / data[::2] / data[::-1]</pre></div></details>
+
+<div class="compute">
+# 문제 2. 리스트 메서드
+scores = [78, 92, 65, 88, 71, 95, 83]
+scores.append(___)           # (a) 100 추가
+scores.remove(min(scores))   # (b) 최저 제거
+scores.sort(reverse=___)     # (c) 내림차순
+top3_avg = ___               # (d) 상위 3개 평균
+print(f"상위 3개 평균: {top3_avg:.2f}")
+</div>
+
+<div class="compute">
+# 문제 3. 중첩 리스트
+matrix = [[1,2,3],[4,5,6],[7,8,9]]
+print(matrix[___][___])              # (a) 숫자 5
+print(matrix[___])                   # (b) 세 번째 행
+row_sums  = [___ for row in matrix]  # (c) 각 행의 합
+diagonal  = [matrix[i][i] for i in range(___)]  # (d) 대각선
+print(row_sums, diagonal)
+</div>
+
+<div class="compute">
+# 문제 4. 튜플 특성 — 실행해서 어떤 줄이 에러인지 확인하라
+t = (1, 2, [3, 4])
+print(t[2])         # (a) ?
+# t[0] = 10         # (b) 에러? 이유?
+t[2].append(5)
+print(t)            # (c) ?
+# t[2] = [6,7]      # (d) 에러? 이유?
+</div>
+
+<div class="compute">
+# 문제 5. 딕셔너리 조작
+students = {"김철수":85,"이영희":92,"박민수":78,"정다은":95,"최준혁":88}
+print(students[___])        # (a) 정다은
+students[___] = ___         # (b) 한소희 90 추가
+avg = ___                   # (c) 전체 평균
+for name, score in students.items():
+    if ___:                 # (d) 평균 이상 출력
+        print(f"  {name}: {score}")
+</div>
+
+<div class="compute">
+# 문제 6. 딕셔너리 + 리스트 결합
+countries   = ["한국","미국","일본","영국","독일"]
+populations = [5180, 33100, 12600, 6720, 8320]
+pop_dict    = dict(zip(___, ___))       # (a) zip으로 생성
+max_c = max(pop_dict, key=pop_dict.get) # (b) 최다 인구국
+print(f"인구 최다: {max_c} ({pop_dict[max_c]}만 명)")
+big = {k:v for k,v in pop_dict.items() if v >= ___}  # (c) 1억 이상
+print("1억 이상:", big)
+</div>
+
+<div class="compute">
+# 문제 7. 집합 연산
+set_A = {1,2,3,4,5,6,7,8}
+set_B = {5,6,7,8,9,10,11,12}
+print("교집합:", ___)
+print("합집합:", ___)
+print("A만:", ___)
+print("A가 {5,6}의 상위집합?", ___)
+</div>
+
+<div class="compute">
+# 문제 8. 중복 제거 (순서 유지)
+# 기대 출력: [3, 1, 4, 5, 9, 2, 6]
+data = [3,1,4,1,5,9,2,6,5,3,5]
+seen   = set()
+unique = []
+for x in data:
+    if ___:
+        seen.add(x)
+        unique.append(x)
+print(unique)
+</div>
+
+<div class="compute">
+# 문제 9. 불리언 — 출력 예측 후 실행
+a = [1, 2, 3]
+b = [1, 2, 3]
+c = a
+print(a == b)   # (a) ?
+print(a is b)   # (b) ?
+print(a is c)   # (c) ?
+c[0] = 999
+print(a)        # (d) ?
+print(b)        # (e) ?
+</div>
+
+<div class="compute">
+# 문제 10. 종합 — 코로나 데이터 분석
+daily = [523,681,445,892,1023,756,634,812,567,934]
+by_country = {"한국":34571,"미국":1850000,"일본":18723,"영국":312654,"브라질":923189}
+
+# (a) 800 이상인 날 리스트
+high_days = [x for x in daily if ___]
+print("800 이상:", high_days)
+
+# (b) 5일 이동평균 (길이: 6)
+ma5 = [round(sum(daily[i:i+5])/5,1) for i in range(___)]
+print("5일 이동평균:", ma5)
+
+# (c) 확진자 10만 이상 국가 딕셔너리
+big = {k:v for k,v in by_country.items() if ___}
+print("10만 이상:", big)
+
+# (d) 내림차순 정렬 [(국가, 확진자), ...] 형태
+ranked = sorted(by_country.items(), key=___, reverse=True)
+print("순위:", ranked)
+</div>
+
+<div class="compute">
+# 문제 11. copy() 심화 — 결과 예측
+import copy
+original = [[1,2],[3,4],[5,6]]
+shallow  = original.copy()
+deep     = copy.deepcopy(original)
+original[0][0] = 999
+print(shallow[0][0])   # (a) ?  이유?
+print(deep[0][0])      # (b) ?  이유?
+</div>
+
+<div class="compute">
+# 문제 12. 간이 주소록 프로그램 (입력 없이 딕셔너리 조작만)
+contacts = {}
+
+# 연락처 추가
+def add_contact(name, phone):
+    contacts[name] = phone
+
+# 연락처 검색
+def search_contact(name):
+    return contacts.get(name, "찾을 수 없습니다.")
+
+# 전체 목록 (이름순 정렬)
+def list_contacts():
+    for name in sorted(contacts.keys()):
+        print(f"  {name}: {contacts[name]}")
+
+# 테스트
+add_contact("김철수", "010-1234-5678")
+add_contact("이영희", "010-9876-5432")
+add_contact("박민수", "010-1111-2222")
+print(search_contact("이영희"))
+print(search_contact("홍길동"))
+list_contacts()
+</div>
+
+<!-- ===== 핵심 정리 ===== -->
+<h3>2주차 핵심 정리</h3>
+<div class="description">
+<table>
+  <tr><th>자료구조</th><th>기호</th><th>순서</th><th>변경</th><th>중복</th><th>핵심 용도</th></tr>
+  <tr><td><strong>리스트</strong></td><td><code>[ ]</code></td><td>✅</td><td>✅</td><td>✅</td><td>범용 데이터 모음</td></tr>
+  <tr><td><strong>튜플</strong></td><td><code>( )</code></td><td>✅</td><td>❌</td><td>✅</td><td>변하면 안 되는 데이터</td></tr>
+  <tr><td><strong>딕셔너리</strong></td><td><code>{k:v}</code></td><td>✅</td><td>✅</td><td>키❌</td><td>이름-값 매핑</td></tr>
+  <tr><td><strong>집합</strong></td><td><code>{ }</code></td><td>❌</td><td>✅</td><td>❌</td><td>중복 제거, 집합 연산</td></tr>
+</table>
+<div class="warn-box">
+  <strong>황금 법칙:</strong> 원본 데이터를 수정하기 전에 반드시 <code>copy.deepcopy()</code> 로 백업하라.
+</div>
+</div>
+
+<div style="text-align:center;margin-top:60px;color:#999;font-size:0.85em;border-top:1px solid #ddd;padding-top:20px;">
+3주차: 제어문(if, while, for) · 함수 · 컴프리헨션 · 예외처리
+</div>
+</body>
+</html>
