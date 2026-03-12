@@ -1,384 +1,1386 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<title>2주차 — 파이썬 기초 ②: 자료구조</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W02 — 파이썬 기초 2 : 리스트 · 튜플 · 딕셔너리 · 집합 · 불리언</title>
+
+<!-- SageCell (Python 실행) -->
 <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
 <script>
+  window.addEventListener('load', function() {
     sagecell.makeSagecell({
-        inputLocation: 'div.compute',
-        languages:     ["python"],
-        evalButtonText:'▶ 실행 (Run)',
-        hide:          ["permalink","fullScreen"],
-        autoeval:      false
+      inputLocation:  '.sage-ping',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
     });
+    sagecell.makeSagecell({
+      inputLocation:  '.sage-pong',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
+    });
+    sagecell.makeSagecell({
+      inputLocation:  '.sage-code',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink','fullScreen'],
+      autoeval:       false
+    });
+  });
 </script>
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 <style>
-    body {
-        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-        margin: 40px auto; max-width: 960px;
-        line-height: 1.7; color: #2d2d2d; background: #f7f5f0;
-    }
-    h1 { text-align:center; color:#1a1a2e; border-bottom:4px solid #2980b9;
-         padding-bottom:18px; font-size:1.9em; }
-    h2 { font-size:1.05em; color:#666; text-align:center; margin-bottom:40px; font-weight:normal; }
-    h3 { color:#2980b9; margin-top:55px; border-left:7px solid #2980b9;
-         padding:12px 18px; background:#f0f7ff; font-size:1.15em; border-radius:0 5px 5px 0; }
-    h4 { color:#2c3e50; margin-top:25px; border-bottom:1px solid #ddd; padding-bottom:6px; }
-    .description { background:#fff; padding:22px 28px; border:1px solid #e0e0e0;
-        border-radius:8px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-    .ping-box { background:#eaf4fb; border:2px solid #3498db; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
-    .pong-box { background:#fef9e7; border:2px solid #f39c12; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
-    .challenge-box { background:#f0fff4; border:2px solid #27ae60; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
-    .debug-box { background:#fdf2f8; border:2px solid #8e44ad; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
-    .tip-box { background:#fffde7; border-left:5px solid #f9a825; padding:12px 18px;
-        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
-    .warn-box { background:#fff3e0; border-left:5px solid #e65100; padding:12px 18px;
-        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
-    .compute { margin:10px 0 40px 0; border-radius:6px; overflow:hidden; }
-    code { background:#f0f0f0; padding:2px 7px; border-radius:4px;
-        font-family:"Consolas","D2Coding",monospace; color:#2980b9; font-size:0.93em; font-weight:bold; }
-    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:0.95em; }
-    th, td { border:1px solid #ddd; padding:9px 14px; }
-    th { background:#f2f2f2; font-weight:bold; }
-    tr:nth-child(even) td { background:#fafafa; }
-    .badge { display:inline-block; padding:2px 10px; border-radius:12px;
-        font-size:0.8em; font-weight:bold; margin-right:6px; }
-    .badge-ping { background:#3498db; color:white; }
-    .badge-pong { background:#f39c12; color:white; }
-    .badge-debug { background:#8e44ad; color:white; }
-    .badge-challenge { background:#27ae60; color:white; }
-    details summary { cursor:pointer; color:#2980b9; font-weight:bold;
-        padding:6px 10px; background:#eaf4fb; border:1px solid #b0d4f1;
-        border-radius:5px; margin-top:10px; }
-    details > div { background:#f5faff; border:1px solid #b0d4f1;
-        border-top:none; padding:14px 18px; border-radius:0 0 5px 5px; font-size:0.93em; }
-    hr.sep { border:none; border-top:2px dashed #ddd; margin:50px 0 30px; }
-    ol li, ul li { margin-bottom:6px; }
-    pre { background:#f8f8f8; padding:12px; border-radius:5px; font-size:0.88em; overflow-x:auto; }
+/* ── 리셋 & 기본 ── */
+:root {
+  --beige:   #FAF7F2;
+  --cream:   #F5F0E8;
+  --crimson: #A02020;
+  --dark:    #2C2C2C;
+  --mid:     #666;
+  --border:  #C8B8A2;
+  --blue:    #2E5FA3;
+  --amber:   #D4820A;
+  --green:   #1A7A4A;
+  --ping-bg: #EEF4FF;
+  --pong-bg: #FFF8E7;
+  --code-bg: #F0EDE8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--beige);
+  font-family: 'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  color: var(--dark);
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+/* ── 헤더 ── */
+.site-header {
+  background: var(--crimson);
+  color: #fff;
+  padding: 18px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.site-header .title { font-size: 16px; font-weight: 700; }
+.site-header .sub   { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+.week-badge {
+  background: #FAD4D4; color: var(--crimson);
+  font-weight: 700; font-size: 13px;
+  padding: 4px 16px; border-radius: 20px;
+}
+
+/* ── 레이아웃 ── */
+.wrap { max-width: 900px; margin: 0 auto; padding: 24px 24px 80px; }
+
+/* ── 목차 ── */
+.toc {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 24px;
+  margin: 20px 0 32px;
+  font-size: 13.5px;
+}
+.toc h4 { color: var(--crimson); margin-bottom: 8px; font-size: 14px; }
+.toc a  { color: var(--blue); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.toc li { margin: 3px 0; }
+
+/* ── 제목 ── */
+h1.doc-title {
+  font-size: 24px; color: var(--crimson);
+  margin: 24px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 2.5px solid var(--crimson);
+}
+.section-header {
+  background: #FDF5F0;
+  border-left: 4px solid var(--crimson);
+  padding: 10px 18px;
+  margin: 32px 0 14px;
+  border-radius: 0 4px 4px 0;
+  font-size: 17px; font-weight: 700;
+  color: var(--crimson);
+  scroll-margin-top: 70px;
+}
+h3 {
+  font-size: 14.5px; color: var(--blue);
+  border-left: 3px solid var(--blue);
+  padding-left: 10px;
+  margin: 20px 0 8px;
+}
+
+/* ── 본문 ── */
+p  { margin: 6px 0; text-align: justify; }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+blockquote {
+  background: #FFF8E7;
+  border-left: 3.5px solid var(--amber);
+  padding: 10px 16px; margin: 12px 0;
+  color: #4A3000; font-size: 14px;
+  border-radius: 0 4px 4px 0;
+}
+ul, ol { padding-left: 22px; margin: 6px 0; }
+li { margin: 3px 0; }
+ul li::marker { color: var(--crimson); }
+code {
+  font-family: 'Nanum Gothic Coding','Consolas',monospace;
+  background: var(--code-bg); color: #1A1A6E;
+  padding: 1px 5px; border-radius: 3px;
+  font-size: 13px; border: 1px solid #D8D0C4;
+}
+strong { font-weight: 700; }
+
+/* ── 표 ── */
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+thead th {
+  background: #8B1A1A; color: #fff;
+  padding: 8px 12px; text-align: left;
+  border: 1px solid var(--border);
+}
+tbody tr:nth-child(odd)  { background: #fff; }
+tbody tr:nth-child(even) { background: #F5F0EB; }
+tbody td { padding: 7px 12px; border: 1px solid var(--border); }
+
+/* ── Ping 카드 ── */
+.ping-card {
+  background: var(--ping-bg);
+  border: 1.5px solid #B8D0F0;
+  border-left: 5px solid var(--blue);
+  border-radius: 6px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+}
+.ping-label {
+  background: var(--blue); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 5px 14px; letter-spacing: 0.5px;
+}
+.ping-desc {
+  padding: 10px 16px 6px;
+  font-size: 14px; color: #1A3560;
+}
+
+/* ── Pong 카드 ── */
+.pong-card {
+  background: var(--pong-bg);
+  border: 1.5px solid #F0D090;
+  border-left: 5px solid var(--amber);
+  border-radius: 6px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+}
+.pong-label {
+  background: var(--amber); color: #fff;
+  font-size: 12px; font-weight: 700;
+  padding: 5px 14px; letter-spacing: 0.5px;
+}
+.pong-desc {
+  padding: 10px 16px 6px;
+  font-size: 14px; color: #5A3500;
+}
+
+/* ── 일반 코드 카드 ── */
+.code-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--mid);
+  border-radius: 6px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+/* ── SageCell 공통 ── */
+.sage-ping, .sage-pong, .sage-code { padding: 8px 12px 10px; }
+.sagecell { font-size: 13px !important; }
+
+/* ── 정답 토글 ── */
+details {
+  background: #F0FAF4;
+  border: 1px solid #A8D8BC;
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  margin: 10px 0;
+  padding: 4px 0;
+}
+summary {
+  cursor: pointer;
+  padding: 8px 16px;
+  font-weight: 700;
+  color: var(--green);
+  font-size: 14px;
+  user-select: none;
+}
+summary:hover { background: #E0F5EA; }
+details[open] summary { border-bottom: 1px solid #A8D8BC; margin-bottom: 6px; }
+details pre {
+  margin: 8px 16px;
+  background: #1E1E1E; color: #D4D4D4;
+  padding: 12px 16px; border-radius: 4px;
+  font-size: 12.5px; overflow-x: auto;
+  line-height: 1.6; border: none;
+}
+details pre .comment { color: #6A9955; }
+details code { background: none; border: none; color: inherit; }
+
+/* ── 연습문제 박스 ── */
+.exercise-box {
+  background: #F4F0FF;
+  border: 1.5px solid #C0A8F0;
+  border-left: 5px solid #6040C0;
+  border-radius: 6px;
+  padding: 14px 20px;
+  margin: 14px 0;
+}
+.exercise-box .ex-label {
+  color: #6040C0; font-weight: 700;
+  font-size: 13px; margin-bottom: 6px;
+}
+
+/* ── 맨 위로 ── */
+#toTop {
+  position: fixed; bottom: 26px; right: 26px;
+  background: var(--crimson); color: #fff;
+  border: none; border-radius: 50%;
+  width: 44px; height: 44px;
+  font-size: 20px; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  display: none; align-items: center; justify-content: center;
+  text-decoration: none; line-height: 1;
+  transition: background 0.2s;
+}
+#toTop:hover { background: #800000; }
+
+/* ── 인쇄 ── */
+@media print {
+  .site-header, #toTop { display: none !important; }
+  .sage-ping .sagecell_input,
+  .sage-pong .sagecell_input,
+  .sage-code .sagecell_input { border: 1px solid #ccc !important; }
+  body { background: #fff; }
+}
 </style>
 </head>
 <body>
 
-<h1>2주차 — 파이썬 기초 ②: 자료구조</h1>
-<h2>세션 B — 핑퐁 코딩(Ping-Pong Coding) + 도전 실습(Challenge Lab)<br>
-<span style="color:#2980b9; font-size:0.9em;">활용 데이터: 코로나19(COVID-19) 확진자 수</span></h2>
+<header class="site-header">
+  <div>
+    <div class="title">W02 · 파이썬 기초 ② — 자료구조</div>
+    <div class="sub">학생용 실습 파일 &nbsp;|&nbsp; AI · ML · DL 통합 커리큘럼</div>
+  </div>
+  <span class="week-badge">W02</span>
+</header>
 
-<div class="description">
-<p><span class="badge badge-ping">Ping</span> 교수자가 시연 →
-   <span class="badge badge-pong">Pong</span> 학생이 즉시 변형 작성. &nbsp;
-   빈칸 <code>___</code>을 채워야 실행된다.</p>
-<table>
-  <tr><th>자료구조</th><th>기호</th><th>순서</th><th>변경</th><th>중복</th><th>특징</th></tr>
-  <tr><td><strong>리스트</strong>(List)</td><td><code>[ ]</code></td><td>✅</td><td>✅</td><td>✅</td><td>범용 데이터 모음</td></tr>
-  <tr><td><strong>튜플</strong>(Tuple)</td><td><code>( )</code></td><td>✅</td><td>❌</td><td>✅</td><td>변경 불가 데이터</td></tr>
-  <tr><td><strong>딕셔너리</strong>(Dict)</td><td><code>{k:v}</code></td><td>✅</td><td>✅</td><td>키❌</td><td>이름-값 매핑</td></tr>
-  <tr><td><strong>집합</strong>(Set)</td><td><code>{ }</code></td><td>❌</td><td>✅</td><td>❌</td><td>중복 제거, 집합 연산</td></tr>
-</table>
+<div class="wrap">
+<div class="toc">
+  <h4>목차</h4>
+  <ul><li><a href="#실습_데이터___Mall_Customers_csv">실습 데이터 — Mall_Customers.csv</a></li>
+<li><a href="#개념_설명">개념 설명</a></li>
+<li><a href="#개념_설명">개념 설명</a></li>
+<li><a href="#개념_설명">개념 설명</a></li>
+<li><a href="#개념_설명">개념 설명</a></li>
+<li><a href="#개념_설명">개념 설명</a></li></ul>
 </div>
+<h1 class="doc-title">W02 — 파이썬 기초 2 : 리스트 · 튜플 · 딕셔너리 · 집합 · 불리언</h1>
+<h3>Mall_Customers.csv — 쇼핑몰 고객 세그먼트 데이터로 배우는 자료구조</h3>
 
-<!-- ===== PP1: 리스트 ===== -->
-<h3>핑퐁 ①: 리스트(List) — 생성 · 인덱싱 · 슬라이싱</h3>
-<div class="ping-box">
-  <h4><span class="badge badge-ping">Ping ①</span> 교수자 시연</h4>
-</div>
-<div class="compute">
-temps = [2, 5, -1, 3, 7, 8, 4]
-print("월요일 기온:", temps[0])
-print("금~일 기온:", temps[4:])
-print("최고 기온:", max(temps))
-print("평균 기온:", sum(temps) / len(temps))
-</div>
-<div class="pong-box">
-  <h4><span class="badge badge-pong">Pong ①</span> 학생 작성 — 코로나 일별 확진자 리스트</h4>
-</div>
-<div class="compute">
-daily_cases = [523, 681, 445, 892, 1023, 756, 634]
+<hr>
+<blockquote><strong>학습 목표</strong></blockquote>
+<blockquote>1. <strong>리스트(List)</strong> 로 고객 점수를 관리하고 정렬·필터링한다.</blockquote>
+<blockquote>2. <strong>튜플(Tuple)</strong> 로 변경 불가 고객 정보를 저장한다.</blockquote>
+<blockquote>3. <strong>딕셔너리(Dict)</strong> 로 고객 프로필 데이터베이스를 구축한다.</blockquote>
+<blockquote>4. <strong>집합(Set)</strong> 으로 중복 없는 고객 그룹을 관리한다.</blockquote>
+<blockquote>5. <strong>불리언(Bool)</strong> 과 <code>copy()</code>로 데이터 안전성을 이해한다.</blockquote>
 
-print("첫째 날:", ___)          # 1) 첫째 날 확진자
-print("마지막 3일:", ___)        # 2) 마지막 3일 슬라이싱
-print("총 확진자:", ___)         # 3) 7일 합계
-print("평균 확진자:", ___)       # 4) 평균
-print("최다:", ___, "/ 최소:", ___)  # 5) 최댓값, 최솟값
-</div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>print("첫째 날:", daily_cases[0])
-print("마지막 3일:", daily_cases[-3:])
-print("총 확진자:", sum(daily_cases))
-print("평균 확진자:", sum(daily_cases)/len(daily_cases))
-print("최다:", max(daily_cases), "/ 최소:", min(daily_cases))</pre>
-</div></details>
+<table><thead>
+<tr><th>섹션</th><th>내용</th><th>Ping-Pong</th></tr>
+</thead><tbody>
+<tr><td>1</td><td>리스트 (List)</td><td>Pong 1~6</td></tr>
+<tr><td>2</td><td>튜플 (Tuple)</td><td>Pong 7~10</td></tr>
+<tr><td>3</td><td>딕셔너리 (Dict)</td><td>Pong 11~15</td></tr>
+<tr><td>4</td><td>집합 (Set)</td><td>Pong 16~18</td></tr>
+<tr><td>5</td><td>불리언 &amp; copy()</td><td>Pong 19~20</td></tr>
+</tbody></table>
+<hr>
+<div class="section-header">실습 데이터 — Mall_Customers.csv</div>
 
-<!-- ===== PP2: 리스트 메서드 ===== -->
-<h3>핑퐁 ②: 리스트 메서드 — 정렬 · 추가 · 삭제</h3>
-<div class="tip-box">
-  <strong>핵심:</strong> <code>sorted()</code>는 원본 보존 · 새 리스트 반환 &nbsp;|&nbsp;
-  <code>.sort()</code>는 원본 수정 · 반환값 <code>None</code>
-</div>
-<div class="ping-box">
-  <h4><span class="badge badge-ping">Ping ②</span> 교수자 시연</h4>
-</div>
-<div class="compute">
-scores = [85, 92, 78, 95, 88]
-scores_sorted = sorted(scores, reverse=True)
-print("상위 3개:", scores_sorted[:3])
-scores.append(91)
-print("추가 후:", scores)
-scores.remove(min(scores))
-print("최저점 제거 후:", scores)
-</div>
-<div class="pong-box">
-  <h4><span class="badge badge-pong">Pong ②</span> 학생 작성</h4>
-</div>
-<div class="compute">
-cases_14days = [523,681,445,892,1023,756,634,812,567,934,1105,678,489,723]
+<p>Kaggle의 쇼핑몰 고객 세분화 데이터셋이다.</p>
+<p>고객의 나이·성별·연수입·소비 점수로 마케팅 전략을 수립한다.</p>
 
-cases_sorted = ___              # 1) 내림차순 새 리스트
-top5         = ___              # 2) 상위 5일 슬라이싱
-print("확진자 상위 5일:", top5)
+<pre><code>import pandas as pd
+df = pd.read_csv('Mall_Customers.csv')</code></pre>
 
-___                             # 3) 850 추가
-print("15일차 추가 후 길이:", len(cases_14days))
+<table><thead>
+<tr><th>변수</th><th>의미</th><th>범위</th></tr>
+</thead><tbody>
+<tr><td><code>CustomerID</code></td><td>고객 번호</td><td>1~200</td></tr>
+<tr><td><code>Genre</code></td><td>성별</td><td>Male/Female</td></tr>
+<tr><td><code>Age</code></td><td>나이</td><td>세</td></tr>
+<tr><td><code>Annual Income</code></td><td>연수입</td><td>k$</td></tr>
+<tr><td><code>Spending Score</code></td><td>소비 점수</td><td>1~100</td></tr>
+</tbody></table>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># Mall_Customers 샘플 데이터 (10명)
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+print(f'{len(customers)}명 고객 데이터 로드')
+print(f'소비점수 범위: {min(c["score"] for c in customers)}~{max(c["score"] for c in customers)}')</script></div></div>
+<hr>
+<h1 class="doc-title">Section 1. 리스트 (List)</h1>
 
-min_case = ___
-___                             # 4) 최솟값 제거
-print("최소값 제거 후:", cases_14days)
-</div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>cases_sorted = sorted(cases_14days, reverse=True)
-top5         = cases_sorted[:5]
-cases_14days.append(850)
-min_case = min(cases_14days)
-cases_14days.remove(min_case)</pre>
-</div></details>
+<div class="section-header">개념 설명</div>
 
-<!-- ===== PP3: 딕셔너리 ===== -->
-<h3>핑퐁 ③: 딕셔너리(Dictionary) — 생성 · 접근 · 순회</h3>
-<div class="warn-box">
-  <strong>.get(키, 기본값)</strong> 을 습관화하라. 없는 키에 <code>d['키']</code>는 <code>KeyError</code>로 프로그램이 멈춘다.
+<p><strong>리스트(list)</strong>는 순서가 있는 변경 가능한 자료구조이다.</p>
+
+<pre><code>scores = [39, 81, 6, 77, 40, 76, 6, 94, 3, 72]
+scores[0]      # 39  (인덱싱)
+scores[1:4]    # [81, 6, 77]  (슬라이싱)
+scores.append(55)   # 추가
+scores.remove(6)    # 삭제 (첫 번째)
+sorted(scores)      # 정렬 (원본 유지)
+scores.sort()       # 정렬 (원본 변경)</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [p['score'] for p in customers]
+incomes= [p['income'] for p in customers]
+print('소비점수:', scores)
+print('연수입:', incomes)
+print(f'최고점수: {max(scores)}, 최저점수: {min(scores)}, 평균: {sum(scores)/len(scores):.1f}')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 1 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 소비점수 리스트 생성 및 기본 연산</div>
 </div>
-<div class="ping-box">
-  <h4><span class="badge badge-ping">Ping ③</span> 교수자 시연</h4>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+print('길이:', len(scores))
+print('첫3:', scores[:3])
+print('끝3:', scores[-3:])
+print('정렬:', sorted(scores, reverse=True)[:5], '(상위5)')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 1 — 학생 실습</div>
+  <div class="pong-desc">연수입 리스트를 만들고 ①길이 ②평균 ③상위 3개 ④하위 3개를 출력하라.</div>
 </div>
-<div class="compute">
-fruit_price = {"사과": 3000, "바나나": 1500, "포도": 5000}
-print("사과 가격:", fruit_price["사과"])
-print("모든 과일:", list(fruit_price.keys()))
-fruit_price["딸기"] = 4000
-for fruit, price in fruit_price.items():
-    print(f"  {fruit}: {price}원")
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>incomes = [p['income'] for p in customers]
+print('길이:', len(incomes))
+print('평균:', sum(incomes)/len(incomes))
+print('상위3:', sorted(incomes, reverse=True)[:3])
+print('하위3:', sorted(incomes)[:3])</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 2 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: append·remove·insert</div>
 </div>
-<div class="pong-box">
-  <h4><span class="badge badge-pong">Pong ③</span> 학생 작성 — 국가별 확진자 딕셔너리</h4>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [39, 81, 6, 77, 40]
+print('원본:', scores)
+scores.append(55)         # 뒤에 추가
+print('append:', scores)
+scores.insert(0, 100)     # 앞에 삽입
+print('insert:', scores)
+scores.remove(6)          # 값 삭제 (첫 번째)
+print('remove:', scores)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 2 — 학생 실습</div>
+  <div class="pong-desc"><code>scores = [39,81,6,77,40,76,6,94,3,72]</code> 에서 ①가장 낮은 점수 제거 ②100점 추가 ③2번 인덱스에 50 삽입 후 출력하라.</div>
 </div>
-<div class="compute">
-covid_by_country = {
-    "한국": 34571, "미국": 1850000, "일본": 18723,
-    "영국": 312654, "브라질": 923189
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">scores = [39,81,6,77,40,76,6,94,3,72]
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>scores = [39,81,6,77,40,76,6,94,3,72]
+scores.remove(min(scores))   # 가장 낮은 값 제거
+scores.append(100)           # 100 추가
+scores.insert(2, 50)         # 인덱스 2에 삽입
+print(scores)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 3 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 리스트 정렬 및 집계</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+top3    = sorted(scores, reverse=True)[:3]
+bottom3 = sorted(scores)[:3]
+above70 = [s for s in scores if s >= 70]
+print(f'상위3: {top3}')
+print(f'하위3: {bottom3}')
+print(f'70점 이상({len(above70)}명): {above70}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 3 — 학생 실습</div>
+  <div class="pong-desc">연수입 20k$ 이상 고객의 소비점수 리스트와 평균을 구하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>hi_income = [p['score'] for p in customers if p['income'] &gt;= 18]
+print('고수입 고객 점수:', hi_income)
+print('평균:', sum(hi_income)/len(hi_income) if hi_income else 0)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 4 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 리스트 컴프리헨션</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 소비점수를 등급으로 변환
+grades = ['VIP' if s>=80 else 'Gold' if s>=50 else 'Basic'
+          for s in [p['score'] for p in customers]]
+for c, g in zip(customers, grades):
+    print(f'고객{c["id"]:3d}: {c["score"]:3d}점 [{g}]')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 4 — 학생 실습</div>
+  <div class="pong-desc">나이별 등급(25세 이하='Young', 40세 이하='Mid', 초과='Senior')을 컴프리헨션으로 만들어라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>age_groups = ['Young' if p['age']&lt;=25 else ('Mid' if p['age']&lt;=40 else 'Senior')
+              for p in customers]
+for c, g in zip(customers, age_groups):
+    print(f'고객{c["id"]:3d}: {c["age"]}세 [{g}]')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 5 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 중첩 리스트 &amp; 행렬</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 고객 정보를 2D 리스트로 표현
+matrix = [[p['id'], p['age'], p['income'], p['score']]
+          for p in customers[:5]]
+print('헤더: [ID, Age, Income, Score]')
+for row in matrix:
+    print(row)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 5 — 학생 실습</div>
+  <div class="pong-desc">2D 리스트에서 소비점수(인덱스 3) 열만 추출하고 평균을 구하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
+scores = [row[3] for row in matrix]
+print('소비점수 열:', scores)
+print('평균:', sum(scores)/len(scores))</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 6 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 리스트 메서드 종합</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+print('count(6):', scores.count(6))    # 6점 개수
+print('index(94):', scores.index(94))  # 94점 위치
+scores_copy = scores.copy()
+scores_copy.reverse()
+print('뒤집기:', scores_copy[:5], '...')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 6 — 학생 실습</div>
+  <div class="pong-desc">소비점수 리스트에서 ①최빈값(가장 많이 등장하는 점수) ②중앙값을 구하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">scores = [p['score'] for p in customers]
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>scores = [p['score'] for p in customers]
+<span class="comment"># 최빈값</span>
+most = max(set(scores), key=scores.count)
+<span class="comment"># 중앙값</span>
+s = sorted(scores)
+n = len(s)
+median = (s[n//2-1]+s[n//2])/2 if n%2==0 else s[n//2]
+print(f'최빈값: {most} ({scores.count(most)}회)')
+print(f'중앙값: {median}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 2. 튜플 (Tuple)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<p><strong>튜플(tuple)</strong>은 순서 있고 <strong>변경 불가(immutable)</strong>한 자료구조이다.</p>
+
+<pre><code>customer = (1, 'Male', 19, 15, 39)  # (ID, 성별, 나이, 수입, 점수)
+customer[0]      # 1 (읽기만 가능)
+customer[0] = 2  # TypeError! 수정 불가
+id, genre, age, income, score = customer  # 언패킹</code></pre>
+<blockquote>변경되면 안 되는 데이터(좌표·등록 정보)에 튜플을 사용한다.</blockquote>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 고객 정보를 튜플로 저장
+cust_tuple = tuple(c.values() for c in [customers[0]])
+# (id, genre, age, income, score) 형태로 직접 생성
+p = customers[0]
+cust_t = (p['id'], p['genre'], p['age'], p['income'], p['score'])
+print('튜플:', cust_t)
+cid, genre, age, income, score = cust_t
+print(f'언패킹: ID={cid}, 성별={genre}, 나이={age}')</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 7 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 튜플 생성·언패킹</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 상위 3명 고객을 튜플로 저장
+top3 = sorted(customers, key=lambda x: x['score'], reverse=True)[:3]
+top3_t = tuple((p['id'], p['score']) for p in top3)
+for rank, (cid, score) in enumerate(top3_t, 1):
+    print(f'{rank}위: 고객{cid} → {score}점')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 7 — 학생 실습</div>
+  <div class="pong-desc">각 고객의 (id, genre, score) 튜플 리스트를 만들고 score 기준 정렬하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>tuples = [(p['id'], p['genre'], p['score']) for p in customers]
+ranked = sorted(tuples, key=lambda x: x[2], reverse=True)
+for rank, (cid, genre, score) in enumerate(ranked, 1):
+    print(f'{rank:2}위: 고객{cid:3d} ({genre}) {score}점')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 8 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 튜플 불변성 확인</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">cust_t = (1, 'Male', 19, 15, 39)
+print('수정 시도:')
+try:
+    cust_t[2] = 20
+except TypeError as e:
+    print(f'  TypeError: {e}')
+# 불변성 활용: 딕셔너리 키로 사용 가능
+registry = {cust_t: '가입완료'}
+print('딕셔너리 키로 사용 가능:', registry[cust_t])</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 8 — 학생 실습</div>
+  <div class="pong-desc">고객 5명의 (income, score) 쌍을 튜플 리스트로 만들고 income 기준 내림차순 정렬하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>pairs = [(p['income'], p['score']) for p in customers]
+ranked = sorted(pairs, key=lambda x: x[0], reverse=True)
+for inc, sc in ranked:
+    print(f'수입 {inc}k$: 소비점수 {sc}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 9 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 다중 반환값 → 튜플 언패킹</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">def score_stats(scores):
+    s = sorted(scores)
+    return min(s), max(s), sum(s)//len(s), s[len(s)//2]
+
+scores = [p['score'] for p in customers]
+lo, hi, avg, med = score_stats(scores)
+print(f'최소:{lo}, 최대:{hi}, 평균:{avg}, 중앙:{med}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 9 — 학생 실습</div>
+  <div class="pong-desc">연수입 리스트의 (최솟값, 최댓값, 평균, 범위) 튜플을 반환하는 함수를 만들어라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>def income_stats(data):
+    return min(data), max(data), sum(data)/len(data), max(data)-min(data)
+
+incomes = [p['income'] for p in customers]
+lo, hi, avg, rng = income_stats(incomes)
+print(f'최소:{lo}k$, 최대:{hi}k$, 평균:{avg:.1f}k$, 범위:{rng}k$')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 10 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: zip → 튜플 쌍 생성</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">ids     = [p['id'] for p in customers]
+scores  = [p['score'] for p in customers]
+incomes = [p['income'] for p in customers]
+
+triples = list(zip(ids, incomes, scores))
+for t in sorted(triples, key=lambda x: x[2], reverse=True)[:5]:
+    print(f'고객{t[0]:3d}: 수입{t[1]}k$ 점수{t[2]}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 10 — 학생 실습</div>
+  <div class="pong-desc">zip으로 (id, age, income, score) 4-튜플 리스트를 만들어 나이 기준 내림차순 정렬하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>quads = list(zip(
+    [p['id'] for p in customers],
+    [p['age'] for p in customers],
+    [p['income'] for p in customers],
+    [p['score'] for p in customers]
+))
+for q in sorted(quads, key=lambda x: x[1], reverse=True):
+    print(f'고객{q[0]:3d}: {q[1]}세  수입{q[2]}k$  점수{q[3]}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 3. 딕셔너리 (Dictionary)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<p><strong>딕셔너리(dict)</strong>는 키(key)-값(value) 쌍의 자료구조이다.</p>
+
+<pre><code>customer = {'id':1, 'genre':'Male', 'age':19, 'income':15, 'score':39}
+customer['age']           # 19 (접근)
+customer['vip'] = True   # 키 추가
+del customer['vip']       # 키 삭제
+customer.get('tier','Basic')  # 없으면 기본값
+customer.keys()   # 키 목록
+customer.values() # 값 목록
+customer.items()  # (키,값) 쌍 목록</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 고객 데이터베이스 딕셔너리
+db = {p['id']: p for p in customers}
+print('고객 5번:', db[5])
+print('모든 ID:', list(db.keys())[:5])</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 11 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 딕셔너리 접근·추가·삭제</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = dict(customers[0])  # 복사
+print('원본:', p)
+p['tier'] = 'VIP' if p['score']>=80 else 'Basic'  # 키 추가
+p['income_usd'] = p['income'] * 1000               # 환산
+del p['genre']                                      # 삭제
+print('수정 후:', p)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 11 — 학생 실습</div>
+  <div class="pong-desc">전체 customers에 'tier' 키('VIP'=score&gt;=80, 'Gold'=50이상, 'Basic'=나머지)를 추가하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for p in customers:
+    if p['score'] &gt;= 80:   p['tier'] = 'VIP'
+    elif p['score'] &gt;= 50: p['tier'] = 'Gold'
+    else:                  p['tier'] = 'Basic'
+for p in customers:
+    print(f'고객{p["id"]:3d}: {p["score"]:3d}점 [{p["tier"]}]')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 12 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: .get()과 기본값</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = customers[0]
+print(p.get('score', 0))         # 있음 → 39
+print(p.get('loyalty', 0))       # 없음 → 기본값 0
+print(p.get('tier', 'Unknown'))  # 없음 → 'Unknown'</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 12 — 학생 실습</div>
+  <div class="pong-desc">고객 딕셔너리에서 .get()으로 'loyalty_years' 키를 가져오되 없으면 0을 반환하고 전체 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for p in customers:
+    ly = p.get('loyalty_years', 0)
+    print(f'고객{p["id"]:3d}: loyalty={ly}년 (기본값)')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 13 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: .items() 순회 + 필터</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">db = {p['id']: {'age':p['age'],'income':p['income'],'score':p['score']}
+      for p in customers}
+# 소비점수 70 이상 고객
+vip = {k: v for k, v in db.items() if v['score'] >= 70}
+print(f'소비점수 70+ 고객: {len(vip)}명')
+for cid, info in vip.items():
+    print(f'  고객{cid}: {info}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 13 — 학생 실습</div>
+  <div class="pong-desc">연수입 18k$ 이상 AND 소비점수 70 이상 고객을 딕셔너리로 추출하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>premium = {p['id']: p for p in customers
+           if p['income'] &gt;= 18 and p['score'] &gt;= 70}
+print(f'프리미엄 고객: {len(premium)}명')
+for cid, p in premium.items():
+    print(f'  고객{cid}: 수입{p["income"]}k$ 점수{p["score"]}')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 14 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 딕셔너리 카운팅 패턴</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 성별 분포 카운팅
+genre_cnt = {}
+for p in customers:
+    genre_cnt[p['genre']] = genre_cnt.get(p['genre'], 0) + 1
+for genre, cnt in genre_cnt.items():
+    print(f'{genre}: {cnt}명 ({"█"*cnt})')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 14 — 학생 실습</div>
+  <div class="pong-desc">소비점수를 10점 단위로 묶어 각 구간의 고객 수를 딕셔너리로 만들어라. (예: '0-9': 2명)</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>band_cnt = {}
+for p in customers:
+    band = f'{(p["score"]//10)*10}-{(p["score"]//10)*10+9}'
+    band_cnt[band] = band_cnt.get(band, 0) + 1
+for band, cnt in sorted(band_cnt.items()):
+    print(f'{band:6s}: {"█"*cnt} ({cnt}명)')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 15 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 중첩 딕셔너리 &amp; update()</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">summary = {
+    'total': len(customers),
+    'stats': {
+        'avg_age':    sum(p['age']   for p in customers) // len(customers),
+        'avg_income': sum(p['income'] for p in customers) // len(customers),
+        'avg_score':  sum(p['score']  for p in customers) // len(customers),
+    }
 }
-
-print("한국:", ___)                    # 1) 한국 확진자
-print("국가 목록:", ___)              # 2) 모든 국가명 리스트
-___                                   # 3) "독일": 195042 추가
-total = ___                           # 4) 전체 합계
-print("전 세계 합계:", total)
-
-for ___, ___ in covid_by_country.items():   # 5) 순회 출력
-    print(f"  {___}: {___:,}명")
+summary.update({'date': '2024-01-01', 'source': 'mall_customers.csv'})
+print(summary)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 15 — 학생 실습</div>
+  <div class="pong-desc">성별별 평균 소비점수를 중첩 딕셔너리로 만들어라. <code>{'Male': {'count':N, 'avg_score':X}, ...}</code></div>
 </div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>print("한국:", covid_by_country["한국"])
-print("국가 목록:", list(covid_by_country.keys()))
-covid_by_country["독일"] = 195042
-total = sum(covid_by_country.values())
-for country, cases in covid_by_country.items():
-    print(f"  {country}: {cases:,}명")</pre>
-</div></details>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>result = {}
+for g in ['Male', 'Female']:
+    group = [p for p in customers if p['genre'] == g]
+    result[g] = {
+        'count': len(group),
+        'avg_score': round(sum(p['score'] for p in group)/len(group), 1) if group else 0
+    }
+for g, v in result.items():
+    print(f'{g}: {v}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 4. 집합 (Set)</h1>
 
-<!-- ===== PP4: 집합 ===== -->
-<h3>핑퐁 ④: 집합(Set) — 연산</h3>
-<div class="ping-box">
-  <h4><span class="badge badge-ping">Ping ④</span> 교수자 시연</h4>
+<div class="section-header">개념 설명</div>
+
+<p><strong>집합(set)</strong>은 <strong>순서 없고 중복 없는</strong> 자료구조이다.</p>
+
+<pre><code>{1, 2, 3} | {2, 3, 4}   # 합집합 → {1,2,3,4}
+{1, 2, 3} &amp; {2, 3, 4}   # 교집합 → {2,3}
+{1, 2, 3} - {2, 3, 4}   # 차집합 → {1}
+{1,2,3} &lt;= {1,2,3,4}    # 부분집합 → True</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">ages    = {p['age']   for p in customers}
+incomes = {p['income'] for p in customers}
+print('중복 제거 나이 집합:', sorted(ages))
+print('중복 제거 수입 집합:', sorted(incomes))</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 16 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 집합 연산으로 고객 그룹 분석</div>
 </div>
-<div class="compute">
-class_A = {"수학", "영어", "과학", "체육"}
-class_B = {"영어", "과학", "음악", "미술"}
-print("공통 과목:", class_A & class_B)
-print("A만의 과목:", class_A - class_B)
-print("전체 과목:", class_A | class_B)
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">male_ids   = {p['id'] for p in customers if p['genre']=='Male'}
+female_ids = {p['id'] for p in customers if p['genre']=='Female'}
+high_score = {p['id'] for p in customers if p['score'] >= 70}
+
+print('남성:', male_ids)
+print('고점수:', high_score)
+print('고점수 남성:', male_ids & high_score)
+print('고점수 여성:', female_ids & high_score)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 16 — 학생 실습</div>
+  <div class="pong-desc">수입 17k$ 이상과 소비점수 70 이상인 고객 ID 집합을 만들고 교집합·합집합·차집합을 구하라.</div>
 </div>
-<div class="pong-box">
-  <h4><span class="badge badge-pong">Pong ④</span> 학생 작성 — 확진자 급증 vs 감소 국가 비교</h4>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>hi_inc  = {p['id'] for p in customers if p['income'] &gt;= 17}
+hi_sc   = {p['id'] for p in customers if p['score'] &gt;= 70}
+print('고수입:', hi_inc)
+print('고점수:', hi_sc)
+print('교집합(둘 다):', hi_inc &amp; hi_sc)
+print('합집합(하나라도):', hi_inc | hi_sc)
+print('고수입이지만 저점수:', hi_inc - hi_sc)</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 17 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: set으로 중복 제거 &amp; 빈도 분석</div>
 </div>
-<div class="compute">
-surge_countries   = {"한국","미국","영국","인도","브라질"}
-decline_countries = {"일본","독일","미국","영국","호주"}
-
-both         = ___   # 1) 교집합 (급증 & 감소 동시)
-surge_only   = ___   # 2) 차집합 (급증만)
-all_countries= ___   # 3) 합집합 (전체)
-exclusive    = ___   # 4) 대칭차집합 (한쪽만)
-
-print("급증 & 감소:", both)
-print("급증만:", surge_only)
-print("전체:", all_countries)
-print("한쪽만:", exclusive)
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+unique = sorted(set(scores))
+print(f'고유 점수: {len(unique)}개 → {unique}')
+# 중복 점수 찾기
+dup = {s for s in scores if scores.count(s) > 1}
+print(f'중복 점수: {dup}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 17 — 학생 실습</div>
+  <div class="pong-desc">연수입 중복을 제거하고, 고객 수 대비 고유 수입 개수 비율(다양성)을 계산하라.</div>
 </div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>both          = surge_countries & decline_countries
-surge_only    = surge_countries - decline_countries
-all_countries = surge_countries | decline_countries
-exclusive     = surge_countries ^ decline_countries</pre>
-</div></details>
-
-<!-- ===== 도전 1 ===== -->
-<h3>도전 ①: 코로나19 국가별 확진자 관리 프로그램</h3>
-<div class="challenge-box">
-  <h4><span class="badge badge-challenge">도전 ①</span> 목표 출력</h4>
-  <pre>=== 코로나19 확진자 현황 ===
-- 전체 국가 수: 7개국
-- 총 확진자: 3,579,852명
-- 평균 확진자: 511,407명
-- 최다: 미국 (1,850,000명)
-- 최소: 일본 (18,723명)
-- 평균 이상 국가: 미국, 브라질</pre>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>incomes = [p['income'] for p in customers]
+unique  = set(incomes)
+ratio   = len(unique) / len(incomes) * 100
+print(f'전체:{len(incomes)}명, 고유수입:{len(unique)}개, 다양성:{ratio:.1f}%')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 18 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: frozenset과 딕셔너리 키</div>
 </div>
-<div class="compute">
-# 1단계: 초기 데이터
-covid = ___
-
-# 2단계: 독일(195042), 프랑스(245673) 추가
-___
-___
-
-# 3단계: 최다·최소
-max_country = ___
-min_country = ___
-
-# 4단계: 평균 이상 국가
-avg_cases = ___
-above_avg = ___
-
-# 5단계: 출력
-print("=== 코로나19 확진자 현황 ===")
-print(f"- 전체 국가 수: {___}개국")
-print(f"- 총 확진자: {___:,}명")
-print(f"- 평균 확진자: {___:,.0f}명")
-print(f"- 최다: {___} ({___:,}명)")
-print(f"- 최소: {___} ({___:,}명)")
-print(f"- 평균 이상 국가: {', '.join(___)}")
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># frozenset: 변경 불가 집합 → 딕셔너리 키로 사용 가능
+group_a = frozenset(['Male_Young', 'Female_Young'])
+group_b = frozenset(['Male_Mid', 'Female_Mid'])
+segments = {group_a: '청년층', group_b: '중장년층'}
+print(segments[group_a])</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 18 — 학생 실습</div>
+  <div class="pong-desc">VIP 고객 ID 집합과 Male 고객 ID 집합의 차집합·대칭차집합을 출력하라.</div>
 </div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>covid = {"한국":34571,"미국":1850000,"일본":18723,"영국":312654,"브라질":923189}
-covid["독일"] = 195042
-covid["프랑스"] = 245673
-max_country = max(covid, key=covid.get)
-min_country = min(covid, key=covid.get)
-avg_cases   = sum(covid.values()) / len(covid)
-above_avg   = [k for k,v in covid.items() if v >= avg_cases]</pre>
-</div></details>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>vip  = {p['id'] for p in customers if p['score'] &gt;= 80}
+male = {p['id'] for p in customers if p['genre'] == 'Male'}
+print('VIP이지만 남성 아님(차집합):', vip - male)
+print('남성이지만 VIP 아님:', male - vip)
+print('대칭차집합(서로 다른 부분):', vip ^ male)</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 5. 불리언 (Boolean) &amp; copy()</h1>
 
-<!-- ===== 도전 2 ===== -->
-<h3>도전 ②: 7일 이동평균(Moving Average) 직접 계산</h3>
-<div class="description">
-  <p><strong>이동평균</strong>이란 연속된 n일의 평균을 순차적으로 계산하는 것이다. 데이터의 단기 변동을 부드럽게 만들어 추세를 파악한다.</p>
-  <div class="tip-box">결과 리스트의 길이 = 원본 길이 - (윈도우 크기 - 1) = 21 - 6 = <strong>15</strong></div>
+<div class="section-header">개념 설명</div>
+
+<p><strong>불리언(bool)</strong> — <code>True</code> / <code>False</code></p>
+<pre><code>bool(0)   # False   bool(1)   # True
+bool('')  # False   bool([])  # False
+bool(39)  # True    bool([1]) # True</code></pre>
+
+<p><strong>얕은 복사 vs 깊은 복사</strong></p>
+<pre><code>import copy
+a = [1, 2, 3]
+b = a           # 같은 객체 참조
+c = a.copy()    # 얕은 복사 → 새 객체
+d = copy.deepcopy(a)  # 깊은 복사</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 불리언 진리값 테스트
+print(bool(0), bool(1), bool(''))
+print(bool([]), bool([1,2]), bool({}))
+
+# 고객 점수 → 불리언
+scores = [p['score'] for p in customers]
+is_active = [bool(s) for s in scores]
+print('활성 고객:', all(is_active))  # 모두 True?
+print('점수 있는 고객 수:', sum(is_active))</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 19 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: 불리언 all()/any()</div>
 </div>
-<div class="compute">
-cases_21 = [523,681,445,892,1023,756,634,
-            812,567,934,1105,678,489,723,
-            945,1067,834,612,778,1023,889]
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores  = [p['score'] for p in customers]
+incomes = [p['income'] for p in customers]
 
-moving_avg = []
-for i in range(len(cases_21) - 6):
-    window = ___              # i번째부터 7개 슬라이싱
-    avg    = ___              # 평균 계산
-    moving_avg.append(round(avg, 1))
-
-print("7일 이동평균:", moving_avg)
-print("이동평균 길이:", len(moving_avg))   # 반드시 15
-
-max_avg = ___
-max_idx = ___
-print(f"이동평균 최고: {max_avg} (시작일: {max_idx+1}일차)")
+print('모두 0점 초과?', all(s > 0 for s in scores))
+print('80점 이상 존재?', any(s >= 80 for s in scores))
+print('수입 20k$ 이상?', any(i >= 20 for i in incomes))
+print('수입 모두 10k$+?', all(i >= 10 for i in incomes))</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 19 — 학생 실습</div>
+  <div class="pong-desc"><code>all()</code>과 <code>any()</code>를 이용해 ①모든 고객이 25세 이상인지 ②VIP(80+) 고객이 존재하는지 ③30대 이상 고객이 절반 이상인지 확인하라.</div>
 </div>
-<details><summary>▶ 정답 확인</summary>
-<div>
-<pre>window  = cases_21[i:i+7]
-avg     = sum(window) / 7
-max_avg = max(moving_avg)
-max_idx = moving_avg.index(max_avg)</pre>
-</div></details>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>all_25    = all(p['age'] &gt;= 25 for p in customers)
+has_vip   = any(p['score'] &gt;= 80 for p in customers)
+over30    = sum(1 for p in customers if p['age'] &gt;= 30)
+half_30   = over30 &gt;= len(customers) / 2
+print(f'모두 25세 이상: {all_25}')
+print(f'VIP 고객 존재: {has_vip}')
+print(f'30대+ 절반 이상: {half_30} ({over30}/{len(customers)}명)')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 20 — 강사 시범</div>
+  <div class="ping-desc">강사 시범: copy()로 안전한 데이터 수정</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">import copy
+original  = [p['score'] for p in customers]
+shallow   = original.copy()           # 얕은 복사
+deep_copy = copy.deepcopy(original)   # 깊은 복사
 
-<!-- ===== 도전 3 ===== -->
-<h3>도전 ③: 튜플 언패킹 + 중첩 딕셔너리</h3>
-<div class="compute">
-# Part A: 튜플 언패킹 — 국가별 치사율
-covid_tuples = [
-    ("한국", 34571, 247),
-    ("미국", 1850000, 107175),
-    ("일본", 18723, 972),
-    ("영국", 312654, 43730),
-    ("브라질", 923189, 45241)
+# shallow 수정해도 original 영향 없음
+shallow[0] = 999
+print('shallow 수정 후 original[0]:', original[0])  # 변화 없음
+
+# 딕셔너리 깊은 복사
+p_orig = customers[0]
+p_copy = copy.deepcopy(p_orig)
+p_copy['score'] = 999
+print('원본 점수:', p_orig['score'])  # 유지
+print('복사본 점수:', p_copy['score'])</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 20 — 학생 실습</div>
+  <div class="pong-desc">customers 리스트를 깊은 복사하고, 복사본에서 소비점수 50 미만을 50으로 조정한 뒤 원본과 비교하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">import copy
+# 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>import copy
+adjusted = copy.deepcopy(customers)
+for p in adjusted:
+    if p['score'] &lt; 50:
+        p['score'] = 50
+
+print(f'{"ID":^5} {"원본":&gt;6} {"수정":&gt;6}')
+print('-' * 18)
+for orig, adj in zip(customers, adjusted):
+    changed = ' *' if orig['score'] != adj['score'] else ''
+    print(f'{orig["id"]:^5} {orig["score"]:&gt;6} {adj["score"]:&gt;6}{changed}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">연습문제 (10문제)</h1>
+<h3>문제 1. 소비점수 통계</h3>
+
+<p>최솟값·최댓값·평균·중앙값·범위를 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>s=sorted(p['score'] for p in customers)
+n=len(s)
+print(f'최소:{s[0]} 최대:{s[-1]} 평균:{sum(s)/n:.1f} 중앙:{(s[n//2-1]+s[n//2])/2 if n%2==0 else s[n//2]} 범위:{s[-1]-s[0]}')</code></pre>
+</details>
+<h3>문제 2. 등급 분류 딕셔너리</h3>
+
+<p>소비점수 기준 VIP/Gold/Basic 등급 딕셔너리를 만들어라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>grades={p['id']:('VIP' if p['score']&gt;=80 else 'Gold' if p['score']&gt;=50 else 'Basic') for p in customers}
+for cid,g in grades.items(): print(f'고객{cid}:{g}')</code></pre>
+</details>
+<h3>문제 3. 성별 고유 나이</h3>
+
+<p>Male·Female 각각의 고유 나이 집합을 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for g in ['Male','Female']:
+    ages={p['age'] for p in customers if p['genre']==g}
+    print(f'{g}: {sorted(ages)}')</code></pre>
+</details>
+<h3>문제 4. 튜플 정렬</h3>
+
+<p>(id, income, score) 3-튜플 리스트를 income+score 합산 기준 내림차순으로 정렬하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>triples=[(p['id'],p['income'],p['score']) for p in customers]
+for t in sorted(triples,key=lambda x:x[1]+x[2],reverse=True): print(t)</code></pre>
+</details>
+<h3>문제 5. all()/any()</h3>
+
+<p>①소비점수 모두 양수 ②수입 20k$ 이상 존재 ③여성 고객 존재 여부를 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>print(all(p['score']&gt;0 for p in customers))
+print(any(p['income']&gt;=20 for p in customers))
+print(any(p['genre']=='Female' for p in customers))</code></pre>
+</details>
+<h3>문제 6. 수입별 평균 소비</h3>
+
+<p>수입 구간(15-17k$, 18-20k$)별 평균 소비점수를 구하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for lo,hi in [(15,17),(18,20)]:
+    g=[p['score'] for p in customers if lo&lt;=p['income']&lt;=hi]
+    print(f'{lo}-{hi}k$: {sum(g)/len(g):.1f}점({len(g)}명)' if g else f'{lo}-{hi}k$: 없음')</code></pre>
+</details>
+<h3>문제 7. 딕셔너리 카운팅</h3>
+
+<p>나이 20대·30대·60대 분포를 딕셔너리로 카운팅하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>cnt={}
+for p in customers:
+    k=f'{p["age"]//10*10}대'
+    cnt[k]=cnt.get(k,0)+1
+for k,v in sorted(cnt.items()): print(f'{k}:{v}명')</code></pre>
+</details>
+<h3>문제 8. 깊은 복사 검증</h3>
+
+<p>원본 복사본 수정 후 원본 데이터가 보존됨을 확인하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>import copy
+bak=copy.deepcopy(customers)
+for p in bak: p['score']=min(p['score']+10,100)
+print('원본 점수 합:', sum(p['score'] for p in customers))
+print('복사본 점수 합:', sum(p['score'] for p in bak))</code></pre>
+</details>
+<h3>문제 9. 집합 연산</h3>
+
+<p>30세 이하 고객과 소비점수 70+ 고객의 교집합·차집합 ID를 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>young={p['id'] for p in customers if p['age']&lt;=30}
+high={p['id'] for p in customers if p['score']&gt;=70}
+print('젊고 고점수:', young&amp;high)
+print('젊지만 저점수:', young-high)</code></pre>
+</details>
+<h3>문제 10. 종합 분석 보고서</h3>
+
+<p>성별·등급별 교차 집계표를 딕셔너리로 출력하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>table={}
+for p in customers:
+    g=p['genre']
+    tier='VIP' if p['score']&gt;=80 else 'Gold' if p['score']&gt;=50 else 'Basic'
+    table.setdefault(g,{}).setdefault(tier,0)
+    table[g][tier]+=1
+for g,v in table.items():
+    print(f'{g}: {v}')</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">괄호 채우기 (8문제)</h1>
+<h3>1. 리스트 컴프리헨션</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [p[___] ___ p ___ customers]
+print(sum(scores)/len(scores))
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>scores = [p['score'] for p in customers]
+print(sum(scores)/len(scores))</code></pre>
+</details>
+<h3>2. 리스트 정렬</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">top3 = sorted(customers, key=lambda x: x[___], ___=True)[:3]
+for p in top3: print(p['score'])
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>top3 = sorted(customers, key=lambda x: x['score'], reverse=True)[:3]
+for p in top3: print(p['score'])</code></pre>
+</details>
+<h3>3. 딕셔너리 .get()</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">for p in customers:
+    tier = p.___(___,'Unknown')
+    print(tier)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>for p in customers:
+    tier = p.get('tier','Unknown')
+    print(tier)</code></pre>
+</details>
+<h3>4. 집합 교집합</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">male = {p['id'] ___ p ___ customers ___ p['genre']=='Male'}
+high = {p['id'] ___ p ___ customers ___ p['score']>=70}
+result = male ___ high
+print(result)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>male = {p['id'] for p in customers if p['genre']=='Male'}
+high = {p['id'] for p in customers if p['score']&gt;=70}
+result = male &amp; high
+print(result)</code></pre>
+</details>
+<h3>5. 튜플 언패킹</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">data = (1, 'Male', 19, 15, 39)
+cid, genre, ___, income, score = data
+print(cid, genre, score)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>data = (1, 'Male', 19, 15, 39)
+cid, genre, age, income, score = data
+print(cid, genre, score)</code></pre>
+</details>
+<h3>6. all/any</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">print(___(p['score']>0 for p in customers))   # 모두 양수?
+print(___(p['score']>=80 for p in customers))  # 80점 이상 존재?
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>print(all(p['score']&gt;0 for p in customers))   # 모두 양수?
+print(any(p['score']&gt;=80 for p in customers))  # 80점 이상 존재?</code></pre>
+</details>
+<h3>7. 딕셔너리 카운팅</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">cnt = {}
+for p in customers:
+    k = p['genre']
+    cnt[k] = cnt.___(k, 0) ___ 1
+print(cnt)
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>cnt = {}
+for p in customers:
+    k = p['genre']
+    cnt[k] = cnt.get(k, 0) + 1
+print(cnt)</code></pre>
+</details>
+<h3>8. 깊은 복사</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import copy
+bak = copy.___(customers)
+bak[0]['score'] = 999
+print('원본:', customers[0]['score'])  # 보존?
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>import copy
+bak = copy.deepcopy(customers)
+bak[0]['score'] = 999
+print('원본:', customers[0]['score'])  # 보존?</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">[버그] 디버그 문제 (10문제)</h1>
+<h3>디버그 1. 리스트 인덱싱</h3>
+
+<pre><code>scores = [39,81,6]
+print(scores[3])</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6]
+print(scores[3])
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>scores = [39,81,6]
+print(scores[3])</code></pre>
+</details>
+<h3>디버그 2. append vs +</h3>
+
+<pre><code>scores = [39,81]
+new = scores.append(6)
+print(new)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81]
+new = scores.append(6)
+print(new)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>scores = [39,81]
+new = scores.append(6)
+print(new)</code></pre>
+</details>
+<h3>디버그 3. 딕셔너리 키</h3>
+
+<pre><code>p = {'score':39}
+print(p['Score'])</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = {'score':39}
+print(p['Score'])
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>p = {'score':39}
+print(p['Score'])</code></pre>
+</details>
+<h3>디버그 4. 집합 인덱싱</h3>
+
+<pre><code>ids = {1,2,3,4}
+print(ids[0])</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">ids = {1,2,3,4}
+print(ids[0])
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>ids = {1,2,3,4}
+print(ids[0])</code></pre>
+</details>
+<h3>디버그 5. 튜플 수정</h3>
+
+<pre><code>t = (1,'Male',19)
+t[2] = 20</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">t = (1,'Male',19)
+t[2] = 20
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>t = (1,'Male',19)
+t[2] = 20</code></pre>
+</details>
+<h3>디버그 6. 딕셔너리 반복</h3>
+
+<pre><code>for k, v in customers[0]:
+    print(k, v)</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">for k, v in customers[0]:
+    print(k, v)
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>for k, v in customers[0]:
+    print(k, v)</code></pre>
+</details>
+<h3>디버그 7. 얕은 복사 함정</h3>
+
+<pre><code>import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대</code></pre>
+</details>
+<h3>디버그 8. set 중복 제거 순서</h3>
+
+<pre><code>scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대</code></pre>
+</details>
+<h3>디버그 9. all() vs any()</h3>
+
+<pre><code>scores = [39,81,6]
+print(all(s&gt;=70 for s in scores))  # 하나라도 70+ 의도</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6]
+print(all(s>=70 for s in scores))  # 하나라도 70+ 의도
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>scores = [39,81,6]
+print(all(s&gt;=70 for s in scores))  # 하나라도 70+ 의도</code></pre>
+</details>
+<h3>디버그 10. dict.get() 반환</h3>
+
+<pre><code>p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])</code></pre>
+<p>오류를 찾아 수정하라.</p>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])
+</script></div></div>
+<details>
+<summary>▶ 디버그 정답 보기</summary>
+<pre><code>p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">인터랙티브: 고객 세그먼트 분석기</h1>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import ipywidgets as widgets
+from IPython.display import display, clear_output
+
+customers_data = [
+    {'id':1,'genre':'Male','age':19,'income':15,'score':39},
+    {'id':2,'genre':'Male','age':21,'income':15,'score':81},
+    {'id':3,'genre':'Female','age':20,'income':16,'score':6},
+    {'id':4,'genre':'Female','age':23,'income':16,'score':77},
+    {'id':5,'genre':'Female','age':31,'income':17,'score':40},
+    {'id':6,'genre':'Female','age':22,'income':17,'score':76},
+    {'id':7,'genre':'Female','age':35,'income':18,'score':6},
+    {'id':8,'genre':'Female','age':23,'income':18,'score':94},
+    {'id':9,'genre':'Male','age':64,'income':19,'score':3},
+    {'id':10,'genre':'Female','age':30,'income':19,'score':72},
 ]
 
-print("=== 국가별 치사율 ===")
-for ___, ___, ___ in covid_tuples:
-    fatality_rate = ___
-    print(f"  {___}: {fatality_rate:.2f}%")
+min_score  = widgets.IntSlider(value=0,min=0,max=100,description='최소 소비점수:',
+                                style={'description_width':'initial'})
+genre_sel  = widgets.SelectMultiple(options=['Male','Female'],value=['Male','Female'],
+                                     description='성별:', rows=2)
+sort_by    = widgets.Dropdown(options=['score','income','age'],value='score',
+                               description='정렬 기준:')
+out = widgets.Output()
 
-highest = max(covid_tuples, key=lambda x: ___)
-print(f"\n치사율 최고: {highest[0]} ({___:.2f}%)")
+def update(change):
+    with out:
+        clear_output(wait=True)
+        filtered = [p for p in customers_data
+                    if p['score']>=min_score.value and p['genre'] in genre_sel.value]
+        sorted_d = sorted(filtered, key=lambda x: x[sort_by.value], reverse=True)
+        print(f'필터된 고객: {len(sorted_d)}명')
+        print(f'{"ID":^4} {"성별":^7} {"나이":>4} {"수입":>6} {"점수":>5} {"등급":^6}')
+        print('-' * 38)
+        for p in sorted_d:
+            tier = 'VIP' if p['score']>=80 else ('Gold' if p['score']>=50 else 'Basic')
+            print(f'{p["id"]:^4} {p["genre"]:^7} {p["age"]:>4}세 {p["income"]:>5}k$ {p["score"]:>5} {tier:^6}')
+
+min_score.observe(update,'value')
+genre_sel.observe(update,'value')
+sort_by.observe(update,'value')
+update(None)
+display(widgets.VBox([min_score, genre_sel, sort_by, out]))</script></div></div>
 </div>
-<div class="compute">
-# Part B: 중첩 딕셔너리
-covid_detail = {
-    "한국": {"확진자":34571, "사망자":247, "완치자":29700},
-    "미국": {"확진자":1850000,"사망자":107175,"완치자":463110},
-    "일본": {"확진자":18723, "사망자":972, "완치자":16431}
-}
 
-# 1) 한국 치료 중 환자 (확진자 - 사망자 - 완치자)
-korea_active = ___
-print(f"한국 치료 중: {korea_active:,}명")
-
-# 2) 완치율 (완치자/확진자*100)
-for country, data in covid_detail.___():
-    recovery_rate = ___
-    print(f"  {country}: {recovery_rate:.1f}%")
-
-# 3) "영국" 추가: 확진자 312654, 사망자 43730, 완치자 1356
-covid_detail[___] = ___
-
-# 4) 전체 확진자 합계
-total = sum(___ for ___ in covid_detail.___())
-print(f"\n전체 확진자 합계: {total:,}명")
-</div>
-<details><summary>▶ 도전 ③ 정답 확인</summary>
-<div>
-<pre># Part A
-for country, cases, deaths in covid_tuples:
-    fatality_rate = deaths / cases * 100
-highest = max(covid_tuples, key=lambda x: x[2]/x[1])
-
-# Part B
-korea_active = covid_detail["한국"]["확진자"] - covid_detail["한국"]["사망자"] - covid_detail["한국"]["완치자"]
-for country, data in covid_detail.items():
-    recovery_rate = data["완치자"] / data["확진자"] * 100
-covid_detail["영국"] = {"확진자":312654,"사망자":43730,"완치자":1356}
-total = sum(data["확진자"] for data in covid_detail.values())</pre>
-</div></details>
-
-<div style="text-align:center;margin-top:60px;color:#999;font-size:0.85em;border-top:1px solid #ddd;padding-top:20px;">
-세션 C에서 오류 수정 실습과 연습문제 12문항으로 오늘 내용을 정리한다.
-</div>
+<a id="toTop" href="#" title="맨 위로">↑</a>
+<script>
+const btn = document.getElementById('toTop');
+window.addEventListener('scroll', () => {
+  btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+btn.addEventListener('click', e => {
+  e.preventDefault();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+</script>
 </body>
 </html>
