@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>1주차 — 파이썬 기초 ①: 변수 · 자료형 · 숫자형 · 문자열</title>
+
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+    sagecell.makeSagecell({
+        inputLocation:  'div.compute',
+        languages:      ["python"],
+        evalButtonText: '▶ 실행 (Run)',
+        hide:           ["permalink", "fullScreen"],
+        autoeval:       false
+    });
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+    body {
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        margin: 40px auto;
+        max-width: 960px;
+        line-height: 1.7;
+        color: #2d2d2d;
+        background: #f7f5f0;
+    }
+    h1 {
+        text-align: center;
+        color: #1a1a2e;
+        border-bottom: 4px solid #c0392b;
+        padding-bottom: 18px;
+        font-size: 1.9em;
+        letter-spacing: -0.5px;
+    }
+    h2 {
+        font-size: 1.05em;
+        color: #666;
+        text-align: center;
+        margin-bottom: 40px;
+        font-weight: normal;
+    }
+    h3 {
+        color: #c0392b;
+        margin-top: 55px;
+        border-left: 7px solid #c0392b;
+        padding: 12px 18px;
+        background: #fff5f5;
+        font-size: 1.15em;
+        border-radius: 0 5px 5px 0;
+    }
+    h4 {
+        color: #2c3e50;
+        margin-top: 25px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 6px;
+    }
+    .description {
+        background: #fff;
+        padding: 22px 28px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .ping-box {
+        background: #eaf4fb;
+        border: 2px solid #3498db;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 10px;
+    }
+    .ping-box h4 { color: #2980b9; border-color: #3498db; }
+    .pong-box {
+        background: #fef9e7;
+        border: 2px solid #f39c12;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 10px;
+    }
+    .pong-box h4 { color: #d68910; border-color: #f39c12; }
+    .challenge-box {
+        background: #f0fff4;
+        border: 2px solid #27ae60;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 10px;
+    }
+    .challenge-box h4 { color: #1e8449; border-color: #27ae60; }
+    .debug-box {
+        background: #fdf2f8;
+        border: 2px solid #8e44ad;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 10px;
+    }
+    .debug-box h4 { color: #7d3c98; border-color: #8e44ad; }
+    .tip-box {
+        background: #fffde7;
+        border-left: 5px solid #f9a825;
+        padding: 12px 18px;
+        border-radius: 0 5px 5px 0;
+        margin: 14px 0;
+        font-size: 0.95em;
+    }
+    .warn-box {
+        background: #fff3e0;
+        border-left: 5px solid #e65100;
+        padding: 12px 18px;
+        border-radius: 0 5px 5px 0;
+        margin: 14px 0;
+        font-size: 0.95em;
+    }
+    .formula-box {
+        background: #fafafa;
+        border: 2px solid #e0e0e0;
+        padding: 14px;
+        text-align: center;
+        margin: 14px 0;
+        border-radius: 6px;
+    }
+    .compute {
+        margin: 10px 0 40px 0;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    code {
+        background: #f0f0f0;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-family: "Consolas", "D2Coding", monospace;
+        color: #c0392b;
+        font-size: 0.93em;
+        font-weight: bold;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.95em; }
+    th, td { border: 1px solid #ddd; padding: 9px 14px; }
+    th { background: #f2f2f2; font-weight: bold; }
+    tr:nth-child(even) td { background: #fafafa; }
+    .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+        margin-right: 6px;
+    }
+    .badge-ping { background: #3498db; color: white; }
+    .badge-pong { background: #f39c12; color: white; }
+    .badge-debug { background: #8e44ad; color: white; }
+    .badge-challenge { background: #27ae60; color: white; }
+    ol li, ul li { margin-bottom: 6px; }
+    details summary {
+        cursor: pointer;
+        color: #c0392b;
+        font-weight: bold;
+        padding: 6px 10px;
+        background: #fff5f5;
+        border: 1px solid #e0c0c0;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+    details[open] summary { border-bottom-radius: 0; }
+    details > div {
+        background: #fffafa;
+        border: 1px solid #e0c0c0;
+        border-top: none;
+        padding: 14px 18px;
+        border-radius: 0 0 5px 5px;
+        font-size: 0.93em;
+    }
+    .section-divider {
+        border: none;
+        border-top: 2px dashed #ddd;
+        margin: 50px 0 30px 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>1주차 — 파이썬 기초 ①</h1>
+<h2>변수(Variable) · 자료형(Data Type) · 숫자형(Numeric) · 문자열(String)<br>
+<span style="color:#c0392b; font-size:0.9em;">활용 데이터: 코로나19(COVID-19) 확진자 수</span></h2>
+
+<!-- ===== PART A: 개념 ===== -->
+<h3>PART A. 핵심 개념 정리</h3>
+
+<div class="description">
+    <h4>A1. 변수(Variable)란?</h4>
+    <p>데이터를 저장하고 재사용하기 위한 <strong>이름이 붙은 저장 공간</strong>이다.</p>
+    <div class="tip-box">
+        <code>=</code> 는 "같다"가 아니라 <strong>"저장하라"</strong>는 뜻이다. &nbsp;|&nbsp;
+        "같다"는 <code>==</code> 를 사용한다.
+    </div>
+
+    <h4>A2. 자료형(Data Type) 4가지</h4>
+    <table>
+        <tr><th>자료형</th><th>설명</th><th>예시</th></tr>
+        <tr><td><code>int</code></td><td>정수(Integer)</td><td><code>42, -7, 0</code></td></tr>
+        <tr><td><code>float</code></td><td>실수(Floating Point)</td><td><code>3.14, -0.5, 1e3</code></td></tr>
+        <tr><td><code>str</code></td><td>문자열(String)</td><td><code>"Hello", 'Python'</code></td></tr>
+        <tr><td><code>bool</code></td><td>불리언(Boolean)</td><td><code>True, False</code></td></tr>
+    </table>
+
+    <h4>A3. 숫자형 연산자</h4>
+    <table>
+        <tr><th>연산자</th><th>이름</th><th>예시</th><th>결과</th></tr>
+        <tr><td><code>+</code></td><td>더하기</td><td><code>10 + 3</code></td><td>13</td></tr>
+        <tr><td><code>-</code></td><td>빼기</td><td><code>10 - 3</code></td><td>7</td></tr>
+        <tr><td><code>*</code></td><td>곱하기</td><td><code>10 * 3</code></td><td>30</td></tr>
+        <tr><td><code>/</code></td><td>나누기 (항상 float)</td><td><code>10 / 3</code></td><td>3.333…</td></tr>
+        <tr><td><code>//</code></td><td>몫(Floor Division)</td><td><code>10 // 3</code></td><td>3</td></tr>
+        <tr><td><code>%</code></td><td>나머지(Modulo)</td><td><code>10 % 3</code></td><td>1</td></tr>
+        <tr><td><code>**</code></td><td>거듭제곱(Power)</td><td><code>10 ** 3</code></td><td>1000</td></tr>
+    </table>
+
+    <h4>A4. 문자열(String) 핵심</h4>
+    <div class="tip-box">
+        슬라이싱 <code>s[시작:끝:간격]</code> — <strong>끝 인덱스는 포함하지 않는다.</strong><br>
+        f-string: <code>f"{변수명}"</code> — 중괄호 안 변수가 자동으로 삽입된다.
+    </div>
+</div>
+<div class="compute">
+# A. 개념 확인 — 직접 실행해보라
+print("=== 자료형 확인 ===")
+print(type(621328))        # int
+print(type(3.14))          # float
+print(type("코로나"))       # str
+print(type(True))          # bool
+
+print("\n=== 문자열 기차 ===")
+s = "COVID-19"
+print(s[0], s[-1], s[0:5], s[::-1])
+
+print("\n=== f-string ===")
+country = "한국"
+cases = 621328
+print(f"{country}의 신규 확진자: {cases:,}명")
+</div>
+
+<!-- ===== PART B: 핑퐁 ===== -->
+<h3>PART B. 핑퐁 코딩 (Ping-Pong Coding)</h3>
+<div class="description">
+    <p><span class="badge badge-ping">Ping</span> 교수자가 시연한다 &rarr;
+       <span class="badge badge-pong">Pong</span> 학생이 즉시 변형 과제를 작성한다.</p>
+    <p>빈칸 <code>___</code> 을 채워야 코드가 실행된다. 정답을 먼저 보지 말고 반드시 <strong>스스로 시도한 후</strong> 확인하라.</p>
+</div>
+
+<!-- PP1 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 1</span> 변수와 자료형 — 교수자 시연</h4>
+</div>
+<div class="compute">
+# 오늘 서울의 기온을 변수에 저장하자
+city = "서울"
+temperature = 3.5
+print(f"오늘 {city}의 기온은 {temperature}도이다.")
+print(f"city의 자료형: {type(city)}")
+print(f"temperature의 자료형: {type(temperature)}")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 1</span> 변수와 자료형 — 학생 작성</h4>
+    <p><strong>과제:</strong> 2022년 3월 17일 한국의 코로나19 신규 확진자 수를 변수에 저장하고 출력하라.</p>
+</div>
+<div class="compute">
+# Pong 1 — 빈칸을 채워라
+date = "2022-03-17"
+country = ___           # "한국"을 저장
+new_cases = ___         # 621328을 저장
+print(f"{date} {country}의 신규 확진자 수: {new_cases}명")
+print(f"new_cases의 자료형: {type(new_cases)}")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>date = "2022-03-17"
+country = "한국"
+new_cases = 621328
+print(f"{date} {country}의 신규 확진자 수: {new_cases}명")
+print(f"new_cases의 자료형: {type(new_cases)}")</pre>
+<strong>출력:</strong><br>
+<code>2022-03-17 한국의 신규 확진자 수: 621328명</code><br>
+<code>new_cases의 자료형: &lt;class 'int'&gt;</code>
+</div>
+</details>
+
+<hr class="section-divider">
+
+<!-- PP2 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 2</span> 숫자형 연산 — 교수자 시연</h4>
+</div>
+<div class="compute">
+apple_price = 500
+apple_sold = 10
+total = apple_price * apple_sold
+print(f"사과 매출: {total}원")
+print(f"천 단위 표시: {total:,}원")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 2</span> 숫자형 연산 — 학생 작성</h4>
+    <p><strong>과제:</strong> 어제와 오늘 확진자 수로 증감(Change)과 증감률(%)을 계산하라.</p>
+</div>
+<div class="compute">
+# Pong 2 — 빈칸을 채워라
+yesterday = 580123
+today = 621328
+
+change = ___             # 오늘 - 어제
+change_rate = ___        # (오늘 - 어제) / 어제 * 100
+
+print(f"전일 대비 증감: {change:,}명")
+print(f"전일 대비 증감률: {change_rate:.1f}%")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>change = today - yesterday                        # 41205
+change_rate = (today - yesterday) / yesterday * 100  # 약 7.1%</pre>
+</div>
+</details>
+
+<hr class="section-divider">
+
+<!-- PP3 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 3</span> 몫과 나머지 — 교수자 시연</h4>
+</div>
+<div class="compute">
+total_minutes = 150
+hours = total_minutes // 60
+minutes = total_minutes % 60
+print(f"{total_minutes}분 = {hours}시간 {minutes}분")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 3</span> 몫과 나머지 — 학생 작성</h4>
+    <p><strong>과제:</strong> 누적 확진자 수 24,591,073명을 만 명 단위로 환산하라.</p>
+</div>
+<div class="compute">
+# Pong 3 — 빈칸을 채워라
+total_cases = 24591073
+
+man_unit  = total_cases // ___   # 만 명 단위
+remainder = total_cases % ___    # 나머지
+
+print(f"누적 확진자: 약 {man_unit}만 {remainder}명")
+print(f"누적 확진자: {total_cases:,}명")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>man_unit  = total_cases // 10000   # 2459
+remainder = total_cases % 10000    # 1073</pre>
+</div>
+</details>
+
+<hr class="section-divider">
+
+<!-- PP4 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 4</span> 문자열 인덱싱·슬라이싱 — 교수자 시연</h4>
+</div>
+<div class="compute">
+filename = "data_20220317.csv"
+year  = filename[5:9]
+month = filename[9:11]
+day   = filename[11:13]
+ext   = filename[-3:]
+print(f"날짜: {year}년 {month}월 {day}일")
+print(f"확장자: {ext}")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 4</span> 문자열 인덱싱·슬라이싱 — 학생 작성</h4>
+    <p><strong>과제:</strong> 아래 문자열에서 국가코드, 날짜, 확장자를 추출하라.</p>
+    <div class="tip-box">
+        힌트: <code>c o v i d _ K R _ 2 0 2 2 0 3 1 7 _ d a i l y . c s v</code><br>
+        인덱스: 0 1 2 3 4 5 6 7 8 9 ... (뒤에서 -3 -2 -1)
+    </div>
+</div>
+<div class="compute">
+# Pong 4 — 빈칸을 채워라
+report = "covid_KR_20220317_daily.csv"
+
+country_code = report[___:___]   # "KR" 추출
+date_str     = report[___:___]   # "20220317" 추출
+file_ext     = report[___:]      # "csv" 추출
+
+print(f"국가: {country_code}")
+print(f"날짜: {date_str}")
+print(f"확장자: {file_ext}")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>country_code = report[6:8]    # "KR"
+date_str     = report[9:17]   # "20220317"
+file_ext     = report[-3:]    # "csv"</pre>
+</div>
+</details>
+
+<hr class="section-divider">
+
+<!-- PP5 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 5</span> 문자열 메서드 — 교수자 시연</h4>
+</div>
+<div class="compute">
+email = "  Student01@University.ac.kr  "
+email_clean = email.strip()
+name, domain = email_clean.split("@")
+print(f"이름: {name}")
+print(f"도메인: {domain.lower()}")
+print(f"대학 메일인가? {domain.endswith('.ac.kr')}")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 5</span> 문자열 메서드 — 학생 작성</h4>
+    <p><strong>과제:</strong> COVID-19 파일명 문자열을 분석하라.</p>
+</div>
+<div class="compute">
+# Pong 5 — 빈칸을 채워라
+filename = "  COVID-19_South-Korea_2022-03-17.CSV  "
+
+clean    = filename.___()                                  # 공백 제거
+ext_lower = clean[-3:].___()                               # 소문자 변환
+new_name = clean.___("South-Korea", "Republic-of-Korea")   # 교체
+is_covid = clean.___("COVID")                              # 시작 확인
+parts    = clean.split("_")
+date_part = parts[___]                                     # 날짜 추출
+
+print(f"확장자: {ext_lower}")
+print(f"변경된 파일명: {new_name}")
+print(f"코로나 데이터인가? {is_covid}")
+print(f"날짜: {date_part}")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>clean     = filename.strip()
+ext_lower = clean[-3:].lower()
+new_name  = clean.replace("South-Korea", "Republic-of-Korea")
+is_covid  = clean.startswith("COVID")
+date_part = parts[2]   # 또는 parts[-1]</pre>
+</div>
+</details>
+
+<hr class="section-divider">
+
+<!-- PP6 -->
+<div class="ping-box">
+    <h4><span class="badge badge-ping">Ping 6</span> f-string 고급 포맷팅 — 교수자 시연</h4>
+</div>
+<div class="compute">
+price    = 29900
+tax_rate = 0.1
+tax      = price * tax_rate
+total    = price + tax
+print(f"가격: {price:>10,}원")
+print(f"세금: {tax:>10,.0f}원")
+print(f"합계: {total:>10,.0f}원")
+print(f"세율: {tax_rate:.0%}")
+</div>
+
+<div class="pong-box">
+    <h4><span class="badge badge-pong">Pong 6</span> f-string 고급 포맷팅 — 학생 작성</h4>
+    <p><strong>과제:</strong> 한국·일본 코로나 데이터를 보고서 형식으로 출력하라.</p>
+</div>
+<div class="compute">
+# Pong 6 — 빈칸을 채워라
+kr_cases = 621328
+jp_cases = 261029
+kr_pop   = 51740000
+jp_pop   = 125800000
+
+kr_rate = kr_cases / kr_pop * 100000
+jp_rate = ___ / ___ * ___
+
+print("=" * 45)
+print(f"{'국가':<10}{'확진자':>12}{'10만명당':>12}")
+print("-" * 45)
+print(f"{'한국':<10}{kr_cases:>12,}{kr_rate:>12.1f}")
+print(f"{'일본':<10}{___:>12,}{___:>12.1f}")
+print("=" * 45)
+print(f"한국은 일본 대비 {kr_cases / jp_cases:___}배")   # 소수점 2자리
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>jp_rate = jp_cases / jp_pop * 100000
+# 일본 줄: jp_cases, jp_rate
+# 비율 포맷: :.2f</pre>
+출력 예시:<br>
+<code>한국        621,328      1,201.2</code><br>
+<code>일본        261,029        207.5</code>
+</div>
+</details>
+
+<!-- ===== PART C: 도전 ===== -->
+<h3>PART C. 도전 실습</h3>
+
+<!-- 도전1 -->
+<div class="challenge-box">
+    <h4><span class="badge badge-challenge">도전 1</span> 코로나 확진자 일간 보고서</h4>
+    <p>빈칸을 채워 아래 목표 출력을 만들어라.</p>
+    <div class="formula-box">
+        치명률(CFR) = 총 사망 / 총 확진 × 100 &nbsp;|&nbsp; 인구 대비 확진률 = 총 확진 / 인구 × 100
+    </div>
+    <p>목표 출력:</p>
+    <pre style="background:#f8f8f8;padding:12px;border-radius:5px;font-size:0.88em;">
+==================================================
+  코로나19 일간 보고서 — 2022-03-17
+  국가: 대한민국
+==================================================
+  신규 확진:      621,328명
+  신규 사망:          429명
+  누적 확진:    7,629,228명
+  누적 사망:       12,774명
+--------------------------------------------------
+  치명률(CFR): 0.17%
+  인구 대비 확진: 14.75%
+==================================================</pre>
+</div>
+<div class="compute">
+date         = "2022-03-17"
+country      = "대한민국"
+new_cases    = 621328
+new_deaths   = 429
+total_cases  = 7629228
+total_deaths = 12774
+population   = 51740000
+
+cfr            = ___ / ___ * 100      # 치명률
+infection_rate = ___ / ___ * 100      # 인구 대비 확진률
+
+print("=" * 50)
+print(f"  코로나19 일간 보고서 — {___}")
+print(f"  국가: {___}")
+print("=" * 50)
+print(f"  신규 확진: {new_cases:>___}명")    # 천단위 쉼표, 오른쪽 12칸
+print(f"  신규 사망: {new_deaths:>___}명")
+print(f"  누적 확진: {total_cases:>___}명")
+print(f"  누적 사망: {total_deaths:>___}명")
+print("-" * 50)
+print(f"  치명률(CFR): {cfr:___}%")          # 소수점 2자리
+print(f"  인구 대비 확진: {infection_rate:___}%")
+print("=" * 50)
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<pre>cfr            = total_deaths / total_cases * 100
+infection_rate = total_cases / population * 100
+
+# 포맷: >12,   소수점: .2f</pre>
+</div>
+</details>
+
+<!-- 도전2 -->
+<div class="challenge-box">
+    <h4><span class="badge badge-challenge">도전 2</span> 예측 후 실행 (Predict-Then-Run)</h4>
+    <p>각 코드의 출력을 <strong>먼저 손으로 예측</strong>한 뒤 실행하여 검증하라. 예측이 틀렸다면 이유를 주석으로 적어라.</p>
+</div>
+<div class="compute">
+# 2-1. 자료형 변환 — 예측 후 실행
+a = "100"
+b = "200"
+print(a + b)             # 나의 예측: ___
+print(int(a) + int(b))   # 나의 예측: ___
+print(type(a + b))       # 나의 예측: ___
+</div>
+<div class="compute">
+# 2-2. 나눗셈 자료형
+x = 10; y = 5
+print(x / y)             # 나의 예측: ___
+print(type(x / y))       # 나의 예측: ___
+print(x // y)            # 나의 예측: ___
+print(type(x // y))      # 나의 예측: ___
+</div>
+<div class="compute">
+# 2-3. 문자열 곱하기
+s = "COVID" * 3
+print(s)                 # 나의 예측: ___
+print(len(s))            # 나의 예측: ___
+print(s[5:10])           # 나의 예측: ___
+print(s[-5:])            # 나의 예측: ___
+</div>
+<div class="compute">
+# 2-4. 할당 연산자 추적
+cases = 1000
+cases += 500
+cases *= 2
+cases -= 200
+cases //= 3
+print(cases)             # 나의 예측: ___
+</div>
+<details>
+<summary>▶ 전체 정답 확인</summary>
+<div>
+<strong>2-1:</strong> <code>100200 / 300 / &lt;class 'str'&gt;</code><br>
+<strong>2-2:</strong> <code>2.0 / &lt;class 'float'&gt; / 2 / &lt;class 'int'&gt;</code> — <em>/ 는 항상 float 반환!</em><br>
+<strong>2-3:</strong> <code>COVIDCOVIDCOVID / 15 / COVID / COVID</code><br>
+<strong>2-4:</strong> 1000→1500→3000→2800→933 → <strong>최종: 933</strong>
+</div>
+</details>
+
+<!-- 도전3 디버그 -->
+<h3>PART C-3. 오류 수정(Debug) — AI가 만든 코드의 버그 찾기</h3>
+<div class="description">
+    <p>아래 코드는 AI가 작성한 코드라고 가정하자. <strong>버그를 찾아 수정</strong>하라.</p>
+</div>
+
+<div class="debug-box">
+    <h4><span class="badge badge-debug">Debug 1</span> 변수 이름 오류</h4>
+</div>
+<div class="compute">
+# 버그가 있다! 수정하라
+2022_cases = 621328
+2021_cases = 7848
+change = 2022_cases - 2021_cases
+print(f"전년 대비 증감: {change:,}명")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<strong>오류:</strong> 변수 이름은 숫자로 시작할 수 없다.<br>
+<pre>cases_2022 = 621328
+cases_2021 = 7848
+change = cases_2022 - cases_2021</pre>
+</div>
+</details>
+
+<div class="debug-box">
+    <h4><span class="badge badge-debug">Debug 2</span> 자료형 오류</h4>
+</div>
+<div class="compute">
+# 버그가 있다! 수정하라
+# input()은 항상 str을 반환한다
+day1 = "100"   # input() 대신 문자열로 가정
+day2 = "200"
+total = day1 + day2
+print(f"2일간 총 확진자: {total}명")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<strong>오류:</strong> <code>"100" + "200" = "100200"</code> (문자열 연결)<br>
+<pre>day1 = int("100")
+day2 = int("200")
+total = day1 + day2</pre>
+</div>
+</details>
+
+<div class="debug-box">
+    <h4><span class="badge badge-debug">Debug 3</span> 연산 순서 오류</h4>
+</div>
+<div class="compute">
+# 버그가 있다! 수정하라
+today     = 621328
+yesterday = 580123
+rate = today - yesterday / yesterday * 100
+print(f"증감률: {rate:.1f}%")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<strong>오류:</strong> 연산자 우선순위 — <code>/</code>가 <code>-</code>보다 먼저 실행된다.<br>
+<pre>rate = (today - yesterday) / yesterday * 100   # 괄호 필수</pre>
+</div>
+</details>
+
+<div class="debug-box">
+    <h4><span class="badge badge-debug">Debug 4</span> 대소문자 오류</h4>
+</div>
+<div class="compute">
+# 버그가 있다! 수정하라
+filename = "covid_data.CSV"
+if filename.endswith("csv"):
+    print("CSV 파일이다.")
+else:
+    print("CSV 파일이 아니다.")
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<strong>오류:</strong> 확장자가 대문자 <code>CSV</code>인데 소문자 <code>"csv"</code>로 비교<br>
+<pre>if filename.lower().endswith("csv"):</pre>
+</div>
+</details>
+
+<div class="debug-box">
+    <h4><span class="badge badge-debug">Debug 5</span> f-string 포맷 오류</h4>
+</div>
+<div class="compute">
+# 실행은 되지만 출력이 이상하다. 어떻게 고쳐야 하는가?
+population = 51740000
+cases      = 7629228
+rate       = cases / population
+print(f"확진률: {rate}%")   # 출력: 확진률: 0.14749131%  → 이상함!
+</div>
+<details>
+<summary>▶ 정답 확인</summary>
+<div>
+<strong>문제:</strong> rate는 소수(0.147...)인데 <code>%</code>를 직접 붙였다. 14.75%가 아닌 0.147%로 표시된다.<br>
+<pre># 방법 1: 직접 100 곱하기
+print(f"확진률: {rate * 100:.2f}%")   # 14.75%
+
+# 방법 2: f-string % 포맷 (자동으로 ×100)
+print(f"확진률: {rate:.2%}")          # 14.75%</pre>
+</div>
+</details>
+
+<!-- ===== PART D: 연습문제 ===== -->
+<h3>PART D. 연습문제 10문항</h3>
+
+<div class="compute">
+# 문제 1. 변수 교환 — 제3의 변수 없이 한 줄로 교환하라
+a = "한국"
+b = "일본"
+_______________
+print(f"a = {a}, b = {b}")   # a = 일본, b = 한국
+</div>
+<div class="compute">
+# 문제 2. 자료형 판별 — 각 값의 type()을 예측한 뒤 실행하라
+values = [42, 42.0, "42", True, 0, 0.0, "", None]
+for v in values:
+    print(f"값: {str(v):>6}  →  타입: {type(v).__name__}")
+</div>
+<div class="compute">
+# 문제 3. 온도 변환기  F = C * 9/5 + 32
+celsius = 36.5
+fahrenheit = ___
+print(f"{celsius}°C = {fahrenheit:.1f}°F")   # 36.5°C = 97.7°F
+</div>
+<div class="compute">
+# 문제 4. 문자열 뒤집기 — 3가지 방법
+s = "DIVOC"
+# 방법1: 슬라이싱
+print(___)
+# 방법2: reversed() + join
+print(___)
+# 방법3: 인덱싱
+print(___)
+</div>
+<div class="compute">
+# 문제 5. 할당 연산 추적 — 손으로 계산 후 실행 검증
+x = 100
+x += 50    # x = ___
+x *= 2     # x = ___
+x -= 100   # x = ___
+x //= 7    # x = ___
+x %= 5     # x = ___
+x **= 3    # x = ___
+print(x)   # 최종: ___
+</div>
+<div class="compute">
+# 문제 6. 쉼표 있는 숫자 문자열을 int로 변환
+cases_str = "7,629,228"
+cases_int = ___   # 힌트: replace 먼저!
+print(f"정수: {cases_int}")
+print(f"타입: {type(cases_int)}")
+</div>
+<div class="compute">
+# 문제 7. 문자열 반복 + 포맷팅 — print 3줄만 사용
+# 목표:
+# ****************************
+# *   COVID-19 Daily Report  *
+# ****************************
+print(___)
+print(___)
+print(___)
+</div>
+<div class="compute">
+# 문제 8. 다중 할당 + 주간 통계
+mon, tue, wed, thu, fri, sat, sun = 490421, 389423, 327790, 621328, 580123, 392316, 275941
+weekly_total = ___
+daily_avg    = ___
+max_day      = ___
+min_day      = ___
+print(f"주간 합계: {weekly_total:,}명")
+print(f"일 평균:  {daily_avg:,.0f}명")
+print(f"최고: {max_day:,}명  최소: {min_day:,}명")
+</div>
+<div class="compute">
+# 문제 9. 문자열 분석
+headline = "Breaking: South Korea reports 621,328 new COVID-19 cases on 2022-03-17"
+length       = ___                      # 전체 글자 수
+covid_pos    = headline.___(_____)      # "COVID" 위치
+upper_h      = headline.___()          # 대문자 변환
+new_h        = headline.___(___,___)   # "South Korea" → "Republic of Korea"
+word_count   = len(headline.___())     # 단어 수
+print(length, covid_pos, word_count)
+</div>
+<div class="compute">
+# 문제 10. 종합 — 국가 비교 보고서
+kr_new=621328; kr_total=7629228; kr_deaths=12774; kr_pop=51740000
+jp_new=261029; jp_total=5765782; jp_deaths=26109; jp_pop=125800000
+us_new=31647;  us_total=79467042; us_deaths=968916; us_pop=331900000
+
+# 치명률(CFR), 인구 대비 확진률, 10만 명당 신규 확진자 를 계산하고
+# f-string 보고서로 출력하라 (형식 자유)
+</div>
+
+<!-- ===== 부록 ===== -->
+<h3>부록. f-string 포맷 치트시트</h3>
+<div class="description">
+    <table>
+        <tr><th>포맷</th><th>설명</th><th>입력</th><th>출력</th></tr>
+        <tr><td><code>{x:,}</code></td><td>천 단위 쉼표</td><td>1234567</td><td>1,234,567</td></tr>
+        <tr><td><code>{x:.2f}</code></td><td>소수점 2자리</td><td>3.14159</td><td>3.14</td></tr>
+        <tr><td><code>{x:.1%}</code></td><td>퍼센트 1자리</td><td>0.0712</td><td>7.1%</td></tr>
+        <tr><td><code>{x:.2e}</code></td><td>과학적 표기법</td><td>1234567</td><td>1.23e+06</td></tr>
+        <tr><td><code>{x:>10}</code></td><td>오른쪽 정렬 10칸</td><td>"Hi"</td><td>"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hi"</td></tr>
+        <tr><td><code>{x:<10}</code></td><td>왼쪽 정렬 10칸</td><td>"Hi"</td><td>"Hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"</td></tr>
+        <tr><td><code>{x:^10}</code></td><td>가운데 정렬 10칸</td><td>"Hi"</td><td>"&nbsp;&nbsp;&nbsp;&nbsp;Hi&nbsp;&nbsp;&nbsp;&nbsp;"</td></tr>
+        <tr><td><code>{x:0>5}</code></td><td>0으로 채우기</td><td>42</td><td>00042</td></tr>
+    </table>
+</div>
+
+<div class="compute">
+# 부록 — 포맷 전체 확인
+x = 1234567.891
+print(f"천단위:    {x:,}")
+print(f"소수2자리: {x:.2f}")
+print(f"퍼센트:    {x/10000000:.2%}")
+print(f"과학표기:  {x:.2e}")
+print(f"우정렬:    {42:>10}")
+print(f"좌정렬:    {42:<10}|")
+print(f"가운데:    {42:^10}|")
+print(f"0채우기:   {42:0>8}")
+</div>
+
+<div style="text-align:center; margin-top:60px; color:#999; font-size:0.85em; border-top:1px solid #ddd; padding-top:20px;">
+본 자료의 모든 코드는 브라우저에서 직접 실행 가능하다.<br>
+1주차 수업 후 연습문제 10문항의 코드 + 출력 + 검증을 제출하라.
+</div>
+
+</body>
+</html>
