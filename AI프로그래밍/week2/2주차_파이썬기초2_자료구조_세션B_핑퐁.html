@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>2주차 — 파이썬 기초 ②: 자료구조</title>
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+    sagecell.makeSagecell({
+        inputLocation: 'div.compute',
+        languages:     ["python"],
+        evalButtonText:'▶ 실행 (Run)',
+        hide:          ["permalink","fullScreen"],
+        autoeval:      false
+    });
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+    body {
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        margin: 40px auto; max-width: 960px;
+        line-height: 1.7; color: #2d2d2d; background: #f7f5f0;
+    }
+    h1 { text-align:center; color:#1a1a2e; border-bottom:4px solid #2980b9;
+         padding-bottom:18px; font-size:1.9em; }
+    h2 { font-size:1.05em; color:#666; text-align:center; margin-bottom:40px; font-weight:normal; }
+    h3 { color:#2980b9; margin-top:55px; border-left:7px solid #2980b9;
+         padding:12px 18px; background:#f0f7ff; font-size:1.15em; border-radius:0 5px 5px 0; }
+    h4 { color:#2c3e50; margin-top:25px; border-bottom:1px solid #ddd; padding-bottom:6px; }
+    .description { background:#fff; padding:22px 28px; border:1px solid #e0e0e0;
+        border-radius:8px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    .ping-box { background:#eaf4fb; border:2px solid #3498db; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .pong-box { background:#fef9e7; border:2px solid #f39c12; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .challenge-box { background:#f0fff4; border:2px solid #27ae60; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .debug-box { background:#fdf2f8; border:2px solid #8e44ad; border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+    .tip-box { background:#fffde7; border-left:5px solid #f9a825; padding:12px 18px;
+        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
+    .warn-box { background:#fff3e0; border-left:5px solid #e65100; padding:12px 18px;
+        border-radius:0 5px 5px 0; margin:14px 0; font-size:0.95em; }
+    .compute { margin:10px 0 40px 0; border-radius:6px; overflow:hidden; }
+    code { background:#f0f0f0; padding:2px 7px; border-radius:4px;
+        font-family:"Consolas","D2Coding",monospace; color:#2980b9; font-size:0.93em; font-weight:bold; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:0.95em; }
+    th, td { border:1px solid #ddd; padding:9px 14px; }
+    th { background:#f2f2f2; font-weight:bold; }
+    tr:nth-child(even) td { background:#fafafa; }
+    .badge { display:inline-block; padding:2px 10px; border-radius:12px;
+        font-size:0.8em; font-weight:bold; margin-right:6px; }
+    .badge-ping { background:#3498db; color:white; }
+    .badge-pong { background:#f39c12; color:white; }
+    .badge-debug { background:#8e44ad; color:white; }
+    .badge-challenge { background:#27ae60; color:white; }
+    details summary { cursor:pointer; color:#2980b9; font-weight:bold;
+        padding:6px 10px; background:#eaf4fb; border:1px solid #b0d4f1;
+        border-radius:5px; margin-top:10px; }
+    details > div { background:#f5faff; border:1px solid #b0d4f1;
+        border-top:none; padding:14px 18px; border-radius:0 0 5px 5px; font-size:0.93em; }
+    hr.sep { border:none; border-top:2px dashed #ddd; margin:50px 0 30px; }
+    ol li, ul li { margin-bottom:6px; }
+    pre { background:#f8f8f8; padding:12px; border-radius:5px; font-size:0.88em; overflow-x:auto; }
+</style>
+</head>
+<body>
+
+<h1>2주차 — 파이썬 기초 ②: 자료구조</h1>
+<h2>세션 B — 핑퐁 코딩(Ping-Pong Coding) + 도전 실습(Challenge Lab)<br>
+<span style="color:#2980b9; font-size:0.9em;">활용 데이터: 코로나19(COVID-19) 확진자 수</span></h2>
+
+<div class="description">
+<p><span class="badge badge-ping">Ping</span> 교수자가 시연 →
+   <span class="badge badge-pong">Pong</span> 학생이 즉시 변형 작성. &nbsp;
+   빈칸 <code>___</code>을 채워야 실행된다.</p>
+<table>
+  <tr><th>자료구조</th><th>기호</th><th>순서</th><th>변경</th><th>중복</th><th>특징</th></tr>
+  <tr><td><strong>리스트</strong>(List)</td><td><code>[ ]</code></td><td>✅</td><td>✅</td><td>✅</td><td>범용 데이터 모음</td></tr>
+  <tr><td><strong>튜플</strong>(Tuple)</td><td><code>( )</code></td><td>✅</td><td>❌</td><td>✅</td><td>변경 불가 데이터</td></tr>
+  <tr><td><strong>딕셔너리</strong>(Dict)</td><td><code>{k:v}</code></td><td>✅</td><td>✅</td><td>키❌</td><td>이름-값 매핑</td></tr>
+  <tr><td><strong>집합</strong>(Set)</td><td><code>{ }</code></td><td>❌</td><td>✅</td><td>❌</td><td>중복 제거, 집합 연산</td></tr>
+</table>
+</div>
+
+<!-- ===== PP1: 리스트 ===== -->
+<h3>핑퐁 ①: 리스트(List) — 생성 · 인덱싱 · 슬라이싱</h3>
+<div class="ping-box">
+  <h4><span class="badge badge-ping">Ping ①</span> 교수자 시연</h4>
+</div>
+<div class="compute">
+temps = [2, 5, -1, 3, 7, 8, 4]
+print("월요일 기온:", temps[0])
+print("금~일 기온:", temps[4:])
+print("최고 기온:", max(temps))
+print("평균 기온:", sum(temps) / len(temps))
+</div>
+<div class="pong-box">
+  <h4><span class="badge badge-pong">Pong ①</span> 학생 작성 — 코로나 일별 확진자 리스트</h4>
+</div>
+<div class="compute">
+daily_cases = [523, 681, 445, 892, 1023, 756, 634]
+
+print("첫째 날:", ___)          # 1) 첫째 날 확진자
+print("마지막 3일:", ___)        # 2) 마지막 3일 슬라이싱
+print("총 확진자:", ___)         # 3) 7일 합계
+print("평균 확진자:", ___)       # 4) 평균
+print("최다:", ___, "/ 최소:", ___)  # 5) 최댓값, 최솟값
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>print("첫째 날:", daily_cases[0])
+print("마지막 3일:", daily_cases[-3:])
+print("총 확진자:", sum(daily_cases))
+print("평균 확진자:", sum(daily_cases)/len(daily_cases))
+print("최다:", max(daily_cases), "/ 최소:", min(daily_cases))</pre>
+</div></details>
+
+<!-- ===== PP2: 리스트 메서드 ===== -->
+<h3>핑퐁 ②: 리스트 메서드 — 정렬 · 추가 · 삭제</h3>
+<div class="tip-box">
+  <strong>핵심:</strong> <code>sorted()</code>는 원본 보존 · 새 리스트 반환 &nbsp;|&nbsp;
+  <code>.sort()</code>는 원본 수정 · 반환값 <code>None</code>
+</div>
+<div class="ping-box">
+  <h4><span class="badge badge-ping">Ping ②</span> 교수자 시연</h4>
+</div>
+<div class="compute">
+scores = [85, 92, 78, 95, 88]
+scores_sorted = sorted(scores, reverse=True)
+print("상위 3개:", scores_sorted[:3])
+scores.append(91)
+print("추가 후:", scores)
+scores.remove(min(scores))
+print("최저점 제거 후:", scores)
+</div>
+<div class="pong-box">
+  <h4><span class="badge badge-pong">Pong ②</span> 학생 작성</h4>
+</div>
+<div class="compute">
+cases_14days = [523,681,445,892,1023,756,634,812,567,934,1105,678,489,723]
+
+cases_sorted = ___              # 1) 내림차순 새 리스트
+top5         = ___              # 2) 상위 5일 슬라이싱
+print("확진자 상위 5일:", top5)
+
+___                             # 3) 850 추가
+print("15일차 추가 후 길이:", len(cases_14days))
+
+min_case = ___
+___                             # 4) 최솟값 제거
+print("최소값 제거 후:", cases_14days)
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>cases_sorted = sorted(cases_14days, reverse=True)
+top5         = cases_sorted[:5]
+cases_14days.append(850)
+min_case = min(cases_14days)
+cases_14days.remove(min_case)</pre>
+</div></details>
+
+<!-- ===== PP3: 딕셔너리 ===== -->
+<h3>핑퐁 ③: 딕셔너리(Dictionary) — 생성 · 접근 · 순회</h3>
+<div class="warn-box">
+  <strong>.get(키, 기본값)</strong> 을 습관화하라. 없는 키에 <code>d['키']</code>는 <code>KeyError</code>로 프로그램이 멈춘다.
+</div>
+<div class="ping-box">
+  <h4><span class="badge badge-ping">Ping ③</span> 교수자 시연</h4>
+</div>
+<div class="compute">
+fruit_price = {"사과": 3000, "바나나": 1500, "포도": 5000}
+print("사과 가격:", fruit_price["사과"])
+print("모든 과일:", list(fruit_price.keys()))
+fruit_price["딸기"] = 4000
+for fruit, price in fruit_price.items():
+    print(f"  {fruit}: {price}원")
+</div>
+<div class="pong-box">
+  <h4><span class="badge badge-pong">Pong ③</span> 학생 작성 — 국가별 확진자 딕셔너리</h4>
+</div>
+<div class="compute">
+covid_by_country = {
+    "한국": 34571, "미국": 1850000, "일본": 18723,
+    "영국": 312654, "브라질": 923189
+}
+
+print("한국:", ___)                    # 1) 한국 확진자
+print("국가 목록:", ___)              # 2) 모든 국가명 리스트
+___                                   # 3) "독일": 195042 추가
+total = ___                           # 4) 전체 합계
+print("전 세계 합계:", total)
+
+for ___, ___ in covid_by_country.items():   # 5) 순회 출력
+    print(f"  {___}: {___:,}명")
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>print("한국:", covid_by_country["한국"])
+print("국가 목록:", list(covid_by_country.keys()))
+covid_by_country["독일"] = 195042
+total = sum(covid_by_country.values())
+for country, cases in covid_by_country.items():
+    print(f"  {country}: {cases:,}명")</pre>
+</div></details>
+
+<!-- ===== PP4: 집합 ===== -->
+<h3>핑퐁 ④: 집합(Set) — 연산</h3>
+<div class="ping-box">
+  <h4><span class="badge badge-ping">Ping ④</span> 교수자 시연</h4>
+</div>
+<div class="compute">
+class_A = {"수학", "영어", "과학", "체육"}
+class_B = {"영어", "과학", "음악", "미술"}
+print("공통 과목:", class_A & class_B)
+print("A만의 과목:", class_A - class_B)
+print("전체 과목:", class_A | class_B)
+</div>
+<div class="pong-box">
+  <h4><span class="badge badge-pong">Pong ④</span> 학생 작성 — 확진자 급증 vs 감소 국가 비교</h4>
+</div>
+<div class="compute">
+surge_countries   = {"한국","미국","영국","인도","브라질"}
+decline_countries = {"일본","독일","미국","영국","호주"}
+
+both         = ___   # 1) 교집합 (급증 & 감소 동시)
+surge_only   = ___   # 2) 차집합 (급증만)
+all_countries= ___   # 3) 합집합 (전체)
+exclusive    = ___   # 4) 대칭차집합 (한쪽만)
+
+print("급증 & 감소:", both)
+print("급증만:", surge_only)
+print("전체:", all_countries)
+print("한쪽만:", exclusive)
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>both          = surge_countries & decline_countries
+surge_only    = surge_countries - decline_countries
+all_countries = surge_countries | decline_countries
+exclusive     = surge_countries ^ decline_countries</pre>
+</div></details>
+
+<!-- ===== 도전 1 ===== -->
+<h3>도전 ①: 코로나19 국가별 확진자 관리 프로그램</h3>
+<div class="challenge-box">
+  <h4><span class="badge badge-challenge">도전 ①</span> 목표 출력</h4>
+  <pre>=== 코로나19 확진자 현황 ===
+- 전체 국가 수: 7개국
+- 총 확진자: 3,579,852명
+- 평균 확진자: 511,407명
+- 최다: 미국 (1,850,000명)
+- 최소: 일본 (18,723명)
+- 평균 이상 국가: 미국, 브라질</pre>
+</div>
+<div class="compute">
+# 1단계: 초기 데이터
+covid = ___
+
+# 2단계: 독일(195042), 프랑스(245673) 추가
+___
+___
+
+# 3단계: 최다·최소
+max_country = ___
+min_country = ___
+
+# 4단계: 평균 이상 국가
+avg_cases = ___
+above_avg = ___
+
+# 5단계: 출력
+print("=== 코로나19 확진자 현황 ===")
+print(f"- 전체 국가 수: {___}개국")
+print(f"- 총 확진자: {___:,}명")
+print(f"- 평균 확진자: {___:,.0f}명")
+print(f"- 최다: {___} ({___:,}명)")
+print(f"- 최소: {___} ({___:,}명)")
+print(f"- 평균 이상 국가: {', '.join(___)}")
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>covid = {"한국":34571,"미국":1850000,"일본":18723,"영국":312654,"브라질":923189}
+covid["독일"] = 195042
+covid["프랑스"] = 245673
+max_country = max(covid, key=covid.get)
+min_country = min(covid, key=covid.get)
+avg_cases   = sum(covid.values()) / len(covid)
+above_avg   = [k for k,v in covid.items() if v >= avg_cases]</pre>
+</div></details>
+
+<!-- ===== 도전 2 ===== -->
+<h3>도전 ②: 7일 이동평균(Moving Average) 직접 계산</h3>
+<div class="description">
+  <p><strong>이동평균</strong>이란 연속된 n일의 평균을 순차적으로 계산하는 것이다. 데이터의 단기 변동을 부드럽게 만들어 추세를 파악한다.</p>
+  <div class="tip-box">결과 리스트의 길이 = 원본 길이 - (윈도우 크기 - 1) = 21 - 6 = <strong>15</strong></div>
+</div>
+<div class="compute">
+cases_21 = [523,681,445,892,1023,756,634,
+            812,567,934,1105,678,489,723,
+            945,1067,834,612,778,1023,889]
+
+moving_avg = []
+for i in range(len(cases_21) - 6):
+    window = ___              # i번째부터 7개 슬라이싱
+    avg    = ___              # 평균 계산
+    moving_avg.append(round(avg, 1))
+
+print("7일 이동평균:", moving_avg)
+print("이동평균 길이:", len(moving_avg))   # 반드시 15
+
+max_avg = ___
+max_idx = ___
+print(f"이동평균 최고: {max_avg} (시작일: {max_idx+1}일차)")
+</div>
+<details><summary>▶ 정답 확인</summary>
+<div>
+<pre>window  = cases_21[i:i+7]
+avg     = sum(window) / 7
+max_avg = max(moving_avg)
+max_idx = moving_avg.index(max_avg)</pre>
+</div></details>
+
+<!-- ===== 도전 3 ===== -->
+<h3>도전 ③: 튜플 언패킹 + 중첩 딕셔너리</h3>
+<div class="compute">
+# Part A: 튜플 언패킹 — 국가별 치사율
+covid_tuples = [
+    ("한국", 34571, 247),
+    ("미국", 1850000, 107175),
+    ("일본", 18723, 972),
+    ("영국", 312654, 43730),
+    ("브라질", 923189, 45241)
+]
+
+print("=== 국가별 치사율 ===")
+for ___, ___, ___ in covid_tuples:
+    fatality_rate = ___
+    print(f"  {___}: {fatality_rate:.2f}%")
+
+highest = max(covid_tuples, key=lambda x: ___)
+print(f"\n치사율 최고: {highest[0]} ({___:.2f}%)")
+</div>
+<div class="compute">
+# Part B: 중첩 딕셔너리
+covid_detail = {
+    "한국": {"확진자":34571, "사망자":247, "완치자":29700},
+    "미국": {"확진자":1850000,"사망자":107175,"완치자":463110},
+    "일본": {"확진자":18723, "사망자":972, "완치자":16431}
+}
+
+# 1) 한국 치료 중 환자 (확진자 - 사망자 - 완치자)
+korea_active = ___
+print(f"한국 치료 중: {korea_active:,}명")
+
+# 2) 완치율 (완치자/확진자*100)
+for country, data in covid_detail.___():
+    recovery_rate = ___
+    print(f"  {country}: {recovery_rate:.1f}%")
+
+# 3) "영국" 추가: 확진자 312654, 사망자 43730, 완치자 1356
+covid_detail[___] = ___
+
+# 4) 전체 확진자 합계
+total = sum(___ for ___ in covid_detail.___())
+print(f"\n전체 확진자 합계: {total:,}명")
+</div>
+<details><summary>▶ 도전 ③ 정답 확인</summary>
+<div>
+<pre># Part A
+for country, cases, deaths in covid_tuples:
+    fatality_rate = deaths / cases * 100
+highest = max(covid_tuples, key=lambda x: x[2]/x[1])
+
+# Part B
+korea_active = covid_detail["한국"]["확진자"] - covid_detail["한국"]["사망자"] - covid_detail["한국"]["완치자"]
+for country, data in covid_detail.items():
+    recovery_rate = data["완치자"] / data["확진자"] * 100
+covid_detail["영국"] = {"확진자":312654,"사망자":43730,"완치자":1356}
+total = sum(data["확진자"] for data in covid_detail.values())</pre>
+</div></details>
+
+<div style="text-align:center;margin-top:60px;color:#999;font-size:0.85em;border-top:1px solid #ddd;padding-top:20px;">
+세션 C에서 오류 수정 실습과 연습문제 12문항으로 오늘 내용을 정리한다.
+</div>
+</body>
+</html>
