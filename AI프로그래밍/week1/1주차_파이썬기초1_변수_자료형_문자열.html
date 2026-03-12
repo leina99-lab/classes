@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>W01 — 파이썬 기초 1 : 변수 · 숫자형 · 문자열</title>
+<title>W02 — 파이썬 기초 2 : 리스트 · 튜플 · 딕셔너리 · 집합 · 불리언</title>
 
 <!-- SageCell (Python 실행) -->
 <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
@@ -275,1117 +275,1092 @@ details code { background: none; border: none; color: inherit; }
 
 <header class="site-header">
   <div>
-    <div class="title">W01 · 파이썬 기초 ① — 변수 · 숫자형 · 문자열</div>
+    <div class="title">W02 · 파이썬 기초 ② — 자료구조</div>
     <div class="sub">학생용 실습 파일 &nbsp;|&nbsp; AI · ML · DL 통합 커리큘럼</div>
   </div>
-  <span class="week-badge">W01</span>
+  <span class="week-badge">W02</span>
 </header>
 
 <div class="wrap">
-<h1 class="doc-title">W01 — 파이썬 기초 1 : 변수 · 숫자형 · 문자열</h1>
-<h3>heart.csv — 심장질환 데이터로 배우는 파이썬</h3>
+
+<h1 class="doc-title">W02 — 파이썬 기초 2 : 리스트 · 튜플 · 딕셔너리 · 집합 · 불리언</h1>
+<h3>Mall_Customers.csv — 쇼핑몰 고객 세그먼트 데이터로 배우는 자료구조</h3>
 
 <hr>
 <blockquote><strong>학습 목표</strong></blockquote>
-<blockquote>1. <strong>변수(Variable)</strong> 에 데이터를 저장하고 자료형을 확인한다.</blockquote>
-<blockquote>2. <strong>숫자형(Numeric)</strong> 연산과 자료형 변환을 익힌다.</blockquote>
-<blockquote>3. <strong>문자열(String)</strong> 인덱싱·슬라이싱·함수를 활용한다.</blockquote>
-<blockquote>4. <strong>f-string</strong> 포맷팅으로 진단 보고서를 출력한다.</blockquote>
+<blockquote>1. <strong>리스트(List)</strong> 로 고객 점수를 관리하고 정렬·필터링한다.</blockquote>
+<blockquote>2. <strong>튜플(Tuple)</strong> 로 변경 불가 고객 정보를 저장한다.</blockquote>
+<blockquote>3. <strong>딕셔너리(Dict)</strong> 로 고객 프로필 데이터베이스를 구축한다.</blockquote>
+<blockquote>4. <strong>집합(Set)</strong> 으로 중복 없는 고객 그룹을 관리한다.</blockquote>
+<blockquote>5. <strong>불리언(Bool)</strong> 과 <code>copy()</code>로 데이터 안전성을 이해한다.</blockquote>
 
 <table><thead>
 <tr><th>섹션</th><th>내용</th><th>Ping-Pong</th></tr>
 </thead><tbody>
-<tr><td>1</td><td>변수와 자료형</td><td>Pong 1~4</td></tr>
-<tr><td>2</td><td>숫자형 연산</td><td>Pong 5~8</td></tr>
-<tr><td>3</td><td>자료형 변환</td><td>Pong 9~12</td></tr>
-<tr><td>4</td><td>문자열 기초</td><td>Pong 13~16</td></tr>
-<tr><td>5</td><td>문자열 함수·f-string</td><td>Pong 17~20</td></tr>
+<tr><td>1</td><td>리스트 (List)</td><td>Pong 1~6</td></tr>
+<tr><td>2</td><td>튜플 (Tuple)</td><td>Pong 7~10</td></tr>
+<tr><td>3</td><td>딕셔너리 (Dict)</td><td>Pong 11~15</td></tr>
+<tr><td>4</td><td>집합 (Set)</td><td>Pong 16~18</td></tr>
+<tr><td>5</td><td>불리언 &amp; copy()</td><td>Pong 19~20</td></tr>
 </tbody></table>
-
 <hr>
-<div class="section-header">실습 데이터 — heart.csv (심장질환 데이터셋)</div>
+<div class="section-header">실습 데이터 — Mall_Customers.csv</div>
 
-<p>UCI Machine Learning Repository의 심장질환 데이터셋이다.</p>
-<p>실제 환자 303명의 임상 검사 결과로 구성되어 있다.</p>
+<p>Kaggle의 쇼핑몰 고객 세분화 데이터셋이다.</p>
+<p>고객의 나이·성별·연수입·소비 점수로 마케팅 전략을 수립한다.</p>
 
-<pre><code><span class="comment"># 실제 환경에서 CSV 로드 방법</span>
-import pandas as pd
-df = pd.read_csv('heart.csv')</code></pre>
+<pre><code>import pandas as pd
+df = pd.read_csv('Mall_Customers.csv')</code></pre>
 
 <table><thead>
-<tr><th>변수</th><th>의미</th><th>단위/범주</th></tr>
+<tr><th>변수</th><th>의미</th><th>범위</th></tr>
 </thead><tbody>
-<tr><td><code>age</code></td><td>나이</td><td>세</td></tr>
-<tr><td><code>sex</code></td><td>성별</td><td>1=남, 0=여</td></tr>
-<tr><td><code>trestbps</code></td><td>안정 혈압</td><td>mmHg</td></tr>
-<tr><td><code>chol</code></td><td>콜레스테롤</td><td>mg/dl</td></tr>
-<tr><td><code>thalach</code></td><td>최대 심박수</td><td>bpm</td></tr>
-<tr><td><code>oldpeak</code></td><td>ST 강하</td><td>mm</td></tr>
-<tr><td><code>target</code></td><td>심장질환 여부</td><td>1=있음, 0=없음</td></tr>
+<tr><td><code>CustomerID</code></td><td>고객 번호</td><td>1~200</td></tr>
+<tr><td><code>Genre</code></td><td>성별</td><td>Male/Female</td></tr>
+<tr><td><code>Age</code></td><td>나이</td><td>세</td></tr>
+<tr><td><code>Annual Income</code></td><td>연수입</td><td>k$</td></tr>
+<tr><td><code>Spending Score</code></td><td>소비 점수</td><td>1~100</td></tr>
 </tbody></table>
-
-<p>아래 샘플 데이터 10명으로 이번 주 전체를 실습한다.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># heart.csv 샘플 데이터 (10명)
-# age, sex, trestbps, chol, thalach, oldpeak, target
-patients = [
-    {'id':1,  'age':63, 'sex':1, 'trestbps':145, 'chol':233, 'thalach':150, 'oldpeak':2.3, 'target':1},
-    {'id':2,  'age':37, 'sex':1, 'trestbps':130, 'chol':250, 'thalach':187, 'oldpeak':3.5, 'target':0},
-    {'id':3,  'age':41, 'sex':0, 'trestbps':130, 'chol':204, 'thalach':172, 'oldpeak':1.4, 'target':1},
-    {'id':4,  'age':56, 'sex':1, 'trestbps':120, 'chol':236, 'thalach':178, 'oldpeak':0.8, 'target':1},
-    {'id':5,  'age':57, 'sex':0, 'trestbps':120, 'chol':354, 'thalach':163, 'oldpeak':0.6, 'target':1},
-    {'id':6,  'age':57, 'sex':1, 'trestbps':140, 'chol':192, 'thalach':148, 'oldpeak':0.4, 'target':0},
-    {'id':7,  'age':56, 'sex':0, 'trestbps':140, 'chol':294, 'thalach':153, 'oldpeak':1.3, 'target':0},
-    {'id':8,  'age':44, 'sex':1, 'trestbps':120, 'chol':263, 'thalach':173, 'oldpeak':0.0, 'target':1},
-    {'id':9,  'age':52, 'sex':1, 'trestbps':172, 'chol':199, 'thalach':162, 'oldpeak':0.5, 'target':1},
-    {'id':10, 'age':57, 'sex':1, 'trestbps':150, 'chol':168, 'thalach':174, 'oldpeak':1.6, 'target':0},
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># Mall_Customers 샘플 데이터 (10명)
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
 ]
-print(f'환자 {len(patients)}명 데이터 로드 완료')
-print(f'1번 환자: 나이={patients[0]["age"]}, 콜레스테롤={patients[0]["chol"]}')</script></div></div>
+print(f'{len(customers)}명 고객 데이터 로드')
+print(f'소비점수 범위: {min(c["score"] for c in customers)}~{max(c["score"] for c in customers)}')</script></div></div>
 <hr>
-<h1 class="doc-title">Section 1. 변수 (Variable)</h1>
+<h1 class="doc-title">Section 1. 리스트 (List)</h1>
 
 <div class="section-header">개념 설명</div>
 
-<p><strong>변수(variable)</strong>는 데이터를 저장하는 이름표이다.</p>
+<p><strong>리스트(list)</strong>는 순서가 있는 변경 가능한 자료구조이다.</p>
 
-<pre><code>변수명 = 값
- age  = 63       → 정수(int)
- chol = 233.5    → 실수(float)
- name = 'Kim'    → 문자열(str)
- has_disease = True  → 불리언(bool)</code></pre>
-
-<table><thead>
-<tr><th>자료형</th><th>예시</th><th><code>type()</code></th></tr>
-</thead><tbody>
-<tr><td><code>int</code></td><td><code>63</code></td><td><code>&lt;class 'int'&gt;</code></td></tr>
-<tr><td><code>float</code></td><td><code>2.3</code></td><td><code>&lt;class 'float'&gt;</code></td></tr>
-<tr><td><code>str</code></td><td><code>'Male'</code></td><td><code>&lt;class 'str'&gt;</code></td></tr>
-<tr><td><code>bool</code></td><td><code>True</code></td><td><code>&lt;class 'bool'&gt;</code></td></tr>
-</tbody></table>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 1번 데이터 변수 저장
-patient_id  = 1
-age         = 63        # int — 나이
-trestbps    = 145       # int — 안정 혈압 (mmHg)
-chol        = 233       # int — 콜레스테롤 (mg/dl)
-oldpeak     = 2.3       # float — ST 강하
-sex_label   = 'Male'   # str — 성별 문자열
-has_disease = True      # bool — 심장질환 유무
-
-print(f'환자 {patient_id}: {age}세 {sex_label}')
-print(f'혈압={trestbps} 콜레스테롤={chol} ST강하={oldpeak}')
-print(f'심장질환: {has_disease}')
-print(type(age), type(oldpeak), type(sex_label), type(has_disease))</script></div></div>
+<pre><code>scores = [39, 81, 6, 77, 40, 76, 6, 94, 3, 72]
+scores[0]      # 39  (인덱싱)
+scores[1:4]    # [81, 6, 77]  (슬라이싱)
+scores.append(55)   # 추가
+scores.remove(6)    # 삭제 (첫 번째)
+sorted(scores)      # 정렬 (원본 유지)
+scores.sort()       # 정렬 (원본 변경)</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [p['score'] for p in customers]
+incomes= [p['income'] for p in customers]
+print('소비점수:', scores)
+print('연수입:', incomes)
+print(f'최고점수: {max(scores)}, 최저점수: {min(scores)}, 평균: {sum(scores)/len(scores):.1f}')</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 1 —  </div>
-  <div class="ping-desc"> : 환자 1번 변수 저장 및 자료형 확인</div>
+  <div class="ping-label">🔵 Ping 1 —   </div>
+  <div class="ping-desc">  : 소비점수 리스트 생성 및 기본 연산</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
-age   = p['age']
-chol  = p['chol']
-label = 'Male' if p['sex']==1 else 'Female'
-has_d = bool(p['target'])
-
-print(f'나이: {age}  자료형: {type(age)}')
-print(f'콜레스테롤: {chol}  자료형: {type(chol)}')
-print(f'성별: {label}  자료형: {type(label)}')
-print(f'심장질환: {has_d}  자료형: {type(has_d)}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+print('길이:', len(scores))
+print('첫3:', scores[:3])
+print('끝3:', scores[-3:])
+print('정렬:', sorted(scores, reverse=True)[:5], '(상위5)')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 1 — 학생 실습</div>
-  <div class="pong-desc">환자 5번(인덱스 4) 데이터를 변수에 저장하고 각 자료형을 출력하라.</div>
+  <div class="pong-desc">연수입 리스트를 만들고 ①길이 ②평균 ③상위 3개 ④하위 3개를 출력하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">patients = [{'id':1,'age':63,'sex':1,'trestbps':145,'chol':233,'thalach':150,'oldpeak':2.3,'target':1},{'id':2,'age':37,'sex':1,'trestbps':130,'chol':250,'thalach':187,'oldpeak':3.5,'target':0},{'id':3,'age':41,'sex':0,'trestbps':130,'chol':204,'thalach':172,'oldpeak':1.4,'target':1},{'id':4,'age':56,'sex':1,'trestbps':120,'chol':236,'thalach':178,'oldpeak':0.8,'target':1},{'id':5,'age':57,'sex':0,'trestbps':120,'chol':354,'thalach':163,'oldpeak':0.6,'target':1},{'id':6,'age':57,'sex':1,'trestbps':140,'chol':192,'thalach':148,'oldpeak':0.4,'target':0},{'id':7,'age':56,'sex':0,'trestbps':140,'chol':294,'thalach':153,'oldpeak':1.3,'target':0},{'id':8,'age':44,'sex':1,'trestbps':120,'chol':263,'thalach':173,'oldpeak':0.0,'target':1},{'id':9,'age':52,'sex':1,'trestbps':172,'chol':199,'thalach':162,'oldpeak':0.5,'target':1},{'id':10,'age':57,'sex':1,'trestbps':150,'chol':168,'thalach':174,'oldpeak':1.6,'target':0}]
-# 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>p = patients[4]  # 환자 5번
-age    = p['age']
-chol   = p['chol']
-peak   = p['oldpeak']
-label  = 'Male' if p['sex']==1 else 'Female'
-has_d  = bool(p['target'])
-print(f'나이:{age} {type(age)}')
-print(f'콜레스테롤:{chol} {type(chol)}')
-print(f'ST강하:{peak} {type(peak)}')
-print(f'성별:{label}  심장질환:{has_d}')</code></pre>
+<pre><code>incomes = [p['income'] for p in customers]
+print('길이:', len(incomes))
+print('평균:', sum(incomes)/len(incomes))
+print('상위3:', sorted(incomes, reverse=True)[:3])
+print('하위3:', sorted(incomes)[:3])</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 2 —  </div>
-  <div class="ping-desc"> : 다중 할당 &amp; 변수 교환</div>
+  <div class="ping-label">🔵 Ping 2 —   </div>
+  <div class="ping-desc">  : append·remove·insert</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 두 환자 혈압 비교 후 교환
-bp_p1, bp_p2 = patients[0]['trestbps'], patients[1]['trestbps']
-print(f'교환 전: 환자1={bp_p1}, 환자2={bp_p2}')
-bp_p1, bp_p2 = bp_p2, bp_p1
-print(f'교환 후: 환자1={bp_p1}, 환자2={bp_p2}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [39, 81, 6, 77, 40]
+print('원본:', scores)
+scores.append(55)         # 뒤에 추가
+print('append:', scores)
+scores.insert(0, 100)     # 앞에 삽입
+print('insert:', scores)
+scores.remove(6)          # 값 삭제 (첫 번째)
+print('remove:', scores)</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 2 — 학생 실습</div>
-  <div class="pong-desc">환자 3·7·9번의 콜레스테롤을 다중 할당하고 최솟값과 최댓값을 출력하라.</div>
+  <div class="pong-desc"><code>scores = [39,81,6,77,40,76,6,94,3,72]</code> 에서 ①가장 낮은 점수 제거 ②100점 추가 ③2번 인덱스에 50 삽입 후 출력하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">scores = [39,81,6,77,40,76,6,94,3,72]
+# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>chol3, chol7, chol9 = patients[2]['chol'], patients[6]['chol'], patients[8]['chol']
-print(f'환자3:{chol3}, 환자7:{chol7}, 환자9:{chol9}')
-print(f'최소:{min(chol3,chol7,chol9)}, 최대:{max(chol3,chol7,chol9)}')</code></pre>
+<pre><code>scores = [39,81,6,77,40,76,6,94,3,72]
+scores.remove(min(scores))   # 가장 낮은 값 제거
+scores.append(100)           # 100 추가
+scores.insert(2, 50)         # 인덱스 2에 삽입
+print(scores)</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 3 —  </div>
-  <div class="ping-desc"> : 변수 재할당</div>
+  <div class="ping-label">🔵 Ping 3 —   </div>
+  <div class="ping-desc">  : 리스트 정렬 및 집계</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 정상 범위 판정 값 갱신
-chol_threshold = 200   # 초기 기준값
-print(f'기준: {chol_threshold}')
-chol_threshold = 240   # 고콜레스테롤 기준으로 갱신
-print(f'갱신: {chol_threshold}')
-high_chol_count = sum(1 for p in patients if p['chol'] > chol_threshold)
-print(f'고콜레스테롤({chol_threshold}+) 환자: {high_chol_count}명')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+top3    = sorted(scores, reverse=True)[:3]
+bottom3 = sorted(scores)[:3]
+above70 = [s for s in scores if s >= 70]
+print(f'상위3: {top3}')
+print(f'하위3: {bottom3}')
+print(f'70점 이상({len(above70)}명): {above70}')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 3 — 학생 실습</div>
-  <div class="pong-desc">혈압 기준을 130으로 시작해 140, 150으로 순서대로 갱신하며 각 기준 이상 환자 수를 출력하라.</div>
+  <div class="pong-desc">연수입 20k$ 이상 고객의 소비점수 리스트와 평균을 구하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>for threshold in [130, 140, 150]:
-    cnt = sum(1 for p in patients if p['trestbps'] &gt;= threshold)
-    print(f'혈압 &gt;= {threshold}: {cnt}명')</code></pre>
+<pre><code>hi_income = [p['score'] for p in customers if p['income'] &gt;= 18]
+print('고수입 고객 점수:', hi_income)
+print('평균:', sum(hi_income)/len(hi_income) if hi_income else 0)</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 4 —  </div>
-  <div class="ping-desc"> : 변수 삭제 &amp; NameError</div>
+  <div class="ping-label">🔵 Ping 4 —   </div>
+  <div class="ping-desc">  : 리스트 컴프리헨션</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">temp = 999   # 임시 변수
-print('삭제 전:', temp)
-del temp
-try:
-    print(temp)
-except NameError as e:
-    print(f'삭제 후: {e}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 소비점수를 등급으로 변환
+grades = ['VIP' if s>=80 else 'Gold' if s>=50 else 'Basic'
+          for s in [p['score'] for p in customers]]
+for c, g in zip(customers, grades):
+    print(f'고객{c["id"]:3d}: {c["score"]:3d}점 [{g}]')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 4 — 학생 실습</div>
-  <div class="pong-desc"><code>draft_bp = 135</code> 를 만들고 출력 후 삭제한 뒤, 접근 시 오류를 잡아라.</div>
+  <div class="pong-desc">나이별 등급(25세 이하='Young', 40세 이하='Mid', 초과='Senior')을 컴프리헨션으로 만들어라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>draft_bp = 135
-print('삭제 전:', draft_bp)
-del draft_bp
-try:
-    print(draft_bp)
-except NameError as e:
-    print(f'오류: {e}')</code></pre>
+<pre><code>age_groups = ['Young' if p['age']&lt;=25 else ('Mid' if p['age']&lt;=40 else 'Senior')
+              for p in customers]
+for c, g in zip(customers, age_groups):
+    print(f'고객{c["id"]:3d}: {c["age"]}세 [{g}]')</code></pre>
 </details>
-<hr>
-<h1 class="doc-title">Section 2. 숫자형 연산 (Numeric Operations)</h1>
-
-<div class="section-header">개념 설명</div>
-
-<table><thead>
-<tr><th>연산자</th><th>이름</th><th>예</th><th>결과</th></tr>
-</thead><tbody>
-<tr><td><code>+</code> <code>-</code> <code>*</code></td><td>사칙</td><td><code>145 + 20</code></td><td><code>165</code></td></tr>
-<tr><td><code>/</code></td><td>실수 나눗셈</td><td><code>233 / 2</code></td><td><code>116.5</code></td></tr>
-<tr><td><code>//</code></td><td>몫</td><td><code>233 // 10</code></td><td><code>23</code></td></tr>
-<tr><td><code>%</code></td><td>나머지</td><td><code>63 % 10</code></td><td><code>3</code></td></tr>
-<tr><td><code>**</code></td><td>제곱</td><td><code>2 ** 8</code></td><td><code>256</code></td></tr>
-</tbody></table>
-
-<p><strong>임상 지표 공식:</strong></p>
-<pre><code>심박수 예비능 = 최대심박수 - 안정심박수(약 70)
-Framingham 위험점수 ≈ 콜레스테롤/100 + 혈압/10</code></pre>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 1번 임상 지표 계산
-age       = 63
-trestbps  = 145
-chol      = 233
-thalach   = 150   # 최대 심박수
-
-# 최대 예상 심박수 공식: 220 - 나이
-max_hr_pred  = 220 - age
-# 실제 최대심박수 비율
-hr_ratio     = thalach / max_hr_pred * 100
-# 콜레스테롤 위험 비율
-chol_ratio   = chol / 200 * 100
-
-print(f'예상 최대심박수: {max_hr_pred}bpm')
-print(f'달성률: {hr_ratio:.1f}%')
-print(f'콜레스테롤 지수: {chol_ratio:.1f}% (기준 200 대비)')</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 5 —  </div>
-  <div class="ping-desc"> : 콜레스테롤 위험 지수 계산</div>
+  <div class="ping-label">🔵 Ping 5 —   </div>
+  <div class="ping-desc">  : 중첩 리스트 &amp; 행렬</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 콜레스테롤 200 미만=정상, 200~239=경계, 240+=고위험
-for i, p in enumerate(patients[:5], 1):
-    chol = p['chol']
-    ratio = chol / 200 * 100
-    print(f'환자{i}: 콜레스테롤={chol} ({ratio:.1f}%)')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 고객 정보를 2D 리스트로 표현
+matrix = [[p['id'], p['age'], p['income'], p['score']]
+          for p in customers[:5]]
+print('헤더: [ID, Age, Income, Score]')
+for row in matrix:
+    print(row)</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 5 — 학생 실습</div>
-  <div class="pong-desc">10명 전체 환자의 혈압 범위(최대-최소)와 평균을 계산하라.</div>
+  <div class="pong-desc">2D 리스트에서 소비점수(인덱스 3) 열만 추출하고 평균을 구하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
+# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>bps = [p['trestbps'] for p in patients]
-bp_range = max(bps) - min(bps)
-bp_avg   = sum(bps) / len(bps)
-print(f'혈압 최솟값: {min(bps)}, 최댓값: {max(bps)}, 범위: {bp_range}')
-print(f'평균 혈압: {bp_avg:.1f} mmHg')</code></pre>
+<pre><code>matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
+scores = [row[3] for row in matrix]
+print('소비점수 열:', scores)
+print('평균:', sum(scores)/len(scores))</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 6 —  </div>
-  <div class="ping-desc"> : 최대심박수 달성률</div>
+  <div class="ping-label">🔵 Ping 6 —   </div>
+  <div class="ping-desc">  : 리스트 메서드 종합</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">for i, p in enumerate(patients[:5], 1):
-    max_pred = 220 - p['age']
-    ratio    = p['thalach'] / max_pred * 100
-    print(f'환자{i}: 예상최대={max_pred} 실제={p["thalach"]} 달성={ratio:.1f}%')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+print('count(6):', scores.count(6))    # 6점 개수
+print('index(94):', scores.index(94))  # 94점 위치
+scores_copy = scores.copy()
+scores_copy.reverse()
+print('뒤집기:', scores_copy[:5], '...')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 6 — 학생 실습</div>
-  <div class="pong-desc">10명 전체의 심박수 달성률을 계산하고 80% 미만인 환자 수를 구하라.</div>
+  <div class="pong-desc">소비점수 리스트에서 ①최빈값(가장 많이 등장하는 점수) ②중앙값을 구하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">scores = [p['score'] for p in customers]
+# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>low_hr = 0
-for p in patients:
-    ratio = p['thalach'] / (220 - p['age']) * 100
-    if ratio &lt; 80:
-        low_hr += 1
-    print(f'환자{p["id"]}: {ratio:.1f}%')
-print(f'80% 미만: {low_hr}명')</code></pre>
+<pre><code>scores = [p['score'] for p in customers]
+<span class="comment"># 최빈값</span>
+most = max(set(scores), key=scores.count)
+<span class="comment"># 중앙값</span>
+s = sorted(scores)
+n = len(s)
+median = (s[n//2-1]+s[n//2])/2 if n%2==0 else s[n//2]
+print(f'최빈값: {most} ({scores.count(most)}회)')
+print(f'중앙값: {median}')</code></pre>
 </details>
+<hr>
+<h1 class="doc-title">Section 2. 튜플 (Tuple)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<p><strong>튜플(tuple)</strong>은 순서 있고 <strong>변경 불가(immutable)</strong>한 자료구조이다.</p>
+
+<pre><code>customer = (1, 'Male', 19, 15, 39)  # (ID, 성별, 나이, 수입, 점수)
+customer[0]      # 1 (읽기만 가능)
+customer[0] = 2  # TypeError! 수정 불가
+id, genre, age, income, score = customer  # 언패킹</code></pre>
+<blockquote>변경되면 안 되는 데이터(좌표·등록 정보)에 튜플을 사용한다.</blockquote>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 고객 정보를 튜플로 저장
+cust_tuple = tuple(c.values() for c in [customers[0]])
+# (id, genre, age, income, score) 형태로 직접 생성
+p = customers[0]
+cust_t = (p['id'], p['genre'], p['age'], p['income'], p['score'])
+print('튜플:', cust_t)
+cid, genre, age, income, score = cust_t
+print(f'언패킹: ID={cid}, 성별={genre}, 나이={age}')</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 7 —  </div>
-  <div class="ping-desc"> : 몫·나머지로 연령대 분류</div>
+  <div class="ping-label">🔵 Ping 7 —   </div>
+  <div class="ping-desc">  : 튜플 생성·언패킹</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">for p in patients[:5]:
-    decade = (p['age'] // 10) * 10   # 연령대: 60, 50, ...
-    over   = p['age'] % 10           # 연령대 내 나이
-    print(f'환자{p["id"]}: {p["age"]}세 → {decade}대 +{over}년')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 상위 3명 고객을 튜플로 저장
+top3 = sorted(customers, key=lambda x: x['score'], reverse=True)[:3]
+top3_t = tuple((p['id'], p['score']) for p in top3)
+for rank, (cid, score) in enumerate(top3_t, 1):
+    print(f'{rank}위: 고객{cid} → {score}점')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 7 — 학생 실습</div>
-  <div class="pong-desc">10명 중 50대와 그 외 환자 수를 <code>//</code>와 <code>%</code>를 이용해 분류하라.</div>
+  <div class="pong-desc">각 고객의 (id, genre, score) 튜플 리스트를 만들고 score 기준 정렬하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>fifties = sum(1 for p in patients if p['age']//10 == 5)
-others  = len(patients) - fifties
-print(f'50대: {fifties}명, 기타: {others}명')</code></pre>
+<pre><code>tuples = [(p['id'], p['genre'], p['score']) for p in customers]
+ranked = sorted(tuples, key=lambda x: x[2], reverse=True)
+for rank, (cid, genre, score) in enumerate(ranked, 1):
+    print(f'{rank:2}위: 고객{cid:3d} ({genre}) {score}점')</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 8 —  </div>
-  <div class="ping-desc"> : 할당 연산자로 누적 통계</div>
+  <div class="ping-label">🔵 Ping 8 —   </div>
+  <div class="ping-desc">  : 튜플 불변성 확인</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">total_chol = 0
-for p in patients:
-    total_chol += p['chol']
-avg_chol = total_chol / len(patients)
-print(f'총 콜레스테롤 합: {total_chol}')
-print(f'평균 콜레스테롤: {avg_chol:.1f} mg/dl')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">cust_t = (1, 'Male', 19, 15, 39)
+print('수정 시도:')
+try:
+    cust_t[2] = 20
+except TypeError as e:
+    print(f'  TypeError: {e}')
+# 불변성 활용: 딕셔너리 키로 사용 가능
+registry = {cust_t: '가입완료'}
+print('딕셔너리 키로 사용 가능:', registry[cust_t])</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 8 — 학생 실습</div>
-  <div class="pong-desc"><code>+=</code>를 사용해 심장질환 있는 환자(target=1)의 평균 나이를 계산하라.</div>
+  <div class="pong-desc">고객 5명의 (income, score) 쌍을 튜플 리스트로 만들고 income 기준 내림차순 정렬하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>total_age = 0
-cnt       = 0
-for p in patients:
-    if p['target'] == 1:
-        total_age += p['age']
-        cnt += 1
-print(f'심장질환 환자 {cnt}명, 평균 나이: {total_age/cnt:.1f}세')</code></pre>
+<pre><code>pairs = [(p['income'], p['score']) for p in customers]
+ranked = sorted(pairs, key=lambda x: x[0], reverse=True)
+for inc, sc in ranked:
+    print(f'수입 {inc}k$: 소비점수 {sc}')</code></pre>
 </details>
-<hr>
-<h1 class="doc-title">Section 3. 자료형 변환 (Type Conversion)</h1>
-
-<div class="section-header">개념 설명</div>
-
-<table><thead>
-<tr><th>함수</th><th>역할</th><th>예</th></tr>
-</thead><tbody>
-<tr><td><code>int()</code></td><td>정수 변환</td><td><code>int('63')</code> → <code>63</code></td></tr>
-<tr><td><code>float()</code></td><td>실수 변환</td><td><code>float('2.3')</code> → <code>2.3</code></td></tr>
-<tr><td><code>str()</code></td><td>문자열 변환</td><td><code>str(145)</code> → <code>'145'</code></td></tr>
-<tr><td><code>round(x, n)</code></td><td>반올림</td><td><code>round(2.345, 2)</code> → <code>2.35</code></td></tr>
-</tbody></table>
-
-<blockquote>CSV 파일에서 읽어온 데이터는 모두 <strong>문자열(str)</strong>이다. 연산 전에 반드시 변환해야 한다.</blockquote>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: CSV에서 읽어온 문자열 → 숫자 변환
-raw_age  = '63'    # CSV에서 읽어온 값 → str
-raw_chol = '233'
-raw_peak = '2.3'
-
-age  = int(raw_age)
-chol = int(raw_chol)
-peak = float(raw_peak)
-
-print(type(raw_age), type(age))    # str → int
-print(type(raw_peak), type(peak))  # str → float
-print(f'BMI-like: 콜레스테롤/나이 = {chol/age:.2f}')</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 9 —  </div>
-  <div class="ping-desc"> : CSV 한 줄 파싱 및 변환</div>
+  <div class="ping-label">🔵 Ping 9 —   </div>
+  <div class="ping-desc">  : 다중 반환값 → 튜플 언패킹</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># CSV 한 줄: 'id,age,sex,trestbps,chol,thalach,oldpeak,target'
-line = '1,63,1,145,233,150,2.3,1'
-fields = line.split(',')
-pid    = int(fields[0])
-age    = int(fields[1])
-peak   = float(fields[6])
-target = int(fields[7])
-print(f'환자{pid}: {age}세, ST강하={peak}, 질환={bool(target)}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">def score_stats(scores):
+    s = sorted(scores)
+    return min(s), max(s), sum(s)//len(s), s[len(s)//2]
+
+scores = [p['score'] for p in customers]
+lo, hi, avg, med = score_stats(scores)
+print(f'최소:{lo}, 최대:{hi}, 평균:{avg}, 중앙:{med}')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 9 — 학생 실습</div>
-  <div class="pong-desc"><code>'5,57,0,120,354,163,0.6,1'</code> 을 파싱하여 콜레스테롤 위험 비율(기준 200)을 계산하라.</div>
+  <div class="pong-desc">연수입 리스트의 (최솟값, 최댓값, 평균, 범위) 튜플을 반환하는 함수를 만들어라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">line = '5,57,0,120,354,163,0.6,1'
-# 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>line   = '5,57,0,120,354,163,0.6,1'
-fields = line.split(',')
-pid    = int(fields[0])
-age    = int(fields[1])
-chol   = int(fields[4])
-ratio  = chol / 200 * 100
-print(f'환자{pid}({age}세): 콜레스테롤={chol}, 위험비율={ratio:.1f}%')</code></pre>
+<pre><code>def income_stats(data):
+    return min(data), max(data), sum(data)/len(data), max(data)-min(data)
+
+incomes = [p['income'] for p in customers]
+lo, hi, avg, rng = income_stats(incomes)
+print(f'최소:{lo}k$, 최대:{hi}k$, 평균:{avg:.1f}k$, 범위:{rng}k$')</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 10 —  </div>
-  <div class="ping-desc"> : 숫자 → 문자열 변환 &amp; 연결</div>
+  <div class="ping-label">🔵 Ping 10 —   </div>
+  <div class="ping-desc">  : zip → 튜플 쌍 생성</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
-report = ('환자ID=' + str(p['id']) +
-          ' 나이=' + str(p['age']) +
-          ' 혈압=' + str(p['trestbps']))
-print(report)
-print('보고서 길이:', len(report), '글자')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">ids     = [p['id'] for p in customers]
+scores  = [p['score'] for p in customers]
+incomes = [p['income'] for p in customers]
+
+triples = list(zip(ids, incomes, scores))
+for t in sorted(triples, key=lambda x: x[2], reverse=True)[:5]:
+    print(f'고객{t[0]:3d}: 수입{t[1]}k$ 점수{t[2]}')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 10 — 학생 실습</div>
-  <div class="pong-desc">환자 8번의 id·age·chol·target을 문자열 연결로 <code>'P008|44세|263mg/dl|양성'</code> 형식으로 만들어라.</div>
+  <div class="pong-desc">zip으로 (id, age, income, score) 4-튜플 리스트를 만들어 나이 기준 내림차순 정렬하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">p = patients[7]  # 환자 8번
-# 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>p      = patients[7]
-result = ('P' + str(p['id']).zfill(3) + '|' +
-          str(p['age']) + '세|' +
-          str(p['chol']) + 'mg/dl|' +
-          ('양성' if p['target']==1 else '음성'))
-print(result)</code></pre>
+<pre><code>quads = list(zip(
+    [p['id'] for p in customers],
+    [p['age'] for p in customers],
+    [p['income'] for p in customers],
+    [p['score'] for p in customers]
+))
+for q in sorted(quads, key=lambda x: x[1], reverse=True):
+    print(f'고객{q[0]:3d}: {q[1]}세  수입{q[2]}k$  점수{q[3]}')</code></pre>
 </details>
+<hr>
+<h1 class="doc-title">Section 3. 딕셔너리 (Dictionary)</h1>
+
+<div class="section-header">개념 설명</div>
+
+<p><strong>딕셔너리(dict)</strong>는 키(key)-값(value) 쌍의 자료구조이다.</p>
+
+<pre><code>customer = {'id':1, 'genre':'Male', 'age':19, 'income':15, 'score':39}
+customer['age']           # 19 (접근)
+customer['vip'] = True   # 키 추가
+del customer['vip']       # 키 삭제
+customer.get('tier','Basic')  # 없으면 기본값
+customer.keys()   # 키 목록
+customer.values() # 값 목록
+customer.items()  # (키,값) 쌍 목록</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 고객 데이터베이스 딕셔너리
+db = {p['id']: p for p in customers}
+print('고객 5번:', db[5])
+print('모든 ID:', list(db.keys())[:5])</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 11 —  </div>
-  <div class="ping-desc"> : round로 정밀도 조절</div>
+  <div class="ping-label">🔵 Ping 11 —   </div>
+  <div class="ping-desc">  : 딕셔너리 접근·추가·삭제</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
-ratio = p['thalach'] / (220 - p['age']) * 100
-print(f'원본:      {ratio}')
-print(f'소수 1자리: {round(ratio, 1)}')
-print(f'소수 2자리: {round(ratio, 2)}')
-print(f'정수:      {round(ratio)}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = dict(customers[0])  # 복사
+print('원본:', p)
+p['tier'] = 'VIP' if p['score']>=80 else 'Basic'  # 키 추가
+p['income_usd'] = p['income'] * 1000               # 환산
+del p['genre']                                      # 삭제
+print('수정 후:', p)</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 11 — 학생 실습</div>
-  <div class="pong-desc">10명 전체의 최대심박수 달성률을 소수 1자리로 반올림하여 리스트로 만들어라.</div>
+  <div class="pong-desc">전체 customers에 'tier' 키('VIP'=score&gt;=80, 'Gold'=50이상, 'Basic'=나머지)를 추가하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>ratios = [round(p['thalach']/(220-p['age'])*100, 1) for p in patients]
-for i, r in enumerate(ratios, 1):
-    print(f'환자{i}: {r}%')</code></pre>
+<pre><code>for p in customers:
+    if p['score'] &gt;= 80:   p['tier'] = 'VIP'
+    elif p['score'] &gt;= 50: p['tier'] = 'Gold'
+    else:                  p['tier'] = 'Basic'
+for p in customers:
+    print(f'고객{p["id"]:3d}: {p["score"]:3d}점 [{p["tier"]}]')</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 12 —  </div>
-  <div class="ping-desc"> : int() 절삭 vs round() 반올림</div>
+  <div class="ping-label">🔵 Ping 12 —   </div>
+  <div class="ping-desc">  : .get()과 기본값</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">peak = 2.7   # ST 강하 수치
-print(f'int():   {int(peak)}   <- 소수점 절삭')
-print(f'round(): {round(peak)} <- 반올림')
-print(f'round(,1): {round(peak, 1)}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = customers[0]
+print(p.get('score', 0))         # 있음 → 39
+print(p.get('loyalty', 0))       # 없음 → 기본값 0
+print(p.get('tier', 'Unknown'))  # 없음 → 'Unknown'</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 12 — 학생 실습</div>
-  <div class="pong-desc"><code>avg_chol = 244.6</code> 을 <code>int()</code>와 <code>round()</code>로 각각 변환하고 차이를 설명하라.</div>
+  <div class="pong-desc">고객 딕셔너리에서 .get()으로 'loyalty_years' 키를 가져오되 없으면 0을 반환하고 전체 출력하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">avg_chol = 244.6
-# 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>avg_chol = 244.6
-print(f'int():   {int(avg_chol)}  &lt;- 소수점 무조건 버림')
-print(f'round(): {round(avg_chol)} &lt;- 반올림 (244 또는 245)')
-print('차이: int()는 항상 내림(음수에서도), round()는 수학적 반올림')</code></pre>
+<pre><code>for p in customers:
+    ly = p.get('loyalty_years', 0)
+    print(f'고객{p["id"]:3d}: loyalty={ly}년 (기본값)')</code></pre>
 </details>
-<hr>
-<h1 class="doc-title">Section 4. 문자열 기초 (String Basics)</h1>
-
-<div class="section-header">개념 설명</div>
-
-<h3>인덱싱 &amp; 슬라이싱</h3>
-<pre><code> 문자열:  P  A  T  _  0  0  1  _  M
- 인덱스:  0  1  2  3  4  5  6  7  8
- 음수:   -9 -8 -7 -6 -5 -4 -3 -2 -1</code></pre>
-<pre><code>s[0]      # 'P'
-s[4:7]    # '001'
-s[-1]     # 'M'
-s[::-1]   # 뒤집기</code></pre>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: 환자 파일명에서 정보 추출
-filename = 'PAT_001_M_63_HEART.csv'
-#           0123456789...
-
-prefix  = filename[0:3]     # 'PAT'
-pid     = filename[4:7]     # '001'
-sex     = filename[8]       # 'M'
-age     = filename[10:12]   # '63'
-ext     = filename[-3:]     # 'csv'
-
-print(f'환자ID: {pid}, 성별: {sex}, 나이: {age}, 확장자: .{ext}')</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 13 —  </div>
-  <div class="ping-desc"> : 파일명 슬라이싱 파싱</div>
+  <div class="ping-label">🔵 Ping 13 —   </div>
+  <div class="ping-desc">  : .items() 순회 + 필터</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">fname = 'PAT_005_F_57_HEART.csv'
-code  = fname[0:3]
-pid   = fname[4:7]
-sex   = fname[8]
-age   = fname[10:12]
-print(f'코드:{code}  환자:{pid}  성:{sex}  나이:{age}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">db = {p['id']: {'age':p['age'],'income':p['income'],'score':p['score']}
+      for p in customers}
+# 소비점수 70 이상 고객
+vip = {k: v for k, v in db.items() if v['score'] >= 70}
+print(f'소비점수 70+ 고객: {len(vip)}명')
+for cid, info in vip.items():
+    print(f'  고객{cid}: {info}')</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 13 — 학생 실습</div>
-  <div class="pong-desc"><code>'PAT_010_M_57_HEART.csv'</code> 에서 환자번호·성별·나이·확장자를 추출하라.</div>
-</div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">fname = 'PAT_010_M_57_HEART.csv'
-# 여기에 코드를 작성하라
-</script></div></div>
-<details>
-<summary>▶ 정답 보기</summary>
-<pre><code>fname = 'PAT_010_M_57_HEART.csv'
-pid  = fname[4:7]
-sex  = fname[8]
-age  = fname[10:12]
-ext  = fname[-3:]
-print(f'환자:{pid}  성별:{sex}  나이:{age}  확장자:.{ext}')</code></pre>
-</details>
-<div class="ping-card">
-  <div class="ping-label">🔵 Ping 14 —  </div>
-  <div class="ping-desc"> : 슬라이싱 응용 (뒤집기·간격)</div>
-</div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">code = 'HEART-001'
-print('뒤집기:', code[::-1])
-print('짝수 인덱스:', code[::2])
-print('끝 3글자:', code[-3:])</script></div></div>
-<div class="pong-card">
-  <div class="pong-label">🟡 Pong 14 — 학생 실습</div>
-  <div class="pong-desc"><code>'CARDIAC-RISK-HIGH'</code> 에서 ①뒤집기 ②홀수 인덱스 ③첫 7글자 ④마지막 4글자를 출력하라.</div>
-</div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">s = 'CARDIAC-RISK-HIGH'
-# 여기에 코드를 작성하라
-</script></div></div>
-<details>
-<summary>▶ 정답 보기</summary>
-<pre><code>s = 'CARDIAC-RISK-HIGH'
-print('뒤집기:', s[::-1])
-print('홀수:', s[1::2])
-print('앞7:', s[:7])
-print('뒤4:', s[-4:])</code></pre>
-</details>
-<div class="ping-card">
-  <div class="ping-label">🔵 Ping 15 —  </div>
-  <div class="ping-desc"> : 문자열 연결(+)과 반복(*)</div>
-</div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">header = '=' * 35
-title  = ' 심장질환 진단 보고서 '
-print(header)
-print(title)
-print(header)
-
-row = 'P001' + ' | ' + '63세' + ' | ' + '양성'
-print(row)</script></div></div>
-<div class="pong-card">
-  <div class="pong-label">🟡 Pong 15 — 학생 실습</div>
-  <div class="pong-desc"><code>'*'</code> 40개로 테두리를 만들고 중앙에 <code>' 환자 5번 진단 결과 '</code> 를 넣어라.</div>
+  <div class="pong-desc">연수입 18k$ 이상 AND 소비점수 70 이상 고객을 딕셔너리로 추출하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>border = '*' * 40
-print(border)
-print(' 환자 5번 진단 결과 ')
-print(border)</code></pre>
+<pre><code>premium = {p['id']: p for p in customers
+           if p['income'] &gt;= 18 and p['score'] &gt;= 70}
+print(f'프리미엄 고객: {len(premium)}명')
+for cid, p in premium.items():
+    print(f'  고객{cid}: 수입{p["income"]}k$ 점수{p["score"]}')</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 16 —  </div>
-  <div class="ping-desc"> : len &amp; in</div>
+  <div class="ping-label">🔵 Ping 14 —   </div>
+  <div class="ping-desc">  : 딕셔너리 카운팅 패턴</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">fname = 'PAT_001_M_63_HEART.csv'
-print(f'파일명 길이: {len(fname)}글자')
-print(f'HEART 포함?: {"HEART" in fname}')
-print(f'LUNG 포함?:  {"LUNG" in fname}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 성별 분포 카운팅
+genre_cnt = {}
+for p in customers:
+    genre_cnt[p['genre']] = genre_cnt.get(p['genre'], 0) + 1
+for genre, cnt in genre_cnt.items():
+    print(f'{genre}: {cnt}명 ({"█"*cnt})')</script></div></div>
 <div class="pong-card">
-  <div class="pong-label">🟡 Pong 16 — 학생 실습</div>
-  <div class="pong-desc"><code>report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'</code> 에서 길이·'age' 포함 여부·'Positive' 포함 여부를 출력하라.</div>
+  <div class="pong-label">🟡 Pong 14 — 학생 실습</div>
+  <div class="pong-desc">소비점수를 10점 단위로 묶어 각 구간의 고객 수를 딕셔너리로 만들어라. (예: '0-9': 2명)</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'
-# 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>report = 'Patient 10: age=57, chol=168, bp=150, target=Negative'
-print(f'길이: {len(report)}글자')
-print(f'age 포함?: {"age" in report}')
-print(f'Positive 포함?: {"Positive" in report}')</code></pre>
+<pre><code>band_cnt = {}
+for p in customers:
+    band = f'{(p["score"]//10)*10}-{(p["score"]//10)*10+9}'
+    band_cnt[band] = band_cnt.get(band, 0) + 1
+for band, cnt in sorted(band_cnt.items()):
+    print(f'{band:6s}: {"█"*cnt} ({cnt}명)')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 15 —   </div>
+  <div class="ping-desc">  : 중첩 딕셔너리 &amp; update()</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">summary = {
+    'total': len(customers),
+    'stats': {
+        'avg_age':    sum(p['age']   for p in customers) // len(customers),
+        'avg_income': sum(p['income'] for p in customers) // len(customers),
+        'avg_score':  sum(p['score']  for p in customers) // len(customers),
+    }
+}
+summary.update({'date': '2024-01-01', 'source': 'mall_customers.csv'})
+print(summary)</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 15 — 학생 실습</div>
+  <div class="pong-desc">성별별 평균 소비점수를 중첩 딕셔너리로 만들어라. <code>{'Male': {'count':N, 'avg_score':X}, ...}</code></div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>result = {}
+for g in ['Male', 'Female']:
+    group = [p for p in customers if p['genre'] == g]
+    result[g] = {
+        'count': len(group),
+        'avg_score': round(sum(p['score'] for p in group)/len(group), 1) if group else 0
+    }
+for g, v in result.items():
+    print(f'{g}: {v}')</code></pre>
 </details>
 <hr>
-<h1 class="doc-title">Section 5. 문자열 함수 &amp; f-string</h1>
+<h1 class="doc-title">Section 4. 집합 (Set)</h1>
 
 <div class="section-header">개념 설명</div>
 
-<table><thead>
-<tr><th>메서드</th><th>기능</th><th>예</th></tr>
-</thead><tbody>
-<tr><td><code>.upper()/.lower()</code></td><td>대소문자</td><td><code>'male'.upper()</code> → <code>'MALE'</code></td></tr>
-<tr><td><code>.strip()</code></td><td>공백 제거</td><td><code>' abc '.strip()</code> → <code>'abc'</code></td></tr>
-<tr><td><code>.replace(a,b)</code></td><td>치환</td><td><code>'M'.replace('M','Male')</code></td></tr>
-<tr><td><code>.split(sep)</code></td><td>분리</td><td><code>'a,b,c'.split(',')</code></td></tr>
-<tr><td><code>.find(s)</code></td><td>위치</td><td><code>'abc'.find('b')</code> → <code>1</code></td></tr>
-</tbody></table>
+<p><strong>집합(set)</strong>은 <strong>순서 없고 중복 없는</strong> 자료구조이다.</p>
 
-<h3>f-string 포맷</h3>
-<pre><code>f'{값:,}'      # 천 단위 쉼표
-f'{값:.2f}'    # 소수점 2자리
-f'{값:&gt;10}'    # 오른쪽 정렬 10칸
-f'{값:+.1f}'   # 부호 포함</code></pre>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 개념 시범: f-string 정렬 보고서
-p = patients[0]
-rate = p['thalach']/(220-p['age'])*100
-print(f'{"환자ID":<8} {"나이":>5} {"혈압":>6} {"콜레스테롤":>10} {"심박달성률":>10}')
-print('-' * 45)
-print(f'P{p["id"]:03d}     {p["age"]:>5}세 {p["trestbps"]:>6}mmHg {p["chol"]:>8}mg/dl {rate:>9.1f}%')</script></div></div>
+<pre><code>{1, 2, 3} | {2, 3, 4}   # 합집합 → {1,2,3,4}
+{1, 2, 3} &amp; {2, 3, 4}   # 교집합 → {2,3}
+{1, 2, 3} - {2, 3, 4}   # 차집합 → {1}
+{1,2,3} &lt;= {1,2,3,4}    # 부분집합 → True</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">ages    = {p['age']   for p in customers}
+incomes = {p['income'] for p in customers}
+print('중복 제거 나이 집합:', sorted(ages))
+print('중복 제거 수입 집합:', sorted(incomes))</script></div></div>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 17 —  </div>
-  <div class="ping-desc"> : .split()으로 CSV 파싱</div>
+  <div class="ping-label">🔵 Ping 16 —   </div>
+  <div class="ping-desc">  : 집합 연산으로 고객 그룹 분석</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">line = '1,63,Male,145,233,150,2.3,Positive'
-f    = line.split(',')
-pid, age, sex = int(f[0]), int(f[1]), f[2]
-bp, chol = int(f[3]), int(f[4])
-print(f'환자{pid}({age}세 {sex}): 혈압={bp}, 콜={chol}')</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">male_ids   = {p['id'] for p in customers if p['genre']=='Male'}
+female_ids = {p['id'] for p in customers if p['genre']=='Female'}
+high_score = {p['id'] for p in customers if p['score'] >= 70}
+
+print('남성:', male_ids)
+print('고점수:', high_score)
+print('고점수 남성:', male_ids & high_score)
+print('고점수 여성:', female_ids & high_score)</script></div></div>
 <div class="pong-card">
-  <div class="pong-label">🟡 Pong 17 — 학생 실습</div>
-  <div class="pong-desc"><code>'10,57,Male,150,168,174,1.6,Negative'</code> 을 파싱하여 진단 요약을 출력하라.</div>
-</div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">line = '10,57,Male,150,168,174,1.6,Negative'
-# 여기에 코드를 작성하라
-</script></div></div>
-<details>
-<summary>▶ 정답 보기</summary>
-<pre><code>line = '10,57,Male,150,168,174,1.6,Negative'
-f    = line.split(',')
-pid, age, sex = int(f[0]), int(f[1]), f[2]
-bp, chol, hr, peak, diag = int(f[3]), int(f[4]), int(f[5]), float(f[6]), f[7]
-print(f'환자{pid:02d}({age}세 {sex}): 혈압={bp} 콜레스테롤={chol} 심박수={hr} 진단={diag}')</code></pre>
-</details>
-<div class="ping-card">
-  <div class="ping-label">🔵 Ping 18 —  </div>
-  <div class="ping-desc"> : .replace()로 데이터 정제</div>
-</div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">raw = '  233 mg/dl  '
-clean = raw.strip().replace(' mg/dl', '')
-chol  = int(clean)
-print(f'정제 전: "{raw}"')
-print(f'정제 후: {chol} (type={type(chol).__name__})') </script></div></div>
-<div class="pong-card">
-  <div class="pong-label">🟡 Pong 18 — 학생 실습</div>
-  <div class="pong-desc"><code>raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']</code> 를 정수 리스트로 변환하라.</div>
-</div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']
-# 여기에 코드를 작성하라
-</script></div></div>
-<details>
-<summary>▶ 정답 보기</summary>
-<pre><code>raw_list = ['  145 mmHg  ','  130 mmHg  ','  140 mmHg  ']
-result = [int(s.strip().replace(' mmHg','')) for s in raw_list]
-print(result)</code></pre>
-</details>
-<div class="ping-card">
-  <div class="ping-label">🔵 Ping 19 —  </div>
-  <div class="ping-desc"> : 정렬 보고서 출력</div>
-</div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">print(f'{"환자":^5} {"나이":>5} {"혈압":>7} {"콜레스테롤":>11} {"진단":^6}')
-print('-' * 40)
-for p in patients[:5]:
-    diag = '양성' if p['target']==1 else '음성'
-    print(f'P{p["id"]:03d}  {p["age"]:>5}세 {p["trestbps"]:>6}  {p["chol"]:>9}     {diag:^6}')</script></div></div>
-<div class="pong-card">
-  <div class="pong-label">🟡 Pong 19 — 학생 실습</div>
-  <div class="pong-desc">10명 전체에 최대심박수 달성률(%)을 추가한 정렬 보고서를 출력하라.</div>
+  <div class="pong-label">🟡 Pong 16 — 학생 실습</div>
+  <div class="pong-desc">수입 17k$ 이상과 소비점수 70 이상인 고객 ID 집합을 만들고 교집합·합집합·차집합을 구하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>print(f'{"환자":^5} {"나이":&gt;5} {"혈압":&gt;6} {"달성률":&gt;7} {"진단":^5}')
-print('-' * 35)
-for p in patients:
-    ratio = p['thalach']/(220-p['age'])*100
-    diag  = '양성' if p['target']==1 else '음성'
-    print(f'P{p["id"]:03d}  {p["age"]:&gt;4}세 {p["trestbps"]:&gt;5}  {ratio:&gt;6.1f}%  {diag:^5}')</code></pre>
+<pre><code>hi_inc  = {p['id'] for p in customers if p['income'] &gt;= 17}
+hi_sc   = {p['id'] for p in customers if p['score'] &gt;= 70}
+print('고수입:', hi_inc)
+print('고점수:', hi_sc)
+print('교집합(둘 다):', hi_inc &amp; hi_sc)
+print('합집합(하나라도):', hi_inc | hi_sc)
+print('고수입이지만 저점수:', hi_inc - hi_sc)</code></pre>
 </details>
 <div class="ping-card">
-  <div class="ping-label">🔵 Ping 20 —  </div>
-  <div class="ping-desc"> : 종합 진단 보고서</div>
+  <div class="ping-label">🔵 Ping 17 —   </div>
+  <div class="ping-desc">  : set으로 중복 제거 &amp; 빈도 분석</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = patients[0]
-hr_ratio = p['thalach']/(220-p['age'])*100
-border   = '=' * 40
-print(border)
-print(f'  심장질환 진단 보고서 (환자 P{p["id"]:03d})')
-print(border)
-print(f'  {"나이":<12}: {p["age"]:>8}세')
-print(f'  {"성별":<12}: {"남성" if p["sex"]==1 else "여성":>8}')
-print(f'  {"안정 혈압":<12}: {p["trestbps"]:>8} mmHg')
-print(f'  {"콜레스테롤":<12}: {p["chol"]:>8} mg/dl')
-print(f'  {"최대 심박수":<12}: {p["thalach"]:>8} bpm')
-print(f'  {"심박달성률":<12}: {hr_ratio:>8.1f} %')
-print(f'  {"진단":<12}: {"[양성]" if p["target"]==1 else "[음성]":>8}')
-print(border)</script></div></div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+unique = sorted(set(scores))
+print(f'고유 점수: {len(unique)}개 → {unique}')
+# 중복 점수 찾기
+dup = {s for s in scores if scores.count(s) > 1}
+print(f'중복 점수: {dup}')</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 17 — 학생 실습</div>
+  <div class="pong-desc">연수입 중복을 제거하고, 고객 수 대비 고유 수입 개수 비율(다양성)을 계산하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>incomes = [p['income'] for p in customers]
+unique  = set(incomes)
+ratio   = len(unique) / len(incomes) * 100
+print(f'전체:{len(incomes)}명, 고유수입:{len(unique)}개, 다양성:{ratio:.1f}%')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 18 —   </div>
+  <div class="ping-desc">  : frozenset과 딕셔너리 키</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># frozenset: 변경 불가 집합 → 딕셔너리 키로 사용 가능
+group_a = frozenset(['Male_Young', 'Female_Young'])
+group_b = frozenset(['Male_Mid', 'Female_Mid'])
+segments = {group_a: '청년층', group_b: '중장년층'}
+print(segments[group_a])</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 18 — 학생 실습</div>
+  <div class="pong-desc">VIP 고객 ID 집합과 Male 고객 ID 집합의 차집합·대칭차집합을 출력하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>vip  = {p['id'] for p in customers if p['score'] &gt;= 80}
+male = {p['id'] for p in customers if p['genre'] == 'Male'}
+print('VIP이지만 남성 아님(차집합):', vip - male)
+print('남성이지만 VIP 아님:', male - vip)
+print('대칭차집합(서로 다른 부분):', vip ^ male)</code></pre>
+</details>
+<hr>
+<h1 class="doc-title">Section 5. 불리언 (Boolean) &amp; copy()</h1>
+
+<div class="section-header">개념 설명</div>
+
+<p><strong>불리언(bool)</strong> — <code>True</code> / <code>False</code></p>
+<pre><code>bool(0)   # False   bool(1)   # True
+bool('')  # False   bool([])  # False
+bool(39)  # True    bool([1]) # True</code></pre>
+
+<p><strong>얕은 복사 vs 깊은 복사</strong></p>
+<pre><code>import copy
+a = [1, 2, 3]
+b = a           # 같은 객체 참조
+c = a.copy()    # 얕은 복사 → 새 객체
+d = copy.deepcopy(a)  # 깊은 복사</code></pre>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 불리언 진리값 테스트
+print(bool(0), bool(1), bool(''))
+print(bool([]), bool([1,2]), bool({}))
+
+# 고객 점수 → 불리언
+scores = [p['score'] for p in customers]
+is_active = [bool(s) for s in scores]
+print('활성 고객:', all(is_active))  # 모두 True?
+print('점수 있는 고객 수:', sum(is_active))</script></div></div>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 19 —   </div>
+  <div class="ping-desc">  : 불리언 all()/any()</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores  = [p['score'] for p in customers]
+incomes = [p['income'] for p in customers]
+
+print('모두 0점 초과?', all(s > 0 for s in scores))
+print('80점 이상 존재?', any(s >= 80 for s in scores))
+print('수입 20k$ 이상?', any(i >= 20 for i in incomes))
+print('수입 모두 10k$+?', all(i >= 10 for i in incomes))</script></div></div>
+<div class="pong-card">
+  <div class="pong-label">🟡 Pong 19 — 학생 실습</div>
+  <div class="pong-desc"><code>all()</code>과 <code>any()</code>를 이용해 ①모든 고객이 25세 이상인지 ②VIP(80+) 고객이 존재하는지 ③30대 이상 고객이 절반 이상인지 확인하라.</div>
+</div>
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+</script></div></div>
+<details>
+<summary>▶ 정답 보기</summary>
+<pre><code>all_25    = all(p['age'] &gt;= 25 for p in customers)
+has_vip   = any(p['score'] &gt;= 80 for p in customers)
+over30    = sum(1 for p in customers if p['age'] &gt;= 30)
+half_30   = over30 &gt;= len(customers) / 2
+print(f'모두 25세 이상: {all_25}')
+print(f'VIP 고객 존재: {has_vip}')
+print(f'30대+ 절반 이상: {half_30} ({over30}/{len(customers)}명)')</code></pre>
+</details>
+<div class="ping-card">
+  <div class="ping-label">🔵 Ping 20 —   </div>
+  <div class="ping-desc">  : copy()로 안전한 데이터 수정</div>
+</div>
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">import copy
+original  = [p['score'] for p in customers]
+shallow   = original.copy()           # 얕은 복사
+deep_copy = copy.deepcopy(original)   # 깊은 복사
+
+# shallow 수정해도 original 영향 없음
+shallow[0] = 999
+print('shallow 수정 후 original[0]:', original[0])  # 변화 없음
+
+# 딕셔너리 깊은 복사
+p_orig = customers[0]
+p_copy = copy.deepcopy(p_orig)
+p_copy['score'] = 999
+print('원본 점수:', p_orig['score'])  # 유지
+print('복사본 점수:', p_copy['score'])</script></div></div>
 <div class="pong-card">
   <div class="pong-label">🟡 Pong 20 — 학생 실습</div>
-  <div class="pong-desc">환자 10번에 대해 동일 형식의 종합 진단 보고서를 출력하라.</div>
+  <div class="pong-desc">customers 리스트를 깊은 복사하고, 복사본에서 소비점수 50 미만을 50으로 조정한 뒤 원본과 비교하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">p = patients[9]  # 환자 10번
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">import copy
 # 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>p = patients[9]
-hr_ratio = p['thalach']/(220-p['age'])*100
-border   = '=' * 40
-print(border)
-print(f'  심장질환 진단 보고서 (환자 P{p["id"]:03d})')
-print(border)
-print(f'  {"나이":&lt;12}: {p["age"]:&gt;8}세')
-print(f'  {"성별":&lt;12}: {"남성" if p["sex"]==1 else "여성":&gt;8}')
-print(f'  {"안정 혈압":&lt;12}: {p["trestbps"]:&gt;8} mmHg')
-print(f'  {"콜레스테롤":&lt;12}: {p["chol"]:&gt;8} mg/dl')
-print(f'  {"최대 심박수":&lt;12}: {p["thalach"]:&gt;8} bpm')
-print(f'  {"심박달성률":&lt;12}: {hr_ratio:&gt;8.1f} %')
-print(f'  {"진단":&lt;12}: {"[양성]" if p["target"]==1 else "[음성]":&gt;8}')
-print(border)</code></pre>
+<pre><code>import copy
+adjusted = copy.deepcopy(customers)
+for p in adjusted:
+    if p['score'] &lt; 50:
+        p['score'] = 50
+
+print(f'{"ID":^5} {"원본":&gt;6} {"수정":&gt;6}')
+print('-' * 18)
+for orig, adj in zip(customers, adjusted):
+    changed = ' *' if orig['score'] != adj['score'] else ''
+    print(f'{orig["id"]:^5} {orig["score"]:&gt;6} {adj["score"]:&gt;6}{changed}')</code></pre>
 </details>
 <hr>
 <h1 class="doc-title">연습문제 (10문제)</h1>
-<h3>문제 1. 평균 나이</h3>
+<h3>문제 1. 소비점수 통계</h3>
 
-<p>10명 환자의 평균 나이를 계산하라.</p>
+<p>최솟값·최댓값·평균·중앙값·범위를 출력하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>ages = [p['age'] for p in patients]
-print(f'평균 나이: {sum(ages)/len(ages):.1f}세')</code></pre>
+<pre><code>s=sorted(p['score'] for p in customers)
+n=len(s)
+print(f'최소:{s[0]} 최대:{s[-1]} 평균:{sum(s)/n:.1f} 중앙:{(s[n//2-1]+s[n//2])/2 if n%2==0 else s[n//2]} 범위:{s[-1]-s[0]}')</code></pre>
 </details>
-<h3>문제 2. 고혈압 환자</h3>
+<h3>문제 2. 등급 분류 딕셔너리</h3>
 
-<p>혈압 140 이상 환자 수와 비율(%)을 출력하라.</p>
+<p>소비점수 기준 VIP/Gold/Basic 등급 딕셔너리를 만들어라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>cnt = sum(1 for p in patients if p['trestbps']&gt;=140)
-print(f'고혈압: {cnt}명 ({cnt/len(patients)*100:.0f}%)')</code></pre>
+<pre><code>grades={p['id']:('VIP' if p['score']&gt;=80 else 'Gold' if p['score']&gt;=50 else 'Basic') for p in customers}
+for cid,g in grades.items(): print(f'고객{cid}:{g}')</code></pre>
 </details>
-<h3>문제 3. 콜레스테롤 분류</h3>
+<h3>문제 3. 성별 고유 나이</h3>
 
-<p>콜레스테롤 200 미만/200~239/240+ 각 환자 수를 출력하라.</p>
+<p>Male·Female 각각의 고유 나이 집합을 출력하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>for label,lo,hi in [('정상',0,200),('경계',200,240),('고위험',240,9999)]:
-    cnt=sum(1 for p in patients if lo&lt;=p['chol']&lt;hi)
-    print(f'{label}: {cnt}명')</code></pre>
+<pre><code>for g in ['Male','Female']:
+    ages={p['age'] for p in customers if p['genre']==g}
+    print(f'{g}: {sorted(ages)}')</code></pre>
 </details>
-<h3>문제 4. CSV 파싱</h3>
+<h3>문제 4. 튜플 정렬</h3>
 
-<p>아래 CSV 줄을 파싱하여 심박달성률을 계산하라.</p>
+<p>(id, income, score) 3-튜플 리스트를 income+score 합산 기준 내림차순으로 정렬하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>line='8,44,1,120,263,173,0.0,1'
-f=line.split(',')
-age,hr=int(f[1]),int(f[5])
-print(f'달성률:{hr/(220-age)*100:.1f}%')</code></pre>
+<pre><code>triples=[(p['id'],p['income'],p['score']) for p in customers]
+for t in sorted(triples,key=lambda x:x[1]+x[2],reverse=True): print(t)</code></pre>
 </details>
-<h3>문제 5. 파일명 생성</h3>
+<h3>문제 5. all()/any()</h3>
 
-<p>patients 리스트의 각 환자에 대해 <code>PAT_001_M_63_HEART.csv</code> 형식 파일명을 만들어라.</p>
+<p>①소비점수 모두 양수 ②수입 20k$ 이상 존재 ③여성 고객 존재 여부를 출력하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>for p in patients:
-    sex='M' if p['sex']==1 else 'F'
-    fname=f'PAT_{p["id"]:03d}_{sex}_{p["age"]}_HEART.csv'
-    print(fname)</code></pre>
+<pre><code>print(all(p['score']&gt;0 for p in customers))
+print(any(p['income']&gt;=20 for p in customers))
+print(any(p['genre']=='Female' for p in customers))</code></pre>
 </details>
-<h3>문제 6. 정렬 보고서</h3>
+<h3>문제 6. 수입별 평균 소비</h3>
 
-<p>5명 이상의 데이터로 열 정렬된 보고서를 출력하라.</p>
+<p>수입 구간(15-17k$, 18-20k$)별 평균 소비점수를 구하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>print(f'{'ID':^5}{'AGE':&gt;5}{'BP':&gt;6}{'CHOL':&gt;7}{'DIAG':^7}')
-print('-'*32)
-for p in patients[:6]:
-    d='Pos' if p['target']==1 else 'Neg'
-    print(f'P{p["id"]:03d}  {p["age"]:&gt;4} {p["trestbps"]:&gt;5} {p["chol"]:&gt;6}  {d:^7}')</code></pre>
+<pre><code>for lo,hi in [(15,17),(18,20)]:
+    g=[p['score'] for p in customers if lo&lt;=p['income']&lt;=hi]
+    print(f'{lo}-{hi}k$: {sum(g)/len(g):.1f}점({len(g)}명)' if g else f'{lo}-{hi}k$: 없음')</code></pre>
 </details>
-<h3>문제 7. 최대심박수 예측 오차</h3>
+<h3>문제 7. 딕셔너리 카운팅</h3>
 
-<p>실제 최대심박수와 예측값(220-나이) 차이의 절댓값 평균을 계산하라.</p>
+<p>나이 20대·30대·60대 분포를 딕셔너리로 카운팅하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>errors=[abs(p['thalach']-(220-p['age'])) for p in patients]
-print(f'평균 오차: {sum(errors)/len(errors):.1f}bpm')</code></pre>
+<pre><code>cnt={}
+for p in customers:
+    k=f'{p["age"]//10*10}대'
+    cnt[k]=cnt.get(k,0)+1
+for k,v in sorted(cnt.items()): print(f'{k}:{v}명')</code></pre>
 </details>
-<h3>문제 8. 남녀 평균 콜레스테롤</h3>
+<h3>문제 8. 깊은 복사 검증</h3>
 
-<p>남성과 여성의 평균 콜레스테롤을 각각 계산하라.</p>
+<p>원본 복사본 수정 후 원본 데이터가 보존됨을 확인하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>for sex,label in [(1,'남성'),(0,'여성')]:
-    vals=[p['chol'] for p in patients if p['sex']==sex]
-    if vals: print(f'{label}: {sum(vals)/len(vals):.1f} mg/dl ({len(vals)}명)')</code></pre>
+<pre><code>import copy
+bak=copy.deepcopy(customers)
+for p in bak: p['score']=min(p['score']+10,100)
+print('원본 점수 합:', sum(p['score'] for p in customers))
+print('복사본 점수 합:', sum(p['score'] for p in bak))</code></pre>
 </details>
-<h3>문제 9. 데이터 정제</h3>
+<h3>문제 9. 집합 연산</h3>
 
-<p><code>raw=['  145mmHg','  233mg/dl','  2.3mm']</code> 에서 단위를 제거하고 숫자로 변환하라.</p>
+<p>30세 이하 고객과 소비점수 70+ 고객의 교집합·차집합 ID를 출력하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>raw=['  145mmHg','  233mg/dl','  2.3mm']
-clean=[s.strip().rstrip('mmHgdl').rstrip('mg').rstrip('/') for s in raw]
-print([float(c) for c in clean])</code></pre>
+<pre><code>young={p['id'] for p in customers if p['age']&lt;=30}
+high={p['id'] for p in customers if p['score']&gt;=70}
+print('젊고 고점수:', young&amp;high)
+print('젊지만 저점수:', young-high)</code></pre>
 </details>
-<h3>문제 10. 종합 통계 보고서</h3>
+<h3>문제 10. 종합 분석 보고서</h3>
 
-<p>심장질환 유/무 환자의 평균 나이·혈압·콜레스테롤을 비교 출력하라.</p>
+<p>성별·등급별 교차 집계표를 딕셔너리로 출력하라.</p>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage"># 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>for t,lb in [(1,'양성'),(0,'음성')]:
-    ps=[p for p in patients if p['target']==t]
-    if not ps: continue
-    print(f'[{lb}] n={len(ps)}: 나이={sum(p["age"] for p in ps)/len(ps):.1f}, 혈압={sum(p["trestbps"] for p in ps)/len(ps):.1f}, 콜레스테롤={sum(p["chol"] for p in ps)/len(ps):.1f}')</code></pre>
+<pre><code>table={}
+for p in customers:
+    g=p['genre']
+    tier='VIP' if p['score']&gt;=80 else 'Gold' if p['score']&gt;=50 else 'Basic'
+    table.setdefault(g,{}).setdefault(tier,0)
+    table[g][tier]+=1
+for g,v in table.items():
+    print(f'{g}: {v}')</code></pre>
 </details>
 <hr>
 <h1 class="doc-title">괄호 채우기 (8문제)</h1>
-<h3>1. 변수 할당 — int·float·str·bool 4가지</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">age=___; peak=___; sex=___; diag=___
-print(type(age),type(peak),type(sex),type(diag))
+<h3>1. 리스트 컴프리헨션</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [p[___] ___ p ___ customers]
+print(sum(scores)/len(scores))
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>age=63; peak=2.3; sex='Male'; diag=True
-print(type(age),type(peak),type(sex),type(diag))</code></pre>
+<pre><code>scores = [p['score'] for p in customers]
+print(sum(scores)/len(scores))</code></pre>
 </details>
-<h3>2. 사칙연산 — 심박달성률 계산</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">hr=150; age=63
-max_pred = 220 ___ age
-ratio = hr ___ max_pred ___ 100
-print(f'{ratio:.1f}%')
+<h3>2. 리스트 정렬</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">top3 = sorted(customers, key=lambda x: x[___], ___=True)[:3]
+for p in top3: print(p['score'])
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>hr=150; age=63
-max_pred = 220 - age
-ratio = hr / max_pred * 100
-print(f'{ratio:.1f}%')</code></pre>
+<pre><code>top3 = sorted(customers, key=lambda x: x['score'], reverse=True)[:3]
+for p in top3: print(p['score'])</code></pre>
 </details>
-<h3>3. 자료형 변환 — CSV 문자열 → 숫자</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">raw_age='63'; raw_peak='2.3'
-age  = ___(raw_age)
-peak = ___(raw_peak)
-print(type(age), type(peak))
+<h3>3. 딕셔너리 .get()</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">for p in customers:
+    tier = p.___(___,'Unknown')
+    print(tier)
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>raw_age='63'; raw_peak='2.3'
-age  = int(raw_age)
-peak = float(raw_peak)
-print(type(age), type(peak))</code></pre>
+<pre><code>for p in customers:
+    tier = p.get('tier','Unknown')
+    print(tier)</code></pre>
 </details>
-<h3>4. 슬라이싱 — 파일명 파싱</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname='PAT_003_F_41_HEART.csv'
-pid = fname[___:___]
-sex = fname[___]
-age = fname[___:___]
-print(pid,sex,age)
+<h3>4. 집합 교집합</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">male = {p['id'] ___ p ___ customers ___ p['genre']=='Male'}
+high = {p['id'] ___ p ___ customers ___ p['score']>=70}
+result = male ___ high
+print(result)
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>fname='PAT_003_F_41_HEART.csv'
-pid = fname[4:7]
-sex = fname[8]
-age = fname[10:12]
-print(pid,sex,age)</code></pre>
+<pre><code>male = {p['id'] for p in customers if p['genre']=='Male'}
+high = {p['id'] for p in customers if p['score']&gt;=70}
+result = male &amp; high
+print(result)</code></pre>
 </details>
-<h3>5. split 파싱 — CSV 한 줄 파싱</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">line='3,41,0,130,204,172,1.4,1'
-f = line.___(',') 
-age  = ___(f[1])
-chol = ___(f[4])
-print(age, chol)
+<h3>5. 튜플 언패킹</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">data = (1, 'Male', 19, 15, 39)
+cid, genre, ___, income, score = data
+print(cid, genre, score)
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>line='3,41,0,130,204,172,1.4,1'
-f = line.split(',') 
-age  = int(f[1])
-chol = int(f[4])
-print(age, chol)</code></pre>
+<pre><code>data = (1, 'Male', 19, 15, 39)
+cid, genre, age, income, score = data
+print(cid, genre, score)</code></pre>
 </details>
-<h3>6. f-string 포맷 — 정렬 출력</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">chol=233; hr=150; ratio=96.1
-print(f'콜레스테롤: {chol:___}mg/dl')
-print(f'달성률: {ratio:___}%')
-print(f'심박수: {hr:___}')
+<h3>6. all/any</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">print(___(p['score']>0 for p in customers))   # 모두 양수?
+print(___(p['score']>=80 for p in customers))  # 80점 이상 존재?
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>chol=233; hr=150; ratio=96.1
-print(f'콜레스테롤: {chol:,}mg/dl')
-print(f'달성률: {ratio:.1f}%')
-print(f'심박수: {hr:&gt;6}')</code></pre>
+<pre><code>print(all(p['score']&gt;0 for p in customers))   # 모두 양수?
+print(any(p['score']&gt;=80 for p in customers))  # 80점 이상 존재?</code></pre>
 </details>
-<h3>7. replace+strip — 데이터 정제</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">raw = '  233 mg/dl  '
-clean = raw.___().___(' mg/dl', '')
-chol  = ___(clean)
-print(chol, type(chol))
+<h3>7. 딕셔너리 카운팅</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">cnt = {}
+for p in customers:
+    k = p['genre']
+    cnt[k] = cnt.___(k, 0) ___ 1
+print(cnt)
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>raw = '  233 mg/dl  '
-clean = raw.strip().replace(' mg/dl', '')
-chol  = int(clean)
-print(chol, type(chol))</code></pre>
+<pre><code>cnt = {}
+for p in customers:
+    k = p['genre']
+    cnt[k] = cnt.get(k, 0) + 1
+print(cnt)</code></pre>
 </details>
-<h3>8. 종합 — 진단 보고서</h3>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = patients[0]
-border = '=' ___ 30
-diag   = '양성' ___ p['target']==1 ___ '음성'
-print(border)
-print(f'환자 P{p["id"]:03d}: {diag}')
-print(border)
+<h3>8. 깊은 복사</h3>
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import copy
+bak = copy.___(customers)
+bak[0]['score'] = 999
+print('원본:', customers[0]['score'])  # 보존?
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
-<pre><code>p = patients[0]
-border = '=' * 30
-diag   = '양성' if p['target']==1 else '음성'
-print(border)
-print(f'환자 P{p["id"]:03d}: {diag}')
-print(border)</code></pre>
+<pre><code>import copy
+bak = copy.deepcopy(customers)
+bak[0]['score'] = 999
+print('원본:', customers[0]['score'])  # 보존?</code></pre>
 </details>
 <hr>
 <h1 class="doc-title">[버그] 디버그 문제 (10문제)</h1>
-<h3>디버그 1. 대소문자</h3>
+<h3>디버그 1. 리스트 인덱싱</h3>
 
-<pre><code>Age = 63
-print(age)</code></pre>
+<pre><code>scores = [39,81,6]
+print(scores[3])</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">Age = 63
-print(age)
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6]
+print(scores[3])
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>Age = 63
-print(age)</code></pre>
+<pre><code>scores = [39,81,6]
+print(scores[3])</code></pre>
 </details>
-<h3>디버그 2. str+int</h3>
+<h3>디버그 2. append vs +</h3>
 
-<pre><code>print('환자 나이: ' + 63)</code></pre>
+<pre><code>scores = [39,81]
+new = scores.append(6)
+print(new)</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">print('환자 나이: ' + 63)
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81]
+new = scores.append(6)
+print(new)
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>print('환자 나이: ' + 63)</code></pre>
+<pre><code>scores = [39,81]
+new = scores.append(6)
+print(new)</code></pre>
 </details>
-<h3>디버그 3. 쉼표 있는 int</h3>
+<h3>디버그 3. 딕셔너리 키</h3>
 
-<pre><code>chol = int('2,330')</code></pre>
+<pre><code>p = {'score':39}
+print(p['Score'])</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">chol = int('2,330')
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = {'score':39}
+print(p['Score'])
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>chol = int('2,330')</code></pre>
+<pre><code>p = {'score':39}
+print(p['Score'])</code></pre>
 </details>
-<h3>디버그 4. 슬라이싱 끝 인덱스</h3>
+<h3>디버그 4. 집합 인덱싱</h3>
 
-<pre><code>fname = 'PAT_001_M_63'
-pid = fname[4:6]  # '001' 추출 의도</code></pre>
+<pre><code>ids = {1,2,3,4}
+print(ids[0])</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname = 'PAT_001_M_63'
-pid = fname[4:6]  # '001' 추출 의도
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">ids = {1,2,3,4}
+print(ids[0])
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>fname = 'PAT_001_M_63'
-pid = fname[4:6]  # '001' 추출 의도</code></pre>
+<pre><code>ids = {1,2,3,4}
+print(ids[0])</code></pre>
 </details>
-<h3>디버그 5. 0 나눗셈</h3>
+<h3>디버그 5. 튜플 수정</h3>
 
-<pre><code>max_pred = 220 - 220  # 나이가 220인 경우
-ratio = 150 / max_pred * 100</code></pre>
+<pre><code>t = (1,'Male',19)
+t[2] = 20</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">max_pred = 220 - 220  # 나이가 220인 경우
-ratio = 150 / max_pred * 100
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">t = (1,'Male',19)
+t[2] = 20
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>max_pred = 220 - 220  # 나이가 220인 경우
-ratio = 150 / max_pred * 100</code></pre>
+<pre><code>t = (1,'Male',19)
+t[2] = 20</code></pre>
 </details>
-<h3>디버그 6. float → int 오해</h3>
+<h3>디버그 6. 딕셔너리 반복</h3>
 
-<pre><code>peak = 2.7
-print(int(peak))  # 반올림 기대</code></pre>
+<pre><code>for k, v in customers[0]:
+    print(k, v)</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">peak = 2.7
-print(int(peak))  # 반올림 기대
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">for k, v in customers[0]:
+    print(k, v)
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>peak = 2.7
-print(int(peak))  # 반올림 기대</code></pre>
+<pre><code>for k, v in customers[0]:
+    print(k, v)</code></pre>
 </details>
-<h3>디버그 7. split 구분자</h3>
+<h3>디버그 7. 얕은 복사 함정</h3>
 
-<pre><code>line = '63-145-233'
-fields = line.split(',')  # 숫자 3개 분리 의도
-print(fields[1])</code></pre>
+<pre><code>import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">line = '63-145-233'
-fields = line.split(',')  # 숫자 3개 분리 의도
-print(fields[1])
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>line = '63-145-233'
-fields = line.split(',')  # 숫자 3개 분리 의도
-print(fields[1])</code></pre>
+<pre><code>import copy
+orig = [{'score':39}]
+bak = orig.copy()
+bak[0]['score'] = 999
+print(orig[0]['score'])  # 39 기대</code></pre>
 </details>
-<h3>디버그 8. round 반환값</h3>
+<h3>디버그 8. set 중복 제거 순서</h3>
 
-<pre><code>peak = 2.345
-peak.round(2)  # 원본 수정 의도
-print(peak)</code></pre>
+<pre><code>scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">peak = 2.345
-peak.round(2)  # 원본 수정 의도
-print(peak)
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>peak = 2.345
-peak.round(2)  # 원본 수정 의도
-print(peak)</code></pre>
+<pre><code>scores = [39,81,6,77]
+uniq = list(set(scores))
+print(uniq[0])  # 39 기대</code></pre>
 </details>
-<h3>디버그 9. 할당 연산자</h3>
+<h3>디버그 9. all() vs any()</h3>
 
-<pre><code>total = 0
-for p in patients:
-    total =+ p['chol']  # 누적 의도
-print(total)</code></pre>
+<pre><code>scores = [39,81,6]
+print(all(s&gt;=70 for s in scores))  # 하나라도 70+ 의도</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">total = 0
-for p in patients:
-    total =+ p['chol']  # 누적 의도
-print(total)
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [39,81,6]
+print(all(s>=70 for s in scores))  # 하나라도 70+ 의도
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>total = 0
-for p in patients:
-    total =+ p['chol']  # 누적 의도
-print(total)</code></pre>
+<pre><code>scores = [39,81,6]
+print(all(s&gt;=70 for s in scores))  # 하나라도 70+ 의도</code></pre>
 </details>
-<h3>디버그 10. 인덱스 초과</h3>
+<h3>디버그 10. dict.get() 반환</h3>
 
-<pre><code>fname = 'PAT_001'
-last = fname[7]  # 마지막 글자 의도</code></pre>
+<pre><code>p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])</code></pre>
 <p>오류를 찾아 수정하라.</p>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">fname = 'PAT_001'
-last = fname[7]  # 마지막 글자 의도
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])
 </script></div></div>
 <details>
 <summary>▶ 디버그 정답 보기</summary>
-<pre><code>fname = 'PAT_001'
-last = fname[7]  # 마지막 글자 의도</code></pre>
+<pre><code>p = {'score':39}
+result = p.get('score', 0)
+result = 999   # 딕셔너리 값 변경 의도
+print(p['score'])</code></pre>
 </details>
 <hr>
-<h1 class="doc-title">인터랙티브: 심장 위험도 계산기</h1>
+<h1 class="doc-title">인터랙티브: 고객 세그먼트 분석기</h1>
 <div class="code-card"><div class="sage-code"><script type="text/x-sage">import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-s_age  = widgets.IntSlider(value=55,min=30,max=80,description='나이:')
-s_bp   = widgets.IntSlider(value=130,min=80,max=200,step=5,description='혈압(mmHg):',
-                            style={'description_width':'initial'})
-s_chol = widgets.IntSlider(value=220,min=100,max=400,step=5,description='콜레스테롤:',
-                            style={'description_width':'initial'})
-s_hr   = widgets.IntSlider(value=150,min=60,max=200,description='최대심박수:',
-                            style={'description_width':'initial'})
+customers_data = [
+    {'id':1,'genre':'Male','age':19,'income':15,'score':39},
+    {'id':2,'genre':'Male','age':21,'income':15,'score':81},
+    {'id':3,'genre':'Female','age':20,'income':16,'score':6},
+    {'id':4,'genre':'Female','age':23,'income':16,'score':77},
+    {'id':5,'genre':'Female','age':31,'income':17,'score':40},
+    {'id':6,'genre':'Female','age':22,'income':17,'score':76},
+    {'id':7,'genre':'Female','age':35,'income':18,'score':6},
+    {'id':8,'genre':'Female','age':23,'income':18,'score':94},
+    {'id':9,'genre':'Male','age':64,'income':19,'score':3},
+    {'id':10,'genre':'Female','age':30,'income':19,'score':72},
+]
+
+min_score  = widgets.IntSlider(value=0,min=0,max=100,description='최소 소비점수:',
+                                style={'description_width':'initial'})
+genre_sel  = widgets.SelectMultiple(options=['Male','Female'],value=['Male','Female'],
+                                     description='성별:', rows=2)
+sort_by    = widgets.Dropdown(options=['score','income','age'],value='score',
+                               description='정렬 기준:')
 out = widgets.Output()
 
 def update(change):
     with out:
         clear_output(wait=True)
-        age, bp, chol, hr = s_age.value, s_bp.value, s_chol.value, s_hr.value
-        hr_ratio   = hr / (220 - age) * 100
-        chol_level = '고위험' if chol>=240 else ('경계' if chol>=200 else '정상')
-        bp_level   = '고혈압' if bp>=140 else ('주의' if bp>=130 else '정상')
-        risk = sum([chol>=240, bp>=140, hr_ratio<70, age>=60])
-        risk_label = ['낮음','보통','높음','매우 높음'][min(risk,3)]
-        print('=' * 35)
-        print(f'  나이: {age}세  혈압: {bp}mmHg [{bp_level}]')
-        print(f'  콜레스테롤: {chol}mg/dl [{chol_level}]')
-        print(f'  심박달성률: {hr_ratio:.1f}%')
-        print(f'  종합 위험도: [{risk_label}]')
-        print('=' * 35)
+        filtered = [p for p in customers_data
+                    if p['score']>=min_score.value and p['genre'] in genre_sel.value]
+        sorted_d = sorted(filtered, key=lambda x: x[sort_by.value], reverse=True)
+        print(f'필터된 고객: {len(sorted_d)}명')
+        print(f'{"ID":^4} {"성별":^7} {"나이":>4} {"수입":>6} {"점수":>5} {"등급":^6}')
+        print('-' * 38)
+        for p in sorted_d:
+            tier = 'VIP' if p['score']>=80 else ('Gold' if p['score']>=50 else 'Basic')
+            print(f'{p["id"]:^4} {p["genre"]:^7} {p["age"]:>4}세 {p["income"]:>5}k$ {p["score"]:>5} {tier:^6}')
 
-for s in [s_age,s_bp,s_chol,s_hr]: s.observe(update,'value')
+min_score.observe(update,'value')
+genre_sel.observe(update,'value')
+sort_by.observe(update,'value')
 update(None)
-display(widgets.VBox([s_age,s_bp,s_chol,s_hr,out]))</script></div></div>
+display(widgets.VBox([min_score, genre_sel, sort_by, out]))</script></div></div>
 </div>
 
 <a id="toTop" href="#" title="맨 위로">↑</a>
