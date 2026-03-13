@@ -350,7 +350,20 @@ scores.append(55)   # 추가
 scores.remove(6)    # 삭제 (첫 번째)
 sorted(scores)      # 정렬 (원본 유지)
 scores.sort()       # 정렬 (원본 변경)</code></pre>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage">scores = [p['score'] for p in customers]
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+scores = [p['score'] for p in customers]
 incomes= [p['income'] for p in customers]
 print('소비점수:', scores)
 print('연수입:', incomes)
@@ -369,6 +382,18 @@ print('정렬:', sorted(scores, reverse=True)[:5], '(상위5)')</script></div></
   <div class="pong-desc">연수입 리스트를 만들고 ①길이 ②평균 ③상위 3개 ④하위 3개를 출력하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -409,7 +434,20 @@ print(scores)</code></pre>
   <div class="ping-label">🔵 Ping 3 —   </div>
   <div class="ping-desc">  : 리스트 정렬 및 집계</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+scores = [p['score'] for p in customers]
 top3    = sorted(scores, reverse=True)[:3]
 bottom3 = sorted(scores)[:3]
 above70 = [s for s in scores if s >= 70]
@@ -421,6 +459,18 @@ print(f'70점 이상({len(above70)}명): {above70}')</script></div></div>
   <div class="pong-desc">연수입 20k$ 이상 고객의 소비점수 리스트와 평균을 구하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -433,6 +483,18 @@ print('평균:', sum(hi_income)/len(hi_income) if hi_income else 0)</code></pre>
   <div class="ping-desc">  : 리스트 컴프리헨션</div>
 </div>
 <div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 소비점수를 등급으로 변환
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 grades = ['VIP' if s>=80 else 'Gold' if s>=50 else 'Basic'
           for s in [p['score'] for p in customers]]
 for c, g in zip(customers, grades):
@@ -455,6 +517,18 @@ for c, g in zip(customers, age_groups):
   <div class="ping-desc">  : 중첩 리스트 &amp; 행렬</div>
 </div>
 <div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 고객 정보를 2D 리스트로 표현
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 matrix = [[p['id'], p['age'], p['income'], p['score']]
           for p in customers[:5]]
 print('헤더: [ID, Age, Income, Score]')
@@ -464,7 +538,20 @@ for row in matrix:
   <div class="pong-label">🟡 Pong 5 — 학생 실습</div>
   <div class="pong-desc">2D 리스트에서 소비점수(인덱스 3) 열만 추출하고 평균을 구하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+matrix = [[p['id'],p['age'],p['income'],p['score']] for p in customers]
 # 여기에 코드를 작성하라
 </script></div></div>
 <details>
@@ -478,7 +565,20 @@ print('평균:', sum(scores)/len(scores))</code></pre>
   <div class="ping-label">🔵 Ping 6 —   </div>
   <div class="ping-desc">  : 리스트 메서드 종합</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">scores = [p['score'] for p in customers]
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+scores = [p['score'] for p in customers]
 print('count(6):', scores.count(6))    # 6점 개수
 print('index(94):', scores.index(94))  # 94점 위치
 scores_copy = scores.copy()
@@ -488,7 +588,20 @@ print('뒤집기:', scores_copy[:5], '...')</script></div></div>
   <div class="pong-label">🟡 Pong 6 — 학생 실습</div>
   <div class="pong-desc">소비점수 리스트에서 ①최빈값(가장 많이 등장하는 점수) ②중앙값을 구하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">scores = [p['score'] for p in customers]
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+scores = [p['score'] for p in customers]
 # 여기에 코드를 작성하라
 </script></div></div>
 <details>
@@ -563,6 +676,18 @@ print('딕셔너리 키로 사용 가능:', registry[cust_t])</script></div></di
   <div class="pong-desc">고객 5명의 (income, score) 쌍을 튜플 리스트로 만들고 income 기준 내림차순 정렬하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -587,6 +712,18 @@ print(f'최소:{lo}, 최대:{hi}, 평균:{avg}, 중앙:{med}')</script></div></d
   <div class="pong-desc">연수입 리스트의 (최솟값, 최댓값, 평균, 범위) 튜플을 반환하는 함수를 만들어라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -601,7 +738,20 @@ print(f'최소:{lo}k$, 최대:{hi}k$, 평균:{avg:.1f}k$, 범위:{rng}k$')</code
   <div class="ping-label">🔵 Ping 10 —   </div>
   <div class="ping-desc">  : zip → 튜플 쌍 생성</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">ids     = [p['id'] for p in customers]
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+ids     = [p['id'] for p in customers]
 scores  = [p['score'] for p in customers]
 incomes = [p['income'] for p in customers]
 
@@ -613,6 +763,18 @@ for t in sorted(triples, key=lambda x: x[2], reverse=True)[:5]:
   <div class="pong-desc">zip으로 (id, age, income, score) 4-튜플 리스트를 만들어 나이 기준 내림차순 정렬하라.</div>
 </div>
 <div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -640,7 +802,19 @@ customer.get('tier','Basic')  # 없으면 기본값
 customer.keys()   # 키 목록
 customer.values() # 값 목록
 customer.items()  # (키,값) 쌍 목록</code></pre>
-<div class="code-card"><div class="sage-code"><script type="text/x-sage"># 고객 데이터베이스 딕셔너리
+<div class="code-card"><div class="sage-code"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]# 고객 데이터베이스 딕셔너리
 db = {p['id']: p for p in customers}
 print('고객 5번:', db[5])
 print('모든 ID:', list(db.keys())[:5])</script></div></div>
@@ -648,7 +822,20 @@ print('모든 ID:', list(db.keys())[:5])</script></div></div>
   <div class="ping-label">🔵 Ping 11 —   </div>
   <div class="ping-desc">  : 딕셔너리 접근·추가·삭제</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = dict(customers[0])  # 복사
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+p = dict(customers[0])  # 복사
 print('원본:', p)
 p['tier'] = 'VIP' if p['score']>=80 else 'Basic'  # 키 추가
 p['income_usd'] = p['income'] * 1000               # 환산
@@ -658,7 +845,19 @@ print('수정 후:', p)</script></div></div>
   <div class="pong-label">🟡 Pong 11 — 학생 실습</div>
   <div class="pong-desc">전체 customers에 'tier' 키('VIP'=score&gt;=80, 'Gold'=50이상, 'Basic'=나머지)를 추가하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -673,7 +872,20 @@ for p in customers:
   <div class="ping-label">🔵 Ping 12 —   </div>
   <div class="ping-desc">  : .get()과 기본값</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">p = customers[0]
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+p = customers[0]
 print(p.get('score', 0))         # 있음 → 39
 print(p.get('loyalty', 0))       # 없음 → 기본값 0
 print(p.get('tier', 'Unknown'))  # 없음 → 'Unknown'</script></div></div>
@@ -681,7 +893,20 @@ print(p.get('tier', 'Unknown'))  # 없음 → 'Unknown'</script></div></div>
   <div class="pong-label">🟡 Pong 12 — 학생 실습</div>
   <div class="pong-desc">고객 딕셔너리에서 .get()으로 'loyalty_years' 키를 가져오되 없으면 0을 반환하고 전체 출력하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
@@ -693,7 +918,20 @@ print(p.get('tier', 'Unknown'))  # 없음 → 'Unknown'</script></div></div>
   <div class="ping-label">🔵 Ping 13 —   </div>
   <div class="ping-desc">  : .items() 순회 + 필터</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">db = {p['id']: {'age':p['age'],'income':p['income'],'score':p['score']}
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+db = {p['id']: {'age':p['age'],'income':p['income'],'score':p['score']}
       for p in customers}
 # 소비점수 70 이상 고객
 vip = {k: v for k, v in db.items() if v['score'] >= 70}
@@ -718,7 +956,20 @@ for cid, p in premium.items():
   <div class="ping-label">🔵 Ping 14 —   </div>
   <div class="ping-desc">  : 딕셔너리 카운팅 패턴</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage"># 성별 분포 카운팅
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+# 성별 분포 카운팅
 genre_cnt = {}
 for p in customers:
     genre_cnt[p['genre']] = genre_cnt.get(p['genre'], 0) + 1
@@ -790,7 +1041,20 @@ print('중복 제거 수입 집합:', sorted(incomes))</script></div></div>
   <div class="ping-label">🔵 Ping 16 —   </div>
   <div class="ping-desc">  : 집합 연산으로 고객 그룹 분석</div>
 </div>
-<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">male_ids   = {p['id'] for p in customers if p['genre']=='Male'}
+<div class="ping-card"><div class="sage-ping"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+male_ids   = {p['id'] for p in customers if p['genre']=='Male'}
 female_ids = {p['id'] for p in customers if p['genre']=='Female'}
 high_score = {p['id'] for p in customers if p['score'] >= 70}
 
@@ -828,7 +1092,20 @@ print(f'중복 점수: {dup}')</script></div></div>
   <div class="pong-label">🟡 Pong 17 — 학생 실습</div>
   <div class="pong-desc">연수입 중복을 제거하고, 고객 수 대비 고유 수입 개수 비율(다양성)을 계산하라.</div>
 </div>
-<div class="pong-card"><div class="sage-pong"><script type="text/x-sage"># 여기에 코드를 작성하라
+<div class="pong-card"><div class="sage-pong"><script type="text/x-sage">
+customers = [
+    {'id':1,  'genre':'Male',   'age':19, 'income':15,  'score':39},
+    {'id':2,  'genre':'Male',   'age':21, 'income':15,  'score':81},
+    {'id':3,  'genre':'Female', 'age':20, 'income':16,  'score':6},
+    {'id':4,  'genre':'Female', 'age':23, 'income':16,  'score':77},
+    {'id':5,  'genre':'Female', 'age':31, 'income':17,  'score':40},
+    {'id':6,  'genre':'Female', 'age':22, 'income':17,  'score':76},
+    {'id':7,  'genre':'Female', 'age':35, 'income':18,  'score':6},
+    {'id':8,  'genre':'Female', 'age':23, 'income':18,  'score':94},
+    {'id':9,  'genre':'Male',   'age':64, 'income':19,  'score':3},
+    {'id':10, 'genre':'Female', 'age':30, 'income':19,  'score':72},
+]
+# 여기에 코드를 작성하라
 </script></div></div>
 <details>
 <summary>▶ 정답 보기</summary>
