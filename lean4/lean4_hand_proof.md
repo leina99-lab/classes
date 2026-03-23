@@ -19,7 +19,7 @@
 
 ## 0-1. 세 가지 패턴 다이어그램
 
-![apply 전술 세 가지 패턴](img/00_apply_세가지패턴.png)
+![apply 전술 세 가지 패턴](00_apply_patterns.png)
 
 ---
 
@@ -163,7 +163,7 @@ example (P Q : Prop) (h : ¬(P ∨ Q)) : ¬Q := by
 
 ## 1-1. 전체 대비 다이어그램
 
-![항진명제 손 증명 vs Lean 4 대비](img/01_항진명제_대비.png)
+![항진명제 손 증명 vs Lean 4 대비](01_tautology_comparison.png)
 
 ---
 
@@ -259,13 +259,13 @@ example (p q : Prop) : (p ∧ q) → (p ∨ q) := by
 
 ## 2-1. 정방향 다이어그램: ¬(P ∨ Q) → (¬P ∧ ¬Q)
 
-![드모르간 정방향 손 증명 vs Lean 4](img/02_드모르간_정방향.png)
+![드모르간 정방향 손 증명 vs Lean 4](02_demorgan_forward.png)
 
 ---
 
 ## 2-2. 역방향 다이어그램: (¬P ∧ ¬Q) → ¬(P ∨ Q) + 핵심 패턴
 
-![드모르간 역방향 + 핵심 패턴 3가지](img/03_드모르간_역방향.png)
+![드모르간 역방향 + 핵심 패턴 3가지](03_demorgan_backward.png)
 
 ---
 
