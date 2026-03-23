@@ -1,0 +1,73 @@
+<svg width="680" viewBox="0 0 680 640" xmlns="http://www.w3.org/2000/svg" style="font-family: system-ui, -apple-system, sans-serif; background: #fff;">
+<style>
+  .th { font-size: 14px; font-weight: 500; fill: #1a1a1a; }
+  .ts { font-size: 12px; font-weight: 400; fill: #666; }
+  .bx-purple { fill: #EEEDFE; stroke: #534AB7; } .tx-purple { fill: #3C3489; }
+  .bx-gray { fill: #F1EFE8; stroke: #888780; } .tx-gray { fill: #444441; }
+  .bx-teal { fill: #E1F5EE; stroke: #0F6E56; } .tx-teal { fill: #085041; }
+  .bx-coral { fill: #FAECE7; stroke: #993C1D; } .tx-coral { fill: #712B13; } .sx-coral { fill: #993C1D; }
+  .bx-amber { fill: #FAEEDA; stroke: #854F0B; } .tx-amber { fill: #633806; } .sx-amber { fill: #854F0B; }
+  .bx-green { fill: #EAF3DE; stroke: #3B6D11; } .tx-green { fill: #27500A; }
+  .ld { stroke: #aaa; stroke-width: 0.5; stroke-dasharray: 3 3; }
+  .dv { stroke: #ccc; stroke-width: 0.5; stroke-dasharray: 4 4; }
+</style>
+
+<text class="th" x="340" y="24" text-anchor="middle">역방향: (¬P ∧ ¬Q) → ¬(P ∨ Q)</text>
+<text class="th" x="165" y="52" text-anchor="middle">손 증명</text>
+<text class="th" x="510" y="52" text-anchor="middle">Lean 4</text>
+<line class="dv" x1="340" y1="44" x2="340" y2="400"/>
+
+<rect class="bx-gray" x="40" y="66" width="260" height="50" rx="6" stroke-width="0.5"/>
+<text class="ts tx-gray" x="170" y="82" text-anchor="middle" dominant-baseline="central">h : ¬P ∧ ¬Q를 가정</text>
+<text class="ts tx-gray" x="170" y="100" text-anchor="middle" dominant-baseline="central">¬(P∨Q) 증명 위해 hpq : P∨Q 가정</text>
+
+<rect class="bx-gray" x="370" y="66" width="270" height="50" rx="6" stroke-width="0.5"/>
+<text class="th tx-gray" x="505" y="82" text-anchor="middle" dominant-baseline="central" style="font-size:12px">intro h hpq</text>
+<text class="ts tx-gray" x="505" y="100" text-anchor="middle" dominant-baseline="central">h : ¬P∧¬Q, hpq : P∨Q</text>
+<line class="ld" x1="300" y1="91" x2="368" y2="91"/>
+
+<rect class="bx-teal" x="40" y="130" width="260" height="28" rx="6" stroke-width="0.5"/>
+<text class="ts tx-teal" x="170" y="144" text-anchor="middle" dominant-baseline="central">P ∨ Q이므로 경우를 나눈다</text>
+<rect class="bx-teal" x="370" y="130" width="270" height="28" rx="6" stroke-width="0.5"/>
+<text class="th tx-teal" x="505" y="144" text-anchor="middle" dominant-baseline="central" style="font-size:12px">cases hpq with</text>
+<line class="ld" x1="300" y1="144" x2="368" y2="144"/>
+
+<rect class="bx-coral" x="40" y="172" width="260" height="76" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="170" y="192" text-anchor="middle" dominant-baseline="central" style="font-size:12px">경우 1: hp : P</text>
+<text class="ts sx-coral" x="170" y="212" text-anchor="middle" dominant-baseline="central">h.left : ¬P</text>
+<text class="ts sx-coral" x="170" y="232" text-anchor="middle" dominant-baseline="central">h.left hp : False</text>
+
+<rect class="bx-coral" x="370" y="172" width="270" height="76" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="505" y="192" text-anchor="middle" dominant-baseline="central" style="font-size:12px">| inl hp =></text>
+<text class="th tx-coral" x="505" y="216" text-anchor="middle" dominant-baseline="central" style="font-size:12px">exact h.left hp</text>
+<text class="ts sx-coral" x="505" y="236" text-anchor="middle" dominant-baseline="central">h.left hp : False</text>
+<line class="ld" x1="300" y1="212" x2="368" y2="212"/>
+
+<rect class="bx-amber" x="40" y="262" width="260" height="76" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="170" y="282" text-anchor="middle" dominant-baseline="central" style="font-size:12px">경우 2: hq : Q</text>
+<text class="ts sx-amber" x="170" y="302" text-anchor="middle" dominant-baseline="central">h.right : ¬Q</text>
+<text class="ts sx-amber" x="170" y="322" text-anchor="middle" dominant-baseline="central">h.right hq : False</text>
+
+<rect class="bx-amber" x="370" y="262" width="270" height="76" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="505" y="282" text-anchor="middle" dominant-baseline="central" style="font-size:12px">| inr hq =></text>
+<text class="th tx-amber" x="505" y="306" text-anchor="middle" dominant-baseline="central" style="font-size:12px">exact h.right hq</text>
+<text class="ts sx-amber" x="505" y="326" text-anchor="middle" dominant-baseline="central">h.right hq : False</text>
+<line class="ld" x1="300" y1="302" x2="368" y2="302"/>
+
+<rect class="bx-green" x="160" y="354" width="360" height="32" rx="8" stroke-width="0.5"/>
+<text class="th tx-green" x="340" y="370" text-anchor="middle" dominant-baseline="central">역방향 완료: ¬(P ∨ Q) 증명됨</text>
+
+<text class="th" x="340" y="420" text-anchor="middle">핵심 패턴 3가지</text>
+
+<rect class="bx-purple" x="40" y="438" width="600" height="50" rx="8" stroke-width="0.5"/>
+<text class="th tx-purple" x="55" y="456" text-anchor="start" dominant-baseline="central" style="font-size:12px">¬X 증명</text>
+<text class="ts" x="55" y="476" text-anchor="start" dominant-baseline="central">목표가 ¬X이면 → intro hx 후 목표는 False</text>
+
+<rect class="bx-teal" x="40" y="494" width="600" height="50" rx="8" stroke-width="0.5"/>
+<text class="th tx-teal" x="55" y="512" text-anchor="start" dominant-baseline="central" style="font-size:12px">¬X 사용</text>
+<text class="ts" x="55" y="532" text-anchor="start" dominant-baseline="central">목표가 False이고 hnx : ¬X, hx : X이면 → exact hnx hx</text>
+
+<rect class="bx-coral" x="40" y="550" width="600" height="50" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="55" y="568" text-anchor="start" dominant-baseline="central" style="font-size:12px">apply h (역방향 추론)</text>
+<text class="ts" x="55" y="588" text-anchor="start" dominant-baseline="central">목표가 False이고 h : A→False이면 → apply h 후 목표가 A</text>
+</svg>

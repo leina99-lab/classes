@@ -1,0 +1,122 @@
+<svg width="680" viewBox="0 0 680 820" xmlns="http://www.w3.org/2000/svg" style="font-family: system-ui, -apple-system, sans-serif; background: #fff;">
+<style>
+  .th { font-size: 14px; font-weight: 500; fill: #1a1a1a; }
+  .ts { font-size: 12px; font-weight: 400; fill: #666; }
+  .bx-purple { fill: #EEEDFE; stroke: #534AB7; } .tx-purple { fill: #3C3489; }
+  .bx-gray { fill: #F1EFE8; stroke: #888780; } .tx-gray { fill: #444441; }
+  .bx-teal { fill: #E1F5EE; stroke: #0F6E56; } .tx-teal { fill: #085041; }
+  .bx-coral { fill: #FAECE7; stroke: #993C1D; } .tx-coral { fill: #712B13; } .sx-coral { fill: #993C1D; }
+  .bx-amber { fill: #FAEEDA; stroke: #854F0B; } .tx-amber { fill: #633806; } .sx-amber { fill: #854F0B; }
+  .bx-green { fill: #EAF3DE; stroke: #3B6D11; } .tx-green { fill: #27500A; }
+  .ld { stroke: #aaa; stroke-width: 0.5; stroke-dasharray: 3 3; }
+  .dv { stroke: #ccc; stroke-width: 0.5; stroke-dasharray: 4 4; }
+  .ar { stroke: #888; stroke-width: 1.5; }
+</style>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<text class="th" x="340" y="28" text-anchor="middle">(p ∧ q) → (p ∨ q) 는 항진명제이다</text>
+<text class="th" x="160" y="60" text-anchor="middle">손 증명 (동치 변환)</text>
+<text class="th" x="510" y="60" text-anchor="middle">Lean 4 (직접 증명)</text>
+<line class="dv" x1="340" y1="50" x2="340" y2="530"/>
+
+<rect class="bx-gray" x="30" y="78" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-gray" x="165" y="98" text-anchor="middle" dominant-baseline="central" style="font-size:12px">(p ∧ q) → (p ∨ q)</text>
+<text class="ts" x="165" y="136" text-anchor="middle">↓  →의 진리표: A→B ≡ ¬A∨B</text>
+
+<rect class="bx-teal" x="30" y="150" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-teal" x="165" y="170" text-anchor="middle" dominant-baseline="central" style="font-size:11px">¬(p ∧ q) ∨ (p ∨ q)</text>
+<text class="ts" x="165" y="208" text-anchor="middle">↓  드모르간: ¬(A∧B) ≡ ¬A∨¬B</text>
+
+<rect class="bx-teal" x="30" y="222" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-teal" x="165" y="242" text-anchor="middle" dominant-baseline="central" style="font-size:11px">(¬p ∨ ¬q) ∨ (p ∨ q)</text>
+<text class="ts" x="165" y="280" text-anchor="middle">↓  결합 및 교환법칙</text>
+
+<rect class="bx-teal" x="30" y="294" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-teal" x="165" y="314" text-anchor="middle" dominant-baseline="central" style="font-size:11px">(¬p ∨ p) ∨ (¬q ∨ q)</text>
+<text class="ts" x="165" y="352" text-anchor="middle">↓  배중률: ¬A∨A ≡ T</text>
+
+<rect class="bx-purple" x="30" y="366" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-purple" x="165" y="386" text-anchor="middle" dominant-baseline="central">T ∨ T</text>
+<text class="ts" x="165" y="424" text-anchor="middle">↓  지배 법칙: T∨T ≡ T</text>
+
+<rect class="bx-green" x="80" y="438" width="170" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-green" x="165" y="458" text-anchor="middle" dominant-baseline="central">T (항진명제)</text>
+
+<rect class="bx-gray" x="370" y="78" width="270" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-gray" x="505" y="98" text-anchor="middle" dominant-baseline="central" style="font-size:12px">⊢ (p ∧ q) → (p ∨ q)</text>
+
+<line x1="505" y1="118" x2="505" y2="146" class="ar" marker-end="url(#arr)"/>
+<text class="ts" x="460" y="136" text-anchor="end">intro h</text>
+
+<rect class="bx-coral" x="370" y="150" width="270" height="52" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="505" y="170" text-anchor="middle" dominant-baseline="central" style="font-size:12px">h : p ∧ q</text>
+<text class="ts sx-coral" x="505" y="188" text-anchor="middle" dominant-baseline="central">⊢ p ∨ q</text>
+
+<line x1="505" y1="202" x2="505" y2="230" class="ar" marker-end="url(#arr)"/>
+<text class="ts" x="460" y="220" text-anchor="end">h.left</text>
+
+<rect class="bx-amber" x="370" y="234" width="270" height="52" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="505" y="254" text-anchor="middle" dominant-baseline="central" style="font-size:12px">h.left : p</text>
+<text class="ts sx-amber" x="505" y="272" text-anchor="middle" dominant-baseline="central">p를 꺼냄 (단순화)</text>
+
+<line x1="505" y1="286" x2="505" y2="314" class="ar" marker-end="url(#arr)"/>
+<text class="ts" x="460" y="304" text-anchor="end">Or.inl</text>
+
+<rect class="bx-amber" x="370" y="318" width="270" height="52" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="505" y="338" text-anchor="middle" dominant-baseline="central" style="font-size:12px">Or.inl h.left : p ∨ q</text>
+<text class="ts sx-amber" x="505" y="356" text-anchor="middle" dominant-baseline="central">왼쪽 선택 (가산)</text>
+
+<line x1="505" y1="370" x2="505" y2="398" class="ar" marker-end="url(#arr)"/>
+<text class="ts" x="460" y="388" text-anchor="end">exact</text>
+
+<rect class="bx-green" x="420" y="402" width="170" height="40" rx="8" stroke-width="0.5"/>
+<text class="th tx-green" x="505" y="422" text-anchor="middle" dominant-baseline="central">No goals</text>
+
+<line class="ld" x1="250" y1="458" x2="420" y2="422"/>
+
+<text class="ts" x="340" y="505" text-anchor="middle">손 증명: 6단계 동치 변환으로 T에 도달</text>
+<text class="ts" x="340" y="523" text-anchor="middle">Lean 직접 증명: intro → h.left → Or.inl → exact, 2줄</text>
+
+<text class="th" x="340" y="560" text-anchor="middle">대응 관계: 손 증명 법칙 = Lean 도구</text>
+
+<rect class="bx-gray" x="40" y="575" width="600" height="26" rx="6" stroke-width="0.5"/>
+<text class="th tx-gray" x="170" y="588" text-anchor="middle" dominant-baseline="central" style="font-size:11px">손 증명 법칙</text>
+<text class="th tx-gray" x="410" y="588" text-anchor="middle" dominant-baseline="central" style="font-size:11px">Lean 4</text>
+<text class="th tx-gray" x="590" y="588" text-anchor="middle" dominant-baseline="central" style="font-size:11px">추론 규칙</text>
+
+<rect class="bx-teal" x="40" y="603" width="600" height="24" rx="0" stroke-width="0.3"/>
+<text class="ts tx-teal" x="170" y="615" text-anchor="middle" dominant-baseline="central">p ∧ q를 가정</text>
+<text class="th tx-teal" x="410" y="615" text-anchor="middle" dominant-baseline="central" style="font-size:12px">intro h</text>
+<text class="ts tx-teal" x="590" y="615" text-anchor="middle" dominant-baseline="central">가정 도입</text>
+
+<rect x="40" y="629" width="600" height="24" rx="0" fill="none" stroke="#ccc" stroke-width="0.3"/>
+<text class="ts" x="170" y="641" text-anchor="middle" dominant-baseline="central">p ∧ q에서 p 추출</text>
+<text class="th" x="410" y="641" text-anchor="middle" dominant-baseline="central" style="font-size:12px">h.left</text>
+<text class="ts" x="590" y="641" text-anchor="middle" dominant-baseline="central">단순화</text>
+
+<rect class="bx-teal" x="40" y="655" width="600" height="24" rx="0" stroke-width="0.3"/>
+<text class="ts tx-teal" x="170" y="667" text-anchor="middle" dominant-baseline="central">p이면 p ∨ q</text>
+<text class="th tx-teal" x="410" y="667" text-anchor="middle" dominant-baseline="central" style="font-size:12px">Or.inl / left</text>
+<text class="ts tx-teal" x="590" y="667" text-anchor="middle" dominant-baseline="central">가산</text>
+
+<rect x="40" y="681" width="600" height="24" rx="0" fill="none" stroke="#ccc" stroke-width="0.3"/>
+<text class="ts" x="170" y="693" text-anchor="middle" dominant-baseline="central">A→B ≡ ¬A∨B</text>
+<text class="th" x="410" y="693" text-anchor="middle" dominant-baseline="central" style="font-size:12px">imp_iff_not_or</text>
+<text class="ts" x="590" y="693" text-anchor="middle" dominant-baseline="central">라이브러리</text>
+
+<rect class="bx-teal" x="40" y="707" width="600" height="24" rx="0" stroke-width="0.3"/>
+<text class="ts tx-teal" x="170" y="719" text-anchor="middle" dominant-baseline="central">¬(A∧B) ≡ ¬A∨¬B</text>
+<text class="th tx-teal" x="410" y="719" text-anchor="middle" dominant-baseline="central" style="font-size:12px">not_and_or</text>
+<text class="ts tx-teal" x="590" y="719" text-anchor="middle" dominant-baseline="central">드모르간</text>
+
+<rect x="40" y="733" width="600" height="24" rx="0" fill="none" stroke="#ccc" stroke-width="0.3"/>
+<text class="ts" x="170" y="745" text-anchor="middle" dominant-baseline="central">¬A∨A ≡ T</text>
+<text class="th" x="410" y="745" text-anchor="middle" dominant-baseline="central" style="font-size:12px">Classical.em</text>
+<text class="ts" x="590" y="745" text-anchor="middle" dominant-baseline="central">배중률</text>
+
+<text class="ts" x="340" y="790" text-anchor="middle">위 3줄: 직접 증명 전술 / 아래 3줄: 동치 변환 시 라이브러리 정리</text>
+</svg>

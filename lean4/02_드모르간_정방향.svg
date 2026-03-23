@@ -1,0 +1,70 @@
+<svg width="680" viewBox="0 0 680 580" xmlns="http://www.w3.org/2000/svg" style="font-family: system-ui, -apple-system, sans-serif; background: #fff;">
+<style>
+  .th { font-size: 14px; font-weight: 500; fill: #1a1a1a; }
+  .ts { font-size: 12px; font-weight: 400; fill: #666; }
+  .bx-purple { fill: #EEEDFE; stroke: #534AB7; } .tx-purple { fill: #3C3489; }
+  .bx-gray { fill: #F1EFE8; stroke: #888780; } .tx-gray { fill: #444441; }
+  .bx-teal { fill: #E1F5EE; stroke: #0F6E56; } .tx-teal { fill: #085041; }
+  .bx-coral { fill: #FAECE7; stroke: #993C1D; } .tx-coral { fill: #712B13; } .sx-coral { fill: #993C1D; }
+  .bx-amber { fill: #FAEEDA; stroke: #854F0B; } .tx-amber { fill: #633806; } .sx-amber { fill: #854F0B; }
+  .bx-green { fill: #EAF3DE; stroke: #3B6D11; } .tx-green { fill: #27500A; }
+  .ld { stroke: #aaa; stroke-width: 0.5; stroke-dasharray: 3 3; }
+  .dv { stroke: #ccc; stroke-width: 0.5; stroke-dasharray: 4 4; }
+</style>
+
+<text class="th" x="340" y="24" text-anchor="middle">¬(P ∨ Q) ↔ (¬P ∧ ¬Q)  드모르간 법칙</text>
+<text class="ts" x="340" y="42" text-anchor="middle">"또는의 부정 = P도 아니고 Q도 아니다"</text>
+
+<rect class="bx-purple" x="40" y="56" width="600" height="28" rx="8" stroke-width="0.5"/>
+<text class="th tx-purple" x="340" y="70" text-anchor="middle" dominant-baseline="central" style="font-size:12px">↔ 이므로 두 방향을 각각 증명한다 → constructor</text>
+
+<text class="th" x="340" y="108" text-anchor="middle">정방향: ¬(P ∨ Q) → (¬P ∧ ¬Q)</text>
+<text class="th" x="165" y="134" text-anchor="middle">손 증명</text>
+<text class="th" x="510" y="134" text-anchor="middle">Lean 4</text>
+<line class="dv" x1="340" y1="126" x2="340" y2="550"/>
+
+<rect class="bx-gray" x="40" y="148" width="260" height="36" rx="6" stroke-width="0.5"/>
+<text class="ts tx-gray" x="170" y="166" text-anchor="middle" dominant-baseline="central">¬(P ∨ Q)를 가정한다</text>
+<rect class="bx-gray" x="370" y="148" width="270" height="36" rx="6" stroke-width="0.5"/>
+<text class="th tx-gray" x="505" y="166" text-anchor="middle" dominant-baseline="central" style="font-size:12px">intro h</text>
+<line class="ld" x1="300" y1="166" x2="368" y2="166"/>
+
+<text class="ts" x="170" y="202" text-anchor="middle">¬P, ¬Q를 각각 보인다</text>
+<rect class="bx-teal" x="370" y="192" width="270" height="28" rx="6" stroke-width="0.5"/>
+<text class="th tx-teal" x="505" y="206" text-anchor="middle" dominant-baseline="central" style="font-size:12px">constructor</text>
+
+<rect class="bx-coral" x="40" y="232" width="260" height="120" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="170" y="252" text-anchor="middle" dominant-baseline="central" style="font-size:12px">¬P 증명</text>
+<text class="ts sx-coral" x="170" y="274" text-anchor="middle" dominant-baseline="central">P를 가정한다</text>
+<text class="ts sx-coral" x="170" y="292" text-anchor="middle" dominant-baseline="central">(¬P를 보이므로 목표: False)</text>
+<text class="ts sx-coral" x="170" y="314" text-anchor="middle" dominant-baseline="central">P ∨ Q가 성립 (왼쪽)</text>
+<text class="ts sx-coral" x="170" y="334" text-anchor="middle" dominant-baseline="central">¬(P∨Q)와 모순 → ¬P</text>
+
+<rect class="bx-coral" x="370" y="232" width="270" height="120" rx="8" stroke-width="0.5"/>
+<text class="th tx-coral" x="505" y="252" text-anchor="middle" dominant-baseline="central" style="font-size:12px">첫째 목표: ⊢ ¬P</text>
+<text class="th tx-coral" x="505" y="276" text-anchor="middle" dominant-baseline="central" style="font-size:12px">intro hp</text>
+<text class="ts sx-coral" x="505" y="294" text-anchor="middle" dominant-baseline="central">hp : P, 목표: False</text>
+<text class="th tx-coral" x="505" y="316" text-anchor="middle" dominant-baseline="central" style="font-size:12px">apply h</text>
+<text class="ts sx-coral" x="505" y="334" text-anchor="middle" dominant-baseline="central">목표 False → P ∨ Q로 변경</text>
+<text class="th tx-coral" x="505" y="348" text-anchor="middle" dominant-baseline="central" style="font-size:12px">left; exact hp</text>
+<line class="ld" x1="300" y1="292" x2="368" y2="292"/>
+
+<rect class="bx-amber" x="40" y="368" width="260" height="120" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="170" y="388" text-anchor="middle" dominant-baseline="central" style="font-size:12px">¬Q 증명</text>
+<text class="ts sx-amber" x="170" y="410" text-anchor="middle" dominant-baseline="central">Q를 가정한다</text>
+<text class="ts sx-amber" x="170" y="428" text-anchor="middle" dominant-baseline="central">(¬Q를 보이므로 목표: False)</text>
+<text class="ts sx-amber" x="170" y="450" text-anchor="middle" dominant-baseline="central">P ∨ Q가 성립 (오른쪽)</text>
+<text class="ts sx-amber" x="170" y="470" text-anchor="middle" dominant-baseline="central">¬(P∨Q)와 모순 → ¬Q</text>
+
+<rect class="bx-amber" x="370" y="368" width="270" height="120" rx="8" stroke-width="0.5"/>
+<text class="th tx-amber" x="505" y="388" text-anchor="middle" dominant-baseline="central" style="font-size:12px">둘째 목표: ⊢ ¬Q</text>
+<text class="th tx-amber" x="505" y="412" text-anchor="middle" dominant-baseline="central" style="font-size:12px">intro hq</text>
+<text class="ts sx-amber" x="505" y="430" text-anchor="middle" dominant-baseline="central">hq : Q, 목표: False</text>
+<text class="th tx-amber" x="505" y="452" text-anchor="middle" dominant-baseline="central" style="font-size:12px">apply h</text>
+<text class="ts sx-amber" x="505" y="470" text-anchor="middle" dominant-baseline="central">목표 False → P ∨ Q로 변경</text>
+<text class="th tx-amber" x="505" y="484" text-anchor="middle" dominant-baseline="central" style="font-size:12px">right; exact hq</text>
+<line class="ld" x1="300" y1="430" x2="368" y2="430"/>
+
+<rect class="bx-green" x="160" y="504" width="360" height="32" rx="8" stroke-width="0.5"/>
+<text class="th tx-green" x="340" y="520" text-anchor="middle" dominant-baseline="central">정방향 완료: ¬P ∧ ¬Q 증명됨</text>
+</svg>
