@@ -137,9 +137,10 @@ example (P Q R : Prop) (hpq : P → Q) (hqr : Q → R) (hp : P) : R := by
   apply ______
   exact ______
 ```
-
+<details>
+<summary>정답 보기</summary>
 정답: `hqr`, `hpq`, `hp`
-
+</details>details>
 ### 실습 2: 부정 증명에서 apply
 
 ```lean
