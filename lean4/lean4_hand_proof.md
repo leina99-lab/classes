@@ -156,7 +156,7 @@ example (P Q : Prop) (h : ¬(P ∨ Q)) : ¬Q := by
 <summary>정답 보기</summary>
 정답: `h`, `right`, `hq`
 </details>
----
+
 
 ---
 
