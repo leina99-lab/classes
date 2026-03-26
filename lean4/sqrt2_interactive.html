@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sqrt(2) 무리수 증명 - 인터랙티브 시각 자료</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f7f9fc; --bg3: #eef2f7;
+    --text: #1a1a2e; --text2: #475569; --text3: #94a3b8;
+    --border: #e2e8f0; --blue: #185FA5; --teal: #0F6E56;
+    --coral: #D85A30; --red: #A32D2D; --purple: #534AB7;
+    --amber: #854F0B; --green: #0F6E56;
+    --code-bg: #1E293B; --code-text: #E2E8F0;
+    --info-bg: #E6F1FB; --info-border: #185FA5;
+    --warn-bg: #FFF8E1; --warn-border: #854F0B;
+    --success-bg: #E8F5EE; --success-border: #0F6E56;
+    --danger-bg: #FCEBEB; --danger-border: #A32D2D;
+    --purple-bg: #EEEDFE;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --border: #334155;
+      --info-bg: #0c2d48; --warn-bg: #302410; --success-bg: #0a2e1e; --danger-bg: #2d1313;
+      --purple-bg: #1f1c3d;
+      --code-bg: #0f172a;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem;
+  }
+  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.4rem; font-weight: 600; margin: 2.5rem 0 1rem; color: var(--blue); }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+  p { margin-bottom: 0.8rem; color: var(--text2); }
+  .subtitle { color: var(--text3); font-size: 0.95rem; margin-bottom: 2rem; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* SVG containers */
+  .svg-container {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; margin: 1rem 0;
+    overflow-x: auto;
+  }
+  .svg-container svg { display: block; margin: 0 auto; }
+
+  /* Stepper */
+  .stepper { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+  .step-btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .step-btn {
+    padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--bg);
+    color: var(--text2); transition: all 0.2s;
+  }
+  .step-btn.active { background: var(--info-bg); color: var(--blue); border-color: var(--blue); }
+  .step-btn:hover { background: var(--bg3); }
+  .panel { display: none; }
+  .panel.visible { display: block; }
+  .step-title { font-size: 1.15rem; font-weight: 600; margin: 0.5rem 0; }
+  .step-sub { font-size: 0.9rem; color: var(--text2); margin-bottom: 0.8rem; }
+  .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0.5rem 0; }
+  @media (max-width: 600px) { .twin { grid-template-columns: 1fr; } }
+  .label-tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px; margin-bottom: 4px;
+  }
+  .tag-math { background: var(--danger-bg); color: var(--coral); }
+  .tag-lean { background: var(--success-bg); color: var(--green); }
+  .tag-key { background: var(--warn-bg); color: var(--amber); }
+  .math-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; font-size: 0.9rem; line-height: 1.8; margin: 6px 0;
+  }
+  .code-block {
+    background: var(--code-bg); color: var(--code-text); border-radius: 8px;
+    padding: 12px 16px; font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; margin: 6px 0;
+    overflow-x: auto;
+  }
+  .highlight { font-weight: 600; color: var(--blue); }
+  .arrow-right { color: var(--text3); margin: 0 4px; }
+
+  .nav-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    font-size: 13px; cursor: pointer; color: var(--blue); background: none;
+    border: none; padding: 4px 0; font-weight: 500;
+  }
+  .nav-btn:disabled { color: var(--text3); cursor: default; }
+  .progress { display: flex; gap: 6px; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); transition: background 0.2s;
+  }
+  .dot.filled { background: var(--blue); }
+
+  /* Print */
+  @media print {
+    body { max-width: 100%; }
+    .step-btn-row, .nav-row { display: none; }
+    .panel { display: block !important; page-break-inside: avoid; margin-bottom: 1rem; border-top: 1px solid #ddd; padding-top: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>sqrt(2) 무리수 증명</h1>
+<p class="subtitle">손 증명에서 Lean 4까지 - 인터랙티브 시각 자료</p>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- 1. 전체 대응 구조 다이어그램 -->
+<!-- ════════════════════════════════════════════ -->
+<h2>1. 손 증명 5단계 &harr; Lean 4 전술 대응 구조</h2>
+<p>손 증명의 매 단계가 Lean 4의 전술(tactic)과 정확히 1:1로 대응한다. 아래 다이어그램에서 그 구조를 한눈에 확인할 수 있다.</p>
+
+<div class="svg-container">
+<svg width="100%" viewBox="0 0 680 620" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    .t { font-family: sans-serif; font-size: 14px; fill: var(--text); }
+    .ts { font-family: sans-serif; font-size: 12px; fill: var(--text2); }
+    .th { font-family: sans-serif; font-size: 14px; font-weight: 500; fill: var(--text); }
+    .c-coral rect { fill: #FAECE7; stroke: #D85A30; }
+    .c-coral .th { fill: #712B13; } .c-coral .ts { fill: #993C1D; }
+    .c-teal rect { fill: #E1F5EE; stroke: #1D9E75; }
+    .c-teal .th { fill: #085041; } .c-teal .ts { fill: #0F6E56; }
+    .c-blue rect { fill: #E6F1FB; stroke: #378ADD; }
+    .c-blue .th { fill: #0C447C; } .c-blue .ts { fill: #185FA5; }
+    .c-red rect { fill: #FCEBEB; stroke: #E24B4A; }
+    .c-red .th { fill: #791F1F; } .c-red .ts { fill: #A32D2D; }
+    .c-purple rect { fill: #EEEDFE; stroke: #7F77DD; }
+    .c-purple .th { fill: #3C3489; } .c-purple .ts { fill: #534AB7; }
+    @media (prefers-color-scheme: dark) {
+      .t { fill: #e2e8f0; } .ts { fill: #94a3b8; } .th { fill: #e2e8f0; }
+      .c-coral rect { fill: #4A1B0C; stroke: #F0997B; }
+      .c-coral .th { fill: #F5C4B3; } .c-coral .ts { fill: #F0997B; }
+      .c-teal rect { fill: #04342C; stroke: #5DCAA5; }
+      .c-teal .th { fill: #9FE1CB; } .c-teal .ts { fill: #5DCAA5; }
+      .c-blue rect { fill: #042C53; stroke: #85B7EB; }
+      .c-blue .th { fill: #B5D4F4; } .c-blue .ts { fill: #85B7EB; }
+      .c-red rect { fill: #501313; stroke: #F09595; }
+      .c-red .th { fill: #F7C1C1; } .c-red .ts { fill: #F09595; }
+      .c-purple rect { fill: #26215C; stroke: #AFA9EC; }
+      .c-purple .th { fill: #CECBF6; } .c-purple .ts { fill: #AFA9EC; }
+    }
+  </style>
+</defs>
+
+<text class="th" x="155" y="30" text-anchor="middle">손 증명</text>
+<text class="th" x="525" y="30" text-anchor="middle">Lean 4 전술</text>
+<line x1="40" y1="42" x2="640" y2="42" stroke="var(--border)" stroke-width="0.5"/>
+
+<g class="c-coral">
+  <rect x="40" y="60" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">1단계: 유리수라 가정</text>
+  <text class="ts" x="160" y="100" text-anchor="middle" dominant-baseline="central">sqrt(2) = a/b (기약분수)</text>
+</g>
+<g class="c-coral">
+  <rect x="400" y="60" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="80" text-anchor="middle" dominant-baseline="central">by_contra</text>
+  <text class="ts" x="520" y="100" text-anchor="middle" dominant-baseline="central">"아니라고 가정하자"</text>
+</g>
+<line x1="280" y1="88" x2="398" y2="88" stroke="#D85A30" stroke-width="1" marker-end="url(#arrow)" opacity="0.6"/>
+
+<g class="c-teal">
+  <rect x="40" y="140" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="160" text-anchor="middle" dominant-baseline="central">2단계: a/b 형태 분해</text>
+  <text class="ts" x="160" y="180" text-anchor="middle" dominant-baseline="central">2b^2 = a^2 유도</text>
+</g>
+<g class="c-teal">
+  <rect x="400" y="140" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="160" text-anchor="middle" dominant-baseline="central">obtain</text>
+  <text class="ts" x="520" y="180" text-anchor="middle" dominant-baseline="central">"a, b를 꺼내자"</text>
+</g>
+<line x1="280" y1="168" x2="398" y2="168" stroke="#1D9E75" stroke-width="1" marker-end="url(#arrow)" opacity="0.6"/>
+
+<g class="c-blue">
+  <rect x="40" y="220" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="240" text-anchor="middle" dominant-baseline="central">3단계: a^2 짝수 -> a 짝수</text>
+  <text class="ts" x="160" y="260" text-anchor="middle" dominant-baseline="central">짝수의 제곱만 짝수</text>
+</g>
+<g class="c-blue">
+  <rect x="400" y="220" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="240" text-anchor="middle" dominant-baseline="central">even_of_even_sq</text>
+  <text class="ts" x="520" y="260" text-anchor="middle" dominant-baseline="central">보조정리 (lemma)</text>
+</g>
+<line x1="280" y1="248" x2="398" y2="248" stroke="#378ADD" stroke-width="1" marker-end="url(#arrow)" opacity="0.6"/>
+
+<g class="c-blue">
+  <rect x="40" y="300" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="320" text-anchor="middle" dominant-baseline="central">4단계: b^2 짝수 -> b 짝수</text>
+  <text class="ts" x="160" y="340" text-anchor="middle" dominant-baseline="central">같은 원리 반복</text>
+</g>
+<g class="c-blue">
+  <rect x="400" y="300" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="320" text-anchor="middle" dominant-baseline="central">even_of_even_sq</text>
+  <text class="ts" x="520" y="340" text-anchor="middle" dominant-baseline="central">동일 보조정리 재사용</text>
+</g>
+<line x1="280" y1="328" x2="398" y2="328" stroke="#378ADD" stroke-width="1" marker-end="url(#arrow)" opacity="0.6"/>
+
+<g class="c-red">
+  <rect x="40" y="380" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="400" text-anchor="middle" dominant-baseline="central">5단계: 모순 발견!</text>
+  <text class="ts" x="160" y="420" text-anchor="middle" dominant-baseline="central">둘 다 짝수 = 기약 아님</text>
+</g>
+<g class="c-red">
+  <rect x="400" y="380" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="400" text-anchor="middle" dominant-baseline="central">absurd</text>
+  <text class="ts" x="520" y="420" text-anchor="middle" dominant-baseline="central">"모순이다!"</text>
+</g>
+<line x1="280" y1="408" x2="398" y2="408" stroke="#E24B4A" stroke-width="1" marker-end="url(#arrow)" opacity="0.6"/>
+
+<line x1="40" y1="460" x2="640" y2="460" stroke="var(--border)" stroke-width="0.5"/>
+
+<g class="c-purple">
+  <rect x="120" y="480" width="440" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="500" text-anchor="middle" dominant-baseline="central">Mathlib 한 줄 완성</text>
+  <text class="ts" x="340" y="520" text-anchor="middle" dominant-baseline="central">irrational_sqrt_two : Irrational (Real.sqrt 2)</text>
+</g>
+
+<text class="ts" x="340" y="568" text-anchor="middle">5단계 손 증명 = 5개 Lean 전술 = Mathlib 1줄</text>
+<text class="ts" x="340" y="590" text-anchor="middle">수학적 추론과 형식 증명이 정확히 1:1 대응한다</text>
+</svg>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- 2. 단계별 인터랙티브 스테퍼 -->
+<!-- ════════════════════════════════════════════ -->
+<h2>2. 단계별 상세 설명 (인터랙티브)</h2>
+<p>버튼을 눌러 각 단계를 살펴볼 수 있다. "이전/다음" 화살표로도 이동 가능하다.</p>
+
+<div class="stepper">
+  <div class="step-btn-row">
+    <button class="step-btn active" onclick="go(0)">0. 전체 구조</button>
+    <button class="step-btn" onclick="go(1)">1. 귀류법</button>
+    <button class="step-btn" onclick="go(2)">2. 분해</button>
+    <button class="step-btn" onclick="go(3)">3. a 짝수</button>
+    <button class="step-btn" onclick="go(4)">4. b 짝수</button>
+    <button class="step-btn" onclick="go(5)">5. 모순!</button>
+    <button class="step-btn" onclick="go(6)">6. Mathlib</button>
+  </div>
+
+  <div id="p0" class="panel visible">
+    <div class="step-title">왜 이 증명이 중요한가?</div>
+    <div class="step-sub">"sqrt(2)가 무리수이다"는 고대 그리스 이래 가장 유명한 증명 중 하나이다. 이 증명의 구조는 <span class="highlight">귀류법</span>(proof by contradiction)이다. "만약 유리수라면 모순이 생긴다. 그러므로 유리수가 아니다."</div>
+    <div class="math-box">
+      <span class="label-tag tag-key">핵심 아이디어</span><br>
+      손으로 쓰는 증명의 매 단계가 Lean 4에서 정확히 하나의 전술(tactic)에 대응한다.<br><br>
+      가정한다 <span class="arrow-right">--&gt;</span> <span class="highlight">by_contra</span><br>
+      분해한다 <span class="arrow-right">--&gt;</span> <span class="highlight">obtain</span><br>
+      성질을 쓴다 <span class="arrow-right">--&gt;</span> <span class="highlight">lemma 호출</span><br>
+      모순을 선언한다 <span class="arrow-right">--&gt;</span> <span class="highlight">absurd</span>
+    </div>
+  </div>
+
+  <div id="p1" class="panel">
+    <div class="step-title">1단계: "유리수라고 가정한다" = by_contra</div>
+    <div class="step-sub">귀류법의 첫 걸음이다. "증명하고 싶은 것의 반대가 참이라고 가정"하는 것이다.</div>
+    <div class="twin">
+      <div>
+        <span class="label-tag tag-math">손 증명</span>
+        <div class="math-box">sqrt(2)가 유리수라고 <strong>가정</strong>하자.<br>그러면 sqrt(2) = a/b로 쓸 수 있다.<br>(단, a와 b는 서로소인 자연수)</div>
+      </div>
+      <div>
+        <span class="label-tag tag-lean">Lean 4</span>
+        <div class="code-block">theorem sqrt2_irrational :
+  Irrational (Real.sqrt 2) := by
+  <strong>by_contra h</strong>
+  -- h : 가정 = "유리수이다"
+  -- goal : False (모순을 찾아라)</div>
+      </div>
+    </div>
+    <div class="math-box">
+      <span class="label-tag tag-key">왜 by_contra인가?</span><br>
+      "Irrational이다"를 직접 증명하기는 어렵다. 대신 "유리수라고 <strong>가정</strong>하면 모순(False)이 생긴다"를 보이는 것이다. by_contra는 목표(goal)를 <span class="highlight">False</span>로 바꾸고, 원래 명제의 부정을 가설(h)로 넣어준다.
+    </div>
+  </div>
+
+  <div id="p2" class="panel">
+    <div class="step-title">2단계: "a/b 형태로 분해" = obtain</div>
+    <div class="step-sub">"유리수이다"라는 가정 h 안에는 "어떤 정수 a, b가 존재하여..."라는 정보가 숨어 있다. 이것을 꺼내는 작업이다.</div>
+    <div class="twin">
+      <div>
+        <span class="label-tag tag-math">손 증명</span>
+        <div class="math-box">sqrt(2) = a/b이므로<br>양변을 제곱하면:<br><strong>2 = a^2 / b^2</strong><br>정리하면: <strong>2b^2 = a^2</strong></div>
+      </div>
+      <div>
+        <span class="label-tag tag-lean">Lean 4</span>
+        <div class="code-block">  <strong>obtain</strong> &langle;a, b, hb, hab&rangle; := h
+  -- a : 정수 (분자)
+  -- b : 정수 (분모)
+  -- hb : b 는 0이 아니다
+  -- hab : sqrt 2 = a / b</div>
+      </div>
+    </div>
+    <div class="math-box">
+      <span class="label-tag tag-key">왜 obtain인가?</span><br>
+      obtain은 "존재한다(exists)"는 형태의 가설을 분해하는 전술이다. 마치 상자를 열어서 안에 든 물건(a, b, 조건들)을 하나하나 꺼내는 것과 같다.
+    </div>
+  </div>
+
+  <div id="p3" class="panel">
+    <div class="step-title">3단계: "a^2이 짝수 &rarr; a도 짝수" = 보조정리(lemma)</div>
+    <div class="step-sub">핵심적인 수학적 사실이 필요하다. "n^2이 짝수이면 n도 짝수이다." 이것이 <span class="highlight">보조정리</span>(lemma)이다.</div>
+    <div class="twin">
+      <div>
+        <span class="label-tag tag-math">손 증명</span>
+        <div class="math-box">2b^2 = a^2 이므로 a^2은 짝수이다.<br><br><strong>핵심 사실</strong>: n^2이 짝수이면<br>n도 반드시 짝수이다.<br>(홀수의 제곱은 항상 홀수이므로)<br><br>따라서 <strong>a는 짝수</strong>이다.</div>
+      </div>
+      <div>
+        <span class="label-tag tag-lean">Lean 4</span>
+        <div class="code-block">-- 보조정리를 먼저 증명한다
+<strong>lemma</strong> even_of_even_sq
+  (n : Nat) (h : Even (n^2))
+  : Even n := by
+  by_contra hodd
+  ...
+
+-- 본 증명에서 호출
+have ha_even : Even a :=
+  <strong>even_of_even_sq a</strong> h_a_sq_even</div>
+      </div>
+    </div>
+    <div class="math-box">
+      <span class="label-tag tag-key">lemma vs theorem: 벽돌과 건물</span><br>
+      <strong>보조정리</strong>(lemma)는 벽돌이다. 그 자체로는 작고 단순하다.<br>
+      <strong>정리</strong>(theorem)는 건물이다. 벽돌(lemma)을 쌓아서 완성한다.<br><br>
+      Lean 4에서 lemma와 theorem은 기능상 완전히 동일하다. 이름만 다를 뿐이다.
+    </div>
+  </div>
+
+  <div id="p4" class="panel">
+    <div class="step-title">4단계: "b도 짝수이다" = 같은 lemma 재사용</div>
+    <div class="step-sub">3단계에서 만든 벽돌(lemma)을 <strong>한 번 더</strong> 사용한다.</div>
+    <div class="twin">
+      <div>
+        <span class="label-tag tag-math">손 증명</span>
+        <div class="math-box">a가 짝수이므로 a = 2c로 놓자.<br>2b^2 = (2c)^2 = 4c^2<br>따라서 <strong>b^2 = 2c^2</strong><br><br>b^2이 짝수이므로<br>(3단계와 <strong>같은 논리</strong>로)<br><strong>b도 짝수</strong>이다.</div>
+      </div>
+      <div>
+        <span class="label-tag tag-lean">Lean 4</span>
+        <div class="code-block">-- a = 2c 형태로 분해
+obtain &langle;c, hc&rangle; := ha_even
+
+-- 대입하여 b^2 = 2c^2 유도
+have h_b_sq : b^2 = 2 * c^2 := by
+  linarith
+
+-- <strong>동일한 lemma를 b에 적용!</strong>
+have hb_even : Even b :=
+  <strong>even_of_even_sq b</strong> h_b_sq_even</div>
+      </div>
+    </div>
+    <div class="math-box">
+      <span class="label-tag tag-key">lemma 재사용의 핵심</span><br>
+      한 번 증명한 lemma는 어디서든 다시 쓸 수 있다. 손 증명에서 "같은 논리로"라고 한 줄로 넘기는 부분이 Lean에서는 같은 lemma 이름을 한 번 더 호출하는 것으로 구현된다.
+    </div>
+  </div>
+
+  <div id="p5" class="panel">
+    <div class="step-title">5단계: "기약분수 가정에 모순!" = absurd</div>
+    <div class="step-sub">a도 짝수, b도 짝수. 그런데 처음에 a/b는 기약분수라고 했다. <span class="highlight">모순</span>이다!</div>
+    <div class="twin">
+      <div>
+        <span class="label-tag tag-math">손 증명</span>
+        <div class="math-box">a도 짝수, b도 짝수<br>&rarr; 2가 공약수<br>&rarr; 기약분수가 아니다!<br><br><strong>가정에 모순.</strong><br>따라서 sqrt(2)는 무리수이다. QED</div>
+      </div>
+      <div>
+        <span class="label-tag tag-lean">Lean 4</span>
+        <div class="code-block">have h_contra :=
+  not_coprime_of_both_even
+    ha_even hb_even
+
+-- 모순 선언!
+<strong>absurd</strong> h_coprime h_contra
+-- "서로소인데 서로소가 아니다"
+-- 따라서 False. QED</div>
+      </div>
+    </div>
+    <div class="math-box">
+      <span class="label-tag tag-key">absurd의 작동 원리</span><br>
+      absurd는 두 개의 증거를 받는다:<br>
+      1. P가 참이라는 증거 (h_coprime: 서로소이다)<br>
+      2. P가 거짓이라는 증거 (h_contra: 서로소가 아니다)<br><br>
+      P와 not P가 동시에 참일 수 없으므로 <span class="highlight">False</span>가 증명된다.
+    </div>
+  </div>
+
+  <div id="p6" class="panel">
+    <div class="step-title">Mathlib: 30줄을 1줄로</div>
+    <div class="step-sub">위의 5단계를 모두 직접 작성하면 약 30줄 이상의 Lean 코드가 된다. Mathlib에는 이미 누군가가 이 모든 과정을 완성해 두었다.</div>
+    <div class="code-block">#check irrational_sqrt_two
+-- irrational_sqrt_two : Irrational (Real.sqrt 2)</div>
+    <div class="math-box">
+      <span class="label-tag tag-key">이것이 형식 증명의 힘이다</span><br>
+      Mathlib의 한 줄은 "누군가 대신 써준 코드"가 아니다. 5단계 증명이 기계적으로 <strong>검증</strong>된 채로 저장되어 있는 것이다.<br><br>
+      - 손 증명 = 처음부터 벽돌을 구워서 건물을 짓는 것<br>
+      - lemma 사용 = 미리 구운 벽돌을 가져다 쓰는 것<br>
+      - Mathlib = 이미 완성된 건물의 주소를 아는 것
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="go(cur-1)" disabled>&larr; 이전</button>
+    <div class="progress" id="dots"></div>
+    <button class="nav-btn" id="next-btn" onclick="go(cur+1)">다음 &rarr;</button>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- 3. lemma/theorem 구조도 -->
+<!-- ════════════════════════════════════════════ -->
+<h2>3. lemma(벽돌)와 theorem(건물)의 관계</h2>
+<p>보조정리(lemma)가 정리(theorem)의 부품이 되는 구조를 시각화한 것이다. 아래에서 위로 조립되는 과정을 확인하라.</p>
+
+<div class="svg-container">
+<svg width="100%" viewBox="0 0 680 480" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<text class="th" x="340" y="30" text-anchor="middle">lemma(벽돌)와 theorem(건물)의 관계</text>
+<line x1="100" y1="42" x2="580" y2="42" stroke="var(--border)" stroke-width="0.5"/>
+
+<g class="c-blue">
+  <rect x="60" y="340" width="250" height="50" rx="6" stroke-width="0.5"/>
+  <text class="th" x="185" y="360" text-anchor="middle" dominant-baseline="central">lemma: even_of_even_sq</text>
+  <text class="ts" x="185" y="378" text-anchor="middle" dominant-baseline="central">n^2 짝수 &rarr; n 짝수</text>
+</g>
+
+<g class="c-blue">
+  <rect x="370" y="340" width="250" height="50" rx="6" stroke-width="0.5"/>
+  <text class="th" x="495" y="360" text-anchor="middle" dominant-baseline="central">lemma: not_coprime</text>
+  <text class="ts" x="495" y="378" text-anchor="middle" dominant-baseline="central">둘 다 짝수 &rarr; 서로소 아님</text>
+</g>
+
+<text class="ts" x="340" y="420" text-anchor="middle">벽돌 (재사용 가능한 부품)</text>
+
+<line x1="185" y1="340" x2="185" y2="290" stroke="#378ADD" stroke-width="1" marker-end="url(#arrow2)" opacity="0.5"/>
+<line x1="495" y1="340" x2="495" y2="290" stroke="#378ADD" stroke-width="1" marker-end="url(#arrow2)" opacity="0.5"/>
+<line x1="185" y1="340" x2="340" y2="290" stroke="#378ADD" stroke-width="0.8" marker-end="url(#arrow2)" opacity="0.3" stroke-dasharray="4 3"/>
+
+<text class="ts" x="145" y="314" fill="#378ADD" opacity="0.7">a에 적용</text>
+<text class="ts" x="285" y="324" fill="#378ADD" opacity="0.5">b에 재적용</text>
+<text class="ts" x="480" y="314" fill="#378ADD" opacity="0.7">모순 유도</text>
+
+<g class="c-coral">
+  <rect x="100" y="230" width="160" height="56" rx="6" stroke-width="0.5"/>
+  <text class="th" x="180" y="252" text-anchor="middle" dominant-baseline="central">a 짝수</text>
+  <text class="ts" x="180" y="270" text-anchor="middle" dominant-baseline="central">3단계 결과</text>
+</g>
+<g class="c-coral">
+  <rect x="270" y="230" width="140" height="56" rx="6" stroke-width="0.5"/>
+  <text class="th" x="340" y="252" text-anchor="middle" dominant-baseline="central">b 짝수</text>
+  <text class="ts" x="340" y="270" text-anchor="middle" dominant-baseline="central">4단계 결과</text>
+</g>
+<g class="c-red">
+  <rect x="420" y="230" width="160" height="56" rx="6" stroke-width="0.5"/>
+  <text class="th" x="500" y="252" text-anchor="middle" dominant-baseline="central">모순 (False)</text>
+  <text class="ts" x="500" y="270" text-anchor="middle" dominant-baseline="central">5단계 결과</text>
+</g>
+
+<line x1="180" y1="230" x2="300" y2="180" stroke="#D85A30" stroke-width="1" marker-end="url(#arrow2)" opacity="0.5"/>
+<line x1="340" y1="230" x2="340" y2="180" stroke="#D85A30" stroke-width="1" marker-end="url(#arrow2)" opacity="0.5"/>
+<line x1="500" y1="230" x2="380" y2="180" stroke="#E24B4A" stroke-width="1" marker-end="url(#arrow2)" opacity="0.5"/>
+
+<g class="c-teal">
+  <rect x="160" y="120" width="360" height="56" rx="6" stroke-width="0.5"/>
+  <text class="th" x="340" y="140" text-anchor="middle" dominant-baseline="central">by_contra + obtain + absurd</text>
+  <text class="ts" x="340" y="158" text-anchor="middle" dominant-baseline="central">귀류법 뼈대 (1,2,5단계)</text>
+</g>
+
+<line x1="340" y1="120" x2="340" y2="90" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arrow2)" opacity="0.6"/>
+
+<g class="c-purple">
+  <rect x="140" y="56" width="400" height="34" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="77" text-anchor="middle" dominant-baseline="central">theorem: sqrt(2)는 무리수이다</text>
+</g>
+
+<text class="ts" x="340" y="460" text-anchor="middle">벽돌(lemma)을 조립하여 건물(theorem)을 완성한다</text>
+</svg>
+</div>
+
+<hr class="divider">
+
+<p style="text-align:center; color: var(--text3); font-size: 0.85rem; margin-top: 2rem;">
+  Discrete Mathematics x Lean 4 | sqrt(2) 무리수 증명 인터랙티브 자료
+</p>
+
+<script>
+var cur = 0;
+var total = 7;
+var dotsEl = document.getElementById('dots');
+for (var i = 0; i < total; i++) {
+  var d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' filled' : '');
+  dotsEl.appendChild(d);
+}
+function go(n) {
+  if (n < 0 || n >= total) return;
+  document.getElementById('p' + cur).classList.remove('visible');
+  document.getElementById('p' + n).classList.add('visible');
+  var btns = document.querySelectorAll('.step-btn');
+  btns[cur].classList.remove('active');
+  btns[n].classList.add('active');
+  var allDots = document.querySelectorAll('.dot');
+  for (var i = 0; i < total; i++) allDots[i].classList.toggle('filled', i <= n);
+  cur = n;
+  document.getElementById('prev-btn').disabled = cur === 0;
+  document.getElementById('next-btn').disabled = cur === total - 1;
+}
+</script>
+
+</body>
+</html>
