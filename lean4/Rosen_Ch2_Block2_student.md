@@ -8,7 +8,7 @@
 
 ---
 
-## 정의 1~2: 함수, 정의역, 공역, 치역
+## 정의 1-2: 함수, 정의역, 공역, 치역
 
 ### 정의 1: 함수(Function)
 
@@ -24,14 +24,14 @@
 
 f = g ⇔ 모든 a에 대해 f(a) = g(a)
 
-### 예제 1~5
+### 예제 1-5
 
 - f: Z -> Z, f(x) = x^2. 정의역 Z, 공역 Z, 치역 = {0, 1, 4, 9, ...}
 - 치역은 공역의 **부분집합**이다. 치역 = 공역인 경우는 전사 함수이다.
 
 ---
 
-## 정의 3~4: 함수 연산 + 예제 6~7
+## 정의 3-4: 함수 연산 + 예제 6-7
 
 ### 함수의 합, 곱
 
@@ -54,7 +54,7 @@ f(S) = {f(s) | s ∈ S}
 
 > f(a) = f(b) → a = b
 
-### 예제 8~12
+### 예제 8-12
 
 | 함수 | 단사? | 이유 |
 |------|-------|------|
@@ -67,7 +67,7 @@ f(S) = {f(s) | s ∈ S}
 
 ---
 
-## 정의 7~8: 전사, 전단사 + 예제 13~18
+## 정의 7-8: 전사, 전단사 + 예제 13-18
 
 ### 정의 7: 전사 함수(Surjection, Onto)
 
@@ -87,7 +87,7 @@ f(S) = {f(s) | s ∈ S}
 | **전사**(Surjection) | 빠짐없이 도달 | 임의의 b에 대해 a 제시 |
 | **전단사**(Bijection) | 단사 + 전사 | 둘 다 증명 |
 
-### 예제 13~18
+### 예제 13-18
 
 | 함수 | 단사 | 전사 | 전단사 |
 |------|------|------|--------|
@@ -113,10 +113,21 @@ f(S) = {f(s) | s ∈ S}
 -- 단사: f(a) = f(b) → a = b
 example : Function.Injective (fun n : Nat => n + 1) := by
   intro a b h     -- h : a + 1 = b + 1
-  omega            -- a = b 자동!
+  simp at h
+  omega   
 ```
 
-**왜 `intro a b h`인가?** `Function.Injective f`의 정의는 `∀ a b, f a = f b → a = b`이다. 따라서 a, b, h를 도입한다.
+**정리: simp at 누구?**
+
+|  대상  |  문법  |  언제  | 
+|------|----------|----------|
+|목표 |simp (그냥)|목표에 람다가 있을 때|
+|가설 |hsimp at h|가설에 람다가 있을 때|
+|둘 다|simp at h ⊢|양쪽 다 있을 때|
+|변수|b불가|b는 값이지 명제가 아니다|
+
+
+**왜 `intro a b h`인가?** `Function.Injective f`의 정의는 `∀ a b, f a = f b → a = b`이다. 따라서 a, b, h를 도입한다.  
 
 ### InfoView 상태 변화
 
@@ -133,7 +144,7 @@ example : Function.Injective (fun n : Nat => n + 1) := by
 example : Function.Surjective (fun n : Int => n + 1) := by
   intro b          -- b : Int  (임의의 출력값)
   use b - 1        -- 증인: b - 1  (이것이 입력값)
-  omega            -- (b-1) + 1 = b  자동!
+  simp             -- (b-1) + 1 = b  자동!
 ```
 
 **왜 `use b - 1`인가?** 전사를 보이려면 "이 출력 b를 만드는 입력이 존재한다"를 보여야 한다. `use`로 증인(witness)을 제시한다.
@@ -153,8 +164,12 @@ example : Function.Surjective (fun n : Int => n + 1) := by
 -- 전단사 = 단사 + 전사
 example : Function.Bijective (fun n : Int => n + 1) := by
   constructor
-  · intro a b h; omega    -- 단사
-  · intro b; use b - 1; omega  -- 전사
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b - 1
+    simp
 ```
 
 **왜 `constructor`인가?** `Bijective f`는 `Injective f ∧ Surjective f`로 정의된다. `constructor`가 ∧를 두 목표로 분리한다.
@@ -174,6 +189,7 @@ example : Function.Injective (fun n : Nat => 2 * n) := by
 ```lean
 example : Function.Injective (fun n : Nat => 2 * n) := by
   intro a b h
+  simp at h
   omega
 ```
 
@@ -183,7 +199,7 @@ example : Function.Injective (fun n : Nat => 2 * n) := by
 
 ---
 
-## 정의 9~10: 역함수, 합성 + 예제 19~25
+## 정의 9-10: 역함수, 합성 + 예제 19-25
 
 ### 정의 9: 역함수(Inverse)
 
@@ -197,7 +213,7 @@ f^(-1)(b) = a ⇔ f(a) = b
 
 > **순서 주의**: "먼저 g, 그 다음 f". f o g != g o f 일반적으로 성립하지 않는다.
 
-### 예제 19~25
+### 예제 19-25
 
 f(x) = 2x + 3, g(x) = 3x + 2일 때:
 
@@ -218,7 +234,7 @@ def gg (x : Int) := 3 * x + 2
 
 ---
 
-## 정의 12: 바닥/천정 함수 + 예제 28~32
+## 정의 12: 바닥/천정 함수 + 예제 28-32
 
 ### 바닥 함수(Floor)
 
@@ -243,7 +259,7 @@ ceil(x) - 1 < x <= ceil(x)
 
 ---
 
-## 예제 33~34: 계승 함수, 부분 함수
+## 예제 33-34: 계승 함수, 부분 함수
 
 ### 계승(Factorial)
 
@@ -324,14 +340,104 @@ example : ¬ Function.Injective (fun n : Int => n^2) := by
 </details>
 
 ---
+## norm_num -- 구체적 수치 계산기
 
+`norm_num`은 **구체적인 숫자가 포함된 식**을 계산하여 참/거짓을 판정하는 전술이다.
+
+### 한 마디로
+
+```
+사람이 계산기를 두드리면 바로 알 수 있는 것 → norm_num
+```
+
+---
+
+### 할 수 있는 것
+
+```lean
+-- 등식
+example : 2 + 3 = 5 := by norm_num
+example : 2^10 = 1024 := by norm_num
+
+-- 부등식
+example : 3 < 7 := by norm_num
+example : 100 ≥ 99 := by norm_num
+
+-- 부정
+example : 2 + 2 ≠ 5 := by norm_num
+example : ¬(3 = 7) := by norm_num
+
+-- 나눗셈, 나머지
+example : 10 % 3 = 1 := by norm_num
+example : 10 / 3 = 3 := by norm_num
+
+-- 소수 판정
+example : Nat.Prime 7 := by norm_num
+example : ¬ Nat.Prime 4 := by norm_num
+```
+
+### 할 수 없는 것
+
+```lean
+-- 변수가 포함된 식 → omega 또는 ring
+example (n : Nat) : n + 0 = n := by norm_num      -- 실패!
+example (a b : Int) : a + b = b + a := by norm_num -- 실패!
+```
+
+변수가 들어가면 "계산기로 두드릴 수 없다". 그때는 다른 전술이 필요하다.
+
+---
+
+### omega, ring, simp와 비교
+
+| 전술 | 영역 | 예시 |
+|------|------|------|
+| `norm_num` | 구체적 숫자 계산 | `2^10 = 1024`, `Nat.Prime 7` |
+| `omega` | 변수 포함 선형 산술 | `n + 1 > n`, `a + 1 = b + 1 → a = b` |
+| `ring` | 대수 등식(다항식) | `(a+b)^2 = a^2 + 2*a*b + b^2` |
+| `simp` | 식 단순화 + 정의 펼치기 | 람다 축약, 집합 멤버십 |
+
+---
+
+### 실전에서 자주 쓰는 패턴
+
+```lean
+-- 1. 반례 제시할 때 (단사가 아님 증명)
+example : ¬ Function.Injective (fun n : Int => n^2) := by
+  intro h
+  have := h (show (1:Int)^2 = (-1:Int)^2 by norm_num)
+  norm_num at this
+
+-- 2. simp와 조합
+example : (3 : Nat) ∈ {n : Nat | n > 2} := by
+  simp        -- 목표: 3 > 2
+  norm_num    -- 계산으로 확인
+
+-- 3. omega가 안 되는 거듭제곱
+example : 2^8 = 256 := by norm_num    -- omega는 거듭제곱 못 함
+```
+
+---
+
+### 판단 기준
+
+```
+목표에 변수가 없고 숫자만 있는가?
+    ├── 예 → norm_num
+    └── 아니오
+         ├── 선형 산술(+, -, <, =) → omega
+         ├── 다항식 등식 → ring
+         └── 정의 펼치기 필요 → simp
+```
+
+요약하면, `norm_num`은 "계산기"이다. 숫자만 있으면 두드려서 답을 내고, 변수가 있으면 손을 놓는다.
 ---
 
 # 2.4 수열과 수열의 합 (Sequences and Sums)
 
 ---
 
-## 정의 1~3: 수열, 등비, 등차 + 예제 1~4
+## 정의 1-3: 수열, 등비, 등차 + 예제 1-4
 
 ### 정의 1: 수열(Sequence)
 
@@ -351,7 +457,7 @@ a, a+d, a+2d, a+3d, ...
 
 초항 a, 공차 d
 
-### 예제 1~4
+### 예제 1-4
 
 | 수열 | 종류 | 초항 | 공비/공차 |
 |------|------|------|----------|
@@ -366,7 +472,7 @@ def arith (n : Nat) : Int := -1 + 4 * n
 
 ---
 
-## 정의 4~5: 점화 관계 + 피보나치 + 예제 5~9
+## 정의 4-5: 점화 관계 + 피보나치 + 예제 5-9
 
 ### 정의 4: 점화 관계(Recurrence Relation)
 
@@ -450,7 +556,7 @@ def geomSeq : Nat -> Nat
 
 ---
 
-## 예제 10~11: 반복법(Iteration)과 복리
+## 예제 10-11: 반복법(Iteration)과 복리
 
 ### 반복법
 
@@ -471,7 +577,7 @@ P_n = 10000 * (1.11)^30
 
 ---
 
-## 예제 12~16: 특수 정수수열의 일반항 찾기
+## 예제 12-16: 특수 정수수열의 일반항 찾기
 
 패턴을 파악하여 일반항 a_n을 찾는 연습이다.
 
@@ -506,7 +612,7 @@ $$\sum_{i=1}^{n} a_i = a_1 + a_2 + \cdots + a_n$$
 
 ---
 
-## 예제 17~23: 합 계산
+## 예제 17-23: 합 계산
 
 ### 빈칸 채우기
 
@@ -524,8 +630,105 @@ $$\sum_{i=1}^{n} a_i = a_1 + a_2 + \cdots + a_n$$
 </details>
 
 ---
+## Lean 4 코드 해부: 1부터 100까지의 합
 
-## 예제 24~25: 무한급수
+```lean
+#eval (List.range 100).map (· + 1) |>.foldl (· + ·) 0
+-- 5050
+```
+
+1부터 100까지의 합을 구하는 코드이다. 하나씩 뜯어 보겠다.
+
+### 전체 흐름
+
+```
+List.range 100  →  .map (· + 1)  →  foldl (· + ·) 0
+    [0~99]           [1~100]          전부 더함 = 5050
+```
+
+---
+
+### 1단계: `List.range 100`
+
+```lean
+#eval List.range 100
+-- [0, 1, 2, 3, ..., 99]
+```
+
+0부터 99까지 100개의 자연수 리스트를 만든다.
+
+---
+
+### 2단계: `.map (· + 1)`
+
+```lean
+#eval (List.range 100).map (· + 1)
+-- [1, 2, 3, 4, ..., 100]
+```
+
+`map`은 리스트의 **각 원소에 함수를 적용**한다. `(· + 1)`은 `(fun n => n + 1)`의 축약 표기이다. 모든 원소에 1을 더하므로 [0~99]가 [1~100]이 된다.
+
+---
+
+### 3단계: `|>.foldl (· + ·) 0`
+
+```lean
+#eval [1, 2, 3, 4, ..., 100].foldl (· + ·) 0
+-- 0 + 1 + 2 + 3 + ... + 100 = 5050
+```
+
+`foldl`은 리스트를 **왼쪽부터 접어서** 하나의 값으로 만든다.
+
+```
+foldl (· + ·) 0 [1, 2, 3, ...]
+
+  초기값: 0
+  0 + 1 = 1
+  1 + 2 = 3
+  3 + 3 = 6
+  6 + 4 = 10
+  ...
+  4950 + 100 = 5050
+```
+
+`(· + ·)`는 `(fun a b => a + b)`의 축약이다. 두 인자를 더하는 함수이다.
+
+---
+
+### `|>` 파이프 연산자
+
+```lean
+-- 이 둘은 같다:
+(List.range 100).map (· + 1) |>.foldl (· + ·) 0
+((List.range 100).map (· + 1)).foldl (· + ·) 0
+```
+
+`|>`는 "왼쪽 결과를 오른쪽에 넘긴다"는 파이프이다. 괄호 중첩을 피하고 왼쪽에서 오른쪽으로 읽히게 해 준다.
+
+---
+
+### `·` 표기 정리
+
+| 축약 | 원래 형태 | 의미 |
+|------|----------|------|
+| `(· + 1)` | `fun n => n + 1` | 인자에 1 더하기 |
+| `(· + ·)` | `fun a b => a + b` | 두 인자 더하기 |
+
+`·`은 "여기에 인자가 들어간다"는 자리표시자이다.
+
+---
+
+### 결과
+
+```lean
+#eval (List.range 100).map (· + 1) |>.foldl (· + ·) 0
+-- 5050
+```
+
+가우스 공식 `100 * 101 / 2 = 5050`과 일치한다.
+
+---
+## 예제 24-25: 무한급수
 
 ### 무한 등비급수
 
@@ -647,8 +850,12 @@ example : Function.Bijective (fun n : Int => n - 5) := by
 ```lean
 example : Function.Bijective (fun n : Int => n - 5) := by
   constructor
-  · intro a b h; omega
-  · intro b; use b + 5; omega
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b + 5
+    simp
 ```
 
 </details>
@@ -671,6 +878,7 @@ example : Function.Injective (fun n : Int => 2 * n + 1) := by
 ```lean
 example : Function.Injective (fun n : Int => 2 * n + 1) := by
   intro a b h
+  simp at h
   omega
 ```
 
@@ -690,12 +898,123 @@ example : Function.Bijective (fun n : Int => n + 7) := by
 ```lean
 example : Function.Bijective (fun n : Int => n + 7) := by
   constructor
-  · intro a b h; omega
-  · intro b; use b - 7; omega
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b -7
+    simp
+
 ```
 
 </details>
 
 ---
+---
+import Mathlib
+import Mathlib.Data.Set.Basic
+example : Function.Injective (fun n : Nat => n + 1) := by
+  intro a b h     -- h : a + 1 = b + 1
+  simp at h
+  omega            -- a = b 자동!
 
-> 다음: 블록 3 -- 2.5 집합의 크기 + 2.6 행렬 + 종합 정리
+-- 전사: ∀ b, ∃ a, f(a) = b
+example : Function.Surjective (fun n : Int => n + 1) := by
+  intro b          -- b : Int  (임의의 출력값)
+  use b - 1        -- 증인: b - 1  (이것이 입력값)
+  simp 
+
+
+example : Function.Bijective (fun n : Int => n + 1) := by
+  constructor
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b - 1
+    simp
+
+example : Function.Injective (fun n : Nat => 2 * n) := by
+  intro a b h
+  simp at h
+  omega
+
+-- Lean 4: 합성
+def ff (x : Int) := 2 * x + 3
+def gg (x : Int) := 3 * x + 2
+#eval ff (gg 1)   -- f(g(1)) = f(5) = 13
+#eval gg (ff 1)   -- g(f(1)) = g(5) = 17  (같지 않다!)
+
+-- Lean 4: 계승
+#eval Nat.factorial 6     -- 720
+#eval Nat.factorial 20    -- 2432902008176640000
+
+-- 10! = ?
+#eval Nat.factorial 10
+
+example : ¬ Function.Injective (fun n : Int => n^2) := by
+  intro h
+  exact absurd (h (by norm_num : (1:Int)^2 = (-1:Int)^2)) (by norm_num)
+
+def arith (n : Nat) : Int := -1 + 4 * n
+#eval (List.range 6).map arith  -- [-1, 3, 7, 11, 15, 19]
+-- 피보나치 (패턴 매칭)
+def fib : Nat -> Nat
+  | 0 => 0
+  | 1 => 1
+  | n + 2 => fib (n + 1) + fib n
+
+#eval (List.range 10).map fib
+-- [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+def seq5 : Nat -> Nat
+  | 0 => 2
+  | n + 1 => seq5 n + 3
+
+#eval (List.range 6).map seq5
+
+def geomSeq : Nat -> Nat
+  | 0 => 1
+  | n + 1 => 2 * geomSeq n
+
+#eval (1.11 ^ 30 : Float) * 10000
+#eval (List.range 100).map (· + 1) |>.foldl (· + ·) 0
+#eval (List.range 10).map (fun k => (k+1)^2) |>.foldl (· + ·) 0
+def mySeq : Nat -> Int
+  | 0 => 5
+  | n + 1 => mySeq n - 2
+
+example : Function.Injective (fun n : Int => 3 * n) := by
+  intro a b h
+  simp at h 
+  omega
+
+example : Function.Surjective (fun n : Int => n - 5) := by
+  intro b
+  use b + 5
+  simp
+
+example : Function.Bijective (fun n : Int => n - 5) := by
+  constructor
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b + 5
+    simp
+
+example : Function.Injective (fun n : Int => 2 * n + 1) := by
+  intro a b h
+  simp at h
+  omega
+
+example : Function.Bijective (fun n : Int => n + 7) := by
+  constructor
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b -7
+    simp
+
+---
