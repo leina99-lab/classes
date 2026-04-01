@@ -798,16 +798,11 @@ example (A B : Set Nat) :
 ```lean
 example (A B : Set Nat) :
     A ∪ (A ∩ B) = A := by
-  ext x
-  simp [Set.mem_union, Set.mem_inter_iff]
-  intro ha _
-  exact ha
+  ext x; simp [Set.mem_union, Set.mem_inter_iff]
+  tauto
 ```
 
-또는 더 간결하게:
-```lean
-  ext x; simp [Set.mem_union, Set.mem_inter_iff, or_and_left]
-```
+`simp`가 집합 정의를 논리식으로 펼친 뒤, `tauto`가 `x ∈ A ∨ x ∈ A ∧ x ∈ B ↔ x ∈ A`를 자동으로 닫는다.
 
 </details>
 
@@ -832,9 +827,11 @@ example (A B : Set Nat) :
 ```lean
 example (A B : Set Nat) :
     A ∩ (A ∪ B) = A := by
-  ext x
-  simp [Set.mem_inter_iff, Set.mem_union, and_or_left]
+  ext x; simp [Set.mem_inter_iff, Set.mem_union]
+  tauto
 ```
+
+`simp`가 정의를 펼치고, `tauto`가 `x ∈ A ∧ (x ∈ A ∨ x ∈ B) ↔ x ∈ A`(흡수법칙)를 자동으로 처리한다.
 
 </details>
 
