@@ -175,8 +175,7 @@ A ⊂ B ⇔ A ⊆ B 이고 A ≠ B
 example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
   intro x hx
   -- hx : x ∈ ∅   (공집합에 원소가 있다는 가정)
-  -- 이것은 False이므로, absurd로 모순 유도
-  exact absurd hx (Set.not_mem_empty x)
+  contradiction
 ```
 
 **왜 `absurd`인가?** `hx`는 "x가 공집합의 원소이다"라는 거짓 가정이다. `Set.not_mem_empty x`는 "x는 공집합의 원소가 아니다"라는 정리이다. 둘을 합치면 모순이 되어 무엇이든 증명할 수 있다.
@@ -185,9 +184,9 @@ example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
 
 ```lean
 example : {n : Nat | n > 5} ⊆ {n : Nat | n > 3} := by
-  intro x hx     -- hx : x > 5
-  -- 목표: x > 3
-  omega           -- 5 < x 이면 당연히 3 < x
+  intro x hx
+  simp only [Set.mem_setOf_eq] at *    -- hx와 목표 모두 펼침
+  omega         -- 5 < x 이면 당연히 3 < x
 ```
 
 **왜 `omega`인가?** `omega`는 자연수/정수의 선형 부등식을 자동으로 처리한다. `x > 5`이면 `x > 3`임이 자명하다.
@@ -207,6 +206,7 @@ example : {n : Nat | n > 10} ⊆ {n : Nat | n > 5} := by
 ```lean
 example : {n : Nat | n > 10} ⊆ {n : Nat | n > 5} := by
   intro x hx
+  simp only [Set.mem_setOf_eq] at *    -- hx와 목표 모두 펼침
   omega
 ```
 
@@ -376,7 +376,7 @@ example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
 ```lean
 example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
   intro x hx
-  exact absurd hx (Set.not_mem_empty x)
+  contradiction
 ```
 
 </details>
@@ -559,7 +559,8 @@ example (A B : Set Nat) :
     (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ := by
   ext x
   simp [Set.mem_compl_iff, Set.mem_union,
-        Set.mem_inter_iff, not_and_or]
+        Set.mem_inter_iff]
+  tauto
 ```
 
 ### 수학 ↔ Lean 1:1 매칭
@@ -579,11 +580,10 @@ example (A B : Set Nat) :
 example (A B : Set Nat) :
     (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ := by
   ext x
-  simp [Set.mem_compl_iff, Set.mem_inter_iff,
-        Set.mem_union, not_or]
-```
+  simp [Set.mem_compl_iff, Set.mem_inter_iff]
 
-여기서는 `not_or`를 사용한다: ¬(P ∨ Q) = ¬P ∧ ¬Q
+```
+ ¬(P ∨ Q) = ¬P ∧ ¬Q 사용
 
 ### 빈칸 채우기
 
@@ -859,4 +859,133 @@ example (A B : Set Nat) :
 
 ---
 
-> 다음: 블록 2 -- 2.3 함수 + 2.4 수열과 합
+```
+-- Lean 4에서 Set = 술어(predicate)
+-- Set Nat = Nat -> Prop
+import Mathlib
+import Mathlib.Data.Set.Basic
+-- 예제 1: 원소 나열 (Finset 사용)
+#eval ({1, 3, 5, 7, 9} : Finset Nat)  -- {1, 3, 5, 7, 9}
+
+-- 예제 6: 집합의 같음 (순서/중복 무관)
+example : ({1, 3, 5} : Finset Nat) = {3, 5, 1} := by decide
+example : ({1, 1, 3, 5} : Finset Nat) = {1, 3, 5} := by decide
+
+-- 조건제시법 (Set 사용)
+def Odd_lt10 : Set Nat := {x | x % 2 = 1 ∧ x < 10}
+
+-- 짝수 집합을 정의하고, 4가 원소인지 확인하라.
+def MyEven : Set Nat := {x | x % 2 = 0}
+example : 4 ∈ MyEven := by
+  simp [MyEven]
+
+-- 정리 1(i): 공집합은 모든 집합의 부분집합
+example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
+  intro x hx
+  -- hx : x ∈ ∅   (공집합에 원소가 있다는 가정)
+  contradiction
+
+example : {n : Nat | n > 5} ⊆ {n : Nat | n > 3} := by
+  intro x hx
+  simp only [Set.mem_setOf_eq] at *    -- hx와 목표 모두 펼침
+  omega         -- 5 < x 이면 당연히 3 < x
+
+example : {n : Nat | n > 10} ⊆ {n : Nat | n > 5} := by
+  intro x hx
+  simp only [Set.mem_setOf_eq] at *    -- hx와 목표 모두 펼침
+  omega 
+
+-- Lean 4: 크기 확인
+#eval ({1, 3, 5, 7, 9} : Finset Nat).card   -- 5
+#eval (Finset.range 26).card                  -- 26
+#eval (∅ : Finset Nat).card      
+
+#eval Finset.powerset ({0, 1, 2} : Finset Nat)
+-- {{}, {0}, {1}, {2}, {0,1}, {0,2}, {1,2}, {0,1,2}}
+#eval (Finset.powerset ({0, 1, 2} : Finset Nat)).card  -- 8             -- 0
+#eval (Finset.powerset ({1, 2, 3} : Finset Nat)).card
+
+
+-- Lean 4: 데카르트 곱
+#eval ({1, 2} : Finset Nat) ×ˢ ({3, 4, 5} : Finset Nat)
+-- {(1,3),(1,4),(1,5),(2,3),(2,4),(2,5)}
+
+-- {0,1} × {0,1} 의 원소 수는?
+#eval (({0,1} : Finset Nat) ×ˢ ({0,1} : Finset Nat)).card
+
+example (A : Set Nat) : (∅ : Set Nat) ⊆ A := by
+  intro x hx
+  contradiction
+
+-- 합집합
+example : ({1,3,5} : Finset Nat) ∪ {1,2,3} = {1,2,3,5} := by decide
+-- 교집합
+example : ({1,3,5} : Finset Nat) ∩ {1,2,3} = {1,3} := by decide
+
+-- 차집합
+example : ({1,3,5} : Finset Nat) \ {1,2,3} = {5} := by decide
+
+-- 합집합의 교환법칙
+example (A B : Set Nat) : A ∪ B = B ∪ A := by
+  ext x              -- "임의의 x에 대해 양쪽 동치 증명"
+  simp [Set.mem_union, or_comm]
+  -- ext가 집합 같음을 "∀x, x ∈ LHS ↔ x ∈ RHS"로 변환
+  -- simp가 or_comm (p ∨ q ↔ q ∨ p)으로 마무리
+
+example (A B : Set Nat) : A ∩ B = B ∩ A := by
+  ext x
+  simp [Set.mem_inter_iff, and_comm]
+
+example (A B : Set Nat) : (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ := by
+  ext x
+  simp [Set.mem_compl_iff, Set.mem_union,
+        Set.mem_inter_iff]
+  tauto
+
+example (A B : Set Nat) :
+    (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ := by
+  ext x
+  simp [Set.mem_compl_iff, Set.mem_inter_iff]
+  
+example (A B C_ : Set Nat) :
+    A ∩ (B ∪ C_) = (A ∩ B) ∪ (A ∩ C_) := by
+  ext x
+  simp [Set.mem_inter_iff, Set.mem_union, and_or_left]
+
+#eval (0b1010101010 : Nat) ||| (0b1111000000 : Nat)
+
+-- 0b1100 AND 0b1010 = ?
+#eval (0b1100 : Nat) &&& (0b1010 : Nat)
+
+example (A B : Set Nat) :
+    (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ := by
+  ext x
+  simp [Set.mem_compl_iff, Set.mem_inter_iff]
+
+example : {n : Nat | n > 20} ⊆ {n : Nat | n > 10} := by
+  intro x hx
+  simp only [Set.mem_setOf_eq] at *    -- hx와 목표 모두 펼침
+  omega
+
+example (A B C : Set Nat) :
+    A ∪ (B ∪ C) = (A ∪ B) ∪ C := by
+  ext x
+  simp [Set.mem_union, or_assoc]
+
+example (A B : Set Nat) :
+    A ∪ (A ∩ B) = A := by
+  ext x 
+  simp [Set.mem_union, Set.mem_inter_iff]
+  tauto
+
+example (A B : Set Nat) :
+    A ∩ (A ∪ B) = A := by
+  ext x; simp [Set.mem_inter_iff, Set.mem_union]
+  tauto
+
+example (A B : Set Nat) :
+    (A \ B) ∪ (A ∩ B) = A := by
+  ext x
+  simp [Set.mem_union, Set.mem_diff, Set.mem_inter_iff]
+  tauto
+```
