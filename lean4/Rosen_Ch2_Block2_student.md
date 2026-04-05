@@ -910,7 +910,7 @@ example : Function.Bijective (fun n : Int => n + 7) := by
 </details>
 
 ---
----
+```lean
 import Mathlib
 import Mathlib.Data.Set.Basic
 example : Function.Injective (fun n : Nat => n + 1) := by
