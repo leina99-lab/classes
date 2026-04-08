@@ -105,4 +105,19 @@ example : Function.Injective (fun p : Nat × Nat => 2 ^ p.1 * 3 ^ p.2) := by
     exact this
 
   rw [hi, hj]
+
+
+example {A B : Set ℕ} (hA : A.Countable) (hB : B.Countable) :
+    (A ∪ B).Countable := hA.union hB
+
+-- 가산 합집합 따름정리.
+example {ι : Type*} [Countable ι] {A : ι → Set ℕ}
+    (hA : ∀ i, (A i).Countable) : (⋃ i, A i).Countable :=
+  Set.countable_iUnion hA
+
+
+example : A * B ≠ B * A := by
+  intro h
+  have := congr_fun (congr_fun h 0) 0
+  simp [A, B, Matrix.mul_apply, Fin.sum_univ_two] at this
 ```
