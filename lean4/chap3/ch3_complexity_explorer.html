@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>복잡도 클래스 비교 Explorer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#202124;max-width:800px;margin:0 auto;padding:24px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:#5F6368;font-size:12px;margin-bottom:16px}
+.card{background:#F8F9FA;border-radius:12px;padding:16px;margin-bottom:14px}
+.insight{background:#E8F0FE;border-radius:8px;padding:12px;border-left:4px solid #4285F4;font-size:11px;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+th{background:#4285F4;color:#fff;padding:8px 10px;text-align:center;font-size:11px}
+td{padding:6px 10px;text-align:center;border-bottom:1px solid #E0E0E0}
+tr:nth-child(even){background:#F8F9FA}
+.bar{height:18px;border-radius:9px;transition:width .4s ease;min-width:2px}
+.toggle{padding:5px 12px;border-radius:14px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;margin:2px}
+.slider-container{display:flex;align-items:center;gap:12px;margin:12px 0}
+.slider-container input[type=range]{flex:1;accent-color:#4285F4;height:6px}
+.n-display{font-size:28px;font-weight:700;color:#202124;min-width:40px;text-align:center}
+canvas{border-radius:8px;margin-top:10px}
+.warn{color:#EA4335;font-weight:600}
+.ok{color:#34A853;font-weight:600}
+</style>
+</head>
+<body>
+
+<h1>복잡도 클래스 비교 Explorer</h1>
+<p class="sub">입력 크기 n을 조절하여 각 복잡도 클래스의 연산 횟수와 실행 시간이 어떻게 변하는지 직접 확인한다.</p>
+
+<div class="slider-container">
+  <span style="font-size:13px;color:#5F6368">n =</span>
+  <input type="range" id="nSlider" min="1" max="30" value="10">
+  <span class="n-display" id="nDisplay">10</span>
+</div>
+
+<div id="toggles" style="margin-bottom:12px"></div>
+
+<!-- CHART -->
+<div class="card">
+  <canvas id="chart" width="750" height="280"></canvas>
+</div>
+
+<!-- TABLE -->
+<div id="tableContainer"></div>
+
+<!-- INSIGHT -->
+<div id="insightBox" class="insight"></div>
+
+<!-- COMPARISON CARDS -->
+<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap" id="compareCards"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const classes = [
+  {name:'O(1)',       fn:n=>1,                  color:'#34A853'},
+  {name:'O(log n)',   fn:n=>Math.log2(Math.max(n,1)), color:'#4285F4'},
+  {name:'O(n)',       fn:n=>n,                  color:'#1A73E8'},
+  {name:'O(n log n)', fn:n=>n*Math.log2(Math.max(n,1)), color:'#FBBC04'},
+  {name:'O(n\u00B2)',      fn:n=>n*n,                color:'#EA4335'},
+  {name:'O(2\u207F)',      fn:n=>Math.pow(2,n),      color:'#9C27B0'},
+  {name:'O(n!)',      fn:n=>{let r=1;for(let i=2;i<=n;i++)r*=i;return r}, color:'#E040FB'},
+];
+
+let selected = classes.map(c=>c.name);
+let currentN = 10;
+
+// ============================================================
+// FORMATTING
+// ============================================================
+function fmtOps(v) {
+  if (v >= 1e18) return '> 10\u00B9\u2078';
+  if (v >= 1e15) return (v/1e15).toFixed(1) + '경';
+  if (v >= 1e12) return (v/1e12).toFixed(1) + '조';
+  if (v >= 1e9)  return (v/1e9).toFixed(1)  + '십억';
+  if (v >= 1e6)  return (v/1e6).toFixed(1)  + '백만';
+  if (v >= 1e3)  return (v/1e3).toFixed(1)  + '천';
+  if (v < 10)    return v.toFixed(2);
+  return Math.round(v).toLocaleString();
+}
+
+function fmtTime(ops) {
+  // 1 GHz = 10^9 ops/sec
+  const sec = ops / 1e9;
+  if (sec < 1e-9)  return (sec*1e12).toFixed(1) + ' ps';
+  if (sec < 1e-6)  return (sec*1e9).toFixed(1)  + ' ns';
+  if (sec < 1e-3)  return (sec*1e6).toFixed(1)  + ' \u00B5s';
+  if (sec < 1)     return (sec*1e3).toFixed(1)  + ' ms';
+  if (sec < 60)    return sec.toFixed(2)         + ' s';
+  if (sec < 3600)  return (sec/60).toFixed(1)    + ' min';
+  if (sec < 86400) return (sec/3600).toFixed(1)  + ' hr';
+  const years = sec / (365.25 * 86400);
+  if (years < 1e3)  return years.toFixed(0) + ' \uB144';
+  if (years < 1e6)  return (years/1e3).toFixed(0) + '\uCC9C\uB144';
+  if (years < 1e9)  return (years/1e6).toFixed(0) + '\uBC31\uB9CC\uB144';
+  if (years > 1.38e10) return '\uC6B0\uC8FC \uB098\uC774 \uCD08\uACFC';
+  return (years/1e9).toFixed(0) + '\uC2ED\uC5B5\uB144';
+}
+
+function fmtTimeClass(ops) {
+  const sec = ops / 1e9;
+  if (sec > 1.38e10 * 365.25 * 86400) return 'danger';
+  if (sec > 1) return 'slow';
+  return 'fast';
+}
+
+// ============================================================
+// TOGGLES
+// ============================================================
+function renderToggles() {
+  const el = document.getElementById('toggles');
+  el.innerHTML = '';
+  classes.forEach(c => {
+    const active = selected.includes(c.name);
+    const btn = document.createElement('button');
+    btn.className = 'toggle';
+    btn.style.background = active ? c.color : '#F1F3F4';
+    btn.style.color = active ? '#fff' : '#5F6368';
+    btn.textContent = c.name;
+    btn.onclick = () => {
+      if (active) selected = selected.filter(s => s !== c.name);
+      else selected.push(c.name);
+      render();
+    };
+    el.appendChild(btn);
+  });
+}
+
+// ============================================================
+// CHART (Canvas)
+// ============================================================
+function renderChart() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD_L = 50, PAD_R = 15, PAD_T = 20, PAD_B = 30;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#FAFAFA';
+  ctx.fillRect(0, 0, W, H);
+
+  const maxN = Math.min(currentN, 25);
+  if (maxN < 2) return;
+
+  // Compute max Y (excluding those > 1e12)
+  let maxY = 1;
+  classes.forEach(c => {
+    if (!selected.includes(c.name)) return;
+    for (let i = 1; i <= maxN; i++) {
+      const v = c.fn(i);
+      if (v < 1e12 && v > maxY) maxY = v;
+    }
+  });
+
+  // Grid lines
+  ctx.strokeStyle = '#E8E8E8';
+  ctx.lineWidth = 0.5;
+  for (let r = 0.25; r <= 1; r += 0.25) {
+    const y = PAD_T + (1 - r) * (H - PAD_T - PAD_B);
+    ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
+    ctx.fillStyle = '#9AA0A6'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(fmtOps(maxY * r), PAD_L - 4, y + 3);
+  }
+
+  // X axis labels
+  ctx.fillStyle = '#9AA0A6'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+  for (let x = 1; x <= maxN; x += Math.max(1, Math.floor(maxN / 10))) {
+    const px = PAD_L + (x - 1) / (maxN - 1) * (W - PAD_L - PAD_R);
+    ctx.fillText(x, px, H - 8);
+  }
+  ctx.fillText('n', W / 2, H);
+
+  // Lines
+  classes.forEach(c => {
+    if (!selected.includes(c.name)) return;
+    ctx.strokeStyle = c.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 1; i <= maxN; i++) {
+      const v = Math.min(c.fn(i), maxY);
+      const px = PAD_L + (i - 1) / (maxN - 1) * (W - PAD_L - PAD_R);
+      const py = PAD_T + (1 - v / maxY) * (H - PAD_T - PAD_B);
+      if (i === 1) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Label at end
+    const lastV = Math.min(c.fn(maxN), maxY);
+    const lx = W - PAD_R + 2;
+    const ly = PAD_T + (1 - lastV / maxY) * (H - PAD_T - PAD_B);
+    ctx.fillStyle = c.color; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(c.name, lx, ly + 3);
+  });
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function renderTable() {
+  const el = document.getElementById('tableContainer');
+  const data = classes.filter(c => selected.includes(c.name)).map(c => ({
+    ...c, ops: c.fn(currentN)
+  }));
+  const maxLog = Math.max(...data.filter(d => d.ops < 1e18).map(d => Math.log10(d.ops + 1)), 1);
+
+  let html = '<table><tr><th>복잡도</th><th>연산 횟수</th><th>실행 시간 (1GHz)</th><th>비교 (로그 스케일)</th></tr>';
+  data.forEach((d, i) => {
+    const barW = d.ops < 1e18 ? Math.max((Math.log10(d.ops + 1) / maxLog) * 100, 1) : 100;
+    const tc = fmtTimeClass(d.ops);
+    const timeStyle = tc === 'danger' ? 'color:#EA4335;font-weight:600' : tc === 'slow' ? 'color:#FBBC04;font-weight:600' : 'color:#34A853';
+    html += `<tr>
+      <td style="font-weight:600;color:${d.color}">${d.name}</td>
+      <td>${fmtOps(d.ops)}</td>
+      <td style="${timeStyle}">${d.ops > 1e30 ? '\uC6B0\uC8FC \uB098\uC774 \uCD08\uACFC' : fmtTime(d.ops)}</td>
+      <td style="width:35%;text-align:left"><div class="bar" style="width:${barW}%;background:${d.color};opacity:.8"></div></td>
+    </tr>`;
+  });
+  el.innerHTML = html + '</table>';
+}
+
+// ============================================================
+// INSIGHT
+// ============================================================
+function renderInsight() {
+  const el = document.getElementById('insightBox');
+  const n = currentN;
+  const n2 = n * n;
+  const pow2 = Math.pow(2, n);
+  let text = `<strong>\uD575\uC2EC:</strong> n=${n}\uC77C \uB54C, `;
+  text += `O(n)=${n}\uBC88, O(n\u00B2)=${fmtOps(n2)}\uBC88`;
+  if (n >= 5) {
+    const ratio = Math.round(pow2 / n2);
+    text += `, O(2\u207F)=${fmtOps(pow2)}\uBC88 (O(n\u00B2)\uBCF4\uB2E4 ${ratio}\uBC30)`;
+  }
+  if (n >= 15) {
+    text += `. <span class="warn">O(2\u207F)\uC740 \uC774\uBBF8 \uBE44\uD604\uC2E4\uC801\uC778 \uC218\uC900\uC774\uB2E4!</span>`;
+  }
+  if (n >= 20) {
+    text += ` <span class="warn">O(n!)\uC740 \uCC9C\uBB38\uD559\uC801 \uC22B\uC790!</span>`;
+  }
+  if (n < 5) {
+    text += `. \uC544\uC9C1\uC740 \uCC28\uC774\uAC00 \uC791\uB2E4. n\uC744 \uD0A4\uC6CC \uBCF4\uC790!`;
+  }
+  el.innerHTML = text;
+}
+
+// ============================================================
+// COMPARISON CARDS
+// ============================================================
+function renderCards() {
+  const el = document.getElementById('compareCards');
+  const n = currentN;
+  const comparisons = [
+    {
+      title: '\uC120\uD615 vs \uC774\uC9C4 \uD0D0\uC0C9',
+      items: [
+        {name: '\uC120\uD615 O(n)', val: n, color: '#EA4335'},
+        {name: '\uC774\uC9C4 O(log n)', val: Math.ceil(Math.log2(n + 1)), color: '#4285F4'},
+      ]
+    },
+    {
+      title: '\uBC84\uBE14 vs \uBCD1\uD569 \uC815\uB82C',
+      items: [
+        {name: '\uBC84\uBE14 O(n\u00B2)', val: Math.round(n*(n-1)/2), color: '#EA4335'},
+        {name: '\uBCD1\uD569 O(n log n)', val: Math.round(n * Math.log2(n + 1)), color: '#4285F4'},
+      ]
+    },
+  ];
+
+  el.innerHTML = '';
+  comparisons.forEach(comp => {
+    const maxV = Math.max(...comp.items.map(i => i.val), 1);
+    let card = `<div class="card" style="flex:1;min-width:200px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">${comp.title} (n=${n})</div>`;
+    comp.items.forEach(item => {
+      const pct = Math.max((item.val / maxV) * 100, 3);
+      card += `<div style="margin:4px 0">
+        <div style="font-size:10px;color:${item.color};font-weight:600">${item.name}: ${item.val.toLocaleString()}\uBC88</div>
+        <div class="bar" style="width:${pct}%;background:${item.color};opacity:.7"></div>
+      </div>`;
+    });
+    const ratio = comp.items[0].val / Math.max(comp.items[1].val, 1);
+    card += `<div style="font-size:10px;color:#5F6368;margin-top:4px">\uCC28\uC774: ${ratio.toFixed(1)}\uBC30</div></div>`;
+    el.innerHTML += card;
+  });
+}
+
+// ============================================================
+// MASTER RENDER
+// ============================================================
+function render() {
+  renderToggles();
+  renderChart();
+  renderTable();
+  renderInsight();
+  renderCards();
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+document.getElementById('nSlider').addEventListener('input', function() {
+  currentN = parseInt(this.value);
+  document.getElementById('nDisplay').textContent = currentN;
+  render();
+});
+
+// INIT
+render();
+</script>
+</body>
+</html>

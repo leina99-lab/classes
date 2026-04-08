@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch3 Algorithm Interactive Lab</title>
+<style>
+  :root {
+    --blue: #4285F4; --blue-light: #E8F0FE; --green: #34A853; --green-light: #E6F4EA;
+    --red: #EA4335; --red-light: #FCE8E6; --orange: #FA7B17; --yellow: #FBBC04;
+    --title: #202124; --body: #3C4043; --sub: #5F6368; --card: #F1F3F4;
+    --border: #DADCE0; --code-bg: #1E1E2E; --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--white); color: var(--title); }
+
+  /* ── Header ── */
+  .header { background: var(--blue); color: white; padding: 24px 32px; }
+  .header h1 { font-size: 24px; font-weight: 700; }
+  .header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--card); padding: 0 16px; overflow-x: auto; }
+  .tab { padding: 14px 24px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--sub); border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--blue); background: var(--blue-light); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── Panel ── */
+  .panel { display: none; padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* ── Input area ── */
+  .input-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .input-row label { font-size: 14px; font-weight: 600; color: var(--sub); }
+  .input-row input { padding: 8px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; width: 260px; outline: none; transition: border 0.2s; }
+  .input-row input:focus { border-color: var(--blue); }
+  .input-row button { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue); filter: brightness(1.1); }
+  .btn-step { background: var(--green); color: white; }
+  .btn-step:hover { filter: brightness(1.1); }
+  .btn-reset { background: var(--card); color: var(--sub); border: 1px solid var(--border) !important; }
+  .btn-auto { background: var(--orange); color: white; }
+
+  /* ── Bars ── */
+  .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 260px; padding: 16px 8px 0; border-bottom: 2px solid var(--border); margin-bottom: 16px; position: relative; }
+  .bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 30px; }
+  .bar { border-radius: 6px 6px 0 0; transition: all 0.35s ease; min-width: 28px; width: 100%; position: relative; }
+  .bar-label { font-size: 13px; font-weight: 700; margin-top: 6px; color: var(--title); }
+  .bar-index { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .bar.default { background: var(--blue); }
+  .bar.comparing { background: var(--orange); box-shadow: 0 0 12px rgba(250,123,23,0.4); }
+  .bar.found { background: var(--green); box-shadow: 0 0 12px rgba(52,168,83,0.4); }
+  .bar.sorted { background: var(--green); opacity: 0.7; }
+  .bar.swapped { background: var(--red); }
+  .bar.current { background: var(--yellow); box-shadow: 0 0 12px rgba(251,188,4,0.4); }
+  .bar.inactive { background: #D5D5D5; }
+  .bar.pivot { background: var(--blue); border: 3px solid var(--title); }
+
+  /* ── Info box ── */
+  .info-box { background: var(--blue-light); border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 15px; line-height: 1.6; color: var(--title); margin-bottom: 12px; min-height: 60px; }
+  .info-box .step-num { font-weight: 700; color: var(--blue); }
+  .stats { display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  .stat { background: var(--card); border-radius: 8px; padding: 10px 18px; font-size: 14px; }
+  .stat strong { color: var(--blue); font-size: 18px; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+  /* ── Code display ── */
+  .code-display { background: var(--code-bg); color: #E0E0E0; padding: 16px 20px; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.7; margin-top: 16px; overflow-x: auto; white-space: pre; }
+  .code-display .highlight { background: rgba(66,133,244,0.3); display: inline; padding: 1px 4px; border-radius: 3px; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .speed-label { font-size: 13px; color: var(--sub); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Chapter 3: Algorithm Interactive Lab</h1>
+  <p>리스트를 입력하고 알고리즘이 단계별로 실행되는 과정을 관찰하라.</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="linear">선형 탐색</div>
+  <div class="tab" data-tab="binary">이진 탐색</div>
+  <div class="tab" data-tab="bubble">버블 정렬</div>
+  <div class="tab" data-tab="insertion">삽입 정렬</div>
+  <div class="tab" data-tab="greedy">욕심쟁이</div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- LINEAR SEARCH -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel active" id="panel-linear">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="lin-list" value="3, 8, 1, 15, 7, 12, 5, 9" placeholder="쉼표로 구분">
+    <label>찾을 값:</label>
+    <input id="lin-target" value="7" style="width:80px">
+    <button class="btn-primary" onclick="linInit()">세팅</button>
+    <button class="btn-step" onclick="linStep()">다음 단계</button>
+    <button class="btn-auto" onclick="linAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="linInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="lin-bars"></div>
+  <div class="info-box" id="lin-info">리스트와 찾을 값을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="lin-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미확인</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 현재 비교 중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 발견!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#D5D5D5"></div> 확인 완료 (아님)</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- BINARY SEARCH -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-binary">
+  <div class="input-row">
+    <label>정렬된 리스트:</label>
+    <input id="bin-list" value="2, 5, 8, 11, 14, 17, 20, 23, 26, 29" placeholder="오름차순!">
+    <label>찾을 값:</label>
+    <input id="bin-target" value="17" style="width:80px">
+    <button class="btn-primary" onclick="binInit()">세팅</button>
+    <button class="btn-step" onclick="binStep()">다음 단계</button>
+    <button class="btn-auto" onclick="binAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="binInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="bin-bars"></div>
+  <div class="info-box" id="bin-info">정렬된 리스트와 찾을 값을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="bin-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 탐색 범위</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> mid (현재 비교)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 발견!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#D5D5D5"></div> 범위 밖</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- BUBBLE SORT -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-bubble">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="bub-list" value="5, 3, 8, 1, 9, 2, 7" placeholder="쉼표로 구분">
+    <button class="btn-primary" onclick="bubInit()">세팅</button>
+    <button class="btn-step" onclick="bubStep()">다음 단계</button>
+    <button class="btn-auto" onclick="bubAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="bubInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="bub-bars"></div>
+  <div class="info-box" id="bub-info">리스트를 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="bub-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미정렬</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 비교 중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 교환!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:0.7"></div> 정렬 확정</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- INSERTION SORT -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-insertion">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="ins-list" value="5, 3, 8, 1, 9, 2, 7" placeholder="쉼표로 구분">
+    <button class="btn-primary" onclick="insInit()">세팅</button>
+    <button class="btn-step" onclick="insStep()">다음 단계</button>
+    <button class="btn-auto" onclick="insAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="insInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="ins-bars"></div>
+  <div class="info-box" id="ins-info">리스트를 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="ins-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:0.7"></div> 정렬된 부분</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 삽입할 원소</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미정렬</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- GREEDY -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-greedy">
+  <div class="input-row">
+    <label>동전:</label>
+    <input id="gre-coins" value="500, 100, 50, 10" style="width:200px">
+    <label>금액:</label>
+    <input id="gre-amount" value="760" style="width:100px">
+    <button class="btn-primary" onclick="greInit()">세팅</button>
+    <button class="btn-step" onclick="greStep()">다음 단계</button>
+    <button class="btn-auto" onclick="greAuto()">자동 실행</button>
+  </div>
+  <div id="gre-visual" style="min-height:200px"></div>
+  <div class="info-box" id="gre-info">동전과 금액을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="gre-stats"></div>
+</div>
+
+<script>
+// ═══ Utility ═══
+function parse(s) { return s.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)); }
+const $ = id => document.getElementById(id);
+const DELAY = 600;
+
+// ═══ Tab switching ═══
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+function renderBars(containerId, arr, states, maxVal) {
+  const c = $(containerId); c.innerHTML = '';
+  const mx = maxVal || Math.max(...arr, 1);
+  arr.forEach((v, i) => {
+    const w = document.createElement('div'); w.className = 'bar-wrapper';
+    const b = document.createElement('div'); b.className = 'bar ' + (states[i] || 'default');
+    b.style.height = Math.max((v / mx) * 220, 8) + 'px';
+    const l = document.createElement('div'); l.className = 'bar-label'; l.textContent = v;
+    const idx = document.createElement('div'); idx.className = 'bar-index'; idx.textContent = '[' + i + ']';
+    w.appendChild(b); w.appendChild(l); w.appendChild(idx); c.appendChild(w);
+  });
+}
+
+// ═══════════════════════════════════════
+// LINEAR SEARCH
+// ═══════════════════════════════════════
+let lin = {};
+function linInit() {
+  lin = { arr: parse($('lin-list').value), target: parseInt($('lin-target').value), i: 0, comparisons: 0, done: false, found: -1 };
+  const states = lin.arr.map(() => 'default');
+  renderBars('lin-bars', lin.arr, states);
+  $('lin-info').innerHTML = `리스트 [${lin.arr.join(', ')}]에서 <strong>${lin.target}</strong>을 찾는다. "다음 단계"를 누르라.`;
+  $('lin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>0</strong></div><div class="stat">리스트 크기: <strong>${lin.arr.length}</strong></div>`;
+}
+function linStep() {
+  if (!lin.arr || lin.done) return;
+  if (lin.i >= lin.arr.length) {
+    lin.done = true;
+    const states = lin.arr.map(() => 'inactive');
+    renderBars('lin-bars', lin.arr, states);
+    $('lin-info').innerHTML = `<span class="step-num">완료</span> ${lin.target}은 리스트에 없다. 총 ${lin.comparisons}번 비교.`;
+    return;
+  }
+  lin.comparisons++;
+  const states = lin.arr.map((_, j) => j < lin.i ? 'inactive' : j === lin.i ? 'comparing' : 'default');
+  renderBars('lin-bars', lin.arr, states);
+  if (lin.arr[lin.i] === lin.target) {
+    lin.done = true; lin.found = lin.i;
+    setTimeout(() => {
+      states[lin.i] = 'found';
+      renderBars('lin-bars', lin.arr, states);
+      $('lin-info').innerHTML = `<span class="step-num">발견!</span> arr[${lin.i}] = ${lin.target}. 위치 ${lin.i}에서 발견. 비교 ${lin.comparisons}회.`;
+    }, 300);
+  } else {
+    $('lin-info').innerHTML = `<span class="step-num">Step ${lin.comparisons}</span> arr[${lin.i}] = ${lin.arr[lin.i]} ≠ ${lin.target}. 다음으로 이동.`;
+    lin.i++;
+  }
+  $('lin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>${lin.comparisons}</strong></div><div class="stat">리스트 크기: <strong>${lin.arr.length}</strong></div>`;
+}
+function linAuto() { if (!lin.done) { linStep(); setTimeout(linAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// BINARY SEARCH
+// ═══════════════════════════════════════
+let bin = {};
+function binInit() {
+  const arr = parse($('bin-list').value).sort((a,b) => a-b);
+  $('bin-list').value = arr.join(', ');
+  bin = { arr, target: parseInt($('bin-target').value), lo: 0, hi: arr.length-1, comparisons: 0, done: false, phase: 'calc_mid' };
+  renderBars('bin-bars', bin.arr, bin.arr.map(() => 'default'));
+  $('bin-info').innerHTML = `정렬된 리스트 [${arr.join(', ')}]에서 <strong>${bin.target}</strong>을 찾는다. lo=0, hi=${bin.hi}.`;
+  $('bin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>0</strong></div><div class="stat">리스트 크기: <strong>${arr.length}</strong></div><div class="stat">log₂(${arr.length}): <strong>${Math.ceil(Math.log2(arr.length))}</strong></div>`;
+}
+function binStep() {
+  if (!bin.arr || bin.done) return;
+  if (bin.lo > bin.hi) {
+    bin.done = true;
+    renderBars('bin-bars', bin.arr, bin.arr.map(() => 'inactive'));
+    $('bin-info').innerHTML = `<span class="step-num">완료</span> ${bin.target}은 리스트에 없다. 총 ${bin.comparisons}번 비교.`;
+    return;
+  }
+  const mid = Math.floor((bin.lo + bin.hi) / 2);
+  bin.comparisons++;
+  const states = bin.arr.map((_, i) => i >= bin.lo && i <= bin.hi ? (i === mid ? 'comparing' : 'default') : 'inactive');
+  renderBars('bin-bars', bin.arr, states);
+
+  if (bin.arr[mid] === bin.target) {
+    bin.done = true;
+    setTimeout(() => {
+      states[mid] = 'found';
+      renderBars('bin-bars', bin.arr, states);
+      $('bin-info').innerHTML = `<span class="step-num">발견!</span> arr[${mid}] = ${bin.target}. 비교 ${bin.comparisons}회. (log₂(${bin.arr.length}) = ${Math.ceil(Math.log2(bin.arr.length))})`;
+    }, 300);
+  } else if (bin.arr[mid] < bin.target) {
+    $('bin-info').innerHTML = `<span class="step-num">Step ${bin.comparisons}</span> mid=${mid}, arr[${mid}]=${bin.arr[mid]} < ${bin.target} → 오른쪽 [${mid+1}..${bin.hi}] 탐색`;
+    bin.lo = mid + 1;
+  } else {
+    $('bin-info').innerHTML = `<span class="step-num">Step ${bin.comparisons}</span> mid=${mid}, arr[${mid}]=${bin.arr[mid]} > ${bin.target} → 왼쪽 [${bin.lo}..${mid-1}] 탐색`;
+    bin.hi = mid - 1;
+  }
+  $('bin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>${bin.comparisons}</strong></div><div class="stat">남은 범위: <strong>${Math.max(0, bin.hi - bin.lo + 1)}</strong></div><div class="stat">log₂(${bin.arr.length}): <strong>${Math.ceil(Math.log2(bin.arr.length))}</strong></div>`;
+}
+function binAuto() { if (!bin.done) { binStep(); setTimeout(binAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// BUBBLE SORT
+// ═══════════════════════════════════════
+let bub = {};
+function bubInit() {
+  bub = { arr: parse($('bub-list').value), pass: 0, j: 0, comparisons: 0, swaps: 0, done: false, sorted: new Set(), phase: 'compare' };
+  renderBars('bub-bars', bub.arr, bub.arr.map(() => 'default'));
+  $('bub-info').innerHTML = `[${bub.arr.join(', ')}] 을 버블 정렬한다. Pass 1 시작.`;
+  $('bub-stats').innerHTML = `<div class="stat">비교: <strong>0</strong></div><div class="stat">교환: <strong>0</strong></div><div class="stat">n(n-1)/2: <strong>${bub.arr.length*(bub.arr.length-1)/2}</strong></div>`;
+}
+function bubStep() {
+  if (!bub.arr || bub.done) return;
+  const n = bub.arr.length;
+  const limit = n - 1 - bub.pass;
+  if (bub.pass >= n - 1) { bub.done = true; renderBars('bub-bars', bub.arr, bub.arr.map(() => 'sorted')); $('bub-info').innerHTML = `<span class="step-num">완료!</span> 정렬 완료. 비교 ${bub.comparisons}회, 교환 ${bub.swaps}회.`; return; }
+  if (bub.j >= limit) {
+    bub.sorted.add(limit);
+    bub.pass++; bub.j = 0;
+    const states = bub.arr.map((_, i) => bub.sorted.has(i) || i >= n - bub.pass ? 'sorted' : 'default');
+    renderBars('bub-bars', bub.arr, states);
+    $('bub-info').innerHTML = `<span class="step-num">Pass ${bub.pass} 완료.</span> 가장 큰 원소가 위치 ${limit}에 확정. Pass ${bub.pass+1} 시작.`;
+    return;
+  }
+  bub.comparisons++;
+  const states = bub.arr.map((_, i) => {
+    if (i >= n - bub.pass) return 'sorted';
+    if (i === bub.j || i === bub.j + 1) return 'comparing';
+    return 'default';
+  });
+  renderBars('bub-bars', bub.arr, states);
+
+  if (bub.arr[bub.j] > bub.arr[bub.j + 1]) {
+    [bub.arr[bub.j], bub.arr[bub.j+1]] = [bub.arr[bub.j+1], bub.arr[bub.j]];
+    bub.swaps++;
+    setTimeout(() => {
+      const s2 = bub.arr.map((_, i) => {
+        if (i >= n - bub.pass) return 'sorted';
+        if (i === bub.j || i === bub.j + 1) return 'swapped';
+        return 'default';
+      });
+      renderBars('bub-bars', bub.arr, s2);
+      $('bub-info').innerHTML = `<span class="step-num">Step ${bub.comparisons}</span> arr[${bub.j}]=${bub.arr[bub.j+1]} > arr[${bub.j+1}]=${bub.arr[bub.j]} → 교환!`;
+      bub.j++;
+    }, 200);
+  } else {
+    $('bub-info').innerHTML = `<span class="step-num">Step ${bub.comparisons}</span> arr[${bub.j}]=${bub.arr[bub.j]} ≤ arr[${bub.j+1}]=${bub.arr[bub.j+1]} → 유지`;
+    bub.j++;
+  }
+  $('bub-stats').innerHTML = `<div class="stat">비교: <strong>${bub.comparisons}</strong></div><div class="stat">교환: <strong>${bub.swaps}</strong></div><div class="stat">Pass: <strong>${bub.pass+1}/${n-1}</strong></div>`;
+}
+function bubAuto() { if (!bub.done) { bubStep(); setTimeout(bubAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// INSERTION SORT
+// ═══════════════════════════════════════
+let ins = {};
+function insInit() {
+  ins = { arr: parse($('ins-list').value), j: 1, i: 0, key: 0, comparisons: 0, sortedCount: 1, done: false, phase: 'pick' };
+  renderBars('ins-bars', ins.arr, ins.arr.map((_, i) => i === 0 ? 'sorted' : 'default'));
+  $('ins-info').innerHTML = `[${ins.arr.join(', ')}] 을 삽입 정렬한다. 정렬된 부분: [${ins.arr[0]}].`;
+  $('ins-stats').innerHTML = `<div class="stat">비교: <strong>0</strong></div><div class="stat">정렬된 부분: <strong>1/${ins.arr.length}</strong></div>`;
+}
+function insStep() {
+  if (!ins.arr || ins.done) return;
+  const n = ins.arr.length;
+  if (ins.j >= n) { ins.done = true; renderBars('ins-bars', ins.arr, ins.arr.map(() => 'sorted')); $('ins-info').innerHTML = `<span class="step-num">완료!</span> 정렬 완료. 비교 ${ins.comparisons}회.`; return; }
+
+  if (ins.phase === 'pick') {
+    ins.key = ins.arr[ins.j]; ins.i = ins.j - 1; ins.phase = 'shift';
+    const states = ins.arr.map((_, k) => k < ins.j ? 'sorted' : k === ins.j ? 'current' : 'default');
+    renderBars('ins-bars', ins.arr, states);
+    $('ins-info').innerHTML = `<span class="step-num">j=${ins.j}</span> 삽입할 원소: ${ins.key}. 정렬된 부분 [${ins.arr.slice(0,ins.j).join(', ')}]에서 올바른 위치를 찾는다.`;
+  } else {
+    if (ins.i >= 0 && ins.arr[ins.i] > ins.key) {
+      ins.comparisons++;
+      ins.arr[ins.i + 1] = ins.arr[ins.i];
+      const states = ins.arr.map((_, k) => k <= ins.i ? 'sorted' : k === ins.i+1 ? 'comparing' : k > ins.j ? 'default' : 'current');
+      renderBars('ins-bars', ins.arr, states);
+      $('ins-info').innerHTML = `<span class="step-num">비교 ${ins.comparisons}</span> arr[${ins.i}]=${ins.arr[ins.i]} > ${ins.key} → 한 칸 뒤로 밀기`;
+      ins.i--;
+    } else {
+      if (ins.i >= 0) ins.comparisons++;
+      ins.arr[ins.i + 1] = ins.key;
+      ins.j++; ins.sortedCount++; ins.phase = 'pick';
+      const states = ins.arr.map((_, k) => k < ins.j ? 'sorted' : 'default');
+      renderBars('ins-bars', ins.arr, states);
+      $('ins-info').innerHTML = `<span class="step-num">삽입 완료</span> ${ins.key}을 위치 ${ins.i+1}에 삽입. 정렬된 부분: [${ins.arr.slice(0,ins.j).join(', ')}]`;
+    }
+  }
+  $('ins-stats').innerHTML = `<div class="stat">비교: <strong>${ins.comparisons}</strong></div><div class="stat">정렬된 부분: <strong>${Math.min(ins.j, n)}/${n}</strong></div>`;
+}
+function insAuto() { if (!ins.done) { insStep(); setTimeout(insAuto, DELAY/1.5); } }
+
+// ═══════════════════════════════════════
+// GREEDY CHANGE
+// ═══════════════════════════════════════
+let gre = {};
+function greInit() {
+  gre = { coins: parse($('gre-coins').value).sort((a,b)=>b-a), amount: parseInt($('gre-amount').value), remaining: parseInt($('gre-amount').value), idx: 0, result: [], totalCoins: 0, done: false };
+  $('gre-visual').innerHTML = `<div style="text-align:center;padding:40px;font-size:18px;color:var(--sub)">거스름돈: <strong style="font-size:28px;color:var(--title)">${gre.amount}원</strong><br>동전: [${gre.coins.join(', ')}]원</div>`;
+  $('gre-info').innerHTML = `${gre.amount}원을 [${gre.coins.join(', ')}]원 동전으로 거슬러 준다. 가장 큰 동전부터 사용.`;
+  $('gre-stats').innerHTML = '';
+}
+function greStep() {
+  if (!gre.coins || gre.done) return;
+  if (gre.idx >= gre.coins.length || gre.remaining <= 0) {
+    gre.done = true;
+    $('gre-info').innerHTML = `<span class="step-num">완료!</span> 총 ${gre.totalCoins}개 동전. ${gre.result.map(r=>`${r[0]}원x${r[1]}`).join(' + ')}`;
+    return;
+  }
+  const c = gre.coins[gre.idx];
+  const count = Math.floor(gre.remaining / c);
+  const used = c * count;
+  gre.remaining -= used;
+  if (count > 0) { gre.result.push([c, count]); gre.totalCoins += count; }
+  // Visual
+  let html = '<div style="display:flex;gap:16px;padding:20px;flex-wrap:wrap;justify-content:center">';
+  gre.result.forEach(([coin, cnt]) => {
+    for (let i = 0; i < cnt; i++) {
+      const size = Math.max(40, Math.min(80, coin/8));
+      html += `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--blue);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${size/4}px;box-shadow:0 2px 6px rgba(0,0,0,0.15)">${coin}</div>`;
+    }
+  });
+  html += '</div>';
+  html += `<div style="text-align:center;margin-top:12px;font-size:16px">남은 금액: <strong style="color:${gre.remaining>0?'var(--red)':'var(--green)'}">${gre.remaining}원</strong></div>`;
+  $('gre-visual').innerHTML = html;
+  $('gre-info').innerHTML = `<span class="step-num">${c}원</span> ${count}개 사용 (${used}원). 남은 금액: ${gre.remaining}원.`;
+  $('gre-stats').innerHTML = `<div class="stat">사용 동전: <strong>${gre.totalCoins}개</strong></div><div class="stat">남은 금액: <strong>${gre.remaining}원</strong></div>`;
+  gre.idx++;
+}
+function greAuto() { if (!gre.done) { greStep(); setTimeout(greAuto, DELAY*1.5); } }
+
+// ═══ Init all ═══
+linInit(); binInit(); bubInit(); insInit(); greInit();
+</script>
+</body>
+</html>
