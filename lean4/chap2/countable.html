@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>칸토르 증명: 단계별 인터랙티브</title>
+    <style>
+        :root { --primary: #228be6; --secondary: #fab005; --bg: #f8f9fa; --text: #343a40; }
+        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; color: var(--text); background-color: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .tab-wrapper { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+        .tabs { display: flex; background: #e9ecef; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: white; color: var(--primary); border-bottom: 3px solid var(--primary); }
+        .content { padding: 30px; display: none; min-height: 500px; }
+        .content.active { display: block; }
+        table { border-collapse: collapse; margin: 20px auto; background: white; position: relative; }
+        td { border: 1px solid #dee2e6; width: 50px; height: 50px; text-align: center; position: relative; }
+        th { background: #f8f9fa; padding: 10px; font-size: 0.8rem; }
+        .rational-active { background-color: var(--primary); color: white; transform: scale(1.1); z-index: 10; }
+        .diagonal-highlight { background-color: #fff9db; border: 2px solid var(--secondary) !important; color: #e67700; font-weight: bold; }
+        .controls { text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 10px; }
+        button { padding: 12px 24px; font-size: 1rem; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; }
+        button:disabled { background: #adb5bd; }
+        .status { text-align: center; font-weight: bold; margin: 15px 0; color: #495057; }
+        #rational-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .new-num-box { background: #fff4e6; border: 2px dashed #fd7e14; padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; font-size: 1.3rem; }
+        .digit-change { color: #e03131; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="text-align: center;">내 속도에 맞추는 무한 증명</h1>
+
+    <div class="tab-wrapper">
+        <div class="tabs">
+            <div id="tab-rat" class="tab active" onclick="switchTab('rat')">유리수 (셀 수 있음)</div>
+            <div id="tab-real" class="tab" onclick="switchTab('real')">실수 (셀 수 없음)</div>
+        </div>
+
+        <div id="content-rat" class="content active">
+            <p><strong>설명:</strong> 버튼을 누를 때마다 자연수(1, 2, 3...)를 유리수에 하나씩 배정합니다.</p>
+            <div style="position: relative; width: fit-content; margin: 0 auto;">
+                <svg id="rat-svg"></svg>
+                <table id="rat-table"></table>
+            </div>
+            <div class="status" id="rat-status">준비 완료. '다음 단계'를 누르세요.</div>
+            <div class="controls">
+                <button id="btn-rat-next" onclick="stepRational()">다음 단계 (Next)</button>
+                <button onclick="resetRat()" style="background:#868e96;">초기화</button>
+            </div>
+        </div>
+
+        <div id="content-real" class="content">
+            <p><strong>설명:</strong> 버튼을 누를 때마다 대각선의 숫자와 <b>다른</b> 숫자를 골라 새로운 수를 만듭니다.</p>
+            <table id="real-table"></table>
+            <div class="new-num-box" id="real-box" style="visibility:hidden;">
+                새로운 수: 0.<span id="real-digits"></span>...
+            </div>
+            <div class="status" id="real-status"></div>
+            <div class="controls">
+                <button id="btn-real-next" onclick="stepReal()">다음 단계 (Next)</button>
+                <button onclick="resetReal()" style="background:#868e96;">초기화</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 공통 탭 제어
+    function switchTab(type) {
+        document.querySelectorAll('.tab, .content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + type).classList.add('active');
+        document.getElementById('content-' + type).classList.add('active');
+    }
+
+    // --- 유리수 로직 ---
+    let ratIdx = 0;
+    let ratPath = [];
+    let prevPoint = null;
+    const rSize = 6;
+
+    function initRat() {
+        const table = document.getElementById('rat-table');
+        let html = '<tr><th></th>';
+        for(let q=1; q<=rSize; q++) html += `<th>q=${q}</th>`;
+        html += '</tr>';
+        for(let p=1; p<=rSize; p++) {
+            html += `<tr><th>p=${p}</th>`;
+            for(let q=1; q<=rSize; q++) html += `<td id="r-${p}-${q}"><sup>${p}</sup>/<sub>${q}</sub></td>`;
+            html += '</tr>';
+        }
+        table.innerHTML = html;
+        
+        ratPath = [];
+        for (let s = 2; s <= rSize * 2; s++) {
+            if (s % 2 === 0) {
+                for (let p = Math.min(s-1, rSize); p >= 1; p--) {
+                    let q = s - p; if (q <= rSize) ratPath.push({p, q});
+                }
+            } else {
+                for (let q = Math.min(s-1, rSize); q >= 1; q--) {
+                    let p = s - q; if (p <= rSize) ratPath.push({p, q});
+                }
+            }
+        }
+    }
+
+    function stepRational() {
+        if (ratIdx >= ratPath.length) return;
+        
+        const pos = ratPath[ratIdx];
+        const cell = document.getElementById(`r-${pos.p}-${pos.q}`);
+        cell.className = 'rational-active';
+        document.getElementById('rat-status').innerText = `자연수 ${ratIdx + 1}번 ➔ 유리수 ${pos.p}/${pos.q} 매칭!`;
+
+        const rect = cell.getBoundingClientRect();
+        const pRect = document.getElementById('rat-table').getBoundingClientRect();
+        const cur = { x: rect.left - pRect.left + rect.width/2, y: rect.top - pRect.top + rect.height/2 };
+
+        if (prevPoint) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", prevPoint.x); line.setAttribute("y1", prevPoint.y);
+            line.setAttribute("x2", cur.x); line.setAttribute("y2", cur.y);
+            line.setAttribute("style", "stroke:#fab005; stroke-width:3; stroke-linecap:round;");
+            document.getElementById('rat-svg').appendChild(line);
+        }
+        prevPoint = cur;
+        ratIdx++;
+        if(ratIdx === ratPath.length) document.getElementById('btn-rat-next').disabled = true;
+    }
+
+    function resetRat() { 
+        ratIdx = 0; prevPoint = null; 
+        document.getElementById('rat-svg').innerHTML = '';
+        document.getElementById('btn-rat-next').disabled = false;
+        initRat(); 
+    }
+
+    // --- 실수 로직 ---
+    let realIdx = 0;
+    let realMatrix = [];
+    const dSize = 6;
+
+    function initReal() {
+        const table = document.getElementById('real-table');
+        let html = '';
+        for(let i=0; i<dSize; i++) {
+            realMatrix[i] = [];
+            html += `<tr><td style="border:none; color:#adb5bd;">n=${i+1}</td><td style="border:none;">0.</td>`;
+            for(let j=0; j<dSize; j++) {
+                let v = Math.floor(Math.random()*10);
+                realMatrix[i][j] = v;
+                html += `<td id="d-${i}-${j}">${v}</td>`;
+            }
+            html += `<td style="border:none;">...</td></tr>`;
+        }
+        table.innerHTML = html;
+        document.getElementById('real-digits').innerHTML = '';
+        document.getElementById('real-box').style.visibility = 'hidden';
+    }
+
+    function stepReal() {
+        if (realIdx >= dSize) return;
+        
+        document.getElementById('real-box').style.visibility = 'visible';
+        const cell = document.getElementById(`d-${realIdx}-${realIdx}`);
+        cell.className = 'diagonal-highlight';
+
+        let original = realMatrix[realIdx][realIdx];
+        let changed = (original + 1) % 10; // 대각선 숫자와 다른 숫자 선택
+
+        const span = document.createElement('span');
+        span.className = 'digit-change';
+        span.innerText = changed;
+        document.getElementById('real-digits').appendChild(span);
+        
+        document.getElementById('real-status').innerText = `${realIdx+1}번째 수의 ${realIdx+1}번째 자리(${original})를 피해 ${changed}를 선택!`;
+        
+        realIdx++;
+        if(realIdx === dSize) {
+            document.getElementById('real-status').innerHTML = "<span style='color:red;'>증명 끝: 이 숫자는 어떤 n번째 행과도 일치하지 않습니다!</span>";
+            document.getElementById('btn-real-next').disabled = true;
+        }
+    }
+
+    function resetReal() {
+        realIdx = 0;
+        document.getElementById('btn-real-next').disabled = false;
+        document.getElementById('real-status').innerText = '';
+        initReal();
+    }
+
+    // 초기화 실행
+    initRat();
+    initReal();
+</script>
+</body>
+</html>
