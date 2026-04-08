@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>조건부 확률 — 정보가 믿음을 바꾸는 순간</title>
+
+<!-- SageMath Cell Server -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+// DOM이 완전히 준비된 뒤에 SageCell을 초기화한다. 재시도 로직 포함.
+function initSageCells(retryCount) {
+    retryCount = retryCount || 0;
+    if (typeof sagecell === 'undefined') {
+        if (retryCount < 20) {
+            setTimeout(function() { initSageCells(retryCount + 1); }, 300);
+        } else {
+            console.error('SageCell 로드에 실패하였다.');
+        }
+        return;
+    }
+    sagecell.makeSagecell({
+        inputLocation: 'div.compute',
+        languages: ['python'],
+        evalButtonText: '▶ 실행 (Run)',
+        hide: ['permalink', 'fullScreen'],
+        autoeval: false
+    });
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { initSageCells(0); });
+} else {
+    initSageCells(0);
+}
+</script>
+
+<style>
+:root {
+    --ocean-deep: #0a2540;
+    --ocean-mid: #1e4d7b;
+    --ocean-light: #4a90c2;
+    --ocean-pale: #e8f1f8;
+    --accent-coral: #e85d5d;
+    --accent-amber: #f5a623;
+    --accent-mint: #2ecc9b;
+    --text-dark: #1a2332;
+    --text-mid: #4a5568;
+    --bg-soft: #f7f9fc;
+}
+* { box-sizing: border-box; }
+body {
+    font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", -apple-system, sans-serif;
+    background: var(--bg-soft);
+    margin: 0;
+    padding: 0;
+    color: var(--text-dark);
+    line-height: 1.7;
+}
+.container {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    padding-bottom: 80px;
+    box-shadow: 0 0 40px rgba(10, 37, 64, 0.08);
+}
+
+/* 헤더 */
+.header {
+    background: linear-gradient(135deg, #0a2540 0%, #1e4d7b 50%, #4a90c2 100%);
+    color: white;
+    padding: 70px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+.header h1 {
+    font-size: 2.6em;
+    margin: 0 0 12px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    position: relative;
+}
+.header .subtitle {
+    font-size: 1.15em;
+    color: #b8d4e8;
+    margin: 0;
+    font-weight: 400;
+    position: relative;
+}
+.header .meta {
+    margin-top: 24px;
+    font-size: 0.9em;
+    color: #8fb3d0;
+    position: relative;
+}
+
+/* 챕터 진입 인용구 */
+.intro-quote {
+    background: linear-gradient(to right, var(--ocean-pale), white);
+    padding: 40px 50px;
+    border-left: 6px solid var(--ocean-mid);
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--ocean-deep);
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* 섹션 (STEP) */
+.step-section {
+    padding: 60px 50px;
+    border-bottom: 1px solid #eaeef2;
+}
+.step-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+.step-number {
+    background: linear-gradient(135deg, var(--ocean-deep), var(--ocean-light));
+    color: white;
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6em;
+    font-weight: 800;
+    box-shadow: 0 6px 20px rgba(10, 37, 64, 0.25);
+    flex-shrink: 0;
+}
+.step-title-block h2 {
+    margin: 0 0 6px;
+    font-size: 2em;
+    color: var(--ocean-deep);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+.step-title-block .step-tag {
+    color: var(--ocean-light);
+    font-size: 0.95em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* 소절 */
+.subsection {
+    margin: 35px 0;
+}
+.subsection h3 {
+    color: var(--ocean-mid);
+    border-left: 4px solid var(--accent-coral);
+    padding-left: 14px;
+    font-size: 1.3em;
+    margin: 0 0 16px;
+    font-weight: 700;
+}
+.subsection h4 {
+    color: var(--ocean-deep);
+    font-size: 1.05em;
+    margin: 24px 0 10px;
+    font-weight: 700;
+}
+.subsection p {
+    color: var(--text-mid);
+    margin: 12px 0;
+}
+.subsection ul, .subsection ol { color: var(--text-mid); padding-left: 24px; }
+.subsection li { margin: 6px 0; }
+
+/* 정의 박스 */
+.definition-box {
+    background: linear-gradient(135deg, #e8f1f8 0%, #f0f6fb 100%);
+    border: 2px solid var(--ocean-light);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    position: relative;
+}
+.definition-box::before {
+    content: '정의';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--ocean-deep);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.definition-box p { color: var(--ocean-deep); margin: 8px 0; }
+.definition-box .formula {
+    background: white;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
+    font-size: 1.15em;
+    text-align: center;
+    color: var(--ocean-deep);
+    font-weight: 600;
+    border: 1px solid #cfe0ee;
+}
+
+/* 핵심 강조 박스 */
+.key-insight {
+    background: linear-gradient(135deg, #fff8e1 0%, #fff4d4 100%);
+    border-left: 6px solid var(--accent-amber);
+    padding: 22px 26px;
+    margin: 24px 0;
+    border-radius: 0 10px 10px 0;
+}
+.key-insight strong { color: #b8730a; }
+
+/* 새로운 시각 박스 */
+.new-perspective {
+    background: linear-gradient(135deg, #1a2332 0%, #2a3f5f 100%);
+    color: white;
+    padding: 36px 40px;
+    margin: 40px -20px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 12px 36px rgba(10, 37, 64, 0.2);
+}
+.new-perspective::before {
+    content: '✦ 새로운 시각';
+    position: absolute;
+    top: -14px;
+    left: 30px;
+    background: var(--accent-coral);
+    color: white;
+    padding: 6px 18px;
+    border-radius: 14px;
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.new-perspective h4 {
+    color: #ffd9d9;
+    margin: 8px 0 12px;
+    font-size: 1.2em;
+}
+.new-perspective p { color: #d8e5f0; margin: 12px 0; }
+.new-perspective strong { color: white; }
+
+/* 예제 박스 (클릭하여 정답) */
+.example-box {
+    border: 2px solid #d8e2eb;
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin: 24px 0;
+    background: white;
+}
+.example-label {
+    display: inline-block;
+    background: var(--accent-coral);
+    color: white;
+    padding: 5px 16px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: 0.03em;
+}
+.example-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--ocean-deep);
+    margin-bottom: 12px;
+}
+.example-question {
+    background: var(--bg-soft);
+    padding: 16px 20px;
+    border-left: 4px solid var(--ocean-light);
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    color: var(--text-dark);
+}
+
+/* 클릭 하여 정답 보기 */
+details.answer-toggle {
+    margin-top: 14px;
+    background: #e8f5ee;
+    border: 1px solid #a8d8b9;
+    border-radius: 10px;
+    padding: 14px 20px;
+}
+details.answer-toggle summary {
+    font-weight: 700;
+    color: #1a6e3f;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    outline: none;
+}
+details.answer-toggle summary::before {
+    content: '▶ ';
+    display: inline-block;
+    transition: transform 0.2s;
+}
+details.answer-toggle[open] summary::before {
+    transform: rotate(90deg);
+}
+.answer-content {
+    margin-top: 14px;
+    padding: 16px 18px;
+    background: white;
+    border-radius: 8px;
+    color: var(--text-dark);
+    line-height: 1.75;
+}
+.answer-content strong { color: var(--accent-coral); }
+
+/* 연습문제 박스 */
+.practice-box {
+    border: 2px dashed var(--accent-amber);
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin: 30px 0;
+    background: #fffdf5;
+}
+.practice-label {
+    display: inline-block;
+    background: var(--accent-amber);
+    color: white;
+    padding: 5px 16px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+/* SageMath 컴퓨트 셀 컨테이너 */
+.code-section {
+    margin: 20px 0;
+}
+.code-label {
+    background: var(--ocean-deep);
+    color: #b8d4e8;
+    padding: 8px 18px;
+    border-radius: 8px 8px 0 0;
+    font-size: 0.85em;
+    font-weight: 600;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    display: inline-block;
+}
+.compute {
+    border: 1px solid #d8e2eb;
+    border-radius: 0 10px 10px 10px;
+    padding: 4px;
+    background: #fafbfd;
+}
+.compute textarea {
+    font-family: "JetBrains Mono", "Consolas", "Menlo", monospace !important;
+    font-size: 13px !important;
+}
+
+/* 마무리 섹션 */
+.conclusion {
+    background: linear-gradient(135deg, var(--ocean-deep) 0%, var(--ocean-mid) 100%);
+    color: white;
+    padding: 60px 50px;
+    text-align: center;
+}
+.conclusion h2 {
+    font-size: 1.8em;
+    margin: 0 0 18px;
+    color: white;
+}
+.conclusion p { color: #c4dbed; font-size: 1.05em; }
+.conclusion .final-formula {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    padding: 24px 32px;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 20px 0;
+    font-size: 1.4em;
+    font-family: "Cambria Math", Georgia, serif;
+    backdrop-filter: blur(10px);
+}
+
+/* 표 */
+table.summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(10, 37, 64, 0.06);
+}
+table.summary th {
+    background: var(--ocean-deep);
+    color: white;
+    padding: 14px;
+    text-align: left;
+    font-weight: 700;
+}
+table.summary td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f6;
+    color: var(--text-mid);
+}
+table.summary tr:last-child td { border-bottom: none; }
+
+/* 코드 인라인 */
+code {
+    background: #eef2f7;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    font-size: 0.92em;
+    color: var(--ocean-deep);
+}
+
+/* 진행 안내 바 */
+.nav-bar {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(10, 37, 64, 0.92);
+    color: white;
+    padding: 14px 26px;
+    border-radius: 30px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    font-size: 0.9em;
+}
+
+/* 목차 */
+.toc {
+    background: var(--ocean-pale);
+    padding: 36px 50px;
+    border-bottom: 2px solid #d0e0ec;
+}
+.toc h3 {
+    color: var(--ocean-deep);
+    margin: 0 0 18px;
+    font-size: 1.2em;
+}
+.toc ol {
+    columns: 2;
+    column-gap: 40px;
+    color: var(--ocean-mid);
+    padding-left: 20px;
+}
+.toc li { margin: 8px 0; font-weight: 500; }
+
+@media (max-width: 720px) {
+    .step-section, .header, .toc, .conclusion, .intro-quote { padding-left: 24px; padding-right: 24px; }
+    .toc ol { columns: 1; }
+    .header h1 { font-size: 2em; }
+    .new-perspective { margin-left: -10px; margin-right: -10px; }
+}
+
+/* ========= 학습자 빈칸 워크북 박스 ========= */
+.workbook-box {
+    background: #fffaf0;
+    border: 2px dashed var(--accent-amber);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 24px 0;
+    box-shadow: 0 2px 8px rgba(231, 158, 41, 0.08);
+}
+.workbook-label {
+    display: inline-block;
+    background: var(--accent-amber);
+    color: white;
+    padding: 5px 16px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+.workbook-q {
+    color: var(--text-dark);
+    margin: 0 0 14px 0;
+    line-height: 1.75;
+    font-size: 1em;
+}
+.workbook-q strong { color: var(--ocean-deep); }
+.blank-line {
+    margin: 10px 0;
+    color: var(--text-mid);
+    line-height: 1.9;
+}
+.blank-input {
+    border: none;
+    border-bottom: 2px solid var(--ocean-light);
+    background: transparent;
+    font-size: 1em;
+    padding: 4px 8px;
+    min-width: 200px;
+    font-family: inherit;
+    color: var(--ocean-deep);
+    transition: border-color 0.2s;
+}
+.blank-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-coral);
+    background: rgba(255, 250, 240, 0.6);
+}
+.blank-input.wide { min-width: 360px; }
+.blank-input.narrow { min-width: 60px; }
+.blank-input.tiny { min-width: 40px; }
+
+/* 워크북 내 표 */
+.workbook-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.workbook-table th, .workbook-table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 0.95em;
+}
+.workbook-table th {
+    background: var(--bg-soft);
+    color: var(--ocean-deep);
+}
+
+/* 라디오/체크박스 옵션 */
+.option-list {
+    margin: 10px 0;
+    padding: 0;
+    list-style: none;
+}
+.option-list li {
+    margin: 6px 0;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+.option-list label {
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+/* 1-4 보충 섹션 */
+.supplement-section {
+    background: linear-gradient(to bottom, #f7f9fc, white);
+    border: 1px solid var(--ocean-light);
+    border-left: 5px solid var(--ocean-light);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 30px 0;
+}
+.supplement-section h3 {
+    color: var(--ocean-deep);
+    margin-top: 0;
+}
+.supplement-label {
+    display: inline-block;
+    background: var(--ocean-light);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="nav-bar">▼ 스크롤하며 직접 손으로 풀어보라</div>
+
+<div class="container">
+
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>조건부 확률</h1>
+        <p class="subtitle">정보가 믿음을 바꾸는 순간</p>
+        <div class="meta">3시간 강의 · 이론 · 실습 · 베이즈 정리</div>
+    </div>
+
+    <!-- 진입 인용구 -->
+    <div class="intro-quote">
+        “정보는 표본공간을 줄이고, 줄어든 표본공간은 확률을 바꾼다.”
+    </div>
+
+    <!-- 목차 -->
+    <div class="toc">
+        <h3>📚 강의 목차</h3>
+        <ol>
+            <li>STEP 0 · 확률의 언어 익히기</li>
+            <li>STEP 1 · 윷놀이 — 한탄 속에 숨은 수학</li>
+            <li>STEP 2 · 몬티 홀 퀴즈 — 직관이 지는 날</li>
+            <li>STEP 3 · 카드 뽑기와 공식의 탄생</li>
+            <li>STEP 4 · 질병 진단 — 베이즈 정리</li>
+            <li>심화 실습 · 종합 연습문제</li>
+            <li>마무리 · 새로운 시각</li>
+        </ol>
+    </div>
+
+    <!-- ===================== STEP 0 ===================== -->
+    <div class="step-section">
+        <div class="step-header">
+            <div class="step-number">0</div>
+            <div class="step-title-block">
+                <div class="step-tag">FOUNDATIONS</div>
+                <h2>확률의 언어 익히기</h2>
+            </div>
+        </div>
+
+        <p>본 단계에서는 주사위와 동전이라는 단순한 예를 통하여 확률의 기본 어휘를 손에 익힌다. 모든 단어는 그 단어가 가리키는 <strong>구체적 그림</strong>을 본 뒤에 도입된다.</p>
+
+        <!-- 0-1 -->
+        <div class="subsection">
+            <h3>0-1. 시행과 결과</h3>
+            <p>“주사위 한 개를 한 번 던진다.” 이 한 문장은 확률에서 두 단어를 만들어낸다.</p>
+            <div class="definition-box">
+                <p><strong>시행(trial)</strong>이란 한 번의 실험 또는 관찰을 가리킨다.</p>
+                <p><strong>결과(outcome)</strong>란 시행을 한 번 하였을 때 실제로 나온 것 하나를 가리킨다.</p>
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-1</span>
+                <p class="workbook-q">동전 한 개를 한 번 던진다. 가능한 결과를 모두 적어보아라.</p>
+                <div class="blank-line">답: <input type="text" class="blank-input" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 앞면, 뒷면 (두 가지)</div>
+                </details>
+            </div>
+
+        <!-- 0-2 표본공간 -->
+        <div class="subsection">
+            <h3>0-2. 표본공간</h3>
+            <div class="definition-box">
+                <p><strong>표본공간(sample space)</strong>이란, 시행에서 일어날 수 있는 <strong>모든 결과를 빠짐없이 모아둔 집합</strong>이다. 기호로는 보통 <code>S</code> 혹은 <code>Ω</code>(오메가)로 적는다.</p>
+                <div class="formula">S = {1, 2, 3, 4, 5, 6},  &nbsp; |S| = 6</div>
+            </div>
+
+            <div class="example-box">
+                <span class="example-label">예제 0-1</span>
+                <div class="example-title">동전 두 개의 표본공간</div>
+                <div class="example-question">
+                    동전 두 개를 동시에 던지는 시행의 표본공간 <code>S</code>와 그 원소의 개수 <code>|S|</code>를 적어보라. 단, 첫째 동전과 둘째 동전은 서로 다른 동전임에 주의한다.
+                </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">
+                        <strong>정답:</strong> S = {(앞,앞), (앞,뒤), (뒤,앞), (뒤,뒤)}, &nbsp; |S| = <strong>4</strong><br><br>
+                        핵심은 <code>(앞,뒤)</code>와 <code>(뒤,앞)</code>이 서로 다른 결과라는 점이다. 첫째 동전과 둘째 동전이 구분되기 때문이다. 가장 흔한 오답은 <code>|S| = 3</code>이라 답하는 것인데, 이는 두 결과를 같은 것으로 본 오류이다.
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-2</span>
+                <p class="workbook-q">동전 한 개를 한 번 던지는 시행의 표본공간 <code>S</code>와 <code>|S|</code>를 적어보아라.</p>
+                <div class="blank-line">S = <input type="text" class="blank-input narrow" placeholder=""> , &nbsp; |S| =</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> S = {앞면, 뒷면}, &nbsp; |S| = <strong>2</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-3</span>
+                <p class="workbook-q">동전 두 개를 동시에 던지는 시행의 표본공간을 빠짐없이 나열해보아라. 첫째 동전과 둘째 동전은 서로 다른 동전임에 주의한다.</p>
+                <div class="blank-line">S = <input type="text" class="blank-input wide" placeholder=""> </div><div class="blank-line">|S| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> S = {(앞,앞), (앞,뒤), (뒤,앞), (뒤,뒤)}, &nbsp; |S| = <strong>4</strong><br><br>핵심은 (앞,뒤)와 (뒤,앞)이 서로 다른 결과라는 점이다. 첫째 동전과 둘째 동전은 구분되기 때문이다. 가장 흔한 오답은 |S| = 3이라 답하는 것인데, 이는 두 결과를 같은 것으로 본 오류이다.</div>
+                </details>
+            </div>
+
+        <!-- 0-3 사건 -->
+        <div class="subsection">
+            <h3>0-3. 사건과 집합 연산</h3>
+            <p>표본공간의 <strong>부분집합</strong>, 즉 표본공간 안에서 우리가 관심 있는 결과들만 골라 묶은 것을 <strong>사건(event)</strong>이라 부른다. 사건은 결국 집합이며, 다음 세 가지 집합 연산이 자유롭게 적용된다.</p>
+            <ul>
+                <li><code>A ∩ B</code> (교집합) — “A이면서 동시에 B인” 결과의 모임</li>
+                <li><code>A ∪ B</code> (합집합) — “A이거나 B인” 결과의 모임</li>
+                <li><code>A<sup>c</sup></code> (여집합) — “A가 아닌” 결과의 모임</li>
+            </ul>
+            <p>주사위에서 <code>A = {2, 4, 6}</code>(짝수), <code>B = {3, 4, 5, 6}</code>(3 이상)일 때 직접 계산해보면 다음과 같다.</p>
+            <ul>
+                <li>A ∩ B = {4, 6}</li>
+                <li>A ∪ B = {2, 3, 4, 5, 6}</li>
+                <li>A<sup>c</sup> = {1, 3, 5}</li>
+            </ul>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-4</span>
+                <p class="workbook-q">주사위에서 “소수가 나온다”는 사건을 집합으로 적어보아라. (소수: 2, 3, 5)</p>
+                <div class="blank-line">답: <input type="text" class="blank-input" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> {2, 3, 5}</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-5</span>
+                <p class="workbook-q">주사위에서 <code>A = {2, 4, 6}</code>, <code>B = {3, 4, 5, 6}</code>이라 하자. <code>B<sup>c</sup></code>는 무엇인가?</p>
+                <div class="blank-line">B<sup>c</sup> = <input type="text" class="blank-input" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> B<sup>c</sup> = {1, 2}<br><br>S = {1,2,3,4,5,6} 안에서 B = {3,4,5,6}에 들어있지 않은 원소들이다. 여집합은 항상 표본공간을 기준으로 한다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-6</span>
+                <p class="workbook-q"><code>A<sup>c</sup> ∩ B</code>는 무엇인가? (“A에는 없고 B에는 있는 것”이다)</p>
+                <div class="blank-line">A<sup>c</sup> ∩ B = <input type="text" class="blank-input" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> A<sup>c</sup> ∩ B = {3, 5}<br><br>A<sup>c</sup> = {1,3,5}와 B = {3,4,5,6}의 교집합이다. 두 집합 모두에 들어있는 원소만 모은다. 1은 B에 없으므로 빠지고, 4와 6은 A<sup>c</sup>에 없으므로 빠진다.</div>
+                </details>
+            </div>
+
+        <!-- 0-4 확률의 정의 -->
+        <div class="subsection">
+            <h3>0-4. 확률의 정의 — 모든 결과가 동등할 때</h3>
+            <p>본 강의에서 다루는 모든 상황은 <strong>모든 결과가 동등하게 일어날 가능성을 가진다</strong>는 가정 아래에 있다. 이 가정 아래에서 사건 <code>A</code>의 확률은 다음과 같이 정의된다.</p>
+            <div class="definition-box">
+                <div class="formula">P(A) = |A| / |S|</div>
+                <p style="text-align:center; margin: 6px 0 0;">즉, (관심 결과의 개수) ÷ (전체 결과의 개수)이다.</p>
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-7</span>
+                <p class="workbook-q">주사위에서 <code>P(짝수)</code>는?</p>
+                <div class="blank-line">P(짝수) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(짝수) = 3 / 6 = <strong>1/2</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-8</span>
+                <p class="workbook-q">주사위에서 <code>P(3 이상)</code>은?</p>
+                <div class="blank-line">P(3 이상) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(3 이상) = 4 / 6 = <strong>2/3</strong><br><br>3, 4, 5, 6 네 개이므로 분자가 4이다.</div>
+                </details>
+            </div>
+
+        <!-- 0-5 다섯 성질 -->
+        <div class="subsection">
+            <h3>0-5. 확률의 다섯 가지 기본 성질</h3>
+            <p>다음 다섯 성질은 외울 필요가 없다. 정의 <code>P(A) = |A|/|S|</code>로부터 자연스럽게 따라 나오기 때문이다.</p>
+            <table class="summary">
+                <tr><th>번호</th><th>성질</th><th>의미</th></tr>
+                <tr><td>1</td><td>0 ≤ P(A) ≤ 1</td><td>확률은 0과 1 사이</td></tr>
+                <tr><td>2</td><td>P(S) = 1</td><td>전체의 확률은 1</td></tr>
+                <tr><td>3</td><td>P(∅) = 0</td><td>빈집합의 확률은 0</td></tr>
+                <tr><td>4</td><td>P(A<sup>c</sup>) = 1 − P(A)</td><td>여사건의 확률</td></tr>
+                <tr><td>5</td><td>P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</td><td>합사건의 확률</td></tr>
+            </table>
+
+            <h4>🐍 파이썬으로 직접 확인하기</h4>
+            <p>주사위 표본공간 위에서 위의 다섯 성질이 모두 성립함을 컴퓨터로 검증한다. 코드 안의 사건 <code>A</code>, <code>B</code>를 자유롭게 바꾸어 가며 실행해보라.</p>
+
+            <div class="code-section">
+                <div class="code-label">step0_basic_probability.py</div>
+                <div class="compute">
+# === 주사위의 표본공간과 사건 ===
+S = {1, 2, 3, 4, 5, 6}
+
+# [수정 가능] 사건 A와 B를 자유롭게 바꿔보자
+A = {2, 4, 6}      # 짝수
+B = {3, 4, 5, 6}   # 3 이상
+
+def P(event):
+    """사건의 확률을 계산한다 (모든 결과가 동등할 때)."""
+    return len(event) / len(S)
+
+print(f"S      = {S},   |S| = {len(S)}")
+print(f"A      = {A},   P(A) = {P(A):.4f}")
+print(f"B      = {B},   P(B) = {P(B):.4f}")
+print()
+print(f"A ∩ B  = {A & B},  P(A ∩ B) = {P(A & B):.4f}")
+print(f"A ∪ B  = {A | B},  P(A ∪ B) = {P(A | B):.4f}")
+print(f"A^c    = {S - A},  P(A^c)   = {P(S - A):.4f}")
+print()
+print("=== 다섯 가지 성질 검증 ===")
+print(f"1. 0 ≤ P(A) ≤ 1 : {0 <= P(A) <= 1}")
+print(f"2. P(S) = 1     : {P(S) == 1}")
+print(f"3. P(∅) = 0     : {P(set()) == 0}")
+print(f"4. P(A) + P(A^c) = 1 : {round(P(A) + P(S - A), 6) == 1}")
+print(f"5. P(A∪B) = P(A)+P(B)-P(A∩B) : {round(P(A|B), 6) == round(P(A)+P(B)-P(A&B), 6)}")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-9</span>
+                <p class="workbook-q">주사위에서 <code>A = {2,4,6}</code>, <code>B = {3,4,5,6}</code>이라 하자. <code>P(A ∪ B)</code>를 두 가지 방법으로 계산하고 같은지 확인하여라.</p>
+                <div class="blank-line"><strong>방법 1 (직접 세기):</strong></div><div class="blank-line">A ∪ B = <input type="text" class="blank-input wide" placeholder=""> </div><div class="blank-line">|A ∪ B| = <input type="text" class="blank-input narrow" placeholder=""> , &nbsp; P(A ∪ B) =</div><div class="blank-line"><strong>방법 2 (성질 5 사용): P(A) + P(B) − P(A ∩ B)</strong></div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> +</div><div class="blank-line">− <input type="text" class="blank-input narrow" placeholder=""> =</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>방법 1:</strong> A ∪ B = {2, 3, 4, 5, 6}, &nbsp; |A ∪ B| = 5, &nbsp; P(A ∪ B) = <strong>5/6</strong><br><br><strong>방법 2:</strong> P(A) + P(B) − P(A ∩ B) = 1/2 + 2/3 − 2/6 = 3/6 + 4/6 − 2/6 = <strong>5/6</strong><br><br>두 방법이 같은 값을 준다는 것이 핵심이다. 만약 −2/6을 빼지 않고 1/2 + 2/3 = 7/6이라 답하면 1을 넘는 값이 나오는데, 이는 성질 1을 위반한다. <strong>확률이 1을 넘는다는 것 자체가 어딘가 틀렸다는 신호이다.</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q0-10</span>
+                <p class="workbook-q">주사위에서 “1이 나오지 않을” 확률을 두 가지 방법으로 계산해보아라.</p>
+                <div class="blank-line"><strong>방법 1 (1이 아닌 결과를 직접 세기):</strong></div><div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div><div class="blank-line"><strong>방법 2 (성질 4: 여사건):</strong></div><div class="blank-line">P(1이 아님) = 1 − P(1) = 1 − <input type="text" class="blank-input narrow" placeholder=""> =</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>방법 1:</strong> |{2,3,4,5,6}| / 6 = <strong>5/6</strong><br><strong>방법 2:</strong> 1 − P(1) = 1 − 1/6 = <strong>5/6</strong><br><br>여사건의 위력은 다음과 같은 상황에서 진가를 발휘한다. “주사위 다섯 번 던졌을 때 1이 적어도 한 번 나올 확률”을 직접 세려면 경우가 많지만, “1이 한 번도 안 나올 확률”을 구한 뒤 1에서 빼면 한 줄로 끝난다.</div>
+                </details>
+            </div>
+
+        <!-- ===================== STEP 1 ===================== -->
+    <div class="step-section">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title-block">
+                <div class="step-tag">CASE STUDY 1</div>
+                <h2>윷놀이 — 한탄 속에 숨은 수학</h2>
+            </div>
+        </div>
+
+        <!-- 1-1 -->
+        <div class="subsection">
+            <h3>1-1. 상황 이해하기</h3>
+            <p>윷가락 하나를 던지면 <strong>배</strong>(평평한 면이 위) 또는 <strong>등</strong>(둥근 면이 위)이 나온다. 본 강의에서는 수학의 명료함을 위하여 <strong>배와 등이 정확히 반반씩 나온다</strong>고 가정한다.</p>
+            <p>윷가락은 네 개를 동시에 던진다. 한 번의 시행에서 나오는 결과는 예컨대 <code>(배, 등, 등, 배)</code>와 같이 표현된다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q1</span>
+                <p class="workbook-q">윷가락 한 개만 던지는 시행의 표본공간 <code>S₁</code>의 원소 개수는?</p>
+                <div class="blank-line">|S₁| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> |S₁| = <strong>2</strong> (배 또는 등)</div>
+                </details>
+            </div>
+
+        <!-- 1-2 표본공간 -->
+        <div class="subsection">
+            <h3>1-2. 표본공간 구성</h3>
+            <p>가락 하나당 두 가지 결과가 가능하고, 가락이 네 개이므로 곱의 법칙에 의해 <code>|S| = 2⁴ = 16</code>이다. 직접 나열할 필요 없이 곱셈으로 구해진다.</p>
+
+            <div class="example-box">
+                <span class="example-label">예제 1-1</span>
+                <div class="example-title">‘도’ 사건의 정의와 확률</div>
+                <div class="example-question">
+                    윷놀이에서 <strong>도</strong>는 “배가 정확히 하나 나온 결과”이다. 사건 <code>D</code>를 표본공간 <code>S</code>의 부분집합으로 적고, 확률 <code>P(D)</code>를 구하여라.
+                </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">
+                        <strong>D = {(배,등,등,등), (등,배,등,등), (등,등,배,등), (등,등,등,배)}</strong>이며 <code>|D| = 4</code>이다.<br><br>
+                        따라서 <strong>P(D) = 4/16 = 0.25</strong>이다. 이 값은 곧 변하게 된다.
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q2</span>
+                <p class="workbook-q">윷가락 두 개를 동시에 던지는 시행의 표본공간 <code>S₂</code>를 직접 나열해보아라. 주의: <code>(배,등)</code>과 <code>(등,배)</code>는 서로 다른 결과이다.</p>
+                <div class="blank-line">S₂ = <input type="text" class="blank-input wide" placeholder=""> </div><div class="blank-line">|S₂| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> S₂ = {(배,배), (배,등), (등,배), (등,등)}, &nbsp; |S₂| = <strong>4</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q3</span>
+                <p class="workbook-q">윷가락 네 개를 동시에 던지는 시행의 표본공간 <code>S</code>의 원소 개수는? 나열하지 말고 규칙을 찾아 계산하여라.</p>
+                <div class="blank-line">|S| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> |S| = <strong>16</strong><br><br>가락 하나당 2가지이고 가락이 4개이므로 2<sup>4</sup> = 16이다.</div>
+                </details>
+            </div>
+
+        <!-- 1-3 정보가 들어옴 -->
+        <div class="subsection">
+            <h3>1-3. 정보가 들어오는 순간</h3>
+            <p>이제 장면이 바뀐다. 학습자는 눈을 감고 있었고, 친구가 윷을 던진 뒤 다음과 같이 말한다.</p>
+            <div class="key-insight">
+                <strong>“적어도 한 가락은 배가 나왔어.”</strong>
+            </div>
+            <p>이 정보를 사건 <code>E</code>로 표현하면 <code>E</code> = “배가 적어도 한 번 나오는 사건”이다. 이 한 문장이 들어오는 순간, 표본공간은 <code>S</code>(16개)에서 <code>E</code>로 줄어든다. 사라지는 결과는 단 하나, <code>(등, 등, 등, 등)</code>이다. 따라서 <code>|E| = 16 − 1 = 15</code>이다.</p>
+            <p>한편 사건 <code>D</code>의 네 결과 중에는 <code>(등,등,등,등)</code>이 없으므로 <code>D ⊂ E</code>이며, <code>|D ∩ E| = |D| = 4</code>이다. <strong>분자는 변하지 않고 분모만 변한 것</strong>이다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q4</span>
+                <p class="workbook-q"><code>P(D)</code>는 얼마인가? STEP 0에서 배운 정의 <code>P(A) = |A|/|S|</code>를 그대로 적용해보아라.</p>
+                <div class="blank-line">P(D) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> (소수)</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(D) = 4 / 16 = 1/4 = <strong>0.25</strong><br><br>분자(사건 D의 크기)는 4이다. (배,등,등,등), (등,배,등,등), (등,등,배,등), (등,등,등,배). 분모는 표본공간 전체 크기 16. 이 값은 곧 변하게 된다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q5</span>
+                <p class="workbook-q">친구가 “적어도 한 가락은 배가 나왔어”라고 말했다. 이 정보를 사건 <code>E</code>라 하자. 이 정보를 듣는 순간, 표본공간 <code>S</code>의 16개 결과 중에서 <strong>더 이상 일어날 수 없게 된</strong> 결과 하나를 적어보아라. (이 결과는 <code>E<sup>c</sup></code>에 속한다)</p>
+                <div class="blank-line">답: <input type="text" class="blank-input" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> (등, 등, 등, 등) 즉 <strong>‘모’</strong><br><br>“적어도 한 가락은 배”라는 정보는 “배가 하나도 없는 결과는 일어나지 않았다”와 같은 말이다. 16가지 중 배가 하나도 없는 결과는 (등,등,등,등) 단 하나뿐이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q6</span>
+                <p class="workbook-q">따라서 <code>|E|</code>는 얼마인가? <code>E<sup>c</sup></code>의 원소 개수를 16에서 빼주면 된다.</p>
+                <div class="blank-line">|E| = 16 − <input type="text" class="blank-input narrow" placeholder=""> =</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> |E| = 16 − 1 = <strong>15</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q7</span>
+                <p class="workbook-q"><code>D ∩ E</code>는 어떤 사건인가? “도이면서 동시에 배가 적어도 하나”인 결과들이다. <code>|D ∩ E|</code>는? (힌트: D의 네 결과 중에 <code>E<sup>c</sup></code>의 결과가 있는가?)</p>
+                <div class="blank-line">|D ∩ E| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> |D ∩ E| = <strong>4</strong><br><br>D의 네 결과 중에는 (등,등,등,등)이 없다. 따라서 D 안의 결과들은 모두 E에도 들어있다. 즉 D ⊂ E이고, D ∩ E = D, |D ∩ E| = 4. <strong>분자는 변하지 않고 분모만 변했다</strong>는 것이 핵심이다.</div>
+                </details>
+            </div>
+
+        <!-- 1-4 조건부확률 첫 등장 -->
+        <div class="subsection">
+            <h3>1-4. 조건부 확률의 첫 등장</h3>
+            <div class="definition-box">
+                <p><strong>조건부 확률(conditional probability)</strong> <code>P(D | E)</code>란 “<code>E</code>가 일어났다는 조건 아래에서 <code>D</code>가 일어날 확률”을 의미한다. 가운데 세로 막대 <code>|</code>는 “~라는 조건 아래에서”라고 읽는다.</p>
+                <div class="formula">P(D | E) = |D ∩ E| / |E| = 4 / 15 ≈ 0.267</div>
+            </div>
+            <p>조건이 없을 때 <code>P(D) = 0.25</code>였으나, 조건이 들어온 뒤 <code>P(D | E) ≈ 0.267</code>로 <strong>아주 조금 올라갔다</strong>. 분자는 그대로이고 분모만 16에서 15로 줄어들었기 때문이다.</p>
+
+            <h4>🐍 파이썬 실험으로 검증하기</h4>
+            <p>10만 번 윷놀이를 시뮬레이션하여 이론값 <code>4/15</code>와 얼마나 일치하는지 확인한다. <code>trials</code> 값을 바꾸어 시행 횟수를 조절해보라.</p>
+
+            <div class="code-section">
+                <div class="code-label">step1_yutnori_simulation.py</div>
+                <div class="compute">
+import random
+
+def throw_yut():
+    """1=배, 0=등. 네 가락을 한 번 던진 결과를 돌려준다."""
+    return [random.randint(0, 1) for _ in range(4)]
+
+# [수정 가능] 시행 횟수를 바꿔보자
+trials = 100_000
+
+all_results = [throw_yut() for _ in range(trials)]
+
+# 사건 E: 배가 적어도 하나
+E = [r for r in all_results if sum(r) >= 1]
+
+# D ∩ E: 정확히 하나가 배 (= 도)
+D_and_E = [r for r in E if sum(r) == 1]
+
+print(f"시행 횟수 (|S| 추정):  {trials}")
+print(f"|E| 조건 만족 시행 수: {len(E)}")
+print(f"|D ∩ E| 그중 도였던 수: {len(D_and_E)}")
+print()
+print(f"실험으로 얻은 P(D | E): {len(D_and_E) / len(E):.4f}")
+print(f"손으로 계산한 이론값:    {4/15:.4f}")
+print(f"차이:                   {abs(len(D_and_E)/len(E) - 4/15):.4f}")
+                </div>
+            </div>
+
+            <h4>📈 시행 횟수가 많아질수록 이론값에 수렴하는 모습</h4>
+            <p>아래 코드를 실행하면 시행 횟수가 늘어남에 따라 실험 추정값이 이론값 <code>4/15 ≈ 0.267</code>에 어떻게 수렴해 가는지 그림으로 확인할 수 있다. <code>max_trials</code>를 바꾸어 가며 수렴의 속도를 관찰해보라.</p>
+
+            <div class="code-section">
+                <div class="code-label">step1_convergence_plot.py</div>
+                <div class="compute">
+import random
+import matplotlib.pyplot as plt
+
+# [수정 가능] 최대 시행 횟수
+max_trials = 20_000
+
+count_E = 0
+count_D_and_E = 0
+estimates = []
+xs = []
+
+for n in range(1, max_trials + 1):
+    yut = [random.randint(0, 1) for _ in range(4)]
+    s = sum(yut)
+    if s >= 1:                # 사건 E: 배가 적어도 하나
+        count_E += 1
+        if s == 1:            # D ∩ E: 정확히 하나가 배
+            count_D_and_E += 1
+    if n % 50 == 0 and count_E > 0:
+        estimates.append(count_D_and_E / count_E)
+        xs.append(n)
+
+theory = 4 / 15
+
+plt.figure(figsize=(9, 4.5))
+plt.plot(xs, estimates, color='#1E4D7B', linewidth=1.2, label='Empirical estimate')
+plt.axhline(theory, color='#E85D5D', linestyle='--', linewidth=2,
+            label=f'Theoretical 4/15 ≈ {theory:.4f}')
+plt.xlabel('Number of trials')
+plt.ylabel('P(D | E) estimate')
+plt.title('Convergence of P(D | E) — Yutnori simulation')
+plt.legend(loc='upper right')
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print(f"최종 추정값: {count_D_and_E / count_E:.4f}")
+print(f"이론값:       {theory:.4f}")
+                </div>
+            </div>
+        </div>
+
+        <div class="key-insight">
+            <strong>STEP 1 핵심 정리.</strong> 정보가 주어지면 표본공간이 <code>S</code>에서 <code>E</code>로 줄어든다. 그 새로운 표본공간 안에서 다시 비율을 구한 것이 <strong>조건부 확률 P(D | E)</strong>이다. 분자가 그대로이고 분모만 줄어들면 확률은 올라간다.
+        </div>
+    </div>
+
+    
+            <div class="workbook-box">
+                <span class="workbook-label">Q8</span>
+                <p class="workbook-q">이제 조건부 확률 <code>P(D | E)</code>를 계산해보자. E를 새로운 표본공간으로 삼고, 그 안에서 D가 차지하는 비율을 구하면 된다.</p>
+                <div class="blank-line">P(D | E) = |D ∩ E| / |E| = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> (소수)</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(D | E) = 4 / 15 ≈ <strong>0.267</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q9</span>
+                <p class="workbook-q">Q4의 답은 0.25였고, Q8의 답은 약 0.267이었다. 확률이 <strong>아주 조금 올라갔다</strong>. 왜 올라갔는가? 한 문장으로 적어보아라.</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>예시 답안:</strong> “분자는 그대로인데 분모가 작아졌기 때문이다.” 혹은 “표본공간이 16에서 15로 줄었는데, D의 원소는 빠진 것이 없기 때문이다.”<br><br>핵심 단어는 <strong>“분모”</strong>이다. 만약 “모가 안 나와서”라고만 적었다면 절반만 맞은 것이다. “모가 빠지면서 분모가 줄었기 때문에”까지 가야 완전한 답이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q10</span>
+                <p class="workbook-q">위의 파이썬 코드를 실행했을 때, 실험값과 이론값(4/15 ≈ 0.2667)이 얼마나 가까운가? 둘의 차이를 적어보아라.</p>
+                <div class="blank-line">차이: <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>예시:</strong> 보통 0.001 이내가 나온다.<br><br>시행 횟수가 10만 번이면 이론값과의 오차는 보통 셋째 자리에서 일치한다. 만약 차이가 0.01 이상으로 크게 나왔다면 코드 어딘가에서 조건이 잘못 걸린 것이다.</div>
+                </details>
+            </div>
+
+        <!-- 1-4 보충: 조합과 비대칭 윷가락 -->
+        <div class="subsection">
+            <div class="supplement-section">
+                <span class="supplement-label">SUPPLEMENT</span>
+                <h3>1-5. 보충 — 다섯 결과 모두의 확률과 조합</h3>
+                <p>지금까지는 사건 D(도)의 확률만 계산하였다. 그러나 윷놀이에는 도뿐 아니라 개, 걸, 윷, 모라는 다섯 가지 결과가 있다. 이 다섯 가지 사건의 확률을 모두 구해보면 한 가지 흥미로운 패턴이 드러난다. 그리고 그 과정에서 우리는 새로운 도구 하나를 얻게 된다. <strong>조합</strong>이라는 도구이다.</p>
+
+                <p>먼저 다섯 사건을 정식으로 정의한다.</p>
+                <table class="summary">
+                    <tr><th>결과 이름</th><th>배의 개수</th><th>사건 기호</th></tr>
+                    <tr><td>모</td><td>0개</td><td>M</td></tr>
+                    <tr><td>도</td><td>1개</td><td>D</td></tr>
+                    <tr><td>개</td><td>2개</td><td>G</td></tr>
+                    <tr><td>걸</td><td>3개</td><td>K</td></tr>
+                    <tr><td>윷</td><td>4개</td><td>Y</td></tr>
+                </table>
+
+                <h4>조합: “네 자리 중에서 몇 자리를 골라내는가”</h4>
+                <p>도(배가 정확히 1개)를 셀 때 우리가 한 작업이 사실은 무엇이었는지 다시 보자. “네 자리 중에서 배가 들어갈 자리 1개를 고른다”는 작업이었다. 자리는 4개 있고, 그중 1개를 고르는 방법은 4가지였다. 이 작업에는 이름이 있다. <strong>n개 중에서 k개를 골라내는 방법의 수</strong>를 <strong>조합</strong>이라 부르고 다음 기호로 적는다.</p>
+                <div class="definition-box">
+                    <div class="formula">C(n, k) = n! / (k! · (n − k)!)</div>
+                    <p style="text-align:center; margin: 6px 0 0;">여기서 n!은 “n 팩토리얼”이며 n부터 1까지의 곱이다. (약속: 0! = 1)</p>
+                </div>
+                <p>방금 우리가 센 것은 사실 C(4, 1) = 4였던 것이다. 같은 방식으로 개(배가 정확히 2개)는 C(4, 2)인데, 직접 나열해보면 (1,2), (1,3), (1,4), (2,3), (2,4), (3,4)로 6가지이다. 즉 |G| = C(4, 2) = 6이다.</p>
+
+                
+            <div class="workbook-box">
+                <span class="workbook-label">Q4-1</span>
+                <p class="workbook-q">공식 <code>C(n, k) = n! / (k! · (n−k)!)</code>를 써서 다음을 직접 계산하여라.</p>
+                <div class="blank-line">C(4, 0) = 4! / (0! · 4!) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div><div class="blank-line">C(4, 3) = 4! / (3! · 1!) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div><div class="blank-line">C(4, 4) = 4! / (4! · 0!) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong><br>C(4, 0) = 24 / (1 · 24) = <strong>1</strong><br>C(4, 3) = 24 / (6 · 1) = <strong>4</strong><br>C(4, 4) = 24 / (24 · 1) = <strong>1</strong><br><br>0! = 1이라는 약속이 어색하게 느껴질 수 있지만, 이 약속이 있어야 위의 공식이 k = 0과 k = n인 경우에도 매끄럽게 작동한다. C(4, 0) = 1은 “4개 중 아무것도 안 고르는 방법”이 한 가지임을 뜻한다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q4-2</span>
+                <p class="workbook-q">Q4-1의 결과를 사용해 다섯 사건의 가짓수와 확률을 표로 정리하여라. 분모는 모두 16이다.</p>
+                
+            <table class="workbook-table">
+                <tr><th>사건</th><th>배의 개수</th><th>가짓수 (조합)</th><th>확률</th></tr>
+                <tr><td>M (모)</td><td>0</td><td><input type="text" class="blank-input narrow" placeholder=""></td><td><input type="text" class="blank-input narrow" placeholder="">/16</td></tr>
+                <tr><td>D (도)</td><td>1</td><td><input type="text" class="blank-input narrow" placeholder=""></td><td><input type="text" class="blank-input narrow" placeholder="">/16</td></tr>
+                <tr><td>G (개)</td><td>2</td><td><input type="text" class="blank-input narrow" placeholder=""></td><td><input type="text" class="blank-input narrow" placeholder="">/16</td></tr>
+                <tr><td>K (걸)</td><td>3</td><td><input type="text" class="blank-input narrow" placeholder=""></td><td><input type="text" class="blank-input narrow" placeholder="">/16</td></tr>
+                <tr><td>Y (윷)</td><td>4</td><td><input type="text" class="blank-input narrow" placeholder=""></td><td><input type="text" class="blank-input narrow" placeholder="">/16</td></tr>
+            </table>
+    
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong>
+    <table class="workbook-table">
+        <tr><th>사건</th><th>배 수</th><th>가짓수</th><th>확률</th></tr>
+        <tr><td>M (모)</td><td>0</td><td>1</td><td>1/16 ≈ 0.0625</td></tr>
+        <tr><td>D (도)</td><td>1</td><td>4</td><td>4/16 = 0.25</td></tr>
+        <tr><td>G (개)</td><td>2</td><td><strong>6</strong></td><td><strong>6/16 = 0.375</strong></td></tr>
+        <tr><td>K (걸)</td><td>3</td><td>4</td><td>4/16 = 0.25</td></tr>
+        <tr><td>Y (윷)</td><td>4</td><td>1</td><td>1/16 ≈ 0.0625</td></tr>
+    </table>
+    가짓수의 합은 1 + 4 + 6 + 4 + 1 = 16으로 표본공간 전체 크기와 일치한다. 가장 자주 나오는 결과는 <strong>개</strong>이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q4-3</span>
+                <p class="workbook-q">Q4-2 표의 다섯 확률을 모두 더하면 얼마인가? 이 합이 1이 되어야 하는 이유는 STEP 0의 어느 성질로 설명되는가?</p>
+                <div class="blank-line">합 = <input type="text" class="blank-input narrow" placeholder=""> /16 =</div><div class="blank-line">성질 ____번 (P( <input type="text" class="blank-input narrow" placeholder=""> ) = 1)</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 합 = 16/16 = 1. STEP 0의 <strong>성질 2번 (P(S) = 1)</strong>에서 설명된다.<br><br>다섯 사건 M, D, G, K, Y는 표본공간 S 전체를 빠짐없이 덮고 서로 겹치지 않는다. 이렇게 표본공간을 빠짐없이, 겹치지 않게 나누는 묶음을 <strong>분할</strong>이라 부른다. 분할된 사건들의 확률을 모두 더하면 항상 P(S) = 1이 된다.</div>
+                </details>
+            </div>
+
+
+                <h4>결과: 개가 가장 자주 나오는 이유</h4>
+                <p>위 표를 다 채웠다면 다음 부등식이 보일 것이다.</p>
+                <div class="key-insight">
+                    <strong>P(개) > P(도) = P(걸) > P(윷) = P(모)</strong>
+                </div>
+                <p>가장 자주 나오는 결과는 <strong>개</strong>(6/16 ≈ 37.5%)이고, 도와 걸은 각각 25%로 같으며, 윷과 모는 각각 6.25%로 가장 드물다. 윷놀이를 해본 사람이라면 이 부등식에 고개를 끄덕일 것이다. 그러나 한 가지 어긋나는 부분이 있다.</p>
+
+                <h4>그러나 실제 윷가락은 좌우대칭이 아니다</h4>
+                <p>지금까지의 모든 계산은 한 가지 가정 위에 서 있었다. <strong>배와 등이 정확히 1/2씩 나온다</strong>는 가정이다. 그러나 실제 윷가락은 그렇지 않다. 배는 평평하고 등은 둥글기 때문에 한쪽 면이 위로 올라올 빈도가 다른 쪽보다 높아진다. 실험적으로 이 비대칭은 보통 한쪽 면의 확률이 0.55에서 0.6 정도로 보고된다.</p>
+                <p>이 비대칭이 들어오는 순간 다섯 결과의 확률 분포는 약간 비틀린다. 특히 한 가지 흥미로운 현상이 나타난다.</p>
+                <div class="key-insight">
+                    이론상 P(도) = P(걸) = 25%로 같지만, <strong>실제로는 둘 중 한 쪽이 다른 쪽보다 자주 나온다</strong>. 한 윷가락에서 배가 위로 올라올 확률 p가 1/2보다 크다면, 배가 많을수록 확률이 커지므로 도(배 1개)보다 걸(배 3개)이 더 자주 나온다.
+                </div>
+                <p>이 비대칭을 다루려면 우리가 새로 익혀야 할 일반 공식이 하나 있다. 배가 위로 올라올 확률을 p라 할 때, 네 가락 중 정확히 k개가 배인 결과의 확률은 다음과 같다.</p>
+                <div class="definition-box">
+                    <div class="formula">P(배가 정확히 k개) = C(4, k) · p<sup>k</sup> · (1 − p)<sup>4 − k</sup></div>
+                </div>
+                <p>p = 1/2이면 p<sup>k</sup> · (1−p)<sup>4−k</sup> = (1/2)<sup>4</sup> = 1/16이 되어 우리가 앞에서 했던 계산과 정확히 일치한다. 이 공식은 <strong>이항분포</strong>라는 분포의 한 사례이며, 다음 시간에 정식으로 다룬다.</p>
+
+                
+            <div class="workbook-box">
+                <span class="workbook-label">Q4-4</span>
+                <p class="workbook-q">위 일반 공식 <code>P(배가 정확히 k개) = C(4, k) · p<sup>k</sup> · (1−p)<sup>4−k</sup></code>를 써서, p = 0.6인 경우의 P(도)와 P(걸)을 직접 계산하여라.</p>
+                <div class="blank-line">P(도) = C(4, 1) · (0.6)<sup>1</sup> · (0.4)<sup>3</sup> = <input type="text" class="blank-input narrow" placeholder=""> ·</div><div class="blank-line">· <input type="text" class="blank-input narrow" placeholder=""> =</div><div class="blank-line">P(걸) = C(4, 3) · (0.6)<sup>3</sup> · (0.4)<sup>1</sup> = <input type="text" class="blank-input narrow" placeholder=""> ·</div><div class="blank-line">· <input type="text" class="blank-input narrow" placeholder=""> =</div><div class="blank-line">어느 쪽이 더 큰가? 차이가 이론값(둘 다 0.25)과 비교해 어떻게 달라졌는가? <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong><br>P(도) = 4 · 0.6 · 0.064 = <strong>0.1536</strong><br>P(걸) = 4 · 0.216 · 0.4 = <strong>0.3456</strong><br><br>걸이 도보다 약 2.25배 자주 나온다. 이론값(p = 0.5)에서는 두 확률이 0.25로 정확히 같았는데, p가 0.5에서 0.6으로 0.1만 옮겨갔을 뿐인데도 두 확률 사이에 큰 차이가 벌어졌다. 이 한 자리만큼의 비대칭이 윷놀이의 체감 분포를 바꾸는 것이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q4-5</span>
+                <p class="workbook-q">같은 방식으로 <code>p = 0.6</code>일 때 다섯 결과의 확률을 모두 채워보아라. 합이 1이 되는지 확인하여라.</p>
+                
+            <table class="workbook-table">
+                <tr><th>사건</th><th>k</th><th>C(4, k)</th><th>p<sup>k</sup></th><th>(1−p)<sup>4−k</sup></th><th>확률</th></tr>
+                <tr><td>M</td><td>0</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td>D</td><td>1</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td>G</td><td>2</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td>K</td><td>3</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td>Y</td><td>4</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td colspan="5" style="text-align:right;">합:</td><td><input type="text" class="blank-input narrow"></td></tr>
+            </table>
+    
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong>
+    <table class="workbook-table">
+        <tr><th>사건</th><th>k</th><th>C(4,k)</th><th>p<sup>k</sup></th><th>(1−p)<sup>4−k</sup></th><th>확률</th></tr>
+        <tr><td>M</td><td>0</td><td>1</td><td>1</td><td>0.0256</td><td>0.0256</td></tr>
+        <tr><td>D</td><td>1</td><td>4</td><td>0.6</td><td>0.064</td><td>0.1536</td></tr>
+        <tr><td>G</td><td>2</td><td>6</td><td>0.36</td><td>0.16</td><td>0.3456</td></tr>
+        <tr><td>K</td><td>3</td><td>4</td><td>0.216</td><td>0.4</td><td>0.3456</td></tr>
+        <tr><td>Y</td><td>4</td><td>1</td><td>0.1296</td><td>1</td><td>0.1296</td></tr>
+        <tr><td colspan="5" style="text-align:right;">합:</td><td><strong>1.0000</strong></td></tr>
+    </table>
+    합은 정확히 1이다. 흥미로운 점은 G(개)와 K(걸)의 확률이 같다는 것이다. 이것은 p = 0.6이라는 특정 값에서 우연히 일어난 현상이다. 또 한 가지 주목할 점은 윷(Y)이 모(M)보다 더 자주 나온다는 것이다(0.1296 > 0.0256). p = 1/2에서는 둘이 같았지만, 비대칭이 들어오자 갈라졌다.</div>
+                </details>
+            </div>
+
+
+                <h4>🐍 비대칭 윷가락 시뮬레이션</h4>
+                <div class="code-section">
+                    <div class="code-label">step1_supplement_biased_yut.py</div>
+                    <div class="compute">
+import random
+from collections import Counter
+
+def throw_yut_biased(p_bae):
+    """배가 위로 올라올 확률이 p_bae인 윷가락 네 개를 한 번 던진다."""
+    return [1 if random.random() < p_bae else 0 for _ in range(4)]
+
+def name_of_result(throw):
+    n_bae = sum(throw)
+    return {0: "모", 1: "도", 2: "개", 3: "걸", 4: "윷"}[n_bae]
+
+def simulate(p_bae, trials=100_000):
+    counts = Counter()
+    for _ in range(trials):
+        counts[name_of_result(throw_yut_biased(p_bae))] += 1
+    print(f"  배가 위로 올라올 확률 p = {p_bae}")
+    for name in ["모", "도", "개", "걸", "윷"]:
+        prob = counts[name] / trials
+        print(f"    {name}: {counts[name]:6d} 회  ({prob:.4f})")
+    print()
+
+# 1) 대칭 가정
+print("[대칭: p = 0.5]")
+simulate(p_bae=0.5)
+
+# 2) 비대칭: 배가 더 자주 위로 올라오는 경우
+print("[비대칭: p = 0.6]")
+simulate(p_bae=0.6)
+
+# 3) 비대칭: 등이 더 자주 위로 올라오는 경우
+print("[비대칭: p = 0.4]")
+simulate(p_bae=0.4)
+                    </div>
+                </div>
+
+                <div class="key-insight">
+                    <strong>1-5 보충 핵심 정리.</strong> 조합 C(n, k)는 “n개 중에서 k개를 골라내는 방법의 수”이다. 윷의 다섯 결과 가짓수는 C(4, 0)부터 C(4, 4)까지 1, 4, 6, 4, 1이며 합이 16이다. 대칭 가정 아래에서는 P(개)가 가장 크지만, 실제 윷가락의 비대칭이 들어오면 P(도)와 P(걸)이 더 이상 같지 않다. 일반 공식: <strong>P(배가 정확히 k개) = C(4, k) · p<sup>k</sup> · (1−p)<sup>4−k</sup></strong>.
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== STEP 2 몬티홀 ===================== -->
+    <div class="step-section">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title-block">
+                <div class="step-tag">CASE STUDY 2</div>
+                <h2>몬티 홀 퀴즈 — 직관이 수학에게 지는 날</h2>
+            </div>
+        </div>
+
+        <!-- 2-1 -->
+        <div class="subsection">
+            <h3>2-1. 상황 이해하기</h3>
+            <p>1960년대 후반 미국 TV 쇼 <em>Let’s Make a Deal</em>에서 출제된 문제이다. 사회자의 이름이 몬티 홀(Monty Hall)이었다. 규칙은 다음과 같다.</p>
+            <ol>
+                <li>무대 위에 1번, 2번, 3번 세 개의 문이 있다.</li>
+                <li>한 문 뒤에는 <strong>자동차</strong>, 나머지 두 문 뒤에는 <strong>염소</strong>가 있다.</li>
+                <li>학습자는 문 하나를 고른다(1번을 골랐다고 가정).</li>
+                <li>사회자는 <strong>남은 두 문 중 반드시 염소가 있는 문 하나</strong>를 연다.</li>
+                <li>사회자가 묻는다. “그대로 1번을 고수하시겠습니까, 2번으로 <strong>바꾸시겠습니까</strong>?”</li>
+            </ol>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q11</span>
+                <p class="workbook-q"><strong>먼저 직감으로 답하여라.</strong> 계산은 절대 하지 말고, 다음 중 하나에 표시하여라.</p>
+                
+            <ul class="option-list">
+                <li><label><input type="radio" name="q11"> 바꾸는 게 유리하다.</label></li>
+                <li><label><input type="radio" name="q11"> 바꾸지 않는 게 유리하다.</label></li>
+                <li><label><input type="radio" name="q11"> 바꾸든 안 바꾸든 같다.</label></li>
+            </ul>
+    
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">정답이 있는 질문이 아니다. 직감을 적는 칸이다. 대부분의 사람이 처음에는 “같다”라고 답한다. 만약 그렇게 답했다면 1990년에 마릴린 부사반트에게 항의 편지를 보낸 수학 박사 1천 명과 같은 직감을 가진 것이다. 부끄러운 일이 아니다.</div>
+                </details>
+            </div>
+
+        <!-- 2-2 -->
+        <div class="subsection">
+            <h3>2-2. 손으로 세어보기</h3>
+            <p>차의 위치는 시작 시점에 이미 정해져 있다. 세 가지 가능성을 표로 정리한다(학습자는 항상 1번을 처음 선택한다고 가정한다).</p>
+            <table class="summary">
+                <tr><th>경우</th><th>확률</th><th>그대로 두면</th><th>바꾸면</th></tr>
+                <tr><td>A. 차가 1번</td><td>1/3</td><td>이긴다</td><td>진다</td></tr>
+                <tr><td>B. 차가 2번</td><td>1/3</td><td>진다</td><td>이긴다</td></tr>
+                <tr><td>C. 차가 3번</td><td>1/3</td><td>진다</td><td>이긴다</td></tr>
+            </table>
+
+            <div class="definition-box">
+                <p style="text-align:center; font-size:1.1em;">
+                    <strong>바꾸지 않을 때 승률 = 1/3</strong> &nbsp; vs. &nbsp; <strong>바꿀 때 승률 = 2/3</strong>
+                </p>
+            </div>
+            <p>즉 바꾸는 것이 두 배 유리하다. 처음 선택이 옳을 확률은 <code>1/3</code>이고, 처음 선택이 틀릴 확률은 <code>2/3</code>이다. 사회자가 염소 문을 열어줌으로써 이 <code>2/3</code>이 남은 한 문에 <strong>몽땅 몰리는</strong> 것이다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q12</span>
+                <p class="workbook-q"><strong>경우 C: 차가 3번에 있다.</strong> 직접 채워보아라.</p>
+                <div class="blank-line">사회자는 반드시 ____번을 연다. (이유: 3번에는 차가 있어 열 수 없으므로) <input type="text" class="blank-input narrow" placeholder=""> </div><div class="blank-line">그대로 두면: 1번이다. _________. ____ (이긴다/진다) <input type="text" class="blank-input wide" placeholder=""> </div><div class="blank-line">바꾸면: ____번으로 간다. _________. ____ (이긴다/진다) <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong><br>사회자는 반드시 <strong>2번</strong>을 연다.<br>그대로 두면: 1번이다. 1번에는 염소가 있다(차는 3번에 있으므로). <strong>진다.</strong><br>바꾸면: <strong>3번</strong>으로 간다. 차다. <strong>이긴다.</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q13</span>
+                <p class="workbook-q">위 세 경우를 표에 채워보아라.</p>
+                
+            <table class="workbook-table">
+                <tr><th>경우</th><th>확률</th><th>그대로 두면</th><th>바꾸면</th></tr>
+                <tr><td>A (차가 1번)</td><td>1/3</td><td>이긴다</td><td>진다</td></tr>
+                <tr><td>B (차가 2번)</td><td>1/3</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+                <tr><td>C (차가 3번)</td><td>1/3</td><td><input type="text" class="blank-input narrow"></td><td><input type="text" class="blank-input narrow"></td></tr>
+            </table>
+    
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong>
+    <table class="workbook-table">
+        <tr><th>경우</th><th>확률</th><th>그대로 두면</th><th>바꾸면</th></tr>
+        <tr><td>A (차가 1번)</td><td>1/3</td><td>이긴다</td><td>진다</td></tr>
+        <tr><td>B (차가 2번)</td><td>1/3</td><td><strong>진다</strong></td><td><strong>이긴다</strong></td></tr>
+        <tr><td>C (차가 3번)</td><td>1/3</td><td><strong>진다</strong></td><td><strong>이긴다</strong></td></tr>
+    </table></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q14</span>
+                <p class="workbook-q">위 표를 보고 두 전략의 승률을 계산하여라.</p>
+                <div class="blank-line">바꾸지 않을 때 이길 확률 = <input type="text" class="blank-input narrow" placeholder=""> +</div><div class="blank-line">+ <input type="text" class="blank-input narrow" placeholder=""> =</div><div class="blank-line">바꿀 때 이길 확률 = <input type="text" class="blank-input narrow" placeholder=""> +</div><div class="blank-line">+ <input type="text" class="blank-input narrow" placeholder=""> =</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong><br>바꾸지 않을 때 = 1/3 + 0 + 0 = <strong>1/3</strong><br>바꿀 때 = 0 + 1/3 + 1/3 = <strong>2/3</strong><br><br>즉 바꾸는 것이 두 배 유리하다. 처음 선택이 옳을 확률은 1/3이고, 처음 선택이 틀릴 확률은 2/3이다. 사회자가 염소 문을 열어줌으로써 이 2/3가 남은 한 문에 <strong>몽땅 몰린다</strong>.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q15</span>
+                <p class="workbook-q">위 두 확률을 보고 Q11에서 적었던 직감의 답과 비교하여라. 같은가, 다른가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">정답이 있는 질문이 아니다. 만약 Q11에서 “같다”고 답했다면, Q14에서 1/3과 2/3으로 갈라지는 것을 보는 순간 직감이 처음으로 흔들렸을 것이다. 그 흔들림의 순간이 이 수업에서 가장 중요한 순간이다.</div>
+                </details>
+            </div>
+
+        <!-- 2-3 -->
+        <div class="subsection">
+            <h3>2-3. 감이 잡히지 않는다면 — 문 100개 상상하기</h3>
+            <p>문이 100개 있다고 상상하자. 자동차는 단 하나의 문 뒤에만 있다. 학습자가 처음 고른 문이 차일 확률은 <code>1/100</code>이다. 이제 사회자가 학습자의 문을 제외한 나머지 99개 중에서 <strong>98개의 염소 문을 차례차례</strong> 연다. 남은 문은 두 개, 학습자가 처음 고른 하나와 사회자가 끝까지 남겨둔 하나이다.</p>
+            <div class="key-insight">
+                바꾸어야 한다. 처음 선택이 맞을 확률은 <strong>1/100</strong>인 반면, 사회자가 98개를 모두 열고 남긴 마지막 문에는 <strong>99/100</strong>의 확률이 몰려 있기 때문이다. 100개에서는 직관이 즉시 정답을 가리킨다. 3개에서 직관이 헷갈리는 이유는 <code>1/3</code>과 <code>2/3</code>의 차이가 너무 작아서 “별 차이 없겠지”라고 느껴지기 때문이다.
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q16</span>
+                <p class="workbook-q">문이 100개 있고, 자동차는 단 하나의 문 뒤에만 있다. 학습자가 무작위로 하나를 골랐다면, 첫 선택이 차일 확률은?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>1/100</strong><br><br>100개 문 중 차는 한 곳에만 있으므로, 무작위로 하나를 골랐을 때 맞을 확률은 1/100이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q17</span>
+                <p class="workbook-q">사회자가 학습자가 고른 문을 제외한 99개 중 98개의 염소 문을 모두 연다. 이제 남은 두 문 중 어느 것을 고를 것인가? 직감이 어떻게 달라졌는지 적어보아라.</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>예시 답안:</strong> “당연히 바꿔야 한다. 내가 처음 고른 것이 맞을 확률은 1/100밖에 안 되는데, 사회자가 98개를 다 열고 남긴 단 하나의 문에는 99/100의 확률이 몰려있기 때문이다.”<br><br>100개 버전에서는 직관이 즉시 정답을 가리킨다. 3개에서 직관이 헷갈리는 이유는 1/3과 2/3의 차이가 너무 작아서 “별 차이 없겠지”라고 느껴지기 때문이다.</div>
+                </details>
+            </div>
+
+        <!-- 2-4 시뮬레이션 -->
+        <div class="subsection">
+            <h3>2-4. 파이썬으로 검증하기</h3>
+            <p>몬티 홀 게임을 10만 번 시뮬레이션하여 두 전략의 승률을 직접 비교한다. 시행 횟수 <code>N</code>을 바꾸어 가며 결과의 안정성을 관찰해보라.</p>
+
+            <div class="code-section">
+                <div class="code-label">step2_monty_hall.py</div>
+                <div class="compute">
+import random
+
+def monty_hall(switch):
+    """switch=True면 바꾸는 전략, False면 고수하는 전략."""
+    doors = [0, 1, 2]
+    car = random.randint(0, 2)
+    first_choice = random.randint(0, 2)
+
+    # 사회자는 참가자가 고르지 않았고 차도 없는 문을 연다
+    host_can_open = [d for d in doors if d != first_choice and d != car]
+    host_opens = random.choice(host_can_open)
+
+    if switch:
+        final_choice = [d for d in doors if d != first_choice and d != host_opens][0]
+    else:
+        final_choice = first_choice
+
+    return final_choice == car
+
+# [수정 가능] 시행 횟수
+N = 100_000
+
+switch_wins = sum(monty_hall(True) for _ in range(N))
+stay_wins = sum(monty_hall(False) for _ in range(N))
+
+print(f"시행 횟수: {N}")
+print(f"바꿨을 때 승률:    {switch_wins / N:.4f}  (이론: {2/3:.4f})")
+print(f"안 바꿨을 때 승률: {stay_wins / N:.4f}  (이론: {1/3:.4f})")
+print()
+print(f"바꾸는 전략이 {(switch_wins/stay_wins):.2f}배 더 자주 이긴다")
+                </div>
+            </div>
+
+            <h4>📈 두 전략의 승률이 갈라지는 모습 시각화</h4>
+            <p>같은 시뮬레이션을 반복하며 누적 승률을 그래프로 그려본다. 두 전략이 어떻게 1/3과 2/3으로 깔끔히 갈라지는지 직접 눈으로 확인할 수 있다.</p>
+
+            <div class="code-section">
+                <div class="code-label">step2_monty_convergence.py</div>
+                <div class="compute">
+import random
+import matplotlib.pyplot as plt
+
+def monty_hall(switch):
+    doors = [0, 1, 2]
+    car = random.randint(0, 2)
+    first_choice = random.randint(0, 2)
+    host_can_open = [d for d in doors if d != first_choice and d != car]
+    host_opens = random.choice(host_can_open)
+    if switch:
+        final = [d for d in doors if d != first_choice and d != host_opens][0]
+    else:
+        final = first_choice
+    return final == car
+
+# [수정 가능] 시행 횟수
+N = 5000
+
+switch_wins, stay_wins = 0, 0
+switch_rates, stay_rates = [], []
+
+for n in range(1, N + 1):
+    if monty_hall(True):  switch_wins += 1
+    if monty_hall(False): stay_wins  += 1
+    switch_rates.append(switch_wins / n)
+    stay_rates.append(stay_wins / n)
+
+plt.figure(figsize=(9, 4.5))
+plt.plot(switch_rates, color='#E85D5D', linewidth=1.5, label='Switch (theory: 2/3)')
+plt.plot(stay_rates,   color='#1E4D7B', linewidth=1.5, label='Stay (theory: 1/3)')
+plt.axhline(2/3, color='#E85D5D', linestyle='--', alpha=0.5)
+plt.axhline(1/3, color='#1E4D7B', linestyle='--', alpha=0.5)
+plt.xlabel('Number of games')
+plt.ylabel('Cumulative win rate')
+plt.title('Monty Hall — Switch vs. Stay')
+plt.legend(loc='center right')
+plt.ylim(0, 1)
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+                </div>
+            </div>
+
+            <div class="example-box">
+                <span class="example-label">예제 2-1</span>
+                <div class="example-title">왜 직관이 틀리는가?</div>
+                <div class="example-question">
+                    1990년 미국의 한 잡지 칼럼에 이 문제가 실렸을 때, 약 1만 통의 항의 편지가 왔으며 그중 1천 통이 수학 박사들이 보낸 것이었다. 그들 모두 “바꾸든 안 바꾸든 같다”라고 답하였고 결과적으로 틀렸다. 그 이유를 한 문장으로 설명하여라.
+                </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">
+                        <strong>핵심:</strong> 사회자는 무작위로 문을 여는 것이 아니라 <strong>반드시 염소가 있는 문</strong>을 연다.<br><br>
+                        이 규칙이 있기 때문에 사회자가 문을 여는 행위 자체가 <strong>정보</strong>가 된다. 그리고 그 정보는 학습자의 처음 선택이 틀렸을 때(확률 2/3), 남은 문 하나로 차의 가능성을 <strong>몰아주는</strong> 역할을 한다. 만약 사회자가 무작위로 문을 열었다면 확률은 정말 1/2이 되었을 것이다. “규칙이 있느냐 없느냐”가 모든 것을 결정한다.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    
+            <div class="workbook-box">
+                <span class="workbook-label">Q18</span>
+                <p class="workbook-q">위의 파이썬 시뮬레이션을 실행한 결과 두 승률이 얼마쯤 나왔는가?</p>
+                <div class="blank-line">바꿨을 때: <input type="text" class="blank-input narrow" placeholder=""> , &nbsp; 안 바꿨을 때:</div><div class="blank-line"> <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 바꿨을 때 약 <strong>0.667</strong>, 안 바꿨을 때 약 <strong>0.333</strong><br><br>2/3 ≈ 0.6667, 1/3 ≈ 0.3333. 10만 번 실험이면 보통 셋째 자리까지 일치한다.</div>
+                </details>
+            </div>
+
+        <!-- ===================== STEP 3 카드와 공식 ===================== -->
+    <div class="step-section">
+        <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title-block">
+                <div class="step-tag">FORMULA DERIVATION</div>
+                <h2>카드 뽑기와 공식의 탄생</h2>
+            </div>
+        </div>
+
+        <!-- 3-1 상황 -->
+        <div class="subsection">
+            <h3>3-1. 상황과 사건 정의</h3>
+            <p>일반적인 카드 한 벌은 52장이다. 네 종류의 무늬(스페이드, 하트, 다이아몬드, 클럽)가 있고 각 무늬는 1부터 10까지의 숫자 카드와 J, Q, K의 그림카드 세 장, 총 13장으로 구성된다.</p>
+            <ul>
+                <li>표본공간 <code>S</code> = 52장의 카드 전부, <code>|S| = 52</code></li>
+                <li>사건 <code>G</code>: “그림카드(J, Q, K)이다” → <code>|G| = 3 × 4 = 12</code></li>
+                <li>사건 <code>P</code>: “스페이드이다” → <code>|P| = 13</code></li>
+                <li><code>G ∩ P</code>: “스페이드이면서 그림카드” → <code>|G ∩ P| = 3</code></li>
+            </ul>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q20</span>
+                <p class="workbook-q">조건이 없을 때, 카드 한 장이 스페이드일 확률 <code>P(P)</code>는?</p>
+                <div class="blank-line">P(P) = |P| / |S| = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(P) = 13/52 = <strong>1/4 = 0.25</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q21</span>
+                <p class="workbook-q">옆 사람이 “그거 그림카드야”라고 말했다. 이제 표본공간이 G로 줄었다. 새 표본공간 G의 크기는?</p>
+                <div class="blank-line">|G| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> |G| = <strong>12</strong><br><br>그림카드는 J, Q, K가 네 무늬에 각각 있으므로 3 × 4 = 12장이다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q22</span>
+                <p class="workbook-q">그 새 표본공간 안에서 스페이드인 카드의 개수는?</p>
+                <div class="blank-line">|G ∩ P| = <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>3장</strong> (스페이드 J, Q, K)</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q23</span>
+                <p class="workbook-q">따라서 조건부 확률 <code>P(P | G)</code>는?</p>
+                <div class="blank-line">P(P | G) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(P | G) = 3 / 12 = <strong>1/4 = 0.25</strong></div>
+                </details>
+            </div>
+
+        <!-- 3-2 -->
+        <div class="subsection">
+            <h3>3-2. 흥미로운 관찰 — 조건이 확률을 바꾸지 않는 경우</h3>
+            <p>조건이 없을 때 카드 한 장이 스페이드일 확률은 <code>P(P) = 13/52 = 1/4 = 0.25</code>이다. 이제 옆 사람이 그 카드가 그림카드라고 알려준다고 하자. 표본공간이 <code>G</code>로 줄었으므로 새 분모는 <code>|G| = 12</code>이고, 그중 스페이드인 것은 3장이다.</p>
+            <div class="definition-box">
+                <div class="formula">P(P | G) = 3 / 12 = 1/4 = 0.25</div>
+            </div>
+            <p>두 값이 정확히 같다. 이번에는 조건이 들어왔는데도 확률이 <strong>전혀 변하지 않은 것</strong>이다. 윷놀이에서는 0.25에서 0.267로 올라갔는데, 카드에서는 0.25에서 0.25 그대로이다. 이러한 현상에는 <strong>독립(independence)</strong>이라는 이름이 있다. 모든 무늬에 그림카드가 똑같이 3장씩 들어 있기 때문에, 어느 무늬를 보아도 그림카드의 비율이 항상 1/4이다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q24</span>
+                <p class="workbook-q">Q20의 답과 Q23의 답을 비교하여라. 두 값이 어떻게 되었는가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 정확히 같다. 둘 다 1/4이다.<br><br>이것이 두 사건의 <strong>독립</strong>이다. “스페이드인가”와 “그림카드인가”는 서로에게 영향을 주지 않는다. 모든 무늬에 그림카드가 똑같이 3장씩 있기 때문이다.</div>
+                </details>
+            </div>
+
+        <!-- 3-3 공식 유도 -->
+        <div class="subsection">
+            <h3>3-3. 공식의 탄생</h3>
+            <p>지금까지 두 차례 조건부 확률을 계산하였다. 두 계산을 나란히 적어보자.</p>
+            <ul>
+                <li>윷놀이: <code>P(D | E) = |D ∩ E| / |E| = 4 / 15</code></li>
+                <li>카드: <code>P(P | G) = |P ∩ G| / |G| = 3 / 12</code></li>
+            </ul>
+            <p>두 계산에는 공통된 구조가 있다. 분자는 “조건과 관심 사건이 동시에 일어나는 결과의 개수”이고, 분모는 “조건이 일어나는 결과의 개수”이다. 이를 일반적인 두 사건 <code>A, B</code>에 대해 적으면 다음과 같다.</p>
+            <div class="definition-box">
+                <div class="formula">P(B | A) = |A ∩ B| / |A|</div>
+            </div>
+            <p>여기서 분자와 분모를 모두 <code>|S|</code>로 나누어 정리하면 보다 강력한 형태가 된다.</p>
+            <div class="definition-box">
+                <p style="text-align:center;"><strong>조건부 확률의 정의</strong></p>
+                <div class="formula">P(B | A) = P(A ∩ B) / P(A)</div>
+                <p style="text-align:center; margin: 6px 0 0; font-size:0.92em;">(단, P(A) > 0)</p>
+            </div>
+            <p>이 공식은 외운 것이 아니다. 학습자가 두 개의 구체적 사례에서 직접 유도한 것이다. 본 강의를 마치고 강의실을 나갈 때 “공식을 외웠다”가 아니라 <strong>“공식을 만들었다”</strong>고 말할 수 있어야 한다.</p>
+
+            <h4>🐍 카드 시뮬레이션으로 독립성 확인</h4>
+            <div class="code-section">
+                <div class="code-label">step3_card_independence.py</div>
+                <div class="compute">
+import random
+
+# 카드 한 벌 만들기
+suits = ['♠', '♥', '♦', '♣']
+ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
+deck = [(r, s) for s in suits for r in ranks]
+
+def is_face(card):
+    return card[0] in ['J', 'Q', 'K']
+
+def is_spade(card):
+    return card[1] == '♠'
+
+# [수정 가능] 시행 횟수
+N = 200_000
+
+draws = [random.choice(deck) for _ in range(N)]
+
+# P(스페이드) 추정
+n_spade = sum(1 for c in draws if is_spade(c))
+p_spade = n_spade / N
+
+# P(스페이드 | 그림카드) 추정
+face_cards = [c for c in draws if is_face(c)]
+n_spade_given_face = sum(1 for c in face_cards if is_spade(c))
+p_spade_given_face = n_spade_given_face / len(face_cards)
+
+print(f"P(스페이드)            ≈ {p_spade:.4f}   (이론: 0.2500)")
+print(f"P(스페이드 | 그림카드) ≈ {p_spade_given_face:.4f}   (이론: 0.2500)")
+print()
+print("두 값이 거의 같다 → 두 사건은 독립이다")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+            <div class="workbook-box">
+                <span class="workbook-label">Q25</span>
+                <p class="workbook-q">윷놀이와 카드 두 계산에서 공통된 구조가 보이는가? 분자와 분모를 일반적으로 말로 적어보아라.</p>
+                <div class="blank-line">분자는: <input type="text" class="blank-input wide" placeholder=""> </div><div class="blank-line">분모는: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong><br>분자는: 조건과 관심 사건이 동시에 일어나는 결과의 개수, 즉 |A ∩ B|<br>분모는: 조건이 일어나는 결과의 개수, 즉 |A|</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q26</span>
+                <p class="workbook-q">일반적인 두 사건 A, B에 대해 (A를 조건, B를 관심 사건이라 하자) 조건부 확률을 일반 공식으로 써보아라.</p>
+                <div class="blank-line">P(B | A) = | <input type="text" class="blank-input narrow" placeholder=""> ∩</div><div class="blank-line">| / | <input type="text" class="blank-input narrow" placeholder=""> |</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> P(B | A) = |A ∩ B| / |A|<br><br>윷놀이와 카드 두 계산에서 공통된 구조를 일반화한 것이다. 이 한 줄을 학습자가 직접 만들었다는 것이 STEP 3의 가장 중요한 성과이다.</div>
+                </details>
+            </div>
+
+        <!-- ===================== STEP 4 베이즈 ===================== -->
+    <div class="step-section">
+        <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title-block">
+                <div class="step-tag">BAYES' THEOREM</div>
+                <h2>질병 진단 — 가장 충격적인 한 편</h2>
+            </div>
+        </div>
+
+        <!-- 4-1 -->
+        <div class="subsection">
+            <h3>4-1. 상황 설정</h3>
+            <p>어떤 희귀한 병이 있다. 이 병에 걸리는 사람은 전체 인구의 <strong>1%</strong>이다. 즉 100명 중 1명이 걸린다. 이 병을 검사하는 키트가 개발되었다. 키트의 정확도는 <strong>99%</strong>이다. 정확히 정의하면 다음과 같다.</p>
+            <ul>
+                <li>실제로 병에 걸린 사람을 검사하면 99% 확률로 <strong>양성</strong>이 나온다(민감도, sensitivity).</li>
+                <li>실제로 병에 걸리지 않은 사람을 검사하면 99% 확률로 <strong>음성</strong>이 나온다(특이도, specificity).</li>
+            </ul>
+            <p>꽤 괜찮은 검사기처럼 보인다. 이제 학습자가 이 검사를 받았으며 결과가 <strong>양성</strong>으로 나왔다고 하자. 학습자가 실제로 그 병에 걸렸을 확률은 얼마인가?</p>
+
+            <div class="key-insight">
+                <strong>잠시 멈추고 직감으로 답해보라.</strong> 약 99%인가? 90%인가? 70%인가? 50%인가? 50% 미만인가? 반드시 답을 머릿속에 적은 뒤 다음 단락으로 넘어가야 한다.
+            </div>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q27</span>
+                <p class="workbook-q"><strong>잠시 멈추고 직감으로 답하여라.</strong> 양성 판정을 받았을 때, 여러분이 실제로 그 병에 걸렸을 확률은 얼마일까? 계산하지 말고 직감으로 찍어보아라.</p>
+                
+            <ul class="option-list">
+                <li><label><input type="radio" name="q27"> 약 99%</label></li>
+                <li><label><input type="radio" name="q27"> 약 90%</label></li>
+                <li><label><input type="radio" name="q27"> 약 70%</label></li>
+                <li><label><input type="radio" name="q27"> 약 50%</label></li>
+                <li><label><input type="radio" name="q27"> 50% 미만</label></li>
+            </ul>
+    
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">정답이 있는 질문이 아니다. 대부분의 사람이 99%, 90%, 70% 중 하나를 고른다. 이 직감은 50% 또는 그 이하라는 정답과 멀리 떨어져 있다. 이 격차가 오늘 수업에서 가장 큰 충격을 만들어낸다.</div>
+                </details>
+            </div>
+
+        <!-- 4-2 직접 세기 -->
+        <div class="subsection">
+            <h3>4-2. 10만 명을 데리고 와서 직접 세기</h3>
+            <p>공식을 쓰기 전에 사람 수를 직접 세어본다. 인구 10만 명의 마을을 상상한다.</p>
+            <table class="summary">
+                <tr><th>항목</th><th>인원</th><th>계산</th></tr>
+                <tr><td>실제 환자</td><td>1,000명</td><td>100,000 × 0.01</td></tr>
+                <tr><td>건강한 사람</td><td>99,000명</td><td>100,000 − 1,000</td></tr>
+                <tr><td>진짜 양성 (환자이며 양성)</td><td><strong>990명</strong></td><td>1,000 × 0.99</td></tr>
+                <tr><td>가짜 양성 (건강한데 양성)</td><td><strong>990명</strong></td><td>99,000 × 0.01</td></tr>
+                <tr><td>전체 양성 판정</td><td>1,980명</td><td>990 + 990</td></tr>
+            </table>
+            <div class="definition-box">
+                <div class="formula">P(환자 | 양성) = 990 / 1,980 = 0.5 = <strong>50%</strong></div>
+            </div>
+            <p>99% 정확도를 가진 검사에서 양성이 나왔는데도, 실제로 병에 걸렸을 확률은 동전 던지기와 같다. 이 결과에 충격을 받는 것이 자연스러운 반응이다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q28</span>
+                <p class="workbook-q">10만 명 중 실제로 병에 걸린 사람은 몇 명인가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> 명</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>1,000명</strong> (100,000 × 0.01)</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q29</span>
+                <p class="workbook-q">병에 걸리지 않은 사람은 몇 명인가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> 명</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>99,000명</strong> (100,000 − 1,000)<br><br>환자보다 99배 많다. 이 수가 결과를 결정한다.</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q30</span>
+                <p class="workbook-q">병에 걸린 사람들 중 99%가 양성으로 나왔다. 진짜 환자이면서 양성 판정을 받은 사람은 몇 명인가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> 명</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>990명</strong> (1,000 × 0.99)</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q31</span>
+                <p class="workbook-q">병에 걸리지 않은 사람들 중 1%가 오진으로 양성이 나왔다. 건강한데 양성 판정을 받은 사람은 몇 명인가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> 명</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> <strong>990명</strong> (99,000 × 0.01)<br><br>여기서 충격이 시작된다. <strong>진짜 환자 양성과 가짜 양성의 수가 똑같다.</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q32</span>
+                <p class="workbook-q">이 마을에서 양성 판정을 받은 사람 총 수는 얼마인가?</p>
+                <div class="blank-line">(진짜 환자 양성) + (건강한 사람 양성) = <input type="text" class="blank-input narrow" placeholder=""> +</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> 명</div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 990 + 990 = <strong>1,980명</strong></div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q33</span>
+                <p class="workbook-q">양성 판정을 받은 사람 중에서, 진짜 환자인 사람의 비율은?</p>
+                <div class="blank-line">(진짜 환자 양성) / (전체 양성) = <input type="text" class="blank-input narrow" placeholder=""> /</div><div class="blank-line">= <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 990 / 1,980 = <strong>0.5 = 50%</strong><br><br>이 결과는 수학적으로 정확하다. 직관과 충돌하는 것이지, 수학이 잘못된 것이 아니다.</div>
+                </details>
+            </div>
+
+        <!-- 4-3 왜 -->
+        <div class="subsection">
+            <h3>4-3. 왜 이런 일이 벌어지는가</h3>
+            <div class="key-insight">
+                <strong>건강한 사람이 환자보다 99배 많다.</strong>
+            </div>
+            <p>1%의 오진율이라는 말은, 건강한 사람 100명 중 1명이 가짜 양성으로 나온다는 뜻이다. 그런데 건강한 사람이 환자의 99배만큼 많기 때문에, 가짜 양성의 절대 수가 진짜 양성의 절대 수와 거의 같은 규모가 되어 버린다.</p>
+            <p>핵심 교훈은 다음과 같다. <strong>병이 희귀할수록 오진이 더 무서워진다.</strong> 코로나 시기에 “자가 키트 양성이 나왔지만 PCR로 재검사하라”는 안내가 왜 그토록 중요했는지, 이제 수학적으로 설명할 수 있을 것이다.</p>
+        </div>
+
+        
+            <div class="workbook-box">
+                <span class="workbook-label">Q34</span>
+                <p class="workbook-q">Q27에서 직감으로 적었던 답과 Q33의 답을 비교하여라. 얼마나 다른가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">정답이 있는 질문이 아니다. 두 값의 차이가 클수록, 학습자의 직관이 베이즈 정리로부터 얼마나 멀리 있었는지를 보여준다. 부끄러운 일이 아니다. 의대생들도 같은 실수를 한다는 연구가 여러 번 발표된 바 있다.</div>
+                </details>
+            </div>
+
+        <!-- 4-4 베이즈 정리 -->
+        <div class="subsection">
+            <h3>4-4. 베이즈 정리로 다시 쓰기</h3>
+            <p>학습자가 방금 숫자로 직접 푼 문제를 STEP 3에서 만든 공식으로 옮겨보자.</p>
+            <ul>
+                <li>사건 <code>A</code>: “양성 판정을 받았다”</li>
+                <li>사건 <code>B</code>: “실제로 병에 걸렸다”</li>
+                <li>구하고자 하는 것: <code>P(B | A)</code></li>
+            </ul>
+            <p>STEP 3에서 만든 공식에 대입하면 다음과 같다.</p>
+            <ul>
+                <li><code>P(A ∩ B) = 0.01 × 0.99 = 0.0099</code> (환자이면서 양성)</li>
+                <li><code>P(A) = 0.01 × 0.99 + 0.99 × 0.01 = 0.0198</code> (전체 양성)</li>
+                <li><code>P(B | A) = 0.0099 / 0.0198 = 0.5</code></li>
+            </ul>
+            <div class="definition-box">
+                <p style="text-align:center;"><strong>베이즈 정리(Bayes’ theorem)</strong></p>
+                <div class="formula">P(B | A) = P(A | B) · P(B) / P(A)</div>
+            </div>
+            <p>18세기 영국의 성직자 토마스 베이즈(Thomas Bayes)가 발견하였다. 본인은 이 정리가 얼마나 중요한지 알지 못한 채 세상을 떠났고, 친구가 유고에서 찾아 출판한 뒤에야 학계에 알려졌다.</p>
+
+            <h4>🐍 파이썬으로 직접 검증하기 — 유병률을 바꿔보라</h4>
+            <p>아래 코드에서 <code>prevalence</code>(유병률)을 0.001, 0.01, 0.1, 0.5로 바꾸어 가며 실행해보라. 유병률이 낮을수록 양성 판정의 의미가 얼마나 약해지는지 직접 확인할 수 있다.</p>
+
+            <div class="code-section">
+                <div class="code-label">step4_bayes_diagnosis.py</div>
+                <div class="compute">
+# === 베이즈 정리 — 질병 진단 ===
+population = 100_000
+
+# [수정 가능] 이 세 값을 바꾸어 가며 실험해보자
+prevalence  = 0.01      # 유병률 (0.001, 0.01, 0.1, 0.5 등)
+sensitivity = 0.99      # 환자를 양성으로 올바르게 판정할 확률
+specificity = 0.99      # 건강한 사람을 음성으로 올바르게 판정할 확률
+
+sick = int(population * prevalence)
+healthy = population - sick
+
+true_positive  = int(sick * sensitivity)
+false_positive = int(healthy * (1 - specificity))
+
+total_positive = true_positive + false_positive
+p_sick_given_positive = true_positive / total_positive if total_positive else 0
+
+print(f"=== 입력 값 ===")
+print(f"유병률 = {prevalence:.3f}, 민감도 = {sensitivity:.3f}, 특이도 = {specificity:.3f}")
+print()
+print(f"=== 인구 {population:,}명 기준 ===")
+print(f"실제 환자          : {sick:>7,}명")
+print(f"건강한 사람        : {healthy:>7,}명")
+print(f"진짜 양성          : {true_positive:>7,}명")
+print(f"가짜 양성          : {false_positive:>7,}명")
+print(f"전체 양성 판정     : {total_positive:>7,}명")
+print()
+print(f"★ P(환자 | 양성) = {p_sick_given_positive:.4f} ({p_sick_given_positive*100:.2f}%)")
+                </div>
+            </div>
+
+            <h4>📈 유병률에 따른 P(환자|양성)의 변화 — 핵심 그래프</h4>
+            <p>본 강의에서 가장 중요한 그래프이다. 유병률 <code>p</code>가 매우 작은 영역에서 <code>P(환자|양성)</code>이 얼마나 처참하게 떨어지는지, 그리고 <code>p</code>가 커질수록 얼마나 빠르게 1에 가까워지는지를 한눈에 보여준다. <code>sensitivity</code>와 <code>specificity</code> 값을 바꾸어 가며 곡선이 어떻게 이동하는지 관찰해보라.</p>
+
+            <div class="code-section">
+                <div class="code-label">step4_prevalence_curve.py</div>
+                <div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+# [수정 가능] 검사기의 정확도
+sensitivity = 0.99      # 환자를 양성으로 판정할 확률
+specificity = 0.99      # 건강한 사람을 음성으로 판정할 확률
+
+# 유병률 범위 (로그 스케일로 0.01% ~ 50%)
+prevalences = np.logspace(-4, np.log10(0.5), 200)
+
+# 베이즈 정리: P(B|A) = P(A|B)*P(B) / P(A)
+def posterior(p, sens, spec):
+    numer = sens * p
+    denom = sens * p + (1 - spec) * (1 - p)
+    return numer / denom
+
+posteriors = [posterior(p, sensitivity, specificity) for p in prevalences]
+
+plt.figure(figsize=(9, 5))
+plt.semilogx(prevalences, posteriors, color='#1E4D7B', linewidth=2.5,
+             label=f'Sens={sensitivity}, Spec={specificity}')
+plt.axhline(0.5, color='#E85D5D', linestyle='--', alpha=0.6, label='50% threshold')
+
+# 핵심 점 표시
+for p_mark in [0.001, 0.01, 0.1]:
+    y = posterior(p_mark, sensitivity, specificity)
+    plt.scatter([p_mark], [y], color='#F5A623', s=80, zorder=5)
+    plt.annotate(f'  p={p_mark}\n  → {y:.3f}',
+                 xy=(p_mark, y), fontsize=10, color='#1A2332')
+
+plt.xlabel('Prevalence (log scale)')
+plt.ylabel('P(disease | positive)')
+plt.title('Bayes — How prevalence dominates the answer')
+plt.legend(loc='lower right')
+plt.grid(alpha=0.3, which='both')
+plt.ylim(0, 1.05)
+plt.tight_layout()
+plt.show()
+
+print("관찰:")
+print(f"  유병률 0.1% → P(환자|양성) = {posterior(0.001, sensitivity, specificity):.4f}")
+print(f"  유병률 1%   → P(환자|양성) = {posterior(0.01,  sensitivity, specificity):.4f}")
+print(f"  유병률 10%  → P(환자|양성) = {posterior(0.10,  sensitivity, specificity):.4f}")
+                </div>
+            </div>
+
+            <div class="example-box">
+                <span class="example-label">예제 4-1</span>
+                <div class="example-title">유병률 변화에 따른 베이즈 분석</div>
+                <div class="example-question">
+                    위 코드에서 유병률을 <code>0.10</code>으로 바꾸어 실행하면 <code>P(환자 | 양성)</code>은 약 얼마가 되는가? 그리고 유병률이 높아질수록 이 값은 어떻게 변화하는가?
+                </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content">
+                        <strong>정답:</strong> 약 <strong>0.917 (91.7%)</strong>이다.<br><br>
+                        계산 과정은 다음과 같다.
+                        <ul>
+                            <li>환자: 100,000 × 0.10 = 10,000명</li>
+                            <li>진짜 양성: 10,000 × 0.99 = 9,900명</li>
+                            <li>건강한 사람: 90,000명</li>
+                            <li>가짜 양성: 90,000 × 0.01 = 900명</li>
+                            <li>전체 양성: 10,800명</li>
+                            <li>P(환자|양성) = 9,900 / 10,800 ≈ <strong>0.9167</strong></li>
+                        </ul>
+                        유병률이 높아질수록 <code>P(환자 | 양성)</code>은 빠르게 100%에 가까워진다. 핵심 메시지는 다음과 같다. 검사기의 정확도뿐 아니라 <strong>사전 확률(유병률)</strong>이 결과 해석에 결정적이다. 이것이 베이즈 정리의 본질이다.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    
+            <div class="workbook-box">
+                <span class="workbook-label">Q35</span>
+                <p class="workbook-q">유병률이 10%라면 <code>P(환자 | 양성)</code>은 얼마가 될까? 위 코드에서 <code>prevalence = 0.10</code>으로 바꾸어 다시 실행해보아라.</p>
+                <div class="blank-line">답: <input type="text" class="blank-input narrow" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 약 <strong>0.917 (91.7%)</strong><br><br>환자: 100,000 × 0.10 = 10,000명, 진짜 양성: 9,900명, 건강한 사람: 90,000명, 가짜 양성: 900명, 전체 양성: 10,800명, P(환자|양성) = 9,900 / 10,800 ≈ 0.9167</div>
+                </details>
+            </div>
+
+            <div class="workbook-box">
+                <span class="workbook-label">Q36</span>
+                <p class="workbook-q">유병률이 높아질수록 <code>P(환자 | 양성)</code>은 어떻게 변하는가?</p>
+                <div class="blank-line">답: <input type="text" class="blank-input wide" placeholder=""> </div>
+                <details class="answer-toggle">
+                    <summary>정답 및 해설 보기</summary>
+                    <div class="answer-content"><strong>정답:</strong> 유병률이 높아질수록 <code>P(환자 | 양성)</code>도 높아진다.<br><br>더 정확히 말하면, 유병률이 낮을 때는 P(환자|양성)이 50% 부근이거나 그 아래에 있고, 유병률이 높아지면 빠르게 100%에 가까워진다. 핵심 메시지는 “검사기의 정확도뿐 아니라 <strong>사전 확률(유병률)</strong>이 결과 해석에 결정적이다”라는 것이다. 이것이 베이즈 정리의 본질이다.</div>
+                </details>
+            </div>
+
+        <!-- ===================== 새로운 시각 ===================== -->
+    <div class="step-section">
+        <div class="new-perspective">
+            <h4>오늘 배운 것이 지금 어디에 쓰이고 있는가</h4>
+            <p>학습자가 사용하는 ChatGPT, Claude, Gemini와 같은 <strong>대규모 언어 모델</strong>들이 다음 단어를 어떻게 고르는지 아는가? 이 모델들은 지금까지 입력된 모든 단어를 조건으로 삼아, 그 조건 아래에서 각 후보 단어가 올 확률을 계산한다. 즉 다음을 계산한다.</p>
+            <p style="text-align:center; font-size:1.3em; font-family:Georgia,serif; padding:20px 0;">
+                <strong>P( 다음 단어 | 지금까지 나온 모든 단어 )</strong>
+            </p>
+            <p>정확히 본 강의에서 배운 조건부 확률이다. 같은 원리가 의료 AI에도 그대로 적용된다. 증상이 주어졌을 때 질병일 확률, 즉 <code>P(질병 | 증상)</code>을 계산하는 것이다. 인간 의사가 유병률을 직관적으로 다루지 못하여 실수하는 경우를 기계는 베이즈 정리로 정확히 계산해낸다.</p>
+            <p>스팸 메일 필터의 고전 알고리즘인 나이브 베이즈(Naive Bayes), 자율주행차의 센서 융합, 유전자 변이의 임상적 해석, 음성 인식의 후처리, 검색 엔진의 순위 결정 — 이 모든 시스템의 심장에 본 강의의 한 줄짜리 공식 <code>P(B | A) = P(A ∩ B) / P(A)</code>가 박혀 있다.</p>
+            <p>오늘 학습자는 <strong>인공지능의 가장 깊은 뼈대 한 조각</strong>을 배운 것이다. 도구가 무엇으로 만들어졌는지 아는 사람이, 그 도구를 <strong>쓰는</strong> 사람이 된다.</p>
+        </div>
+    </div>
+
+    <!-- ===================== 심화 실습 ===================== -->
+    <div class="step-section">
+        <h2 style="color: var(--ocean-deep); font-size: 1.6em; border-bottom: 3px solid var(--ocean-light); padding-bottom: 10px;">🔬 심화 실습 — 숫자를 직접 바꾸어보라</h2>
+        <p style="color: var(--text-mid); margin-top: 16px;">아래 세 실험은 본 강의의 핵심 개념을 손끝으로 느끼기 위한 것이다. 코드의 파라미터를 자유롭게 바꾸어 가며 결과가 어떻게 변하는지 직접 확인해보라. 정답은 코드 안에 들어 있는 것이 아니라, 학습자가 발견하는 패턴 안에 있다.</p>
+
+        <!-- 심화 실습 1: 비대칭 윷가락 -->
+        <div class="example-box">
+            <span class="example-label">심화 실습 1</span>
+            <div class="example-title">비대칭 윷가락 — 배가 더 자주 나온다면?</div>
+            <div class="example-question">
+                실제 윷가락은 배가 등보다 약간 더 자주 나온다(통상 60% 정도). 본문에서는 50:50을 가정하였지만, 만약 배가 나올 확률이 <code>p_bae</code>라면 P(도)와 P(도 | 배가 적어도 하나)가 어떻게 달라지는가? <code>p_bae</code> 값을 0.3, 0.5, 0.6, 0.8로 바꾸어 가며 실행해보라.
+            </div>
+
+            <div class="code-section">
+                <div class="code-label">advanced_asymmetric_yut.py</div>
+                <div class="compute">
+import random
+
+# [수정 가능] 배가 나올 확률
+p_bae = 0.6
+trials = 200_000
+
+def throw_asymmetric():
+    return [1 if random.random() < p_bae else 0 for _ in range(4)]
+
+results = [throw_asymmetric() for _ in range(trials)]
+
+# 사건 D: 정확히 하나가 배 (도)
+D = [r for r in results if sum(r) == 1]
+# 사건 E: 배가 적어도 하나
+E = [r for r in results if sum(r) >= 1]
+# D ∩ E
+D_and_E = [r for r in E if sum(r) == 1]
+
+print(f"=== p_bae = {p_bae} ===")
+print(f"P(도)           ≈ {len(D) / trials:.4f}")
+print(f"P(도 | 배 ≥ 1)  ≈ {len(D_and_E) / len(E):.4f}")
+print()
+print("이론값으로 검증:")
+import math
+P_D     = 4 * p_bae * (1 - p_bae)**3
+P_E     = 1 - (1 - p_bae)**4
+P_D_E   = P_D / P_E   # D ⊂ E이므로 D ∩ E = D
+print(f"이론 P(도)        = {P_D:.4f}")
+print(f"이론 P(도 | 배≥1) = {P_D_E:.4f}")
+                </div>
+            </div>
+            <details class="answer-toggle">
+                <summary>관찰 포인트 보기</summary>
+                <div class="answer-content">
+                    배가 나올 확률이 0.5에서 멀어질수록 P(도)와 P(도 | 배≥1)의 차이가 어떻게 변하는지 관찰해보라. 특히 <code>p_bae</code>가 매우 작을 때(예: 0.1), 두 값의 차이가 더욱 극적으로 벌어진다. 그 이유는 무엇인가? 힌트: <strong>p_bae가 작을수록 (등,등,등,등)이 차지하는 비율이 커진다</strong>. 즉 사건 E가 표본공간에서 차지하는 비중이 줄어들고, 그만큼 분모가 더 크게 줄어든다.
+                </div>
+            </details>
+        </div>
+
+        <!-- 심화 실습 2: 두 카드 -->
+        <div class="example-box">
+            <span class="example-label">심화 실습 2</span>
+            <div class="example-title">카드 두 장 — 첫 카드의 정보가 둘째 카드에 미치는 영향</div>
+            <div class="example-question">
+                52장 카드 한 벌에서 두 장을 차례로 뽑는다(<strong>비복원 추출</strong>). 첫째 카드가 스페이드였다는 정보를 들었을 때 둘째 카드도 스페이드일 확률은? 이 값과 조건이 없을 때의 P(둘째가 스페이드)를 비교해보라.
+            </div>
+
+            <div class="code-section">
+                <div class="code-label">advanced_two_cards.py</div>
+                <div class="compute">
+import random
+
+# 카드 한 벌
+suits = ['♠', '♥', '♦', '♣']
+ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
+deck = [(r, s) for s in suits for r in ranks]
+
+# [수정 가능] 시행 횟수
+N = 200_000
+
+second_spade_count = 0          # 조건 없는 경우
+both_spade_count = 0            # 둘 다 스페이드
+first_spade_count = 0           # 첫째가 스페이드
+
+for _ in range(N):
+    d = deck.copy()
+    random.shuffle(d)
+    c1, c2 = d[0], d[1]
+    if c2[1] == '♠':
+        second_spade_count += 1
+    if c1[1] == '♠':
+        first_spade_count += 1
+        if c2[1] == '♠':
+            both_spade_count += 1
+
+p_second   = second_spade_count / N
+p_cond     = both_spade_count / first_spade_count
+
+print(f"P(둘째가 스페이드)               ≈ {p_second:.4f}   (이론: 13/52 = 0.2500)")
+print(f"P(둘째가 스페이드 | 첫째 스페이드) ≈ {p_cond:.4f}   (이론: 12/51 ≈ 0.2353)")
+print()
+print(f"차이: {p_second - p_cond:.4f}")
+print()
+print("→ 조건이 들어오니 확률이 살짝 내려갔다. 왜?")
+                </div>
+            </div>
+            <details class="answer-toggle">
+                <summary>관찰 포인트 보기</summary>
+                <div class="answer-content">
+                    조건 없이 두 번째 카드가 스페이드일 확률은 1/4이다. 그러나 첫째 카드가 이미 스페이드였다는 정보가 들어오면, 남은 51장 중 스페이드는 12장뿐이므로 확률이 <code>12/51 ≈ 0.235</code>로 <strong>내려간다</strong>. 윷놀이에서는 조건이 확률을 올렸고, 카드(독립)에서는 바꾸지 않았으며, 비복원 추출에서는 내렸다. <strong>조건은 확률을 올릴 수도, 내릴 수도, 그대로 둘 수도 있다.</strong>
+                </div>
+            </details>
+        </div>
+
+        <!-- 심화 실습 3: 베이즈 - 검사 두 번 -->
+        <div class="example-box">
+            <span class="example-label">심화 실습 3</span>
+            <div class="example-title">검사를 두 번 받으면 — 베이즈 갱신(Bayesian updating)</div>
+            <div class="example-question">
+                STEP 4에서 양성 판정 한 번으로 P(환자 | 양성) = 50%였다. 만약 학습자가 같은 검사를 한 번 더 받았는데 또 양성이 나왔다면, 이제 실제로 환자일 확률은 얼마인가? 첫 번째 양성 판정의 사후 확률 50%를 새로운 사전 확률로 삼아 베이즈 정리를 한 번 더 적용하면 된다.
+            </div>
+
+            <div class="code-section">
+                <div class="code-label">advanced_bayes_update.py</div>
+                <div class="compute">
+# === 베이즈 갱신 — 같은 검사를 N번 받았을 때 ===
+
+# [수정 가능] 검사기의 정확도
+sensitivity = 0.99
+specificity = 0.99
+
+# [수정 가능] 시작 유병률 (사전 확률)
+prior = 0.01
+
+# [수정 가능] 양성이 나온 횟수
+n_positive = 5
+
+print(f"초기 사전 확률 P(환자) = {prior:.4f}")
+print(f"민감도 = {sensitivity}, 특이도 = {specificity}")
+print()
+print("=== 양성이 한 번씩 나올 때마다의 사후 확률 ===")
+
+p = prior
+print(f"검사 0회 (사전):   {p:.4f}  ({p*100:.2f}%)")
+
+for k in range(1, n_positive + 1):
+    # P(양성 | 환자) * P(환자) / P(양성)
+    numer = sensitivity * p
+    denom = sensitivity * p + (1 - specificity) * (1 - p)
+    p = numer / denom
+    print(f"검사 {k}회 양성 후: {p:.4f}  ({p*100:.2f}%)")
+
+print()
+print("→ 같은 검사를 두 번만 받아도 확률이 극적으로 올라간다.")
+print("→ 이것이 \"PCR로 재검사하라\"는 안내의 수학적 근거이다.")
+                </div>
+            </div>
+            <details class="answer-toggle">
+                <summary>관찰 포인트 및 정답 보기</summary>
+                <div class="answer-content">
+                    <strong>정답:</strong> 검사 두 번 모두 양성이면 P(환자) ≈ <strong>0.99</strong>(99%)가 된다.<br><br>
+                    이 결과는 직관과 정확히 일치한다. 한 번의 양성은 50% 의미밖에 없지만, <strong>두 번 연속 양성</strong>이라는 정보는 매우 강력한 증거가 된다. 이 과정을 <strong>베이즈 갱신(Bayesian updating)</strong>이라 부른다. 새로운 증거가 들어올 때마다 사후 확률이 다음 단계의 사전 확률이 되어 누적된다.<br><br>
+                    이것이 의학에서 첫 검사 양성 시 재검사를 권고하는 수학적 이유이다. 또한 머신러닝의 온라인 학습, 자율주행 차량의 센서 융합, 베이지안 통계 추론의 기초가 모두 이 한 가지 메커니즘 위에 서 있다.
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- ===================== 연습문제 (단 한 개) ===================== -->
+    <div class="step-section">
+        <h2 style="color: var(--ocean-deep); font-size: 1.6em; border-bottom: 3px solid var(--accent-amber); padding-bottom: 10px;">📝 종합 연습문제</h2>
+
+        <div class="practice-box">
+            <span class="practice-label">연습 문제 (도전)</span>
+            <div class="example-title">두 자녀 문제 (Two-Child Problem)</div>
+            <div class="example-question">
+                두 자녀가 있는 가정이 있다. 그중 한 명이 아들이라는 정보를 들었다. 두 명 모두 아들일 확률은 얼마인가?<br><br>
+                <strong>힌트:</strong> 표본공간을 <code>{(남,남), (남,여), (여,남), (여,여)}</code> 네 개로 두고 시작하라. 정답은 <strong>1/2이 아니다</strong>.
+            </div>
+
+            <p style="margin-top: 16px; color: var(--text-mid);">파이썬 시뮬레이션으로 직접 검증해보라. 시행 횟수와 자녀의 성비를 자유롭게 바꾸어 실험해 볼 수 있다.</p>
+
+            <div class="code-section">
+                <div class="code-label">practice_two_children.py</div>
+                <div class="compute">
+import random
+
+# [수정 가능] 시행 횟수와 아들 비율
+N = 500_000
+p_boy = 0.5
+
+def random_family():
+    """두 자녀의 성별을 무작위로 생성한다. 'B'=아들, 'G'=딸."""
+    return tuple('B' if random.random() < p_boy else 'G' for _ in range(2))
+
+families = [random_family() for _ in range(N)]
+
+# 조건: 적어도 한 명이 아들
+condition = [f for f in families if 'B' in f]
+
+# 사건: 두 명 모두 아들
+both_boys = [f for f in condition if f == ('B', 'B')]
+
+print(f"시행 횟수: {N:,}")
+print(f"적어도 한 명이 아들인 가정: {len(condition):,}")
+print(f"그중 두 명 모두 아들인 가정: {len(both_boys):,}")
+print()
+print(f"P(둘 다 아들 | 적어도 한 명 아들) ≈ {len(both_boys)/len(condition):.4f}")
+print(f"이론값: 1/3 = {1/3:.4f}")
+                </div>
+            </div>
+
+            <details class="answer-toggle" style="margin-top: 24px;">
+                <summary>정답 및 자세한 해설 보기</summary>
+                <div class="answer-content">
+                    <strong>정답:</strong> <code>P(둘 다 아들 | 적어도 한 명 아들) = 1/3</code><br><br>
+                    <strong>해설:</strong> 표본공간 <code>S = {(남,남), (남,여), (여,남), (여,여)}</code>이며, 각 결과의 확률은 <code>1/4</code>이다.<br><br>
+                    <ul>
+                        <li>사건 <code>A</code> = “적어도 한 명이 아들” = <code>{(남,남), (남,여), (여,남)}</code>, <code>|A| = 3</code></li>
+                        <li>사건 <code>B</code> = “둘 다 아들” = <code>{(남,남)}</code>, <code>|B| = 1</code></li>
+                        <li><code>A ∩ B = {(남,남)}</code>, <code>|A ∩ B| = 1</code></li>
+                    </ul>
+                    따라서 <strong>P(B | A) = |A ∩ B| / |A| = 1/3</strong>이다.<br><br>
+                    많은 사람이 직관적으로 “나머지 한 명이 아들일 확률 = 1/2”이라고 답한다. 그러나 이는 표본공간을 잘못 본 것이다. <strong>“적어도 한 명이 아들”</strong>이라는 정보는 <code>(여,여)</code>만 제거할 뿐, <code>(남,여)</code>와 <code>(여,남)</code>은 모두 살아남는다. 즉 분모는 4가 아닌 3이다. 이 문제는 1959년 마틴 가드너(Martin Gardner)가 처음 소개한 이래 수많은 논쟁을 불러일으킨 고전이다.
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- ===================== 마무리 ===================== -->
+    <div class="conclusion">
+        <h2>🎓 오늘 배운 것 한 문장으로</h2>
+        <p>“정보는 표본공간을 줄이고, 줄어든 표본공간은 확률을 바꾼다.”</p>
+        <div class="final-formula">
+            P(B | A) = P(A ∩ B) / P(A)
+        </div>
+        <p>학습자는 오늘 단 하나의 공식을 배웠다. 그러나 그 공식 안에는 윷놀이의 ‘모’가 지워진 순간이, 몬티 홀의 염소 문이 열리는 순간이, 카드의 숫자카드들이 빠지는 순간이, 그리고 10만 명 중 건강한 9만 9천 명이 분모에 들어오는 순간이 모두 들어 있다.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
