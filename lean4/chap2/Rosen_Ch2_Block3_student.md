@@ -748,7 +748,403 @@ theorem cantor_diagonal (α : Type*) :
     rw [hj] at h2
     exact h h2
 ```
+## 칸토어 대각선 논법 증명 완전 해설
 
+### 0. 무엇을 증명하는가?
+
+```lean4
+theorem cantor_diagonal (α : Type*) :
+    ∀ f : α → Set α, ¬ Function.Surjective f
+```
+
+임의의 타입 `α` 에 대해, `α` 에서 `α` 의 부분집합들의 모임(`Set α`)으로 가는 함수 `f` 는 **전사(Surjective)일 수 없다.**
+
+수학적으로 쓰면:
+
+$$\nexists\, f : \alpha \to \mathcal{P}(\alpha) \text{ such that } f \text{ is surjective}$$
+
+즉, 어떤 집합도 자신의 **멱집합(power set)** 과 같은 크기를 가질 수 없다는 칸토어의 정리이다.
+
+---
+
+### 1. 증명의 핵심 아이디어: 대각선 논법
+
+전사함수 `f`가 존재한다고 **가정**하고 **모순**을 이끌어낸다(귀류법).
+
+**대각선 집합 S** 를 다음과 같이 정의한다.
+
+$$S = \{ i \in \alpha \mid i \notin f(i) \}$$
+
+> "자기 자신을 포함하지 않는 원소들의 집합"
+
+`f` 가 전사라면, 어떤 `j` 에 대해 `f(j) = S` 이어야 한다.  
+그런데 `j ∈ S` 인지 아닌지를 따지면 **어느 쪽이든 모순**이 발생한다.
+
+```
+j ∈ S  이면  →  S의 정의에 의해  j ∉ f(j) = S  →  j ∉ S  (모순)
+j ∉ S  이면  →  S의 정의에 의해  j ∈ f(j) = S  →  j ∈ S  (모순)
+```
+
+이것이 바로 **러셀의 역설**과 동일한 구조이다.
+
+---
+
+### 2. 전체 증명 흐름도
+
+```
+가정: f : α → Set α 가 전사라고 가정
+         │
+         ▼
+    S := { i | i ∉ f i }  (대각선 집합 정의)
+         │
+         ▼
+    ∃ j, f j = S           (f 가 전사이므로)
+         │
+    ┌────┴────┐
+    │         │
+j ∈ S       j ∉ S
+    │         │
+j ∉ f j     j ∈ f j       (S의 정의)
+    │         │
+j ∉ S       j ∈ S         (f j = S 대입)
+    │         │
+  모순!      모순!
+```
+
+---
+
+### 3. 줄별 완전 해설
+
+### 줄 1: `intro f hf`
+
+**귀류법의 시작. 전사함수가 존재한다고 가정한다.**
+
+목표: `∀ f : α → Set α, ¬ Function.Surjective f`
+
+`¬ P` 는 `P → False` 의 축약이다. 따라서 전체 목표는:
+
+```
+∀ f, Function.Surjective f → False
+```
+
+`intro f hf` 로 두 가정을 도입한다.
+
+- `f : α → Set α` — 임의의 함수
+- `hf : Function.Surjective f` — `f` 가 전사라는 가정
+
+**`Function.Surjective f` 의 정의:**
+
+```lean4
+Function.Surjective f  :=  ∀ b, ∃ a, f a = b
+```
+
+즉, 치역의 모든 원소 `b` 에 대해, `f(a) = b` 인 `a` 가 존재한다.
+
+**InfoView 상태:**
+```
+α : Type*
+f : α → Set α
+hf : Function.Surjective f
+⊢ False
+```
+
+---
+
+#### 줄 2: `let S : Set α := { i | i ∉ f i }`
+
+**대각선 집합 S 를 정의한다.**
+
+`{ i | i ∉ f i }` 는 **집합 조건 표기법(set-builder notation)** 이다.
+
+```lean4
+Set α  =  α → Prop
+-- Set α 는 α 위의 술어(predicate)와 동일하다
+```
+
+따라서:
+
+```lean4
+S = { i | i ∉ f i }
+-- 풀어 쓰면: S = fun i => i ∉ f i
+-- 즉: x ∈ S ↔ x ∉ f x
+```
+
+**핵심:** `S` 의 정의에 의해 다음이 항상 성립한다.
+
+$$x \in S \iff x \notin f(x)$$
+
+이것이 대각선 논법의 핵심 장치이다.
+
+---
+
+### 줄 3: `obtain ⟨j, hj⟩ := hf S`
+
+**전사성을 이용해 `f j = S` 인 `j` 를 꺼낸다.**
+
+`hf : Function.Surjective f` 에 `S` 를 적용하면:
+
+```
+hf S : ∃ j, f j = S
+```
+
+`obtain ⟨j, hj⟩` 로 존재 증거를 분해한다.
+
+- `j : α` — `f(j) = S` 인 원소
+- `hj : f j = S` — `j` 가 `S` 의 원상임을 보장하는 증거
+
+**InfoView 상태:**
+```
+α : Type*
+f : α → Set α
+hf : Function.Surjective f
+S : Set α := { i | i ∉ f i }
+j : α
+hj : f j = S
+⊢ False
+```
+
+---
+
+#### 줄 4: `by_cases h : j ∈ S`
+
+**경우 분리: `j ∈ S` 이거나 `j ∉ S` 이다. (배중률)**
+
+Lean에서 `by_cases h : P` 는 `P ∨ ¬P` 를 이용해 두 개의 목표를 만든다.
+
+```
+경우 1: h : j ∈ S   →  이 경우에도 False 를 증명해야 함
+경우 2: h : j ∉ S   →  이 경우에도 False 를 증명해야 함
+```
+
+---
+
+#### 경우 1: `j ∈ S` 일 때
+
+```lean4
+· have h1 : j ∉ f j := h
+  rw [hj] at h1
+  exact h1 h
+```
+
+**단계별 분석:**
+
+**`have h1 : j ∉ f j := h`**
+
+`h : j ∈ S` 이고, `S` 의 정의는 `{ i | i ∉ f i }` 이다.
+
+따라서:
+
+$$j \in S \iff j \notin f(j)$$
+
+`h` 자체가 바로 `j ∉ f j` 의 증거이다. (정의에 의한 전개)
+
+```
+h  : j ∈ S
+h1 : j ∉ f j   ← S의 정의 전개
+```
+
+**`rw [hj] at h1`**
+
+`hj : f j = S` 를 `h1` 에 대입(rewrite)한다.
+
+```
+h1 전: j ∉ f j
+h1 후: j ∉ S      ← f j 를 S 로 치환
+```
+
+**`exact h1 h`**
+
+현재 상태:
+- `h  : j ∈ S`
+- `h1 : j ∉ S` (즉, `j ∈ S → False`)
+
+`h1 h` 는 `(j ∈ S → False)` 에 `j ∈ S` 를 적용한 것이므로 `False` 가 된다.
+
+```
+h1 : j ∉ S = j ∈ S → False
+h  : j ∈ S
+h1 h : False   ✓
+```
+
+---
+
+#### 경우 2: `j ∉ S` 일 때
+
+```lean4
+· have h2 : j ∈ f j := by
+    by_contra h'
+    exact h h'
+  rw [hj] at h2
+  exact h h2
+```
+
+**단계별 분석:**
+
+**`have h2 : j ∈ f j`**
+
+`j ∉ f j` 라고 가정하면 `j ∈ S` 가 되는데, 이는 `h : j ∉ S` 에 모순이다.  
+따라서 `j ∈ f j` 이다. 이를 `by_contra` 로 증명한다.
+
+```lean4
+by_contra h'
+-- h' : j ∉ f j
+exact h h'
+```
+
+- `by_contra h'` : `j ∉ f j` 라고 가정 (`h' : ¬(j ∈ f j)`, 즉 `j ∉ f j`)
+- `S` 의 정의에 의해 `j ∉ f j → j ∈ S`
+- 그런데 `h' : j ∉ f j` 이므로 `j ∈ S` 이어야 한다
+- 그런데 `h : j ∉ S` 이므로 모순
+
+> 사실 `h'` 의 타입이 `j ∉ f j` 이고, 이는 `S` 의 정의상 `j ∈ S` 임을 의미한다.  
+> `h : j ∉ S` 에 이를 적용하면 `False`.
+
+정확히는: `h : j ∉ S`, `h' : j ∉ f j`.  
+`S = { i | i ∉ f i }` 이므로 `h' : j ∉ f j` 는 곧 `j ∈ S` 의 증거.  
+`h h'` 는 `(j ∉ S)` 에 `(j ∈ S)` 를 적용한 것으로 `False`.
+
+**`rw [hj] at h2`**
+
+```
+h2 전: j ∈ f j
+h2 후: j ∈ S     ← f j 를 S 로 치환
+```
+
+**`exact h h2`**
+
+- `h  : j ∉ S` (즉, `j ∈ S → False`)
+- `h2 : j ∈ S`
+- `h h2 : False`  ✓
+
+---
+
+### 4. 왜 `by_contra` 가 필요한가?
+
+경우 2에서 `j ∈ f j` 를 직접 증명할 수 없는 이유가 있다.
+
+`j ∉ f j` 이면 `j ∈ S` 라는 것은 **`S` 의 정의를 거꾸로** 읽는 것이다.
+
+```lean4
+-- S의 정의:  x ∈ S  ↔  x ∉ f x
+-- 따라서:    x ∉ f x  →  x ∈ S   (순방향)
+--            x ∈ S    →  x ∉ f x  (역방향)
+```
+
+`j ∉ f j` 에서 `j ∈ S` 를 직접 구성하거나,  
+`j ∈ f j` 의 부정(즉 `j ∉ f j`)을 가정해서 모순을 만드는 두 가지 방법 모두 작동한다.
+
+사실 더 간결하게도 쓸 수 있다:
+
+```lean4
+· -- 경우 2의 간결한 버전
+  have h2 : j ∈ S := h   -- h : j ∉ f j 는 곧 j ∈ S
+  exact h h2
+```
+
+원래 코드가 `by_contra` 를 쓴 것은 Lean의 타입 전개 방식을 명시적으로 보여주기 위함이다.
+
+---
+
+### 5. 논리 구조 요약
+
+| 단계 | Lean 코드 | 수학적 의미 |
+|------|-----------|------------|
+| 귀류법 시작 | `intro f hf` | `f`가 전사라고 가정 |
+| 대각선 집합 | `let S := { i \| i ∉ f i }` | $S = \{i \mid i \notin f(i)\}$ |
+| 전사성 적용 | `obtain ⟨j, hj⟩ := hf S` | $\exists j,\, f(j) = S$ |
+| 경우 분리 | `by_cases h : j ∈ S` | $j \in S$ 이거나 $j \notin S$ |
+| 경우 1 | `h1 : j ∉ f j`, `rw [hj]` | $j \in S \Rightarrow j \notin S$ |
+| 경우 2 | `h2 : j ∈ f j`, `rw [hj]` | $j \notin S \Rightarrow j \in S$ |
+| 모순 | `exact h1 h` / `exact h h2` | 양쪽 모두 `False` |
+
+---
+
+### 6. 사용된 전술과 보조정리
+
+| 이름 | 역할 |
+|------|------|
+| `intro` | `∀`와 `→`를 가정으로 도입 |
+| `let` | 국소 정의 (집합 S 정의) |
+| `obtain ⟨j, hj⟩` | `∃` 증거를 분해하여 이름 부여 |
+| `by_cases h : P` | 배중률로 경우 분리 |
+| `by_contra h'` | 귀류법 (부정을 가정) |
+| `rw [hj] at h` | 등식으로 가정 내 항을 치환 |
+| `exact h1 h` | `h1 : P → False`, `h : P` → `False` |
+
+---
+
+### 7. 더 깊이: 이 정리의 의미
+
+#### 칸토어의 정리와의 관계
+
+집합론에서 칸토어의 정리:
+
+$$|A| < |\mathcal{P}(A)|$$
+
+이 Lean 코드는 그 핵심인 **$\mathcal{P}(A)$로의 전사함수는 존재하지 않는다**는 부분을 증명한다.
+
+#### 러셀의 역설과의 관계
+
+$S = \{x \mid x \notin f(x)\}$ 는 $f$ 가 항등함수일 때 $S = \{x \mid x \notin x\}$ 가 된다. 이것이 바로 **러셀의 역설**이다. 칸토어의 대각선 논법은 러셀의 역설을 일반화한 것이다.
+
+### 정지 문제(Halting Problem)와의 관계
+
+튜링의 정지 문제 불결정성 증명도 완전히 동일한 대각선 논법 구조를 따른다.
+
+```
+S_halt = { P | P가 자기 자신을 입력으로 받았을 때 멈추지 않는다 }
+```
+
+어떤 프로그램 `j` 가 `f(j) = S_halt` 를 결정한다면 동일한 모순이 발생한다.
+
+---
+
+## 8. 연습 문제
+
+<details>
+<summary>연습 1: sorry를 채워 증명을 완성하라. (클릭하여 힌트 보기)</summary>
+
+```lean4
+-- S의 정의를 명시적으로 전개하는 버전
+theorem cantor_diagonal' (α : Type*) :
+    ∀ f : α → Set α, ¬ Function.Surjective f := by
+  intro f hf
+  let S : Set α := { i | i ∉ f i }
+  obtain ⟨j, hj⟩ := hf S
+  have key : j ∈ S ↔ j ∉ S := by
+    constructor
+    · intro h
+      rw [← hj]
+      sorry  -- h : j ∈ S 에서 j ∉ f j 를 꺼내라
+    · intro h
+      sorry  -- h : j ∉ S 에서 j ∈ S 를 꺼내라
+  exact (key.mp (key.mpr (fun h => h (key.mp h)))) (key.mpr (fun h => h (key.mp h)))
+```
+
+</details>
+
+<details>
+<summary>연습 2: ¬ Surjective 를 직접 풀어서 쓰면? (클릭하여 답 보기)</summary>
+
+```lean4
+-- ¬ Surjective f = Surjective f → False
+-- Surjective f   = ∀ b, ∃ a, f a = b
+-- 따라서 전체는: (∀ b, ∃ a, f a = b) → False
+-- intro f hf 에서:
+--   f  : α → Set α
+--   hf : ∀ b : Set α, ∃ a : α, f a = b
+```
+
+</details>
+
+<details>
+<summary>연습 3: 왜 α → α 는 전사일 수 있는가? (클릭하여 답 보기)</summary>
+
+`Set α = α → Prop` 이므로 `Set α` 는 `α` 보다 엄격히 크다.  
+반면 `α → α` (자기 자신으로의 함수)는 항등함수 `id` 가 전사이다.  
+칸토어의 정리는 반드시 **멱집합으로의** 전사가 불가능하다는 것이지, 임의의 함수에 대한 것이 아니다.
+
+</details>
 ### 7.5 수학 ↔ Lean 1대1 대응표
 
 | 수학적 단계                            | Lean 4 코드                        | 역할                 |
