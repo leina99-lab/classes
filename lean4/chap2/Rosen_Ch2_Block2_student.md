@@ -157,6 +157,26 @@ example : Function.Surjective (fun n : Int => n + 1) := by
 | `intro b` 후 | 가설: `b : Int` / 목표: `∃ a, a + 1 = b` |
 | `use b - 1` 후 | 목표: `b - 1 + 1 = b` |
 | `omega` 후 | 증명 완료 |
+```lean
+example : Function.Injective (fun n : Nat => n + 1) := by
+  intro a b h
+  -- h : a + 1 = b + 1
+  -- 자연수에서 n + 1 의 역연산은 없습니다. 
+  -- 대신 '다음 수(successor)가 같으면 원래 수도 같다'는 성질을 쓴다.
+  injection h
+```
+**정의:** $\forall b \in B, \exists a \in A$ such that $f(a) = b$
+
+### 증명 전략: $f(n) = n + 1$
+임의의 $b$에 대해 $a = b - 1$임을 대수적으로 증명.
+
+| 단계 | Lean Tactics | 수식 변화 및 원리 |
+| :-- | :--- | :--- |
+| **Step 1** | `Int.sub_eq_add_neg` | $(b - 1) + 1 \implies (b + (-1)) + 1$ (뺄셈의 가법 역원화) |
+| **Step 2** | `← Int.add_assoc` | $b + ((-1) + 1)$ (덧셈의 결합법칙) |
+| **Step 3** | `Int.add_left_neg` | $b + 0$ (역원 성질: $-a + a = 0$) |
+| **Step 4** | `Int.add_zero` | $b$ (항등원 성질) |
+
 
 ### 전단사 증명: f(n) = n + 1 (Int -> Int)
 
