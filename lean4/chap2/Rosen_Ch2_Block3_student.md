@@ -288,7 +288,7 @@ h : 2 ^ i₁ * 3 ^ j₁ = 2 ^ i₂ * 3 ^ j₂
 
 ---
 
-### 줄 2: `simp only [Prod.mk.injEq]`
+#### 줄 2: `simp only [Prod.mk.injEq]`
 
 **목표를 쌍의 동등성에서 성분의 동등성으로 바꾼다.**
 
@@ -307,7 +307,7 @@ h : 2 ^ i₁ * 3 ^ j₁ = 2 ^ i₂ * 3 ^ j₂
 
 ---
 
-### 줄 3-4: `have hcop : ∀ a b : ℕ, Nat.Coprime (2^a) (3^b)`
+#### 줄 3-4: `have hcop : ∀ a b : ℕ, Nat.Coprime (2^a) (3^b)`
 
 **보조 사실: $2^a$ 와 $3^b$ 는 항상 서로소이다.**
 
@@ -330,7 +330,7 @@ $$\gcd(2, 3) = 1 \implies \gcd(2^a, 3^b) = 1 \quad \text{(소수 거듭제곱의
 
 ---
 
-### 줄 5-8: `have hpow2 : 2^i₁ = 2^i₂`
+#### 줄 5-8: `have hpow2 : 2^i₁ = 2^i₂`
 
 **핵심 단계. $2^{i_1} = 2^{i_2}$ 를 증명한다.**
 
@@ -400,7 +400,7 @@ Nat.Coprime.dvd_of_dvd_mul_right :
 
 ---
 
-### 줄 9: `have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) hpow2`
+#### 줄 9: `have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) hpow2`
 
 **$2^{i_1} = 2^{i_2}$ 에서 $i_1 = i_2$ 를 뽑아낸다.**
 
@@ -417,7 +417,7 @@ Nat.pow_right_injective : 2 ≤ n → n^a = n^b → a = b
 
 ---
 
-### 줄 10-11: `have hpow3 : 3^j₁ = 3^j₂`
+#### 줄 10-11: `have hpow3 : 3^j₁ = 3^j₂`
 
 **$i_1 = i_2$ 를 이용해 $3^{j_1} = 3^{j_2}$ 를 증명한다.**
 
@@ -452,7 +452,7 @@ Nat.eq_of_mul_eq_mul_left : 0 < k → k * a = k * b → a = b
 
 ---
 
-### 줄 12: `exact ⟨hi, Nat.pow_right_injective (by norm_num) hpow3⟩`
+#### 줄 12: `exact ⟨hi, Nat.pow_right_injective (by norm_num) hpow3⟩`
 
 **최종 결론을 조립한다.**
 
@@ -464,7 +464,7 @@ Nat.eq_of_mul_eq_mul_left : 0 < k → k * a = k * b → a = b
 
 ---
 
-## 5. 사용된 보조정리 총정리
+### 5. 사용된 보조정리 총정리
 
 | 보조정리 | 타입 | 역할 |
 |---------|------|------|
@@ -479,7 +479,7 @@ Nat.eq_of_mul_eq_mul_left : 0 < k → k * a = k * b → a = b
 
 ---
 
-## 6. 수학적 직관 요약
+### 6. 수학적 직관 요약
 
 $$2^{i_1} \cdot 3^{j_1} = 2^{i_2} \cdot 3^{j_2}$$
 
@@ -491,7 +491,7 @@ Lean에서는 이를 직접 산술의 기본 정리로 끝내지 않고, **서�
 
 ---
 
-## 7. 연습 문제
+### 7. 연습 문제
 
 <details>
 <summary>연습 1: 다음 함수도 단사임을 증명하라. (클릭하여 힌트 보기)</summary>
