@@ -185,7 +185,346 @@ example : Function.Injective (fun p : Nat × Nat => 2^p.1 * 3^p.2) := by
   -- 실제 증명은 Nat.Prime.pow_injective_of_ne 류의 보조정리로 끝난다.
   sorry
 ```
+# `2^i * 3^j` 단사 함수 증명 완전 해설
 
+## 0. 무엇을 증명하는가?
+
+함수 $f : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$ 를 다음과 같이 정의한다.
+
+$$f(i, j) = 2^i \cdot 3^j$$
+
+**단사(Injective)** 란, 서로 다른 입력은 반드시 서로 다른 출력을 낸다는 뜻이다.
+
+$$f(i_1, j_1) = f(i_2, j_2) \implies (i_1, j_1) = (i_2, j_2)$$
+
+즉, $2^{i_1} \cdot 3^{j_1} = 2^{i_2} \cdot 3^{j_2}$ 이면 $i_1 = i_2$ 이고 $j_1 = j_2$ 임을 보인다.
+
+---
+
+## 1. 증명의 큰 흐름 (4단계)
+
+```
+2^i₁ · 3^j₁ = 2^i₂ · 3^j₂   (가정 h)
+        │
+        ▼
+   [단계 1] 2^i₁ = 2^i₂   ← 2와 3이 서로소이므로 지수 분리 가능
+        │
+        ▼
+   [단계 2] i₁ = i₂        ← 밑이 2인 거듭제곱의 단사성
+        │
+        ▼
+   [단계 3] 3^j₁ = 3^j₂   ← i₁ = i₂ 대입 후 양변에서 2^i 약분
+        │
+        ▼
+   [단계 4] j₁ = j₂        ← 밑이 3인 거듭제곱의 단사성
+```
+
+---
+
+## 2. 핵심 개념: 서로소(Coprime)
+
+### 정의
+
+두 자연수 $a$, $b$ 에 대해 $\gcd(a, b) = 1$ 이면 **서로소**라고 한다.
+
+### 핵심 성질
+
+> $\gcd(k, n) = 1$ 이고 $k \mid m \cdot n$ 이면 $k \mid m$ 이다.
+
+이 성질이 이 증명 전체의 엔진이다. 2와 3은 서로 다른 소수이므로:
+
+$$\gcd(2^a, 3^b) = 1 \quad \text{(항상 성립)}$$
+
+왜냐하면 $2^a$ 의 소인수는 오직 2뿐이고, $3^b$ 의 소인수는 오직 3뿐이기 때문이다.
+
+---
+
+## 3. 전체 코드 (다시 보기)
+
+```lean4
+import Mathlib
+
+example : Function.Injective (fun p : Nat × Nat => 2 ^ p.1 * 3 ^ p.2) := by
+  intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ h
+  simp only [Prod.mk.injEq]
+  have hcop : ∀ a b : ℕ, Nat.Coprime (2 ^ a) (3 ^ b) := fun a b =>
+    Nat.Coprime.pow a b (by norm_num)
+  have hpow2 : 2 ^ i₁ = 2 ^ i₂ :=
+    Nat.dvd_antisymm
+      ((hcop i₁ j₂).dvd_of_dvd_mul_right ⟨3 ^ j₁, h.symm⟩)
+      ((hcop i₂ j₁).dvd_of_dvd_mul_right ⟨3 ^ j₂, h⟩)
+  have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) hpow2
+  have hpow3 : 3 ^ j₁ = 3 ^ j₂ :=
+    Nat.eq_of_mul_eq_mul_left (pow_pos (by norm_num : (0 : ℕ) < 2) i₂) (hi ▸ h)
+  exact ⟨hi, Nat.pow_right_injective (by norm_num) hpow3⟩
+```
+
+---
+
+## 4. 줄별 완전 해설
+
+### 줄 1: `intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ h`
+
+**단사성의 정의를 펼친다.**
+
+`Function.Injective f` 는 다음을 의미한다.
+
+```
+∀ a b, f a = f b → a = b
+```
+
+`intro` 는 이 `∀` 와 `→` 를 가정으로 가져온다.
+
+- `⟨i₁, j₁⟩` : 첫 번째 쌍 `p₁ = (i₁, j₁)` 을 분해하여 도입
+- `⟨i₂, j₂⟩` : 두 번째 쌍 `p₂ = (i₂, j₂)` 를 분해하여 도입
+- `h` : 가정 `2^i₁ * 3^j₁ = 2^i₂ * 3^j₂`
+
+**InfoView 상태 (intro 후):**
+```
+i₁ j₁ i₂ j₂ : ℕ
+h : 2 ^ i₁ * 3 ^ j₁ = 2 ^ i₂ * 3 ^ j₂
+⊢ (i₁, j₁) = (i₂, j₂)
+```
+
+---
+
+### 줄 2: `simp only [Prod.mk.injEq]`
+
+**목표를 쌍의 동등성에서 성분의 동등성으로 바꾼다.**
+
+`Prod.mk.injEq` 는 다음 보조정리이다.
+
+```
+(a, b) = (c, d) ↔ a = c ∧ b = d
+```
+
+**InfoView 상태 (simp 후):**
+```
+⊢ i₁ = i₂ ∧ j₁ = j₂
+```
+
+이제 목표는 두 자연수 쌍이 각각 같음을 보이는 것이다.
+
+---
+
+### 줄 3-4: `have hcop : ∀ a b : ℕ, Nat.Coprime (2^a) (3^b)`
+
+**보조 사실: $2^a$ 와 $3^b$ 는 항상 서로소이다.**
+
+```lean4
+have hcop : ∀ a b : ℕ, Nat.Coprime (2 ^ a) (3 ^ b) := fun a b =>
+  Nat.Coprime.pow a b (by norm_num)
+```
+
+`Nat.Coprime.pow` 의 시그니처:
+
+```lean4
+Nat.Coprime.pow : Nat.Coprime m n → Nat.Coprime (m^a) (n^b)
+```
+
+`by norm_num` 이 `Nat.Coprime 2 3` 즉 `gcd(2, 3) = 1` 을 자동으로 증명한다.
+
+**수학적 의미:**
+
+$$\gcd(2, 3) = 1 \implies \gcd(2^a, 3^b) = 1 \quad \text{(소수 거듭제곱의 서로소)}$$
+
+---
+
+### 줄 5-8: `have hpow2 : 2^i₁ = 2^i₂`
+
+**핵심 단계. $2^{i_1} = 2^{i_2}$ 를 증명한다.**
+
+```lean4
+have hpow2 : 2 ^ i₁ = 2 ^ i₂ :=
+  Nat.dvd_antisymm
+    ((hcop i₁ j₂).dvd_of_dvd_mul_right ⟨3 ^ j₁, h.symm⟩)
+    ((hcop i₂ j₁).dvd_of_dvd_mul_right ⟨3 ^ j₂, h⟩)
+```
+
+**`Nat.dvd_antisymm` 이란?**
+
+```
+a ∣ b → b ∣ a → a = b
+```
+
+즉, $a \mid b$ 이고 $b \mid a$ 이면 $a = b$ 이다 (자연수에서).  
+따라서 $2^{i_1} \mid 2^{i_2}$ 이고 $2^{i_2} \mid 2^{i_1}$ 을 각각 보이면 된다.
+
+---
+
+**첫 번째 인자: $2^{i_1} \mid 2^{i_2}$ 증명**
+
+```lean4
+(hcop i₁ j₂).dvd_of_dvd_mul_right ⟨3 ^ j₁, h.symm⟩
+```
+
+`dvd_of_dvd_mul_right` 의 시그니처:
+
+```
+Nat.Coprime.dvd_of_dvd_mul_right :
+  Nat.Coprime k n → k ∣ m * n → k ∣ m
+```
+
+여기에 대입:
+- `k = 2^i₁`
+- `n = 3^j₂`
+- `m = 2^i₂`
+
+`hcop i₁ j₂` 는 `gcd(2^i₁, 3^j₂) = 1` 이다.
+
+`⟨3^j₁, h.symm⟩` 은 `2^i₁ ∣ 2^i₂ * 3^j₂` 의 증거이다.
+
+> `h` : $2^{i_1} \cdot 3^{j_1} = 2^{i_2} \cdot 3^{j_2}$  
+> `h.symm` : $2^{i_2} \cdot 3^{j_2} = 2^{i_1} \cdot 3^{j_1}$  
+> `⟨3^j₁, h.symm⟩` : $2^{i_2} \cdot 3^{j_2} = 2^{i_1} \cdot 3^{j_1}$, 즉 $2^{i_1} \mid 2^{i_2} \cdot 3^{j_2}$
+
+결론: `gcd(2^i₁, 3^j₂) = 1` 이고 `2^i₁ ∣ 2^i₂ * 3^j₂` 이므로 `2^i₁ ∣ 2^i₂`.
+
+---
+
+**두 번째 인자: $2^{i_2} \mid 2^{i_1}$ 증명**
+
+```lean4
+(hcop i₂ j₁).dvd_of_dvd_mul_right ⟨3 ^ j₂, h⟩
+```
+
+- `k = 2^i₂`, `n = 3^j₁`, `m = 2^i₁`
+- `hcop i₂ j₁` : `gcd(2^i₂, 3^j₁) = 1`
+- `⟨3^j₂, h⟩` : `h` 자체가 $2^{i_1} \cdot 3^{j_1} = 2^{i_2} \cdot 3^{j_2}$, 즉 $2^{i_2} \mid 2^{i_1} \cdot 3^{j_1}$
+
+결론: `gcd(2^i₂, 3^j₁) = 1` 이고 `2^i₂ ∣ 2^i₁ * 3^j₁` 이므로 `2^i₂ ∣ 2^i₁`.
+
+---
+
+**최종:** `dvd_antisymm` 으로 두 방향 나눗셈을 합쳐 $2^{i_1} = 2^{i_2}$ 를 얻는다.
+
+---
+
+### 줄 9: `have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) hpow2`
+
+**$2^{i_1} = 2^{i_2}$ 에서 $i_1 = i_2$ 를 뽑아낸다.**
+
+`Nat.pow_right_injective` 의 시그니처:
+
+```lean4
+Nat.pow_right_injective : 2 ≤ n → n^a = n^b → a = b
+```
+
+- `by norm_num` : `2 ≤ 2` 를 자동 증명
+- `hpow2` : `2^i₁ = 2^i₂`
+
+수학적으로: **밑이 2 이상인 거듭제곱 함수는 단사이다.** $n^a = n^b \implies a = b$ (단, $n \geq 2$).
+
+---
+
+### 줄 10-11: `have hpow3 : 3^j₁ = 3^j₂`
+
+**$i_1 = i_2$ 를 이용해 $3^{j_1} = 3^{j_2}$ 를 증명한다.**
+
+```lean4
+have hpow3 : 3 ^ j₁ = 3 ^ j₂ :=
+  Nat.eq_of_mul_eq_mul_left (pow_pos (by norm_num : (0 : ℕ) < 2) i₂) (hi ▸ h)
+```
+
+**`hi ▸ h` 란?**
+
+`hi : i₁ = i₂` 이다.  
+`▸` 는 등식을 이용해 가정 안의 항을 **치환(rewrite)** 한다.
+
+```
+h     : 2^i₁ * 3^j₁ = 2^i₂ * 3^j₂
+hi ▸ h : 2^i₂ * 3^j₁ = 2^i₂ * 3^j₂   ← i₁ 을 i₂ 로 치환
+```
+
+**`Nat.eq_of_mul_eq_mul_left` 란?**
+
+```lean4
+Nat.eq_of_mul_eq_mul_left : 0 < k → k * a = k * b → a = b
+```
+
+즉, 양의 수 $k$ 에 대해 $k \cdot a = k \cdot b \implies a = b$ (좌변 약분).
+
+- `k = 2^i₂`, `a = 3^j₁`, `b = 3^j₂`
+- `pow_pos ... i₂` : `0 < 2^i₂` 를 증명
+- `hi ▸ h` : `2^i₂ * 3^j₁ = 2^i₂ * 3^j₂`
+
+결론: 양변에서 `2^i₂` 를 약분하여 `3^j₁ = 3^j₂`.
+
+---
+
+### 줄 12: `exact ⟨hi, Nat.pow_right_injective (by norm_num) hpow3⟩`
+
+**최종 결론을 조립한다.**
+
+목표는 `i₁ = i₂ ∧ j₁ = j₂` 이다.
+
+- `hi` : `i₁ = i₂` (이미 증명됨)
+- `Nat.pow_right_injective (by norm_num) hpow3` : `3^j₁ = 3^j₂` 에서 `j₁ = j₂`
+- `⟨hi, ...⟩` : 두 증명을 `∧` 로 묶어 목표 달성
+
+---
+
+## 5. 사용된 보조정리 총정리
+
+| 보조정리 | 타입 | 역할 |
+|---------|------|------|
+| `Nat.Coprime.pow` | `Coprime m n → Coprime (m^a) (n^b)` | $\gcd(2^a, 3^b)=1$ |
+| `Nat.Coprime.dvd_of_dvd_mul_right` | `Coprime k n → k∣m*n → k∣m` | 서로소를 이용한 나눗셈 분리 |
+| `Nat.dvd_antisymm` | `a∣b → b∣a → a=b` | 상호 나눗셈 → 등식 |
+| `Nat.pow_right_injective` | `2≤n → n^a=n^b → a=b` | 지수 일치 |
+| `Nat.eq_of_mul_eq_mul_left` | `0<k → k*a=k*b → a=b` | 좌변 약분 |
+| `pow_pos` | `0<n → 0<n^k` | 거듭제곱의 양수성 |
+| `norm_num` | (tactic) | 구체적 수치 자동 증명 |
+| `Prod.mk.injEq` | `(a,b)=(c,d) ↔ a=c ∧ b=d` | 쌍의 등식 분해 |
+
+---
+
+## 6. 수학적 직관 요약
+
+$$2^{i_1} \cdot 3^{j_1} = 2^{i_2} \cdot 3^{j_2}$$
+
+이 등식은 **산술의 기본 정리(유일 소인수분해)** 의 특수한 경우이다.
+
+모든 자연수는 소수들의 곱으로 유일하게 나타낼 수 있으므로, 좌변과 우변의 소인수분해가 같으면 각 소수의 지수도 같아야 한다.
+
+Lean에서는 이를 직접 산술의 기본 정리로 끝내지 않고, **서로소 + 상호 나눗셈 + 약분** 이라는 초등적 도구로 단계적으로 증명한 것이다.
+
+---
+
+## 7. 연습 문제
+
+<details>
+<summary>연습 1: 다음 함수도 단사임을 증명하라. (클릭하여 힌트 보기)</summary>
+
+```lean4
+example : Function.Injective (fun p : Nat × Nat => 5 ^ p.1 * 7 ^ p.2) := by
+  sorry
+```
+
+**힌트:** `gcd(5, 7) = 1` 이므로 위와 완전히 동일한 구조로 증명한다.  
+`by norm_num` 이 `Nat.Coprime 5 7` 을 처리한다.
+
+</details>
+
+<details>
+<summary>연습 2: `hcop` 없이 `norm_num` 만으로 줄일 수 있는가? (클릭하여 답 보기)</summary>
+
+직접 `norm_num` 으로 서로소를 증명하는 것은 가능하지만, `dvd_of_dvd_mul_right` 에 넘길 `Coprime` 증거를 만들기 위해서는 결국 같은 작업이 필요하다. `hcop` 로 이름을 붙여두면 두 번 재사용할 수 있어 더 깔끔하다.
+
+</details>
+
+<details>
+<summary>연습 3: `▸` 대신 `rw [hi] at h` 로 쓰면 어떻게 되는가? (클릭하여 답 보기)</summary>
+
+```lean4
+rw [hi] at h
+-- h : 2^i₂ * 3^j₁ = 2^i₂ * 3^j₂
+exact Nat.eq_of_mul_eq_mul_left (pow_pos (by norm_num : (0:ℕ) < 2) i₂) h
+```
+
+`▸` 와 동일한 결과이다. `▸` 는 `rw ... at ...` 의 인라인 버전이다.
+
+</details>
 마지막 예제는 Mathlib의 **소수 거듭제곱 유일성**에 의존하며 실제로 한두 줄로 닫히는 것이 일반적이다. 여기서는 의존 관계를 보이기 위해 `sorry`로 남긴다.
 
 ### 3.7 그랜드 호텔이 주는 교훈
