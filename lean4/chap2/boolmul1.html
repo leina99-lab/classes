@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f2f5; }
+        .matrix-wrapper { display: flex; align-items: center; gap: 30px; margin-top: 30px; padding: 20px; background: white; border-radius: 15px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .matrix { display: grid; gap: 4px; padding: 10px; border-left: 3px solid #333; border-right: 3px solid #333; }
+        .cell { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; font-size: 14px; transition: 0.2s; cursor: pointer; }
+        
+        /* 강조 스타일 */
+        .highlight-row { background-color: #ffe082 !important; font-weight: bold; }
+        .highlight-col { background-color: #81d4fa !important; font-weight: bold; }
+        .highlight-res { background-color: #a5d6a7 !important; transform: scale(1.1); z-index: 10; border-color: #2e7d32; }
+        
+        .operator { font-size: 24px; font-weight: bold; color: #666; }
+        .info-panel { margin-top: 30px; width: 600px; padding: 20px; background: #333; color: white; border-radius: 10px; min-height: 80px; line-height: 1.6; }
+        b { color: #ffeb3b; }
+    </style>
+</head>
+<body>
+
+    <h2>5x5 Matrix Boolean Product Visualizer</h2>
+    <p>결과 행렬(C)의 칸을 클릭하여 연산 과정을 확인하세요.</p>
+
+    <div class="matrix-wrapper">
+        <div id="matA_UI"></div>
+        <div class="operator">⊙</div>
+        <div id="matB_UI"></div>
+        <div class="operator">=</div>
+        <div id="matC_UI"></div>
+    </div>
+
+    <div class="info-panel" id="info">결과 칸을 클릭하면 계산 공식이 표시됩니다.</div>
+
+    <script>
+        const size = 5;
+        // 랜덤 행렬 데이터 생성
+        const createData = () => Array.from({length: size}, () => Array.from({length: size}, () => Math.round(Math.random())));
+        const A = createData();
+        const B = createData();
+
+        function render() {
+            const renderMat = (target, data, type) => {
+                const el = document.getElementById(target);
+                el.style.gridTemplateColumns = `repeat(${size}, 35px)`;
+                data.forEach((row, r) => {
+                    row.forEach((val, c) => {
+                        const cell = document.createElement('div');
+                        cell.className = `cell ${type}-r${r} ${type}-c${c}`;
+                        if(type === 'res') {
+                            cell.innerHTML = "?";
+                            cell.onclick = () => calculate(r, c);
+                        } else {
+                            cell.innerHTML = val;
+                        }
+                        el.appendChild(cell);
+                    });
+                });
+            };
+
+            renderMat('matA_UI', A, 'a');
+            renderMat('matB_UI', B, 'b');
+            renderMat('matC_UI', Array(5).fill(Array(5).fill(0)), 'res');
+        }
+
+        function calculate(r, c) {
+            // 초기화
+            document.querySelectorAll('.cell').forEach(el => el.classList.remove('highlight-row', 'highlight-col', 'highlight-res'));
+            
+            // 행/열 강조
+            document.querySelectorAll(`.a-r${r}`).forEach(el => el.classList.add('highlight-row'));
+            document.querySelectorAll(`.b-c${c}`).forEach(el => el.classList.add('highlight-col'));
+            
+            // 부울곱 연산
+            let terms = [];
+            let result = 0;
+            for(let k=0; k<size; k++) {
+                let andVal = A[r][k] & B[k][c];
+                result |= andVal;
+                terms.push(`(${A[r][k]}∧${B[k][c]})`);
+            }
+
+            // 결과 업데이트
+            const resIdx = r * size + c;
+            const resCell = document.querySelectorAll('#matC_UI .cell')[resIdx];
+            resCell.innerText = result;
+            resCell.classList.add('highlight-res');
+
+            // 텍스트 출력
+            document.getElementById('info').innerHTML = 
+                `C[${r+1},${c+1}] 연산: ` + terms.join(' ∨ ') + ` = <b>${result}</b><br>` +
+                `<i>(하나라도 (1∧1)이 있으면 결과는 1이 됩니다)</i>`;
+        }
+
+        render();
+    </script>
+</body>
+</html>
