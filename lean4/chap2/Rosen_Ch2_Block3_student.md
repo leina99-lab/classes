@@ -185,7 +185,7 @@ example : Function.Injective (fun p : Nat × Nat => 2^p.1 * 3^p.2) := by
   -- 실제 증명은 Nat.Prime.pow_injective_of_ne 류의 보조정리로 끝난다.
   sorry
 ```
-# `2^i * 3^j` 단사 함수 증명 완전 해설
+# `2^i * 3^j` 단사 함수 증명  해설
 
 ## 0. 무엇을 증명하는가?
 
