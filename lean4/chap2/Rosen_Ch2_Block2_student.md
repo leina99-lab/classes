@@ -1016,5 +1016,97 @@ example : Function.Bijective (fun n : Int => n + 7) := by
   · intro b
     use b -7
     simp
+-- 단사: f(a) = f(b) → a = b
+example : Function.Injective (fun n : Nat => n + 1) := by
+  intro a b h     -- h : a + 1 = b + 1
+  simp at h
+  omega   
 
+example : Function.Bijective (fun n : Int => n + 1) := by
+  constructor
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b - 1
+    simp
+
+-- 전단사 = 단사 + 전사
+example : Function.Bijective (fun n : Int => n + 1) := by
+  constructor
+  · intro a b h
+    simp at h
+    exact h
+  · intro b
+    use b - 1
+    simp
+
+-- Lean 4: 합성
+def ff (x : Int) := 2 * x + 3
+def gg (x : Int) := 3 * x + 2
+#eval ff (gg 1)   -- f(g(1)) = f(5) = 13
+#eval gg (ff 1)   -- g(f(1)) = g(5) = 17  (같지 않다!)
+
+-- Lean 4: 계승
+#eval Nat.factorial 6     -- 720
+#eval Nat.factorial 20    -- 2432902008176640000
+
+-- 등식
+example : 2 + 3 = 5 := by norm_num
+example : 2^10 = 1024 := by norm_num
+
+-- 부등식
+example : 3 < 7 := by norm_num
+example : 100 ≥ 99 := by norm_num
+
+-- 부정
+example : 2 + 2 ≠ 5 := by norm_num
+example : ¬(3 = 7) := by norm_num
+
+-- 나눗셈, 나머지
+example : 10 % 3 = 1 := by norm_num
+example : 10 / 3 = 3 := by norm_num
+
+-- 소수 판정
+example : Nat.Prime 7 := by norm_num
+example : ¬ Nat.Prime 4 := by norm_num
+
+-- 1. 반례 제시할 때 (단사가 아님 증명)
+example : ¬ Function.Injective (fun n : Int => n^2) := by
+  intro h
+  have := h (show (1:Int)^2 = (-1:Int)^2 by norm_num)
+  norm_num at this
+
+-- 2. simp와 조합
+example : (3 : Nat) ∈ {n : Nat | n > 2} := by
+  simp        -- 목표: 3 > 2
+  norm_num    -- 계산으로 확인
+
+-- 3. omega가 안 되는 거듭제곱
+example : 2^8 = 256 := by norm_num    -- omega는 거듭제곱 못 함
+
+-- Lean 4: 등차수열
+def arith (n : Nat) : Int := -1 + 4 * n
+#eval (List.range 6).map arith  -- [-1, 3, 7, 11, 15, 19]
+
+-- 피보나치 (패턴 매칭)
+def fib : Nat -> Nat
+  | 0 => 0
+  | 1 => 1
+  | n + 2 => fib (n + 1) + fib n
+
+#eval (List.range 10).map fib
+-- [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+def seq5 : Nat -> Nat
+  | 0 => 2
+  | n + 1 => seq5 n + 3
+
+#eval (List.range 6).map seq5  -- [2, 5, 8, 11, 14, 17]
+
+#eval (1.11 ^ 30 : Float) * 10000  -- 약 228,923
+
+-- Lean 4: 합 계산
+#eval (List.range 100).map (· + 1) |>.foldl (· + ·) 0
+-- 5050 = 100*101/2  (가우스 공식!)
 ---
