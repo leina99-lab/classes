@@ -185,9 +185,9 @@ example : Function.Injective (fun p : Nat × Nat => 2^p.1 * 3^p.2) := by
   -- 실제 증명은 Nat.Prime.pow_injective_of_ne 류의 보조정리로 끝난다.
   sorry
 ```
-# `2^i * 3^j` 단사 함수 증명  해설
+## `2^i * 3^j` 단사 함수 증명  해설
 
-## 0. 무엇을 증명하는가?
+### 0. 무엇을 증명하는가?
 
 함수 $f : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$ 를 다음과 같이 정의한다.
 
@@ -201,7 +201,7 @@ $$f(i_1, j_1) = f(i_2, j_2) \implies (i_1, j_1) = (i_2, j_2)$$
 
 ---
 
-## 1. 증명의 큰 흐름 (4단계)
+### 1. 증명의 큰 흐름 (4단계)
 
 ```
 2^i₁ · 3^j₁ = 2^i₂ · 3^j₂   (가정 h)
