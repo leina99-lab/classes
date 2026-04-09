@@ -170,11 +170,15 @@ import Mathlib
 
 -- 시나리오 1: g(n) = n + 1 은 단사
 example : Function.Injective (fun n : Nat => n + 1) := by
-  intro a b h; omega
+  intro a b h; 
+  simp at h
+  omega
 
 -- 시나리오 3: g(n) = 2n 은 단사
 example : Function.Injective (fun n : Nat => 2 * n) := by
-  intro a b h; omega
+  intro a b h;
+  simp at h
+  omega
 
 -- 시나리오 4-B: h(i, j) = 2^i * 3^j 가 단사 (산술의 기본정리)
 -- Mathlib 에 이미 다음 형태의 보조정리가 있어 한 줄로 끝난다.
