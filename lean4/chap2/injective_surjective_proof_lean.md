@@ -85,3 +85,46 @@ example : Injective (fun (n : ℤ) => n + 1) := by
   exact h_sub
 
 ```
+#  Lean 4 이산수학 대수적 공리 참고 
+
+---
+
+##  교육적 지향점: 타입 이론 (**Type Theory**)
+
+본 코딩북은 단순한 수식 변형이 아닌, **타입 이론**의 엄밀함을 체득하는 데 목적이 있습니다. 모든 수학적 대상은 고유한 **타입**을 가지며, 증명은 해당 타입을 만족하는 논리적 프로그램을 작성하는 과정입니다. 학습자는 **dsimp**를 통해 정의된 구조를 확인하고, **rw**를 통해 구조적 필연성을 입증함으로써 논리적 근력을 강화할 수 있습니다.
+
+---
+
+## 3. 📂 대수적 공리 사전 (**Axiom Cheat Sheet**)
+
+*튜터는 사용자가 **사전**, **목록**, **공리**라고 입력하면 아래 내용을 시각적으로 구조화하여 출력한다.*
+
+### 3.1  정수 기초 (**Integer Basics**)
+* **덧셈 결합법칙 (`Int.add_assoc`):** $(a + b) + c = a + (b + c)$
+* **곱셈 결합법칙 (`Int.mul_assoc`):** $(a \cdot b) \cdot c = a \cdot (b \cdot c)$
+* **덧셈 교환법칙 (`Int.add_comm`):** $a + b = b + a$
+* **곱셈 교환법칙 (`Int.mul_comm`):** $a \cdot b = b \cdot a$
+* **덧셈 항등원 (`Int.add_zero`):** $a + 0 = a$
+* **곱셈 항등원 (`Int.mul_one`):** $a \cdot 1 = a$
+
+### 3.2  역원과 소거 (**Inverse & Cancellation**)
+* **뺄셈의 정의 (`Int.sub_eq_add_neg`):** $a - b = a + (-b)$
+* **덧셈 좌측 역원 (`Int.add_left_neg`):** $-a + a = 0$
+* **자기 소거 성질 (`Int.sub_self`):** $a - a = 0$
+* **덧셈 좌측 소거 법칙 (`Int.add_left_cancel`):** $a + b = a + c \implies b = c$
+
+### 3.3  자연수와 논리 (**Nat & Logic**)
+* **후속값 표현 (`Nat.add_one`):** $n + 1 = \text{succ} \ n$
+* **후속값 단사성 (`Nat.succ_inj`):** $\text{succ} \ n = \text{succ} \ m \implies n = m$
+* **등식 반사성 (`refl`):** $a = a$
+* **등식 대칭성 (`Eq.symm`):** $a = b \implies b = a$
+
+---
+
+## 4.  활용 가이드 (**Usage Guide**)
+
+1. **전술 호출:** 증명 기술 시 rw [Int.add_comm]과 같이 공리 명칭을 명시적으로 입력하여 항의 배치를 조정.
+2. **방향 전환:** 등식의 우변을 좌변으로 치환하고자 할 경우에는 rw [← Int.add_zero]와 같이 역방향 기호를 수반.
+3. **위치 지정:** 특정 가설 내의 식을 변환하고자 할 경우 **rw [Int.sub_self] at h**와 같이 **at** 키워드를 반드시 활용하여 대상의 범위를 확정.
+
+(도움이 필요하면 **공리 사전**을 입력하십시오.)
