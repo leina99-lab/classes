@@ -79,6 +79,51 @@ example : Bijective (fun (n : ℤ) => n + 1) := by
   · intro a b h; linarith -- 선형 등식 관계를 파악하여 결론 도출
   · intro b; use b - 1; linarith
 
+
+open Nat
+
+theorem example_injective_fixed : 
+  Function.Injective (fun p : ℕ × ℕ => 2 ^ p.1 * 3 ^ p.2) := by
+  intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ h
+  -- [핵심] 람다 함수 표현식을 값으로 전개한다.
+  dsimp at h 
+  -- 이제 h는 2 ^ i₁ * 3 ^ j₁ = 2 ^ i₂ * 3 ^ j₂ 형태가 됨.
+
+  have h_coprime : ∀ a b : ℕ, Coprime (2 ^ a) (3 ^ b) := by
+    intro a b
+    apply Coprime.pow
+    norm_num
+
+  -- [단계 1] 2^i₁ = 2^i₂ 증명
+  have h_pow2_eq : 2 ^ i₁ = 2 ^ i₂ := by
+    apply dvd_antisymm
+    · -- 2^i₁ ∣ 2^i₂ 증명
+      apply (h_coprime i₁ j₂).dvd_of_dvd_mul_right
+      rw [← h]
+      apply dvd_mul_right
+    · -- 2^i₂ ∣ 2^i₁ 증명
+      apply (h_coprime i₂ j₁).dvd_of_dvd_mul_right
+      rw [h]
+      apply dvd_mul_right
+
+  -- [단계 2] i₁ = i₂ 도출
+  -- Nat 네임스페이스를 명시하거나 open Nat을 확인한다.
+  have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) h_pow2_eq
+
+  -- [단계 3] 3^j₁ = 3^j₂ 증명
+  have h_pow3_eq : 3 ^ j₁ = 3 ^ j₂ := by
+    -- h에서 i₁을 i₂로 치환
+    rw [hi] at h
+    -- Nat.mul_left_cancel 을 사용하여 2^i₂를 제거
+    apply Nat.mul_left_cancel (pow_pos (by norm_num) i₂) h
+
+  -- [단계 4] j₁ = j₂ 도출
+  have hj : j₁ = j₂ := Nat.pow_right_injective (by norm_num) h_pow3_eq
+
+  -- 최종 결과 결합
+  exact congrArg₂ Prod.mk hi hj
+
+
 def fib : Nat -> Nat
   | 0 => 0
   | 1 => 1
