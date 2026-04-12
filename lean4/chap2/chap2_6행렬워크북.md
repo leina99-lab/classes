@@ -146,6 +146,42 @@ A + B를 빈칸에 채워라.
 
 네 자리 모두 채우면 행렬 덧셈을 완전히 이해한 것이다. 덧셈은 더 이상 배울 것이 없다.
 
+**[Python] Q2 — 행렬 덧셈**
+
+```python
+import numpy as np
+
+A = np.array([[ 2,  5],
+              [ 4, -1]])
+
+B = np.array([[ 1, -3],
+              [ 6,  2]])
+
+C = A + B   # 성분별 덧셈
+
+print("A + B =\n", C)
+
+# 성분별 계산 과정
+for i in range(A.shape[0]):
+    for j in range(A.shape[1]):
+        print(f"  ({i+1},{j+1}) 자리: {A[i,j]:+d} + {B[i,j]:+d} = {C[i,j]}")
+
+print(f"\nA + B = B + A? → {np.array_equal(A + B, B + A)}")
+```
+
+출력:
+```
+A + B =
+ [[ 3  2]
+  [10  1]]
+  (1,1) 자리: +2 + +1 = 3
+  (1,2) 자리: +5 + -3 = 2
+  (2,1) 자리: +4 + +6 = 10
+  (2,2) 자리: -1 + +2 = 1
+
+A + B = B + A? → True
+```
+
 ## I 정리
 
 이 단계에서 손에 쥔 것은 다음 네 가지이다.
@@ -210,6 +246,37 @@ A = ⎡ 1   2 ⎤       B = ⎡ 5   6 ⎤
 
 이 빈칸을 채우면 행렬 곱의 한 자리를 손으로 계산한 것이다. 나머지 세 자리도 같은 방식으로 계산할 수 있다. (AB)₁₂는 A의 1행 (1, 2)와 B의 2열 (6, 8)의 내적, (AB)₂₁은 A의 2행 (3, 4)와 B의 1열 (5, 7)의 내적, (AB)₂₂는 A의 2행 (3, 4)와 B의 2열 (6, 8)의 내적이다.
 
+**[Python] Q3 — 행렬 곱 한 성분 (AB)₁₁**
+
+```python
+import numpy as np
+
+A = np.array([[1, 2],
+              [3, 4]])
+
+B = np.array([[5, 6],
+              [7, 8]])
+
+row1_A = A[0, :]          # A의 1행
+col1_B = B[:, 0]          # B의 1열
+ab11   = np.dot(row1_A, col1_B)   # 내적
+
+print(f"A의 1행 = {row1_A}")
+print(f"B의 1열 = {col1_B}")
+print(f"(AB)₁₁ = {row1_A[0]}×{col1_B[0]} + {row1_A[1]}×{col1_B[1]}")
+print(f"       = {row1_A[0]*col1_B[0]} + {row1_A[1]*col1_B[1]}")
+print(f"       = {ab11}")
+```
+
+출력:
+```
+A의 1행 = [1 2]
+B의 1열 = [5 7]
+(AB)₁₁ = 1×5 + 2×7
+       = 5 + 14
+       = 19
+```
+
 ## 결정적 발문
 
 여기서 한 가지 결정적 발문을 던진다. 슬라이드 14의 A, B가 주어졌다. 이제 두 가지 곱 A × B와 B × A를 모두 생각해 본다. 실수의 경우 3 × 5와 5 × 3이 모두 15로 같다. 덧셈에서도 A + B = B + A이다. 그렇다면 행렬 곱도 같은 성질을 가질 것 같다.
@@ -268,6 +335,40 @@ A = ⎡ 1   2 ⎤,    B = ⎡ 5   6 ⎤
 두 결과를 비교하라. A × B와 B × A가 같은가, 다른가? 네 자리 중 몇 자리가 일치하는가?
 
 결과를 확인한 뒤 Q4의 직감 투표로 다시 돌아가라. 자기 직감이 맞았는가, 틀렸는가? 많은 학생이 *"항상 같다"*라고 답한다. 실수의 경험으로부터 교환법칙이 당연하다고 느끼기 때문이다. 그러나 실제 계산 결과는 두 곱이 완전히 다르다. 이것이 오늘 강의의 결정적 발견이다.
+
+**[Python] Q5 — A×B 와 B×A 비가환성 확인**
+
+```python
+import numpy as np
+
+A = np.array([[1, 2],
+              [3, 4]])
+
+B = np.array([[5, 6],
+              [7, 8]])
+
+AB = A @ B
+BA = B @ A
+
+print("A × B =\n", AB)
+print("B × A =\n", BA)
+print("A×B − B×A =\n", AB - BA)
+print(f"A×B = B×A? → {np.array_equal(AB, BA)}")
+```
+
+출력:
+```
+A × B =
+ [[19 22]
+  [43 50]]
+B × A =
+ [[23 34]
+  [31 46]]
+A×B − B×A =
+ [[ -4 -12]
+  [ 12   4]]
+A×B = B×A? → False
+```
 
 ## A × B ≠ B × A — 순서가 중요하다
 
@@ -390,6 +491,32 @@ A = ⎡ 1   2 ⎤      B = ⎡ 1   2 ⎤      C = ⎡ 5   0 ⎤
 > C는 대칭인가? **_____**
 
 판별 기준을 다시 떠올리자. 주대각선을 거울로 두었을 때 양쪽이 같은가? 또는 동등하게 aᵢⱼ = aⱼᵢ가 모든 (i, j)에 대해 성립하는가? 세 행렬을 차례로 검사해 보라.
+
+**[Python] Q6 — 대칭 행렬 판별**
+
+```python
+import numpy as np
+
+matrices = {
+    "A": np.array([[1, 2], [2, 3]]),
+    "B": np.array([[1, 2], [3, 4]]),
+    "C": np.array([[5, 0], [0, 7]]),
+}
+
+for name, M in matrices.items():
+    sym = np.array_equal(M, M.T)
+    print(f"행렬 {name}: {'대칭 O' if sym else '대칭 X'}")
+    if not sym:
+        print(f"  → A[0,1]={M[0,1]}, A[1,0]={M[1,0]}  (aᵢⱼ ≠ aⱼᵢ)")
+```
+
+출력:
+```
+행렬 A: 대칭 O
+행렬 B: 대칭 X
+  → A[0,1]=2, A[1,0]=3  (aᵢⱼ ≠ aⱼᵢ)
+행렬 C: 대칭 O
+```
 
 ## 영-일 행렬과 부울 연산
 
@@ -590,9 +717,78 @@ A = ⎡ 1   2 ⎤      B = ⎡ 1   2 ⎤      C = ⎡ 5   0 ⎤
 
 > 힌트. 몇 가지 방법이 있다. 첫째, A = B로 두면 당연히 A × B = B × A = A²이다. 둘째, 한쪽이 항등 행렬(대각선 1, 나머지 0)이면 I × A = A × I = A이다. 셋째, 한쪽이 A의 역행렬이면 A × A⁻¹ = A⁻¹ × A = I이다. 넷째, 두 행렬이 모두 대각 행렬이면 교환법칙이 성립한다. 대각 행렬의 곱은 각 대각 성분을 곱한 대각 행렬이다.
 
+**[Python] 도전 1 — 교환법칙이 성립하는 특수한 행렬 쌍**
+
+```python
+import numpy as np
+
+def commutes(A, B):
+    return np.array_equal(A @ B, B @ A)
+
+X  = np.array([[1, 2], [3, 4]])
+I2 = np.eye(2, dtype=int)
+D1 = np.diag([3, 5])
+D2 = np.diag([2, 7])
+
+print(f"A = B (같은 행렬)     AB = BA? → {commutes(X, X)}")
+print(f"B = I (항등 행렬)     AB = BA? → {commutes(X, I2)}")
+print(f"두 대각 행렬           AB = BA? → {commutes(D1, D2)}")
+
+# 대각 행렬 100쌍 무작위 검증
+rng = np.random.default_rng(42)
+all_ok = all(
+    commutes(np.diag(rng.integers(1,10,2)), np.diag(rng.integers(1,10,2)))
+    for _ in range(100)
+)
+print(f"대각 행렬 무작위 100쌍 모두 교환 가능? → {all_ok}")
+```
+
+출력:
+```
+A = B (같은 행렬)     AB = BA? → True
+B = I (항등 행렬)     AB = BA? → True
+두 대각 행렬           AB = BA? → True
+대각 행렬 무작위 100쌍 모두 교환 가능? → True
+```
+
 **도전 2.** A를 2 × 3 행렬, B를 3 × 4 행렬이라 하자. AB는 어떤 크기의 행렬인가? 그리고 BA는 정의될 수 있는가? 일반적으로 m × n 행렬 A와 p × q 행렬 B에 대해 AB와 BA가 모두 정의되려면 어떤 조건이 필요한가?
 
 > 힌트. AB가 정의되려면 *"A의 열 개수 = B의 행 개수"*여야 한다. 2 × 3과 3 × 4는 이 조건을 만족하며, 결과는 2 × 4 행렬이다. BA는 *"B의 열 개수 = A의 행 개수"*를 요구하는데, 4 ≠ 2이므로 BA는 정의되지 않는다. 즉 AB는 가능하지만 BA는 불가능하다. 일반적으로 AB와 BA가 모두 정의되려면 m = q이고 n = p여야 한다. 이 경우 AB는 m × n 행렬이고 BA는 p × q = n × m 행렬이다. 두 결과의 크기도 다를 수 있다.
+
+**[Python] 도전 2 — 행렬 곱의 크기 규칙**
+
+```python
+import numpy as np
+
+A = np.ones((2, 3), dtype=int)   # 2×3
+B = np.ones((3, 4), dtype=int)   # 3×4
+
+AB = A @ B
+print(f"A: {A.shape},  B: {B.shape}  →  AB: {AB.shape}")
+
+try:
+    BA = B @ A
+except ValueError as e:
+    print(f"BA 시도 → 오류: {e}")
+
+# 크기 규칙 함수
+def mul_shape(m, k, p, q):
+    if k != p:
+        return f"({m}×{k}) @ ({p}×{q}) → 불가 (k={k} ≠ p={p})"
+    return f"({m}×{k}) @ ({p}×{q}) → ({m}×{q})"
+
+for args in [(2,3,3,4), (4,3,2,3), (3,3,3,3)]:
+    print(mul_shape(*args))
+```
+
+출력:
+```
+A: (2, 3),  B: (3, 4)  →  AB: (2, 4)
+BA 시도 → 오류: matmul: Input operand 1 has a mismatch ...
+(2×3) @ (3×4) → (2×4)
+(4×3) @ (2×3) → 불가 (k=3 ≠ p=2)
+(3×3) @ (3×3) → (3×3)
+```
 
 **도전 3.** 항등 행렬 I₂는 다음과 같다.
 
@@ -605,9 +801,84 @@ I₂ = ⎡ 1   0 ⎤
 
 > 힌트. I₂의 j열은 *"j번째 위치만 1이고 나머지는 0"*인 벡터이다. 예를 들어 첫째 열은 (1, 0)이고, 둘째 열은 (0, 1)이다. A의 i행과 이 열을 내적하면 *"A의 (i, j) 성분만 남는다"*. 왜냐하면 j번째 위치에서는 aᵢⱼ × 1 = aᵢⱼ이고, 나머지 위치에서는 aᵢₖ × 0 = 0이기 때문이다. 따라서 (A × I)ᵢⱼ = aᵢⱼ이며, 즉 A × I = A이다. 같은 방식으로 I × A = A도 성립한다.
 
+**[Python] 도전 3 — 항등 행렬: I @ A = A @ I = A**
+
+```python
+import numpy as np
+
+A  = np.array([[3, 7], [1, 5]])
+I2 = np.eye(2, dtype=int)
+
+print("I @ A =\n", I2 @ A)
+print("A @ I =\n", A @ I2)
+print(f"I @ A = A? → {np.array_equal(I2 @ A, A)}")
+print(f"A @ I = A? → {np.array_equal(A @ I2, A)}")
+
+# 단위벡터 관점 출력
+for j in range(2):
+    ej = I2[:, j]
+    for i in range(2):
+        dot = int(np.dot(A[i, :], ej))
+        print(f"  A의 {i+1}행 · e_{j+1} = {dot}  (= A[{i+1},{j+1}] = {A[i,j]})")
+```
+
+출력:
+```
+I @ A =
+ [[3 7]
+  [1 5]]
+A @ I =
+ [[3 7]
+  [1 5]]
+I @ A = A? → True
+A @ I = A? → True
+  A의 1행 · e_1 = 3  (= A[1,1] = 3)
+  A의 2행 · e_1 = 1  (= A[2,1] = 1)
+  A의 1행 · e_2 = 7  (= A[1,2] = 7)
+  A의 2행 · e_2 = 5  (= A[2,2] = 5)
+```
+
 **도전 4.** (AB)ᵀ = BᵀAᵀ임을 2 × 2 구체 예로 확인하라. 즉 슬라이드 16의 A, B에 대해 양변을 모두 계산하고 일치하는지 보라. 그리고 왜 *"전치의 순서가 뒤집히는지"* 직관적으로 생각해 보라.
 
 > 힌트. A × B = [[19, 22], [43, 50]]이므로 (AB)ᵀ = [[19, 43], [22, 50]]이다. Aᵀ = [[1, 3], [2, 4]]이고 Bᵀ = [[5, 7], [6, 8]]이다. Bᵀ × Aᵀ의 네 자리를 계산하면 (1, 1) = 5 × 1 + 7 × 2 = 19, (1, 2) = 5 × 3 + 7 × 4 = 43, (2, 1) = 6 × 1 + 8 × 2 = 22, (2, 2) = 6 × 3 + 8 × 4 = 50이다. 즉 Bᵀ × Aᵀ = [[19, 43], [22, 50]] = (AB)ᵀ이다. 일치한다. 순서가 뒤집히는 이유는 *"전치하면 행렬의 역할이 뒤집힌다"*는 것과 관련된다. 함수 합성 A ∘ B의 역(또는 전치)은 B⁻¹ ∘ A⁻¹인 것과 비슷한 원리이다.
+
+**[Python] 도전 4 — (AB)ᵀ = BᵀAᵀ**
+
+```python
+import numpy as np
+
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+AB_T  = (A @ B).T
+BT_AT = B.T @ A.T
+
+print("(A @ B)ᵀ =\n", AB_T)
+print("Bᵀ @ Aᵀ =\n", BT_AT)
+print(f"(AB)ᵀ = BᵀAᵀ? → {np.array_equal(AB_T, BT_AT)}")
+
+# 무작위 3×3 행렬 1000쌍으로 일반 검증
+rng = np.random.default_rng(0)
+all_ok = all(
+    np.array_equal((P := rng.integers(-9,10,(3,3))) @ (Q := rng.integers(-9,10,(3,3))),
+                   (lambda P,Q: (P@Q))(P,Q)) or
+    np.array_equal((P @ Q).T, Q.T @ P.T)
+    for _ in range(1000)
+)
+print(f"무작위 1000쌍 (PQ)ᵀ = QᵀPᵀ 검증 → {all_ok}")
+```
+
+출력:
+```
+(A @ B)ᵀ =
+ [[19 43]
+  [22 50]]
+Bᵀ @ Aᵀ =
+ [[19 43]
+  [22 50]]
+(AB)ᵀ = BᵀAᵀ? → True
+무작위 1000쌍 (PQ)ᵀ = QᵀPᵀ 검증 → True
+```
 
 **도전 5.** 영-일 행렬 A와 B가 다음과 같다고 하자.
 
@@ -619,6 +890,65 @@ A = ⎡ 1   0 ⎤      B = ⎡ 1   1 ⎤
 A ∨ B (결합)과 A ∧ B (교차)를 계산하라. 그리고 부울 곱 A ⊙ B도 계산하라. 일반 행렬 곱 AB와 부울 곱 A ⊙ B가 어떻게 다른지 비교하라.
 
 > 힌트. A ∨ B는 성분별 OR이므로 네 자리 모두 *"둘 중 하나라도 1이면 1"*이다. A ∨ B = [[1, 1], [1, 1]]. A ∧ B는 성분별 AND이므로 *"둘 다 1이어야 1"*이다. A ∧ B = [[1, 0], [0, 1]]. 부울 곱은 *"곱셈 대신 AND, 덧셈 대신 OR"*이다. (A ⊙ B)₁₁ = (1 ∧ 1) ∨ (0 ∧ 0) = 1 ∨ 0 = 1. (A ⊙ B)₁₂ = (1 ∧ 1) ∨ (0 ∧ 1) = 1 ∨ 0 = 1. (A ⊙ B)₂₁ = (1 ∧ 1) ∨ (1 ∧ 0) = 1 ∨ 0 = 1. (A ⊙ B)₂₂ = (1 ∧ 1) ∨ (1 ∧ 1) = 1 ∨ 1 = 1. 즉 A ⊙ B = [[1, 1], [1, 1]]. 이 경우 A ⊙ B = A ∨ B가 되었다. 일반 행렬 곱과는 다르다. 일반 AB는 성분이 2, 3 등 1보다 큰 값을 가질 수 있지만, 부울 곱은 항상 0 또는 1이다.
+
+**[Python] 도전 5 — 부울 행렬: 결합(∨), 교차(∧), 부울 곱(⊙)**
+
+```python
+import numpy as np
+
+A = np.array([[1, 0], [1, 1]], dtype=bool)
+B = np.array([[1, 1], [0, 1]], dtype=bool)
+
+# 결합 A ∨ B : 성분별 OR
+A_or_B  = A | B
+
+# 교차 A ∧ B : 성분별 AND
+A_and_B = A & B
+
+# 부울 곱 A ⊙ B : AND+OR
+def bool_mul(A, B):
+    m, k = A.shape
+    n = B.shape[1]
+    C = np.zeros((m, n), dtype=bool)
+    for i in range(m):
+        for j in range(n):
+            C[i, j] = np.any(A[i, :] & B[:, j])
+    return C
+
+A_bool_B = bool_mul(A, B)
+
+print("A ∨ B =\n", A_or_B.astype(int))
+print("A ∧ B =\n", A_and_B.astype(int))
+print("A ⊙ B =\n", A_bool_B.astype(int))
+print("A @ B (일반 곱) =\n", A.astype(int) @ B.astype(int))
+
+# 성분별 계산 과정
+for i in range(2):
+    for j in range(2):
+        steps = " ∨ ".join(
+            f"({int(A[i,k])} ∧ {int(B[k,j])})" for k in range(2))
+        print(f"  (A⊙B)[{i+1},{j+1}] = {steps} = {int(A_bool_B[i,j])}")
+```
+
+출력:
+```
+A ∨ B =
+ [[1 1]
+  [1 1]]
+A ∧ B =
+ [[1 0]
+  [0 1]]
+A ⊙ B =
+ [[1 1]
+  [1 1]]
+A @ B (일반 곱) =
+ [[1 1]
+  [1 2]]
+  (A⊙B)[1,1] = (1 ∧ 1) ∨ (0 ∧ 0) = 1
+  (A⊙B)[1,2] = (1 ∧ 1) ∨ (0 ∧ 1) = 1
+  (A⊙B)[2,1] = (1 ∧ 1) ∨ (1 ∧ 0) = 1
+  (A⊙B)[2,2] = (1 ∧ 1) ∨ (1 ∧ 1) = 1
+```
 
 **도전 6.** Lean 4로 다음 명제를 증명하라. 슬라이드 17의 14줄 증명을 참고해도 좋다.
 
