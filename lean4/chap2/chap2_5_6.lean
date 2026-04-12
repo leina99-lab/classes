@@ -23,6 +23,61 @@ example : Function.Bijective (fun n : Int => n + 1) := by
     simp
 -- constructor가 Bijective = Injective ∧ Surjective를
 -- 두 개의 하위 목표로 분리한다.
+pen Function
+
+-- 1. 전사함수(Surjective) 증명
+example : Surjective (fun (n : ℤ) => n + 1) := by
+  intro b
+  use b - 1
+  dsimp
+  -- 현재 상태: b - 1 + 1 = b
+  rw [Int.sub_eq_add_neg]
+  -- 상태: b + -1 + 1 = b (Lean은 이를 (b + -1) + 1 로 인식)
+  rw [Int.add_assoc] 
+  -- 상태: b + (-1 + 1) = b
+  rw [Int.add_left_neg]
+  -- 상태: b + 0 = b
+  rw [Int.add_zero]
+
+-- 2. 단사함수(Injective) 증명
+example : Injective (fun (n : ℤ) => n + 1) := by
+  intro a1 a2 h
+  dsimp at h
+  -- h: a1 + 1 = a2 + 1
+  have h_sub : (a1 + 1) - 1 = (a2 + 1) - 1 := by
+    rw [h]
+  
+  -- repeat를 붙여서 좌변과 우변의 패턴을 모두 찾아 소거합니다.
+  repeat rw [Int.add_sub_assoc] at h_sub
+  repeat rw [Int.sub_self] at h_sub
+  repeat rw [Int.add_zero] at h_sub
+  
+  -- 이제 h_sub는 정확히 a1 = a2 가 됩니다.
+  exact h_sub
+
+example : Function.Surjective (fun n : Int => n + 1) := by
+  intro b
+  use b - 1
+  simp 
+
+example : Function.Surjective (fun n : Int => n + 1) := by
+  intro b
+  use b - 1
+  -- (fun n => n + 1) (b - 1)을 계산 가능한 형태로 전개합니다.
+  dsimp
+  -- 1. 뺄셈을 가법 역원의 덧셈으로 변환합니다.
+  rw [Int.sub_eq_add_neg]
+  -- 2. 덧셈의 결합법칙을 사용하여 상수항을 묶습니다.
+  rw [Int.add_assoc]
+  -- 3. 가법 역원의 성질 (-1 + 1 = 0)을 적용합니다.
+  rw [Int.add_left_neg]
+  -- 4. 가법 항등원의 성질 (b + 0 = b)로 증명을 마칩니다.
+  rw [Int.add_zero]
+
+example : Bijective (fun (n : ℤ) => n + 1) := by
+  constructor
+  · intro a b h; linarith -- 선형 등식 관계를 파악하여 결론 도출
+  · intro b; use b - 1; linarith
 
 def fib : Nat -> Nat
   | 0 => 0
