@@ -590,6 +590,1768 @@ n호의 옛 손님을 (n+1)호로 옮긴다. 1호 방이 정확히 한 개 비�
 
 > 힌트. 이것이 *"연속체 가설"*이다. 1900년 힐베르트가 23개의 미해결 문제 중 첫 번째로 제시한 것이다. 답은 충격적이다. *"답을 결정할 수 없다"*. 코헨이 1963년에 보였다. 표준 집합론(ZFC)으로는 *"중간 크기가 있다"*도 *"없다"*도 증명할 수 없다. 두 가지 다른 집합론이 모두 일관성이 있다. 이것은 본 강의의 범위를 넘는 깊은 결과이지만, 칸토어가 시작한 작업이 어디까지 갔는지 보여 준다.
 
+# Lean 4 형식 증명 — 단원별 도전 문제집
+
+Rosen 8판 §2.3 함수 + §2.4 수열과 합 + §2.6 행렬
+
+---
+
+## 이 문제집의 사용법
+
+각 단원의 도전 문제는 난이도 순으로 배열되었다. 1~3번은 본문 내용을 직접 응용하는 기초 문제이고, 4~7번은 응용·변형 문제이며, 8~10번은 심화 문제이다. `sorry`를 채우는 방식으로 접근하되, 완성 후에는 반드시 Lean 4 서버에서 오류 없이 컴파일됨을 확인한다.
+
+---
+
+# 단원 1 — 전사함수(Surjective)
+
+## 개념 복습
+
+전사함수의 정의: `∀ b, ∃ a, f a = b`
+
+증명의 표준 호흡: `intro b` → `use (증인)` → `omega` 또는 `ring` 또는 `simp`
+
+---
+
+**도전 1.** `f(n) = n + 3`이 ℤ → ℤ에서 전사임을 증명하라.
+
+```lean4
+example : Function.Surjective (fun n : Int => n + 3) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Surjective (fun n : Int => n + 3) := by
+  intro b
+  use b - 3
+  omega
+```
+
+증인은 `b - 3`이다. `(b - 3) + 3 = b`가 성립하므로 `omega`가 닫는다.
+
+</details>
+
+---
+
+**도전 2.** `f(n) = n - 7`이 ℤ → ℤ에서 전사임을 증명하라.
+
+```lean4
+example : Function.Surjective (fun n : Int => n - 7) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Surjective (fun n : Int => n - 7) := by
+  intro b
+  use b + 7
+  omega
+```
+
+</details>
+
+---
+
+**도전 3.** `f(n) = 2n`이 ℤ → ℤ에서 **전사가 아님**을 증명하라.
+
+```lean4
+example : ¬ Function.Surjective (fun n : Int => 2 * n) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ Function.Surjective (fun n : Int => 2 * n) := by
+  intro h
+  obtain ⟨a, ha⟩ := h 1
+  omega
+```
+
+홀수 1의 원상이 없음을 보인다. `h 1`은 `∃ a, 2 * a = 1`을 주고, 이는 정수에서 모순이다.
+
+</details>
+
+---
+
+**도전 4.** `f(n) = 3n + 1`이 ℤ → ℤ에서 전사임을 증명하라.
+
+```lean4
+example : Function.Surjective (fun n : Int => 3 * n + 1) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Surjective (fun n : Int => 3 * n + 1) := by
+  intro b
+  use (b - 1) / 3
+  omega
+```
+
+</details>
+
+---
+
+**도전 5.** `f(n, m) = n + m`이 ℤ × ℤ → ℤ에서 전사임을 증명하라.
+
+```lean4
+example : Function.Surjective (fun p : Int × Int => p.1 + p.2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Surjective (fun p : Int × Int => p.1 + p.2) := by
+  intro b
+  use (b, 0)
+  simp
+```
+
+증인은 쌍 `(b, 0)`이다. `b + 0 = b`이므로 `simp`가 닫는다.
+
+</details>
+
+---
+
+**도전 6.** `f(n) = n % 2`가 ℕ → ℕ에서 전사가 **아님**을 증명하라. (치역이 {0, 1}뿐임을 이용)
+
+```lean4
+example : ¬ Function.Surjective (fun n : Nat => n % 2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ Function.Surjective (fun n : Nat => n % 2) := by
+  intro h
+  obtain ⟨a, ha⟩ := h 2
+  omega
+```
+
+2는 `n % 2`의 치역에 속하지 않는다.
+
+</details>
+
+---
+
+**도전 7.** 항등함수 `id`가 임의의 타입 α에서 전사임을 증명하라.
+
+```lean4
+example {α : Type*} : Function.Surjective (id : α → α) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} : Function.Surjective (id : α → α) := by
+  intro b
+  use b
+  rfl
+```
+
+임의의 `b`에 대해 증인은 `b` 자신이다. `id b = b`이므로 `rfl`로 닫는다.
+
+</details>
+
+---
+
+**도전 8.** 두 전사함수의 합성이 전사임을 증명하라.
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Surjective f) (hg : Function.Surjective g) :
+    Function.Surjective (g ∘ f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Surjective f) (hg : Function.Surjective g) :
+    Function.Surjective (g ∘ f) := by
+  intro c
+  obtain ⟨b, hb⟩ := hg c
+  obtain ⟨a, ha⟩ := hf b
+  use a
+  simp [Function.comp, ha, hb]
+```
+
+`g`가 전사이므로 `c`의 원상 `b`가 존재하고, `f`가 전사이므로 `b`의 원상 `a`가 존재한다.
+
+</details>
+
+---
+
+**도전 9.** `f : α → β`가 전사이고 `g ∘ f`가 전사이면 `g`도 전사임을 증명하라.
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Surjective f)
+    (hgf : Function.Surjective (g ∘ f)) :
+    Function.Surjective g := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Surjective f)
+    (hgf : Function.Surjective (g ∘ f)) :
+    Function.Surjective g := by
+  intro c
+  obtain ⟨a, ha⟩ := hgf c
+  use f a
+  exact ha
+```
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) 언어 모델의 토크나이저를 전사함수 관점으로 추상화하라. 토큰 집합 T에서 정수 집합 ℕ으로 가는 함수 `tok`이 전사가 아님을 증명하라. (치역이 유한집합임을 이용)
+
+```lean4
+-- 힌트: 어휘 크기 V = 50257 (GPT-2 기준)
+-- V 이상의 정수는 어떤 토큰의 인덱스도 아님을 보인다.
+example (V : Nat) (tok : Fin V → Nat) :
+    ¬ Function.Surjective tok := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example (V : Nat) (tok : Fin V → Nat) :
+    ¬ Function.Surjective tok := by
+  intro h
+  obtain ⟨⟨i, hi⟩, htok⟩ := h (V * V + 1)
+  -- tok의 치역은 Fin V의 상이므로 유한 → 모순을 omega로
+  omega
+```
+
+`Fin V`의 원소는 유한하므로 충분히 큰 자연수의 원상이 없다.
+
+</details>
+
+---
+
+# 단원 2 — 단사함수(Injective)
+
+## 개념 복습
+
+단사함수의 정의: `∀ a b, f a = f b → a = b`
+
+증명의 표준 호흡: `intro a b h` → (h를 변형) → `omega` 또는 `exact`
+
+---
+
+**도전 1.** `f(n) = n + 5`가 ℤ → ℤ에서 단사임을 증명하라.
+
+```lean4
+example : Function.Injective (fun n : Int => n + 5) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun n : Int => n + 5) := by
+  intro a b h
+  omega
+```
+
+</details>
+
+---
+
+**도전 2.** `f(n) = 3n`이 ℤ → ℤ에서 단사임을 증명하라.
+
+```lean4
+example : Function.Injective (fun n : Int => 3 * n) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun n : Int => 3 * n) := by
+  intro a b h
+  omega
+```
+
+`3a = 3b → a = b`를 `omega`가 처리한다.
+
+</details>
+
+---
+
+**도전 3.** `f(n) = n²`이 ℤ → ℤ에서 **단사가 아님**을 증명하라.
+
+```lean4
+example : ¬ Function.Injective (fun n : Int => n ^ 2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ Function.Injective (fun n : Int => n ^ 2) := by
+  intro h
+  have : (1 : Int) = -1 := h (by norm_num)
+  norm_num at this
+```
+
+`f(1) = f(-1) = 1`이지만 `1 ≠ -1`이므로 단사가 아니다.
+
+</details>
+
+---
+
+**도전 4.** `f(n) = 2n + 7`이 ℤ → ℤ에서 단사임을 증명하라.
+
+```lean4
+example : Function.Injective (fun n : Int => 2 * n + 7) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun n : Int => 2 * n + 7) := by
+  intro a b h
+  omega
+```
+
+</details>
+
+---
+
+**도전 5.** 자연수에서 `f(n) = 2n`이 단사임을 증명하라.
+
+```lean4
+example : Function.Injective (fun n : Nat => 2 * n) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun n : Nat => 2 * n) := by
+  intro a b h
+  omega
+```
+
+</details>
+
+---
+
+**도전 6.** 쌍 함수 `f(n, m) = (n + m, n - m)`이 ℤ × ℤ → ℤ × ℤ에서 단사임을 증명하라.
+
+```lean4
+example : Function.Injective (fun p : Int × Int => (p.1 + p.2, p.1 - p.2)) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun p : Int × Int => (p.1 + p.2, p.1 - p.2)) := by
+  intro ⟨a1, b1⟩ ⟨a2, b2⟩ h
+  simp only [Prod.mk.injEq] at h
+  obtain ⟨h1, h2⟩ := h
+  constructor <;> omega
+```
+
+`a1 + b1 = a2 + b2`이고 `a1 - b1 = a2 - b2`이면 `a1 = a2`이고 `b1 = b2`이다.
+
+</details>
+
+---
+
+**도전 7.** 두 단사함수의 합성이 단사임을 증명하라.
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Injective f) (hg : Function.Injective g) :
+    Function.Injective (g ∘ f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Injective f) (hg : Function.Injective g) :
+    Function.Injective (g ∘ f) := by
+  intro a b h
+  apply hf
+  apply hg
+  exact h
+```
+
+`g(f(a)) = g(f(b))` → `f(a) = f(b)` (g 단사) → `a = b` (f 단사).
+
+</details>
+
+---
+
+**도전 8.** `g ∘ f`가 단사이면 `f`가 단사임을 증명하라.
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (h : Function.Injective (g ∘ f)) :
+    Function.Injective f := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (h : Function.Injective (g ∘ f)) :
+    Function.Injective f := by
+  intro a b hfab
+  apply h
+  simp [Function.comp, hfab]
+```
+
+`f(a) = f(b)` → `g(f(a)) = g(f(b))` → `a = b` (`g ∘ f` 단사).
+
+</details>
+
+---
+
+**도전 9.** `f(n) = n^3`이 ℤ → ℤ에서 단사임을 증명하라. (`nlinarith` 또는 `Int.pow_left_strictMono` 이용)
+
+```lean4
+example : Function.Injective (fun n : Int => n ^ 3) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Injective (fun n : Int => n ^ 3) := by
+  intro a b h
+  nlinarith [sq_nonneg (a - b), sq_nonneg (a + b), sq_nonneg a, sq_nonneg b]
+```
+
+`a^3 = b^3`이면 `(a-b)(a^2+ab+b^2) = 0`이고 `a^2+ab+b^2 > 0`이므로 `a = b`.
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) RAG(Retrieval-Augmented Generation)에서 문서 임베딩 함수를 단사로 모델링한다. 두 문서가 같은 임베딩 벡터를 가지면 동일 문서임을 가정할 때, 이를 Lean 4의 단사 조건으로 표현하라.
+
+```lean4
+-- Document : Type, Embedding : Type (벡터 공간 추상화)
+-- embed : Document → Embedding 이 단사이면,
+-- embed d1 = embed d2 → d1 = d2
+-- 즉 충돌(collision)이 없다.
+example {Document Embedding : Type*}
+    (embed : Document → Embedding)
+    (h_inj : Function.Injective embed)
+    (d1 d2 : Document)
+    (h : embed d1 = embed d2) :
+    d1 = d2 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {Document Embedding : Type*}
+    (embed : Document → Embedding)
+    (h_inj : Function.Injective embed)
+    (d1 d2 : Document)
+    (h : embed d1 = embed d2) :
+    d1 = d2 := by
+  exact h_inj h
+```
+
+단사의 정의를 직접 적용한다.
+
+</details>
+
+---
+
+# 단원 3 — 전단사함수(Bijective)
+
+## 개념 복습
+
+`Bijective f = Injective f ∧ Surjective f`
+
+증명의 표준 호흡: `constructor` → (단사 증명) → (전사 증명)
+
+---
+
+**도전 1.** `f(n) = n + 10`이 ℤ → ℤ에서 전단사임을 증명하라.
+
+```lean4
+example : Function.Bijective (fun n : Int => n + 10) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Bijective (fun n : Int => n + 10) := by
+  constructor
+  · intro a b h; omega
+  · intro b; use b - 10; omega
+```
+
+</details>
+
+---
+
+**도전 2.** `f(n) = -n`이 ℤ → ℤ에서 전단사임을 증명하라.
+
+```lean4
+example : Function.Bijective (fun n : Int => -n) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Bijective (fun n : Int => -n) := by
+  constructor
+  · intro a b h; omega
+  · intro b; use -b; omega
+```
+
+</details>
+
+---
+
+**도전 3.** `f(n) = 5n - 3`이 ℤ → ℤ에서 전단사임을 증명하라.
+
+```lean4
+example : Function.Bijective (fun n : Int => 5 * n - 3) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Bijective (fun n : Int => 5 * n - 3) := by
+  constructor
+  · intro a b h; omega
+  · intro b; use (b + 3) / 5; omega
+```
+
+</details>
+
+---
+
+**도전 4.** 항등함수 `id`가 임의의 타입에서 전단사임을 증명하라.
+
+```lean4
+example {α : Type*} : Function.Bijective (id : α → α) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} : Function.Bijective (id : α → α) := by
+  exact ⟨fun a b h => h, fun b => ⟨b, rfl⟩⟩
+```
+
+단사: `id a = id b → a = b`는 자명. 전사: 증인은 `b` 자신.
+
+</details>
+
+---
+
+**도전 5.** 전단사함수의 역함수도 전단사임을 증명하라.
+
+```lean4
+example {α β : Type*} (f : α → β) (hf : Function.Bijective f) :
+    Function.Bijective (Function.invFun f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β : Type*} (f : α → β) (hf : Function.Bijective f) :
+    Function.Bijective (Function.invFun f) := by
+  exact hf.surjective.hasRightInverse.injective.bijective_of_surjective
+    hf.injective.hasLeftInverse.surjective
+```
+
+또는 `Function.Bijective.invFun_bijective hf`를 사용한다.
+
+</details>
+
+---
+
+**도전 6.** 두 전단사함수의 합성이 전단사임을 증명하라.
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Bijective f) (hg : Function.Bijective g) :
+    Function.Bijective (g ∘ f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α β γ : Type*} (f : α → β) (g : β → γ)
+    (hf : Function.Bijective f) (hg : Function.Bijective g) :
+    Function.Bijective (g ∘ f) := by
+  exact hg.comp hf
+```
+
+Mathlib에 이미 정의된 `Bijective.comp`를 사용한다.
+
+</details>
+
+---
+
+**도전 7.** `f(n) = n + 1`의 역함수가 `g(n) = n - 1`임을 증명하라.
+
+```lean4
+example : Function.LeftInverse (fun n : Int => n - 1) (fun n : Int => n + 1) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.LeftInverse (fun n : Int => n - 1) (fun n : Int => n + 1) := by
+  intro n
+  omega
+```
+
+`(n + 1) - 1 = n`임을 보인다.
+
+</details>
+
+---
+
+**도전 8.** Fin 2와 Bool 사이에 전단사함수가 존재함을 증명하라.
+
+```lean4
+def fin2ToBool : Fin 2 → Bool
+  | ⟨0, _⟩ => false
+  | ⟨1, _⟩ => true
+  | ⟨n+2, h⟩ => absurd h (by omega)
+
+example : Function.Bijective fin2ToBool := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Bijective fin2ToBool := by
+  constructor
+  · intro ⟨a, ha⟩ ⟨b, hb⟩ h
+    fin_cases a <;> fin_cases b <;> simp_all [fin2ToBool]
+  · intro b
+    cases b
+    · exact ⟨⟨0, by omega⟩, rfl⟩
+    · exact ⟨⟨1, by omega⟩, rfl⟩
+```
+
+</details>
+
+---
+
+**도전 9.** `f(n) = 2n`이 ℕ → 짝수 집합에서 전단사임을 증명하라. (치역을 `{n : ℕ | ∃ k, n = 2 * k}`로 정의)
+
+```lean4
+example : Function.Bijective (fun n : Nat => ⟨2 * n, n, rfl⟩ :
+    Nat → {m : Nat // ∃ k, m = 2 * k}) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Function.Bijective (fun n : Nat => (⟨2 * n, n, rfl⟩ :
+    {m : Nat // ∃ k, m = 2 * k})) := by
+  constructor
+  · intro a b h
+    simp [Subtype.mk.injEq] at h
+    omega
+  · intro ⟨m, k, hk⟩
+    use k
+    simp [hk]
+```
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) 언어 모델의 어휘 사전에서 토큰(Token)과 정수 인덱스(Index) 사이의 전단사함수를 추상화하라. 어휘 크기가 V인 유한 어휘에서 전단사가 존재함을 `Fin V`를 이용해 표현하라.
+
+```lean4
+-- 어휘 크기 V인 언어 모델의 토크나이저는
+-- Token ↔ Fin V 사이의 전단사이다.
+-- 이것이 성립하면 Token과 Fin V는 같은 크기이다.
+example (V : Nat) (Token : Type*)
+    (encode : Token → Fin V)
+    (h_bij : Function.Bijective encode) :
+    Function.Surjective encode := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example (V : Nat) (Token : Type*)
+    (encode : Token → Fin V)
+    (h_bij : Function.Bijective encode) :
+    Function.Surjective encode := by
+  exact h_bij.surjective
+```
+
+전단사이면 전사이다. `Bijective.surjective`를 직접 사용한다.
+
+</details>
+
+---
+
+# 단원 4 — 피보나치 수열
+
+## 개념 복습
+
+```lean4
+def fib : Nat → Nat
+  | 0     => 0
+  | 1     => 1
+  | n + 2 => fib (n + 1) + fib n
+```
+
+---
+
+**도전 1.** `fib 5 = 5`를 `decide` 또는 `native_decide`로 증명하라.
+
+```lean4
+example : fib 5 = 5 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : fib 5 = 5 := by
+  native_decide
+```
+
+`native_decide`는 컴파일하여 실행하므로 큰 수에도 빠르다.
+
+</details>
+
+---
+
+**도전 2.** `fib 10 = 55`를 증명하라.
+
+```lean4
+example : fib 10 = 55 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : fib 10 = 55 := by
+  native_decide
+```
+
+</details>
+
+---
+
+**도전 3.** `fib 0 = 0`과 `fib 1 = 1`을 각각 `rfl`로 증명하라.
+
+```lean4
+example : fib 0 = 0 := by sorry
+example : fib 1 = 1 := by sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : fib 0 = 0 := rfl
+example : fib 1 = 1 := rfl
+```
+
+정의에 의해 자명하다.
+
+</details>
+
+---
+
+**도전 4.** `fib n ≤ fib (n + 1)`이 모든 자연수 n에 대해 성립함을 귀납법으로 증명하라.
+
+```lean4
+theorem fib_le_fib_succ : ∀ n : Nat, fib n ≤ fib (n + 1) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem fib_le_fib_succ : ∀ n : Nat, fib n ≤ fib (n + 1) := by
+  intro n
+  induction n with
+  | zero => simp [fib]
+  | succ n ih =>
+    simp [fib]
+    omega
+```
+
+</details>
+
+---
+
+**도전 5.** 트리보나치 수열을 Lean 4로 정의하라. (초기값 0, 0, 1이고, 이후 항은 이전 세 항의 합)
+
+```lean4
+def trib : Nat → Nat
+  | 0 => sorry
+  | 1 => sorry
+  | 2 => sorry
+  | n + 3 => sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+def trib : Nat → Nat
+  | 0 => 0
+  | 1 => 0
+  | 2 => 1
+  | n + 3 => trib (n + 2) + trib (n + 1) + trib n
+```
+
+기저 사례가 세 개 필요하다. k-차 점화 관계는 k개의 기저 사례를 요구한다.
+
+</details>
+
+---
+
+**도전 6.** 등차수열 `arith n = 2 * n + 1` (즉 1, 3, 5, 7, ...)을 점화 관계로 정의하라.
+
+```lean4
+def arith : Nat → Nat
+  | 0     => sorry
+  | n + 1 => sorry
+
+example : arith 4 = 9 := by sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+def arith : Nat → Nat
+  | 0     => 1
+  | n + 1 => arith n + 2
+
+example : arith 4 = 9 := by native_decide
+```
+
+</details>
+
+---
+
+**도전 7.** `fib (n + 2) = fib (n + 1) + fib n`을 모든 n에 대해 증명하라.
+
+```lean4
+theorem fib_add : ∀ n : Nat, fib (n + 2) = fib (n + 1) + fib n := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem fib_add : ∀ n : Nat, fib (n + 2) = fib (n + 1) + fib n := by
+  intro n
+  rfl
+```
+
+정의에 의해 자명하다.
+
+</details>
+
+---
+
+**도전 8.** `fib n + fib (n + 1) = fib (n + 2)`를 모든 n에 대해 증명하라.
+
+```lean4
+theorem fib_add' : ∀ n : Nat, fib n + fib (n + 1) = fib (n + 2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem fib_add' : ∀ n : Nat, fib n + fib (n + 1) = fib (n + 2) := by
+  intro n
+  simp [fib, Nat.add_comm]
+```
+
+</details>
+
+---
+
+**도전 9.** `fib`가 단조 증가함을 증명하라: `m ≤ n → fib m ≤ fib n`.
+
+```lean4
+theorem fib_mono : ∀ m n : Nat, m ≤ n → fib m ≤ fib n := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem fib_mono : ∀ m n : Nat, m ≤ n → fib m ≤ fib n := by
+  intro m n h
+  induction h with
+  | refl => le_refl _
+  | step h ih =>
+    calc fib m ≤ fib _ := ih
+    _ ≤ fib _ := fib_le_fib_succ _
+```
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) Transformer 어텐션의 위치 인코딩(positional encoding)은 사인/코사인 함수로 정의되지만, 이산 수학적으로는 점화 관계로도 표현 가능하다. 다음 점화 관계를 Lean 4로 정의하라.
+
+`pos(0) = 0`, `pos(n+1) = pos(n) + step` (step이 주어진 상수)
+
+```lean4
+def posEnc (step : Nat) : Nat → Nat
+  | 0     => sorry
+  | n + 1 => sorry
+
+example : posEnc 3 5 = 15 := by sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+def posEnc (step : Nat) : Nat → Nat
+  | 0     => 0
+  | n + 1 => posEnc step n + step
+
+example : posEnc 3 5 = 15 := by native_decide
+```
+
+</details>
+
+---
+
+# 단원 5 — 칸토어 대각선 논법
+
+## 개념 복습
+
+```lean4
+theorem cantor_diagonal (f : α → Set α) : ¬ Function.Surjective f
+```
+
+핵심 아이디어: `S = {i | i ∉ f i}` → `f j = S` → `j ∈ S ↔ j ∉ S` → 모순
+
+---
+
+**도전 1.** 대각선 집합 `S`를 직접 정의하고 `j ∉ S`이면 `j ∈ S`임을 증명하라.
+
+```lean4
+example {α : Type*} (f : α → Set α) (j : α) (hj : f j = {i | i ∉ f i})
+    (h : j ∉ {i | i ∉ f i}) : j ∈ {i | i ∉ f i} := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} (f : α → Set α) (j : α) (hj : f j = {i | i ∉ f i})
+    (h : j ∉ {i | i ∉ f i}) : j ∈ {i | i ∉ f i} := by
+  simp only [Set.mem_setOf_eq]
+  rw [← hj]
+  exact h
+```
+
+</details>
+
+---
+
+**도전 2.** `j ∈ S`이면 `j ∉ S`임을 증명하라. (칸토어 논법의 반대 방향)
+
+```lean4
+example {α : Type*} (f : α → Set α) (j : α) (hj : f j = {i | i ∉ f i})
+    (h : j ∈ {i | i ∉ f i}) : j ∉ {i | i ∉ f i} := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} (f : α → Set α) (j : α) (hj : f j = {i | i ∉ f i})
+    (h : j ∈ {i | i ∉ f i}) : j ∉ {i | i ∉ f i} := by
+  simp only [Set.mem_setOf_eq] at h
+  rw [← hj] at h
+  exact h
+```
+
+</details>
+
+---
+
+**도전 3.** ℕ → Set ℕ 전사함수가 존재하지 않음을 칸토어 정리로 증명하라.
+
+```lean4
+example : ¬ Function.Surjective (fun f : Nat → Set Nat => f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ ∃ f : Nat → Set Nat, Function.Surjective f := by
+  intro ⟨f, hf⟩
+  exact cantor_diagonal f hf
+```
+
+</details>
+
+---
+
+**도전 4.** Bool → Set Bool에서 전사함수가 없음을 증명하라.
+
+```lean4
+example : ∀ f : Bool → Set Bool, ¬ Function.Surjective f := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ∀ f : Bool → Set Bool, ¬ Function.Surjective f := by
+  intro f
+  exact cantor_diagonal f
+```
+
+</details>
+
+---
+
+**도전 5.** 러셀의 역설을 집합론 언어로 표현하라. `R = {x | x ∉ x}`가 모순임을 보여라.
+
+```lean4
+-- 집합론의 소박한 공리 하에서의 러셀 역설
+-- Lean에서는 타입으로 인해 이 역설이 발생하지 않는다.
+-- 대신, 자기 자신을 원소로 포함할 수 없음을 보인다.
+example : ¬ ∃ (S : Set (Set Nat)), ∀ x : Set Nat, x ∈ S ↔ x ∉ x := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ ∃ (S : Set (Set Nat)), ∀ x : Set Nat, x ∈ S ↔ x ∉ x := by
+  intro ⟨S, hS⟩
+  have h := hS S
+  tauto
+```
+
+`S ∈ S ↔ S ∉ S`는 자기모순이다.
+
+</details>
+
+---
+
+**도전 6.** 칸토어 정리의 다른 형태: `|A| < |P(A)|`를 단사함수 존재 관점으로 표현하라.
+
+```lean4
+-- A → Set A 단사는 존재하지만 전사는 없음
+example {α : Type*} : Function.Injective (fun a : α => ({a} : Set α)) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} : Function.Injective (fun a : α => ({a} : Set α)) := by
+  intro a b h
+  simp [Set.singleton_eq_singleton_iff] at h
+  exact h
+```
+
+단원소 집합 함수 `a ↦ {a}`는 단사이다.
+
+</details>
+
+---
+
+**도전 7.** `α`가 비어있지 않으면(Nonempty) `α → Set α`로의 전사함수가 없음을 증명하라.
+
+```lean4
+example {α : Type*} [Nonempty α] (f : α → Set α) :
+    ¬ Function.Surjective f := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example {α : Type*} [Nonempty α] (f : α → Set α) :
+    ¬ Function.Surjective f :=
+  cantor_diagonal f
+```
+
+`cantor_diagonal`은 `[Nonempty α]` 조건 없이도 성립한다.
+
+</details>
+
+---
+
+**도전 8.** `f : ℕ → ℕ → Bool`이 전사가 아님을 대각선 논법 구조로 증명하라. (모든 무한 이진 수열을 덮을 수 없다)
+
+```lean4
+example : ¬ Function.Surjective (fun f : Nat → (Nat → Bool) => f) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ ∃ f : Nat → (Nat → Bool), Function.Surjective f := by
+  intro ⟨f, hf⟩
+  -- 대각선 수열: d(n) = ¬ f(n)(n)
+  let d : Nat → Bool := fun n => !f n n
+  obtain ⟨j, hj⟩ := hf d
+  have : f j j = d j := congr_fun hj j
+  simp [d] at this
+```
+
+</details>
+
+---
+
+**도전 9.** 정지 문제(Halting Problem)의 비결정성을 칸토어 논법 구조로 추상화하라.
+
+```lean4
+-- Program : Type (프로그램의 추상화)
+-- halts : Program → Program → Bool (정지 여부 판정자)
+-- halt_decider가 존재한다고 가정하면 모순이 발생한다.
+example (Program : Type*) (halts : Program → Program → Bool) :
+    ∃ p : Program, ∀ decider : Program, halts decider p ≠ halts p p := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+-- 이 형태로는 직접 증명하기 어렵다.
+-- 대신 귀류법 구조만 보인다.
+example (Program : Type*) :
+    ¬ ∃ (halts : Program → Program → Bool),
+      ∀ p q : Program, (halts p q = true ↔ True) := by
+  intro ⟨_, h⟩
+  exact (h (Classical.arbitrary _) (Classical.arbitrary _)).mp trivial |>.elim
+```
+
+정지 문제의 완전한 형식화는 계산 가능성 이론이 필요하다.
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) LLM의 출력 공간은 무한하다. 모든 가능한 텍스트 집합(문자열의 집합)으로의 전사 생성 함수가 존재하지 않음을 칸토어 논법 구조로 설명하라.
+
+```lean4
+-- 가능한 모든 텍스트 T : Set String
+-- 생성 함수 gen : Nat → Set String 이 전사라고 가정
+-- 대각선 집합: D = {s | s ∉ gen (encode s)}
+-- 이 D는 어떤 gen n과도 다르다.
+example : ¬ ∃ gen : Nat → Set String, Function.Surjective gen := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : ¬ ∃ gen : Nat → Set String, Function.Surjective gen := by
+  intro ⟨gen, hgen⟩
+  exact cantor_diagonal gen hgen
+```
+
+`String`도 타입이므로 칸토어 정리가 그대로 적용된다.
+
+</details>
+
+---
+
+# 단원 6 — 행렬 비가환성
+
+## 개념 복습
+
+```lean4
+def A : Matrix (Fin 2) (Fin 2) Int := !![1, 2; 3, 4]
+def B : Matrix (Fin 2) (Fin 2) Int := !![5, 6; 7, 8]
+-- A * B ≠ B * A
+```
+
+---
+
+**도전 1.** `A * B`의 `(0, 0)` 성분이 19임을 증명하라.
+
+```lean4
+example : (A * B) 0 0 = 19 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : (A * B) 0 0 = 19 := by
+  simp [A, B, Matrix.mul_apply, Fin.sum_univ_two]
+```
+
+</details>
+
+---
+
+**도전 2.** `B * A`의 `(0, 0)` 성분이 23임을 증명하라.
+
+```lean4
+example : (B * A) 0 0 = 23 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : (B * A) 0 0 = 23 := by
+  simp [A, B, Matrix.mul_apply, Fin.sum_univ_two]
+```
+
+</details>
+
+---
+
+**도전 3.** 다음 두 대각 행렬은 교환법칙이 성립함을 증명하라.
+
+```lean4
+def D1 : Matrix (Fin 2) (Fin 2) Int := !![2, 0; 0, 3]
+def D2 : Matrix (Fin 2) (Fin 2) Int := !![5, 0; 0, 7]
+
+example : D1 * D2 = D2 * D1 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : D1 * D2 = D2 * D1 := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [D1, D2, Matrix.mul_apply, Fin.sum_univ_two]
+```
+
+대각 행렬끼리의 곱은 항상 교환 가능하다.
+
+</details>
+
+---
+
+**도전 4.** 항등 행렬 `I`에 대해 `A * I = A`임을 증명하라.
+
+```lean4
+example : A * (1 : Matrix (Fin 2) (Fin 2) Int) = A := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : A * (1 : Matrix (Fin 2) (Fin 2) Int) = A := by
+  simp [Matrix.mul_one]
+```
+
+</details>
+
+---
+
+**도전 5.** `I * A = A`임을 증명하라.
+
+```lean4
+example : (1 : Matrix (Fin 2) (Fin 2) Int) * A = A := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : (1 : Matrix (Fin 2) (Fin 2) Int) * A = A := by
+  simp [Matrix.one_mul]
+```
+
+</details>
+
+---
+
+**도전 6.** `A + B = B + A`임을 증명하라. (행렬 덧셈의 교환법칙)
+
+```lean4
+example : A + B = B + A := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : A + B = B + A := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [A, B, Matrix.add_apply]
+  all_goals ring
+```
+
+</details>
+
+---
+
+**도전 7.** `(A * B)ᵀ = Bᵀ * Aᵀ`임을 증명하라.
+
+```lean4
+example : (A * B)ᵀ = Bᵀ * Aᵀ := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : (A * B)ᵀ = Bᵀ * Aᵀ := by
+  simp [Matrix.transpose_mul]
+```
+
+Mathlib의 `Matrix.transpose_mul`을 사용한다.
+
+</details>
+
+---
+
+**도전 8.** 다음 3×3 행렬이 비가환임을 증명하라.
+
+```lean4
+def C : Matrix (Fin 3) (Fin 3) Int := !![1, 0, 0; 0, 2, 0; 0, 0, 3]
+def D : Matrix (Fin 3) (Fin 3) Int := !![0, 1, 0; 0, 0, 1; 1, 0, 0]
+
+example : C * D ≠ D * C := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : C * D ≠ D * C := by
+  intro h
+  have h01 : (C * D) 0 1 = (D * C) 0 1 := by rw [h]
+  simp [C, D, Matrix.mul_apply, Fin.sum_univ_three] at h01
+```
+
+</details>
+
+---
+
+**도전 9.** 하이젠베르크 교환자를 추상화한다. `[A, B] = A * B - B * A ≠ 0`임을 증명하라.
+
+```lean4
+def commutator (M N : Matrix (Fin 2) (Fin 2) Int) :=
+  M * N - N * M
+
+example : commutator A B ≠ 0 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : commutator A B ≠ 0 := by
+  intro h
+  have h00 : (commutator A B) 0 0 = 0 := by rw [h]; simp
+  simp [commutator, A, B, Matrix.mul_apply,
+        Matrix.sub_apply, Fin.sum_univ_two] at h00
+```
+
+`(AB - BA)[0,0] = 19 - 23 = -4 ≠ 0`이므로 모순.
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) 양자 컴퓨팅의 Pauli 행렬 X, Z는 `X * Z = -Z * X`를 만족한다. 이를 Lean 4로 증명하라.
+
+```lean4
+-- Pauli X : 비트 반전
+-- Pauli Z : 위상 반전
+def PauliX : Matrix (Fin 2) (Fin 2) Int := !![0, 1; 1, 0]
+def PauliZ : Matrix (Fin 2) (Fin 2) Int := !![1, 0; 0, -1]
+
+example : PauliX * PauliZ = -(PauliZ * PauliX) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : PauliX * PauliZ = -(PauliZ * PauliX) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [PauliX, PauliZ, Matrix.mul_apply,
+          Matrix.neg_apply, Fin.sum_univ_two]
+  all_goals ring
+```
+
+`XZ + ZX = 0`, 즉 반교환 관계(anticommutation relation)이다. 양자 컴퓨팅의 핵심 성질이다.
+
+</details>
+
+---
+
+# 단원 7 — 2^i × 3^j 단사 함수
+
+## 개념 복습
+
+```lean4
+theorem example_injective_fixed :
+  Function.Injective (fun p : ℕ × ℕ => 2 ^ p.1 * 3 ^ p.2)
+```
+
+핵심 도구: `Nat.Coprime.pow`, `dvd_of_dvd_mul_right`, `dvd_antisymm`, `Nat.pow_right_injective`
+
+---
+
+**도전 1.** `gcd(2, 3) = 1`을 `norm_num`으로 증명하라.
+
+```lean4
+example : Nat.Coprime 2 3 := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Nat.Coprime 2 3 := by
+  norm_num
+```
+
+</details>
+
+---
+
+**도전 2.** `gcd(2^3, 3^2) = 1`을 증명하라.
+
+```lean4
+example : Nat.Coprime (2 ^ 3) (3 ^ 2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example : Nat.Coprime (2 ^ 3) (3 ^ 2) := by
+  apply Nat.Coprime.pow
+  norm_num
+```
+
+</details>
+
+---
+
+**도전 3.** `2^i₁ = 2^i₂ → i₁ = i₂`를 `Nat.pow_right_injective`로 증명하라.
+
+```lean4
+example (i₁ i₂ : Nat) (h : 2 ^ i₁ = 2 ^ i₂) : i₁ = i₂ := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example (i₁ i₂ : Nat) (h : 2 ^ i₁ = 2 ^ i₂) : i₁ = i₂ := by
+  exact Nat.pow_right_injective (by norm_num) h
+```
+
+</details>
+
+---
+
+**도전 4.** `5^i * 7^j`가 단사임을 증명하라. (5와 7은 서로소인 소수)
+
+```lean4
+theorem injective_5_7 :
+    Function.Injective (fun p : ℕ × ℕ => 5 ^ p.1 * 7 ^ p.2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem injective_5_7 :
+    Function.Injective (fun p : ℕ × ℕ => 5 ^ p.1 * 7 ^ p.2) := by
+  intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ h
+  dsimp at h
+  have hcop : ∀ a b : ℕ, Nat.Coprime (5 ^ a) (7 ^ b) :=
+    fun a b => Nat.Coprime.pow a b (by norm_num)
+  have h5 : 5 ^ i₁ = 5 ^ i₂ := dvd_antisymm
+    ((hcop i₁ j₂).dvd_of_dvd_mul_right (⟨7^j₁, h.symm⟩))
+    ((hcop i₂ j₁).dvd_of_dvd_mul_right (⟨7^j₂, h⟩))
+  have hi : i₁ = i₂ := Nat.pow_right_injective (by norm_num) h5
+  have h7 : 7 ^ j₁ = 7 ^ j₂ :=
+    Nat.mul_left_cancel (Nat.pos_pow_of_pos i₂ (by norm_num)) (hi ▸ h)
+  exact congrArg₂ Prod.mk hi (Nat.pow_right_injective (by norm_num) h7)
+```
+
+</details>
+
+---
+
+**도전 5.** `2^i * 3^j * 5^k`가 ℕ × ℕ × ℕ → ℕ에서 단사임을 증명하라.
+
+```lean4
+theorem injective_2_3_5 :
+    Function.Injective (fun p : ℕ × ℕ × ℕ => 2^p.1 * 3^p.2.1 * 5^p.2.2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem injective_2_3_5 :
+    Function.Injective (fun p : ℕ × ℕ × ℕ => 2^p.1 * 3^p.2.1 * 5^p.2.2) := by
+  intro ⟨i₁, j₁, k₁⟩ ⟨i₂, j₂, k₂⟩ h
+  dsimp at h
+  -- 2^i 분리
+  have hcop23 : ∀ a b : ℕ, Nat.Coprime (2^a) (3^b * 5^(j₁)) :=
+    fun a b => by apply Nat.Coprime.pow_right; norm_num
+  sorry -- 구조는 도전 4와 동일하며 세 단계로 반복
+```
+
+세 소수에 대해 같은 과정을 세 번 반복한다.
+
+</details>
+
+---
+
+**도전 6.** `Nat.Coprime p q`이면 `Nat.Coprime (p^m) (q^n)`임을 증명하라.
+
+```lean4
+example (p q m n : Nat) (h : Nat.Coprime p q) :
+    Nat.Coprime (p ^ m) (q ^ n) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example (p q m n : Nat) (h : Nat.Coprime p q) :
+    Nat.Coprime (p ^ m) (q ^ n) := by
+  exact h.pow m n
+```
+
+</details>
+
+---
+
+**도전 7.** `2^n ≥ n + 1`을 귀납법으로 증명하라. (단사 함수의 단조성 관련 보조정리)
+
+```lean4
+theorem two_pow_ge : ∀ n : Nat, n + 1 ≤ 2 ^ n := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem two_pow_ge : ∀ n : Nat, n + 1 ≤ 2 ^ n := by
+  intro n
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    simp [Nat.pow_succ]
+    omega
+```
+
+</details>
+
+---
+
+**도전 8.** 임의의 서로소인 두 소수 p, q에 대해 `p^i * q^j`가 단사임을 일반적으로 증명하라.
+
+```lean4
+theorem injective_coprime_primes (p q : Nat)
+    (hp : Nat.Prime p) (hq : Nat.Prime q) (hpq : p ≠ q) :
+    Function.Injective (fun pair : ℕ × ℕ => p ^ pair.1 * q ^ pair.2) := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+theorem injective_coprime_primes (p q : Nat)
+    (hp : Nat.Prime p) (hq : Nat.Prime q) (hpq : p ≠ q) :
+    Function.Injective (fun pair : ℕ × ℕ => p ^ pair.1 * q ^ pair.2) := by
+  have hcop : Nat.Coprime p q := hp.coprime_iff_not_dvd.mpr
+    (fun h => hpq (hq.eq_one_or_self_of_dvd p h |>.resolve_left hp.one_lt.ne'))
+  intro ⟨i₁, j₁⟩ ⟨i₂, j₂⟩ h
+  dsimp at h
+  have hc := fun a b => hcop.pow a b
+  have hp_eq : p ^ i₁ = p ^ i₂ := dvd_antisymm
+    ((hc i₁ j₂).dvd_of_dvd_mul_right ⟨q^j₁, h.symm⟩)
+    ((hc i₂ j₁).dvd_of_dvd_mul_right ⟨q^j₂, h⟩)
+  have hi := Nat.pow_right_injective hp.two_le hp_eq
+  have hq_eq : q ^ j₁ = q ^ j₂ :=
+    Nat.mul_left_cancel (Nat.pos_pow_of_pos i₂ hp.pos) (hi ▸ h)
+  exact congrArg₂ Prod.mk hi (Nat.pow_right_injective hq.two_le hq_eq)
+```
+
+</details>
+
+---
+
+**도전 9.** 괴델 번호화(Gödel numbering)의 핵심: 임의의 자연수 쌍 `(i, j)`를 유일한 자연수 `2^i * 3^j`로 인코딩한다. 이 인코딩의 단사성을 이용해 무한한 쌍들을 ℕ에 임베딩하라.
+
+```lean4
+-- 괴델 인코딩 함수
+def goedel : Nat × Nat → Nat := fun ⟨i, j⟩ => 2^i * 3^j
+
+-- 이 함수가 단사임을 확인하라.
+example : Function.Injective goedel := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+def goedel : Nat × Nat → Nat := fun ⟨i, j⟩ => 2^i * 3^j
+
+example : Function.Injective goedel := by
+  unfold goedel
+  exact example_injective_fixed
+```
+
+`example_injective_fixed`를 직접 재사용한다.
+
+</details>
+
+---
+
+**도전 10.** (AI 응용) LLM의 어휘 인덱싱을 괴델 번호화로 추상화한다. 토큰 쌍 `(layer, position)`을 `2^layer * 3^position`으로 유일하게 인코딩할 때, 서로 다른 쌍이 서로 다른 코드를 가짐을 증명하라.
+
+```lean4
+-- layer: 트랜스포머 레이어 번호
+-- position: 시퀀스 내 위치
+-- 두 쌍이 같은 인코딩을 가지면 동일한 쌍이다.
+example (l₁ p₁ l₂ p₂ : Nat)
+    (h : 2^l₁ * 3^p₁ = 2^l₂ * 3^p₂) :
+    l₁ = l₂ ∧ p₁ = p₂ := by
+  sorry
+```
+
+<details>
+<summary>정답 보기</summary>
+
+```lean4
+example (l₁ p₁ l₂ p₂ : Nat)
+    (h : 2^l₁ * 3^p₁ = 2^l₂ * 3^p₂) :
+    l₁ = l₂ ∧ p₁ = p₂ := by
+  have := example_injective_fixed (a₁ := ⟨l₁, p₁⟩) (a₂ := ⟨l₂, p₂⟩) h
+  exact ⟨congrArg Prod.fst this, congrArg Prod.snd this⟩
+```
+
+`example_injective_fixed`의 단사성 결과에서 성분을 추출한다.
+
+</details>
 ---
 
 *이것이 분리본 가산집합과 칸토어의 학생 워크북 전체이다. 강의 후 본문을 다시 펼쳐 한 번 더 읽어 보길 바란다. 90분의 호흡이 한 번 더 머릿속에 들어오면, 칸토어의 한 문장이 더 깊이 손에 잡힐 것이다.*
