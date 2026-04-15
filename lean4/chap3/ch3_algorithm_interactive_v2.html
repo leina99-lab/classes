@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch3 Algorithm Interactive Lab</title>
+
+<!-- SageMath Cell Server -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+
+<style>
+  :root {
+    --blue: #4285F4; --blue-light: #E8F0FE; --green: #34A853; --green-light: #E6F4EA;
+    --red: #EA4335; --red-light: #FCE8E6; --orange: #FA7B17; --yellow: #FBBC04;
+    --title: #202124; --body: #3C4043; --sub: #5F6368; --card: #F1F3F4;
+    --border: #DADCE0; --code-bg: #1E1E2E; --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--white); color: var(--title); }
+
+  /* ── Header ── */
+  .header { background: var(--blue); color: white; padding: 24px 32px; }
+  .header h1 { font-size: 24px; font-weight: 700; }
+  .header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--card); padding: 0 16px; overflow-x: auto; }
+  .tab { padding: 14px 24px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--sub); border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--blue); background: var(--blue-light); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── Panel ── */
+  .panel { display: none; padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* ── Input area ── */
+  .input-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .input-row label { font-size: 14px; font-weight: 600; color: var(--sub); }
+  .input-row input { padding: 8px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; width: 260px; outline: none; transition: border 0.2s; }
+  .input-row input:focus { border-color: var(--blue); }
+  .input-row button { padding: 8px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue); filter: brightness(1.1); }
+  .btn-step { background: var(--green); color: white; }
+  .btn-step:hover { filter: brightness(1.1); }
+  .btn-reset { background: var(--card); color: var(--sub); border: 1px solid var(--border) !important; }
+  .btn-auto { background: var(--orange); color: white; }
+
+  /* ── Bars ── */
+  .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 260px; padding: 16px 8px 0; border-bottom: 2px solid var(--border); margin-bottom: 16px; position: relative; }
+  .bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 30px; }
+  .bar { border-radius: 6px 6px 0 0; transition: all 0.35s ease; min-width: 28px; width: 100%; position: relative; }
+  .bar-label { font-size: 13px; font-weight: 700; margin-top: 6px; color: var(--title); }
+  .bar-index { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .bar.default { background: var(--blue); }
+  .bar.comparing { background: var(--orange); box-shadow: 0 0 12px rgba(250,123,23,0.4); }
+  .bar.found { background: var(--green); box-shadow: 0 0 12px rgba(52,168,83,0.4); }
+  .bar.sorted { background: var(--green); opacity: 0.7; }
+  .bar.swapped { background: var(--red); }
+  .bar.current { background: var(--yellow); box-shadow: 0 0 12px rgba(251,188,4,0.4); }
+  .bar.inactive { background: #D5D5D5; }
+  .bar.pivot { background: var(--blue); border: 3px solid var(--title); }
+
+  /* ── Info box ── */
+  .info-box { background: var(--blue-light); border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 15px; line-height: 1.6; color: var(--title); margin-bottom: 12px; min-height: 60px; }
+  .info-box .step-num { font-weight: 700; color: var(--blue); }
+  .stats { display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  .stat { background: var(--card); border-radius: 8px; padding: 10px 18px; font-size: 14px; }
+  .stat strong { color: var(--blue); font-size: 18px; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+  /* ── Code display ── */
+  .code-display { background: var(--code-bg); color: #E0E0E0; padding: 16px 20px; border-radius: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.7; margin-top: 16px; overflow-x: auto; white-space: pre; }
+  .code-display .highlight { background: rgba(66,133,244,0.3); display: inline; padding: 1px 4px; border-radius: 3px; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .speed-label { font-size: 13px; color: var(--sub); }
+
+  /* ── SageMath Code Section ── */
+  .code-section { margin-top: 32px; padding-top: 24px; border-top: 2px dashed var(--border); }
+  .code-section-title {
+    font-size: 18px; font-weight: 700; color: var(--title);
+    padding: 12px 16px; background: linear-gradient(90deg, var(--blue-light), transparent);
+    border-left: 5px solid var(--blue); border-radius: 0 6px 6px 0; margin-bottom: 12px;
+  }
+  .code-section-desc {
+    background: #FFF8E1; border-left: 4px solid var(--yellow);
+    padding: 12px 16px; border-radius: 0 6px 6px 0; margin-bottom: 16px;
+    font-size: 14px; line-height: 1.6; color: var(--body);
+  }
+  .code-section-desc strong { color: var(--orange); }
+  .code-section-desc code {
+    background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px;
+    font-family: 'Consolas', monospace; font-size: 13px;
+  }
+  div.compute {
+    background: #FAFAFA; border: 1px solid var(--border); border-radius: 10px;
+    padding: 4px; margin-bottom: 16px;
+  }
+  details.experiment {
+    background: var(--green-light); padding: 14px 18px; border-radius: 8px;
+    cursor: pointer; border: 1px solid var(--green); margin-top: 12px;
+  }
+  details.experiment summary {
+    font-weight: 700; color: var(--green); outline: none; font-size: 14px;
+  }
+  details.experiment .exp-content {
+    margin-top: 10px; padding: 12px; background: white; border-radius: 6px;
+    color: var(--body); font-size: 14px; line-height: 1.7;
+  }
+  details.experiment .exp-content ul { margin-left: 20px; margin-top: 8px; }
+  details.experiment .exp-content li { margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Chapter 3: Algorithm Interactive Lab</h1>
+  <p>리스트를 입력하고 알고리즘이 단계별로 실행되는 과정을 관찰하라.</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="linear">선형 탐색</div>
+  <div class="tab" data-tab="binary">이진 탐색</div>
+  <div class="tab" data-tab="bubble">버블 정렬</div>
+  <div class="tab" data-tab="insertion">삽입 정렬</div>
+  <div class="tab" data-tab="greedy">욕심쟁이</div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- LINEAR SEARCH -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel active" id="panel-linear">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="lin-list" value="3, 8, 1, 15, 7, 12, 5, 9" placeholder="쉼표로 구분">
+    <label>찾을 값:</label>
+    <input id="lin-target" value="7" style="width:80px">
+    <button class="btn-primary" onclick="linInit()">세팅</button>
+    <button class="btn-step" onclick="linStep()">다음 단계</button>
+    <button class="btn-auto" onclick="linAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="linInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="lin-bars"></div>
+  <div class="info-box" id="lin-info">리스트와 찾을 값을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="lin-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미확인</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 현재 비교 중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 발견!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#D5D5D5"></div> 확인 완료 (아님)</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">🐍 파이썬으로 직접 구현하기</div>
+    <div class="code-section-desc">
+      아래 셀에서 <strong>arr</strong>와 <strong>target</strong> 값을 자유롭게 바꾸어 실행해 본다.
+      선형 탐색은 리스트의 처음부터 끝까지 순차적으로 비교하므로, 정렬 여부와 무관하게 사용할 수 있다.
+      최악의 경우 <code>n</code>회의 비교가 필요하다.
+    </div>
+    <div class="compute">
+def linear_search(arr, target):
+    """선형 탐색: 처음부터 끝까지 순차적으로 비교한다."""
+    comparisons = 0
+    for i in range(len(arr)):
+        comparisons += 1
+        print(f"Step {comparisons}: arr[{i}] = {arr[i]} 와 {target} 비교", end=" → ")
+        if arr[i] == target:
+            print(f"✅ 발견! 위치 {i}")
+            return i, comparisons
+        else:
+            print("불일치")
+    print(f"❌ {target}은(는) 리스트에 없다.")
+    return -1, comparisons
+
+
+# ────────────────────────────────────────
+# 🔧 [실험] 아래 두 줄의 값을 바꾸어 보자
+# ────────────────────────────────────────
+arr = [3, 8, 1, 15, 7, 12, 5, 9]
+target = 7
+
+print(f"리스트: {arr}")
+print(f"찾을 값: {target}")
+print("=" * 50)
+position, comparisons = linear_search(arr, target)
+print("=" * 50)
+print(f"\n📊 총 비교 횟수: {comparisons}회")
+print(f"📊 리스트 크기 n = {len(arr)}, 최악의 경우 = {len(arr)}회")
+    </div>
+    <details class="experiment">
+      <summary>💡 추가 실험 아이디어 (펼치기)</summary>
+      <div class="exp-content">
+        다음 시나리오들을 코드의 값만 바꾸어 직접 확인해 본다.
+        <ul>
+          <li><strong>최선의 경우:</strong> <code>target = 3</code> (첫 원소) — 비교 횟수가 1회임을 확인한다.</li>
+          <li><strong>최악의 경우:</strong> <code>target = 9</code> (마지막 원소) — 비교 횟수가 <code>n</code>회임을 확인한다.</li>
+          <li><strong>존재하지 않는 값:</strong> <code>target = 100</code> — 모든 원소를 비교한 뒤 실패함을 확인한다.</li>
+          <li><strong>리스트 크기 변화:</strong> <code>arr = list(range(1, 101))</code>로 바꾸고 <code>target = 50</code>으로 실험한다.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- BINARY SEARCH -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-binary">
+  <div class="input-row">
+    <label>정렬된 리스트:</label>
+    <input id="bin-list" value="2, 5, 8, 11, 14, 17, 20, 23, 26, 29" placeholder="오름차순!">
+    <label>찾을 값:</label>
+    <input id="bin-target" value="17" style="width:80px">
+    <button class="btn-primary" onclick="binInit()">세팅</button>
+    <button class="btn-step" onclick="binStep()">다음 단계</button>
+    <button class="btn-auto" onclick="binAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="binInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="bin-bars"></div>
+  <div class="info-box" id="bin-info">정렬된 리스트와 찾을 값을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="bin-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 탐색 범위</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> mid (현재 비교)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 발견!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#D5D5D5"></div> 범위 밖</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">🐍 파이썬으로 직접 구현하기</div>
+    <div class="code-section-desc">
+      이진 탐색은 <strong>정렬된 리스트</strong>에서만 동작한다. 매 단계마다 탐색 범위를 절반으로 줄이므로
+      시간 복잡도는 <code>O(log n)</code>이다. <code>n = 1024</code>일 때 최대 <code>10</code>회의 비교만으로 탐색이 완료된다.
+    </div>
+    <div class="compute">
+import math
+
+def binary_search(arr, target):
+    """이진 탐색: 정렬된 리스트에서 중앙값과 비교하여 범위를 절반씩 축소한다."""
+    lo, hi = 0, len(arr) - 1
+    comparisons = 0
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        comparisons += 1
+        print(f"Step {comparisons}: lo={lo}, hi={hi}, mid={mid}, arr[{mid}]={arr[mid]}", end=" → ")
+        if arr[mid] == target:
+            print(f"✅ 발견! 위치 {mid}")
+            return mid, comparisons
+        elif arr[mid] < target:
+            print(f"{arr[mid]} < {target}, 오른쪽 범위로 이동")
+            lo = mid + 1
+        else:
+            print(f"{arr[mid]} > {target}, 왼쪽 범위로 이동")
+            hi = mid - 1
+    print(f"❌ {target}은(는) 리스트에 없다.")
+    return -1, comparisons
+
+
+# ────────────────────────────────────────
+# 🔧 [실험] 아래 두 줄의 값을 바꾸어 보자
+# ────────────────────────────────────────
+arr = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29]
+target = 17
+
+print(f"정렬된 리스트: {arr}")
+print(f"찾을 값: {target}")
+print("=" * 50)
+position, comparisons = binary_search(arr, target)
+print("=" * 50)
+n = len(arr)
+print(f"\n📊 총 비교 횟수: {comparisons}회")
+print(f"📊 리스트 크기 n = {n}, 이론적 최대 = ⌈log₂({n})⌉ = {math.ceil(math.log2(n))}회")
+print(f"📊 선형 탐색 대비 효율: {n}회 → {comparisons}회 ({100*comparisons/n:.1f}%)")
+    </div>
+    <details class="experiment">
+      <summary>💡 추가 실험 아이디어 (펼치기)</summary>
+      <div class="exp-content">
+        다음 실험을 통해 이진 탐색의 위력을 체감해 본다.
+        <ul>
+          <li><strong>대용량 리스트:</strong> <code>arr = list(range(1, 1025))</code>, <code>target = 777</code>로 변경 — 1024개 원소에서도 10회 이내로 탐색이 끝남을 확인한다.</li>
+          <li><strong>최선의 경우:</strong> 리스트의 정확한 중앙값을 <code>target</code>으로 지정 — 1회만에 발견된다.</li>
+          <li><strong>경계값 탐색:</strong> 리스트의 첫 원소나 마지막 원소를 <code>target</code>으로 지정한다.</li>
+          <li><strong>실패 케이스:</strong> <code>target = 100</code>처럼 존재하지 않는 값으로 실험하여 종료 조건을 관찰한다.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- BUBBLE SORT -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-bubble">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="bub-list" value="5, 3, 8, 1, 9, 2, 7" placeholder="쉼표로 구분">
+    <button class="btn-primary" onclick="bubInit()">세팅</button>
+    <button class="btn-step" onclick="bubStep()">다음 단계</button>
+    <button class="btn-auto" onclick="bubAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="bubInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="bub-bars"></div>
+  <div class="info-box" id="bub-info">리스트를 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="bub-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미정렬</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 비교 중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 교환!</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:0.7"></div> 정렬 확정</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">🐍 파이썬으로 직접 구현하기</div>
+    <div class="code-section-desc">
+      버블 정렬은 인접한 두 원소를 비교하여 큰 값을 뒤로 밀어내는 방식이다. 한 번의 <strong>패스(pass)</strong>가
+      끝나면 가장 큰 값이 맨 뒤에 확정된다. 시간 복잡도는 <code>O(n²)</code>이며, 비교 횟수는 최대 <code>n(n-1)/2</code>회이다.
+    </div>
+    <div class="compute">
+def bubble_sort(arr, verbose=True):
+    """버블 정렬: 인접한 두 원소를 비교·교환하여 큰 값을 뒤로 보낸다."""
+    arr = arr.copy()
+    n = len(arr)
+    comparisons = 0
+    swaps = 0
+
+    for pass_num in range(n - 1):
+        swapped_in_pass = False
+        if verbose:
+            print(f"\n--- Pass {pass_num + 1} ---")
+        for j in range(n - 1 - pass_num):
+            comparisons += 1
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                swaps += 1
+                swapped_in_pass = True
+                if verbose:
+                    print(f"  arr[{j}]={arr[j+1]} > arr[{j+1}]={arr[j]} → 🔄 교환! {arr}")
+            else:
+                if verbose:
+                    print(f"  arr[{j}]={arr[j]} ≤ arr[{j+1}]={arr[j+1]} → 유지")
+        if verbose:
+            print(f"Pass {pass_num + 1} 완료: {arr}")
+        # 최적화: 한 번도 교환이 없으면 이미 정렬된 상태이다.
+        if not swapped_in_pass:
+            if verbose:
+                print(f"⚡ 조기 종료! 더 이상 교환 없음.")
+            break
+
+    return arr, comparisons, swaps
+
+
+# ────────────────────────────────────────
+# 🔧 [실험] 아래 리스트를 자유롭게 바꾸어 보자
+# ────────────────────────────────────────
+arr = [5, 3, 8, 1, 9, 2, 7]
+
+print(f"원본 리스트: {arr}")
+print("=" * 50)
+sorted_arr, comp, swp = bubble_sort(arr)
+print("=" * 50)
+n = len(arr)
+print(f"\n✅ 정렬 결과: {sorted_arr}")
+print(f"📊 총 비교: {comp}회, 총 교환: {swp}회")
+print(f"📊 최악 시간복잡도: n(n-1)/2 = {n*(n-1)//2}회")
+    </div>
+    <details class="experiment">
+      <summary>💡 추가 실험 아이디어 (펼치기)</summary>
+      <div class="exp-content">
+        다음 실험을 통해 입력에 따른 성능 차이를 확인해 본다.
+        <ul>
+          <li><strong>이미 정렬된 입력:</strong> <code>arr = [1, 2, 3, 4, 5, 6, 7]</code> — 조기 종료가 동작하여 비교가 <code>n-1</code>회로 줄어든다.</li>
+          <li><strong>역순 입력 (최악):</strong> <code>arr = [9, 8, 7, 6, 5, 4, 3, 2, 1]</code> — 매 비교마다 교환이 발생한다.</li>
+          <li><strong>중복 원소 포함:</strong> <code>arr = [3, 1, 3, 2, 1, 2]</code> — 안정 정렬임을 확인한다.</li>
+          <li><strong>큰 리스트:</strong> <code>arr = [10, 5, 8, 1, 9, 3, 7, 2, 6, 4]</code>로 비교 횟수를 측정해 본다.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- INSERTION SORT -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-insertion">
+  <div class="input-row">
+    <label>리스트:</label>
+    <input id="ins-list" value="5, 3, 8, 1, 9, 2, 7" placeholder="쉼표로 구분">
+    <button class="btn-primary" onclick="insInit()">세팅</button>
+    <button class="btn-step" onclick="insStep()">다음 단계</button>
+    <button class="btn-auto" onclick="insAuto()">자동 실행</button>
+    <button class="btn-reset" onclick="insInit()">초기화</button>
+  </div>
+  <div class="bars-container" id="ins-bars"></div>
+  <div class="info-box" id="ins-info">리스트를 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="ins-stats"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:0.7"></div> 정렬된 부분</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 삽입할 원소</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 미정렬</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">🐍 파이썬으로 직접 구현하기</div>
+    <div class="code-section-desc">
+      삽입 정렬은 카드 게임에서 손에 든 카드를 정렬하는 방식과 동일하다. 정렬된 부분에 새 원소를 적절한 위치에
+      <strong>삽입(insert)</strong>한다. 평균 시간 복잡도는 <code>O(n²)</code>이지만,
+      거의 정렬된 입력에서는 <code>O(n)</code>에 가깝게 동작하는 적응적(adaptive) 알고리즘이다.
+    </div>
+    <div class="compute">
+def insertion_sort(arr, verbose=True):
+    """삽입 정렬: 정렬된 부분에 새 원소를 올바른 위치에 끼워 넣는다."""
+    arr = arr.copy()
+    n = len(arr)
+    comparisons = 0
+
+    for j in range(1, n):
+        key = arr[j]
+        i = j - 1
+        if verbose:
+            print(f"\n--- j={j}, 삽입할 원소: {key} ---")
+            print(f"  정렬된 부분: {arr[:j]}, 미정렬 부분: {arr[j:]}")
+
+        # key보다 큰 원소들을 한 칸씩 뒤로 민다.
+        while i >= 0 and arr[i] > key:
+            comparisons += 1
+            if verbose:
+                print(f"  arr[{i}]={arr[i]} > {key} → 한 칸 뒤로 밀기")
+            arr[i + 1] = arr[i]
+            i -= 1
+
+        # 마지막 비교(밀지 않고 멈춘 비교)도 카운트한다.
+        if i >= 0:
+            comparisons += 1
+
+        arr[i + 1] = key
+        if verbose:
+            print(f"  → ✅ {key}을(를) 위치 {i+1}에 삽입: {arr}")
+
+    return arr, comparisons
+
+
+# ────────────────────────────────────────
+# 🔧 [실험] 아래 리스트를 자유롭게 바꾸어 보자
+# ────────────────────────────────────────
+arr = [5, 3, 8, 1, 9, 2, 7]
+
+print(f"원본 리스트: {arr}")
+print("=" * 50)
+sorted_arr, comp = insertion_sort(arr)
+print("=" * 50)
+n = len(arr)
+print(f"\n✅ 정렬 결과: {sorted_arr}")
+print(f"📊 총 비교 횟수: {comp}회")
+print(f"📊 최악 시간복잡도: n(n-1)/2 = {n*(n-1)//2}회")
+print(f"📊 최선 시간복잡도(이미 정렬): n-1 = {n-1}회")
+    </div>
+    <details class="experiment">
+      <summary>💡 추가 실험 아이디어 (펼치기)</summary>
+      <div class="exp-content">
+        삽입 정렬의 <strong>적응성(adaptivity)</strong>을 확인하는 실험이다.
+        <ul>
+          <li><strong>이미 정렬된 입력 (최선):</strong> <code>arr = [1, 2, 3, 4, 5, 6, 7]</code> — 비교가 <code>n-1=6</code>회에 그친다.</li>
+          <li><strong>역순 입력 (최악):</strong> <code>arr = [7, 6, 5, 4, 3, 2, 1]</code> — 비교가 <code>n(n-1)/2=21</code>회로 폭증한다.</li>
+          <li><strong>거의 정렬된 입력:</strong> <code>arr = [1, 2, 3, 5, 4, 6, 7]</code> — 비교 횟수가 매우 적다.</li>
+          <li><strong>버블 정렬과 비교:</strong> 동일한 입력으로 두 알고리즘을 모두 실행하여 비교 횟수를 대조해 본다.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- GREEDY -->
+<!-- ════════════════════════════════════════ -->
+<div class="panel" id="panel-greedy">
+  <div class="input-row">
+    <label>동전:</label>
+    <input id="gre-coins" value="500, 100, 50, 10" style="width:200px">
+    <label>금액:</label>
+    <input id="gre-amount" value="760" style="width:100px">
+    <button class="btn-primary" onclick="greInit()">세팅</button>
+    <button class="btn-step" onclick="greStep()">다음 단계</button>
+    <button class="btn-auto" onclick="greAuto()">자동 실행</button>
+  </div>
+  <div id="gre-visual" style="min-height:200px"></div>
+  <div class="info-box" id="gre-info">동전과 금액을 입력하고 "세팅"을 누르라.</div>
+  <div class="stats" id="gre-stats"></div>
+
+  <div class="code-section">
+    <div class="code-section-title">🐍 파이썬으로 직접 구현하기</div>
+    <div class="code-section-desc">
+      욕심쟁이(greedy) 알고리즘은 매 단계에서 <strong>지역적 최적해</strong>를 선택하는 전략이다.
+      거스름돈 문제에서는 가장 큰 동전부터 최대한 많이 사용한다.
+      한국·미국 화폐 시스템에서는 항상 최적해를 보장하지만, <strong>모든 경우에 최적은 아니다</strong>.
+      반례를 코드로 직접 확인해 본다.
+    </div>
+    <div class="compute">
+def greedy_change(coins, amount, verbose=True):
+    """욕심쟁이 알고리즘: 큰 동전부터 최대한 많이 사용한다."""
+    coins = sorted(coins, reverse=True)
+    remaining = amount
+    result = []
+    total_coins = 0
+
+    if verbose:
+        print(f"💰 거스름돈: {amount}원")
+        print(f"🪙 사용 가능 동전: {coins}원")
+        print("=" * 50)
+
+    for coin in coins:
+        count = remaining // coin
+        if count > 0:
+            used = coin * count
+            remaining -= used
+            result.append((coin, count))
+            total_coins += count
+            if verbose:
+                print(f"  {coin}원 × {count}개 = {used}원 사용 (남은 금액: {remaining}원)")
+        else:
+            if verbose:
+                print(f"  {coin}원: 사용 불가 (남은 금액 {remaining}원 < {coin}원)")
+
+    if verbose:
+        print("=" * 50)
+        if remaining == 0:
+            print(f"\n✅ 결과: 총 {total_coins}개 동전 사용")
+            print("   " + " + ".join(f"{c}원×{n}" for c, n in result))
+        else:
+            print(f"\n⚠️ 경고: {remaining}원을 거슬러 줄 수 없다!")
+
+    return result, total_coins
+
+
+# ────────────────────────────────────────
+# 🔧 [실험 1] 한국 화폐 시스템 (욕심쟁이 = 최적)
+# ────────────────────────────────────────
+coins = [500, 100, 50, 10]
+amount = 760
+
+result, total = greedy_change(coins, amount)
+
+
+# ────────────────────────────────────────
+# 🔧 [실험 2] 욕심쟁이가 실패하는 반례
+# ────────────────────────────────────────
+print("\n\n" + "★" * 50)
+print("⚠️  욕심쟁이가 최적을 보장하지 않는 경우")
+print("★" * 50)
+
+coins2 = [4, 3, 1]
+amount2 = 6
+result2, total2 = greedy_change(coins2, amount2)
+
+print(f"\n🔍 비교:")
+print(f"  - 욕심쟁이 결과: {total2}개 동전")
+print(f"  - 진짜 최적해:  2개 동전 (3원 × 2)")
+print(f"\n💡 결론: 욕심쟁이는 화폐 단위가 '정준(canonical)'일 때만 최적이다.")
+    </div>
+    <details class="experiment">
+      <summary>💡 추가 실험 아이디어 (펼치기)</summary>
+      <div class="exp-content">
+        욕심쟁이 알고리즘의 작동 조건을 다양한 화폐 시스템으로 검증해 본다.
+        <ul>
+          <li><strong>한국 화폐 (전체):</strong> <code>coins = [50000, 10000, 5000, 1000, 500, 100, 50, 10]</code>, <code>amount = 87650</code></li>
+          <li><strong>미국 동전:</strong> <code>coins = [25, 10, 5, 1]</code>, <code>amount = 67</code> (cents) — 항상 최적이다.</li>
+          <li><strong>반례 발견:</strong> <code>coins = [1, 5, 11]</code>, <code>amount = 15</code> — 욕심쟁이는 5개(11+1+1+1+1), 최적은 3개(5+5+5)이다.</li>
+          <li><strong>거슬러 줄 수 없는 경우:</strong> <code>coins = [5, 2]</code>, <code>amount = 3</code> — 알고리즘의 한계를 관찰한다.</li>
+        </ul>
+        이러한 실험을 통해 알고리즘의 <strong>적용 조건과 한계</strong>를 명확히 이해할 수 있다.
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+// ═══ Utility ═══
+function parse(s) { return s.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)); }
+const $ = id => document.getElementById(id);
+const DELAY = 600;
+
+// ═══ Tab switching ═══
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+function renderBars(containerId, arr, states, maxVal) {
+  const c = $(containerId); c.innerHTML = '';
+  const mx = maxVal || Math.max(...arr, 1);
+  arr.forEach((v, i) => {
+    const w = document.createElement('div'); w.className = 'bar-wrapper';
+    const b = document.createElement('div'); b.className = 'bar ' + (states[i] || 'default');
+    b.style.height = Math.max((v / mx) * 220, 8) + 'px';
+    const l = document.createElement('div'); l.className = 'bar-label'; l.textContent = v;
+    const idx = document.createElement('div'); idx.className = 'bar-index'; idx.textContent = '[' + i + ']';
+    w.appendChild(b); w.appendChild(l); w.appendChild(idx); c.appendChild(w);
+  });
+}
+
+// ═══════════════════════════════════════
+// LINEAR SEARCH
+// ═══════════════════════════════════════
+let lin = {};
+function linInit() {
+  lin = { arr: parse($('lin-list').value), target: parseInt($('lin-target').value), i: 0, comparisons: 0, done: false, found: -1 };
+  const states = lin.arr.map(() => 'default');
+  renderBars('lin-bars', lin.arr, states);
+  $('lin-info').innerHTML = `리스트 [${lin.arr.join(', ')}]에서 <strong>${lin.target}</strong>을 찾는다. "다음 단계"를 누르라.`;
+  $('lin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>0</strong></div><div class="stat">리스트 크기: <strong>${lin.arr.length}</strong></div>`;
+}
+function linStep() {
+  if (!lin.arr || lin.done) return;
+  if (lin.i >= lin.arr.length) {
+    lin.done = true;
+    const states = lin.arr.map(() => 'inactive');
+    renderBars('lin-bars', lin.arr, states);
+    $('lin-info').innerHTML = `<span class="step-num">완료</span> ${lin.target}은 리스트에 없다. 총 ${lin.comparisons}번 비교.`;
+    return;
+  }
+  lin.comparisons++;
+  const states = lin.arr.map((_, j) => j < lin.i ? 'inactive' : j === lin.i ? 'comparing' : 'default');
+  renderBars('lin-bars', lin.arr, states);
+  if (lin.arr[lin.i] === lin.target) {
+    lin.done = true; lin.found = lin.i;
+    setTimeout(() => {
+      states[lin.i] = 'found';
+      renderBars('lin-bars', lin.arr, states);
+      $('lin-info').innerHTML = `<span class="step-num">발견!</span> arr[${lin.i}] = ${lin.target}. 위치 ${lin.i}에서 발견. 비교 ${lin.comparisons}회.`;
+    }, 300);
+  } else {
+    $('lin-info').innerHTML = `<span class="step-num">Step ${lin.comparisons}</span> arr[${lin.i}] = ${lin.arr[lin.i]} ≠ ${lin.target}. 다음으로 이동.`;
+    lin.i++;
+  }
+  $('lin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>${lin.comparisons}</strong></div><div class="stat">리스트 크기: <strong>${lin.arr.length}</strong></div>`;
+}
+function linAuto() { if (!lin.done) { linStep(); setTimeout(linAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// BINARY SEARCH
+// ═══════════════════════════════════════
+let bin = {};
+function binInit() {
+  const arr = parse($('bin-list').value).sort((a,b) => a-b);
+  $('bin-list').value = arr.join(', ');
+  bin = { arr, target: parseInt($('bin-target').value), lo: 0, hi: arr.length-1, comparisons: 0, done: false, phase: 'calc_mid' };
+  renderBars('bin-bars', bin.arr, bin.arr.map(() => 'default'));
+  $('bin-info').innerHTML = `정렬된 리스트 [${arr.join(', ')}]에서 <strong>${bin.target}</strong>을 찾는다. lo=0, hi=${bin.hi}.`;
+  $('bin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>0</strong></div><div class="stat">리스트 크기: <strong>${arr.length}</strong></div><div class="stat">log₂(${arr.length}): <strong>${Math.ceil(Math.log2(arr.length))}</strong></div>`;
+}
+function binStep() {
+  if (!bin.arr || bin.done) return;
+  if (bin.lo > bin.hi) {
+    bin.done = true;
+    renderBars('bin-bars', bin.arr, bin.arr.map(() => 'inactive'));
+    $('bin-info').innerHTML = `<span class="step-num">완료</span> ${bin.target}은 리스트에 없다. 총 ${bin.comparisons}번 비교.`;
+    return;
+  }
+  const mid = Math.floor((bin.lo + bin.hi) / 2);
+  bin.comparisons++;
+  const states = bin.arr.map((_, i) => i >= bin.lo && i <= bin.hi ? (i === mid ? 'comparing' : 'default') : 'inactive');
+  renderBars('bin-bars', bin.arr, states);
+
+  if (bin.arr[mid] === bin.target) {
+    bin.done = true;
+    setTimeout(() => {
+      states[mid] = 'found';
+      renderBars('bin-bars', bin.arr, states);
+      $('bin-info').innerHTML = `<span class="step-num">발견!</span> arr[${mid}] = ${bin.target}. 비교 ${bin.comparisons}회. (log₂(${bin.arr.length}) = ${Math.ceil(Math.log2(bin.arr.length))})`;
+    }, 300);
+  } else if (bin.arr[mid] < bin.target) {
+    $('bin-info').innerHTML = `<span class="step-num">Step ${bin.comparisons}</span> mid=${mid}, arr[${mid}]=${bin.arr[mid]} < ${bin.target} → 오른쪽 [${mid+1}..${bin.hi}] 탐색`;
+    bin.lo = mid + 1;
+  } else {
+    $('bin-info').innerHTML = `<span class="step-num">Step ${bin.comparisons}</span> mid=${mid}, arr[${mid}]=${bin.arr[mid]} > ${bin.target} → 왼쪽 [${bin.lo}..${mid-1}] 탐색`;
+    bin.hi = mid - 1;
+  }
+  $('bin-stats').innerHTML = `<div class="stat">비교 횟수: <strong>${bin.comparisons}</strong></div><div class="stat">남은 범위: <strong>${Math.max(0, bin.hi - bin.lo + 1)}</strong></div><div class="stat">log₂(${bin.arr.length}): <strong>${Math.ceil(Math.log2(bin.arr.length))}</strong></div>`;
+}
+function binAuto() { if (!bin.done) { binStep(); setTimeout(binAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// BUBBLE SORT
+// ═══════════════════════════════════════
+let bub = {};
+function bubInit() {
+  bub = { arr: parse($('bub-list').value), pass: 0, j: 0, comparisons: 0, swaps: 0, done: false, sorted: new Set(), phase: 'compare' };
+  renderBars('bub-bars', bub.arr, bub.arr.map(() => 'default'));
+  $('bub-info').innerHTML = `[${bub.arr.join(', ')}] 을 버블 정렬한다. Pass 1 시작.`;
+  $('bub-stats').innerHTML = `<div class="stat">비교: <strong>0</strong></div><div class="stat">교환: <strong>0</strong></div><div class="stat">n(n-1)/2: <strong>${bub.arr.length*(bub.arr.length-1)/2}</strong></div>`;
+}
+function bubStep() {
+  if (!bub.arr || bub.done) return;
+  const n = bub.arr.length;
+  const limit = n - 1 - bub.pass;
+  if (bub.pass >= n - 1) { bub.done = true; renderBars('bub-bars', bub.arr, bub.arr.map(() => 'sorted')); $('bub-info').innerHTML = `<span class="step-num">완료!</span> 정렬 완료. 비교 ${bub.comparisons}회, 교환 ${bub.swaps}회.`; return; }
+  if (bub.j >= limit) {
+    bub.sorted.add(limit);
+    bub.pass++; bub.j = 0;
+    const states = bub.arr.map((_, i) => bub.sorted.has(i) || i >= n - bub.pass ? 'sorted' : 'default');
+    renderBars('bub-bars', bub.arr, states);
+    $('bub-info').innerHTML = `<span class="step-num">Pass ${bub.pass} 완료.</span> 가장 큰 원소가 위치 ${limit}에 확정. Pass ${bub.pass+1} 시작.`;
+    return;
+  }
+  bub.comparisons++;
+  const states = bub.arr.map((_, i) => {
+    if (i >= n - bub.pass) return 'sorted';
+    if (i === bub.j || i === bub.j + 1) return 'comparing';
+    return 'default';
+  });
+  renderBars('bub-bars', bub.arr, states);
+
+  if (bub.arr[bub.j] > bub.arr[bub.j + 1]) {
+    [bub.arr[bub.j], bub.arr[bub.j+1]] = [bub.arr[bub.j+1], bub.arr[bub.j]];
+    bub.swaps++;
+    setTimeout(() => {
+      const s2 = bub.arr.map((_, i) => {
+        if (i >= n - bub.pass) return 'sorted';
+        if (i === bub.j || i === bub.j + 1) return 'swapped';
+        return 'default';
+      });
+      renderBars('bub-bars', bub.arr, s2);
+      $('bub-info').innerHTML = `<span class="step-num">Step ${bub.comparisons}</span> arr[${bub.j}]=${bub.arr[bub.j+1]} > arr[${bub.j+1}]=${bub.arr[bub.j]} → 교환!`;
+      bub.j++;
+    }, 200);
+  } else {
+    $('bub-info').innerHTML = `<span class="step-num">Step ${bub.comparisons}</span> arr[${bub.j}]=${bub.arr[bub.j]} ≤ arr[${bub.j+1}]=${bub.arr[bub.j+1]} → 유지`;
+    bub.j++;
+  }
+  $('bub-stats').innerHTML = `<div class="stat">비교: <strong>${bub.comparisons}</strong></div><div class="stat">교환: <strong>${bub.swaps}</strong></div><div class="stat">Pass: <strong>${bub.pass+1}/${n-1}</strong></div>`;
+}
+function bubAuto() { if (!bub.done) { bubStep(); setTimeout(bubAuto, DELAY); } }
+
+// ═══════════════════════════════════════
+// INSERTION SORT
+// ═══════════════════════════════════════
+let ins = {};
+function insInit() {
+  ins = { arr: parse($('ins-list').value), j: 1, i: 0, key: 0, comparisons: 0, sortedCount: 1, done: false, phase: 'pick' };
+  renderBars('ins-bars', ins.arr, ins.arr.map((_, i) => i === 0 ? 'sorted' : 'default'));
+  $('ins-info').innerHTML = `[${ins.arr.join(', ')}] 을 삽입 정렬한다. 정렬된 부분: [${ins.arr[0]}].`;
+  $('ins-stats').innerHTML = `<div class="stat">비교: <strong>0</strong></div><div class="stat">정렬된 부분: <strong>1/${ins.arr.length}</strong></div>`;
+}
+function insStep() {
+  if (!ins.arr || ins.done) return;
+  const n = ins.arr.length;
+  if (ins.j >= n) { ins.done = true; renderBars('ins-bars', ins.arr, ins.arr.map(() => 'sorted')); $('ins-info').innerHTML = `<span class="step-num">완료!</span> 정렬 완료. 비교 ${ins.comparisons}회.`; return; }
+
+  if (ins.phase === 'pick') {
+    ins.key = ins.arr[ins.j]; ins.i = ins.j - 1; ins.phase = 'shift';
+    const states = ins.arr.map((_, k) => k < ins.j ? 'sorted' : k === ins.j ? 'current' : 'default');
+    renderBars('ins-bars', ins.arr, states);
+    $('ins-info').innerHTML = `<span class="step-num">j=${ins.j}</span> 삽입할 원소: ${ins.key}. 정렬된 부분 [${ins.arr.slice(0,ins.j).join(', ')}]에서 올바른 위치를 찾는다.`;
+  } else {
+    if (ins.i >= 0 && ins.arr[ins.i] > ins.key) {
+      ins.comparisons++;
+      ins.arr[ins.i + 1] = ins.arr[ins.i];
+      const states = ins.arr.map((_, k) => k <= ins.i ? 'sorted' : k === ins.i+1 ? 'comparing' : k > ins.j ? 'default' : 'current');
+      renderBars('ins-bars', ins.arr, states);
+      $('ins-info').innerHTML = `<span class="step-num">비교 ${ins.comparisons}</span> arr[${ins.i}]=${ins.arr[ins.i]} > ${ins.key} → 한 칸 뒤로 밀기`;
+      ins.i--;
+    } else {
+      if (ins.i >= 0) ins.comparisons++;
+      ins.arr[ins.i + 1] = ins.key;
+      ins.j++; ins.sortedCount++; ins.phase = 'pick';
+      const states = ins.arr.map((_, k) => k < ins.j ? 'sorted' : 'default');
+      renderBars('ins-bars', ins.arr, states);
+      $('ins-info').innerHTML = `<span class="step-num">삽입 완료</span> ${ins.key}을 위치 ${ins.i+1}에 삽입. 정렬된 부분: [${ins.arr.slice(0,ins.j).join(', ')}]`;
+    }
+  }
+  $('ins-stats').innerHTML = `<div class="stat">비교: <strong>${ins.comparisons}</strong></div><div class="stat">정렬된 부분: <strong>${Math.min(ins.j, n)}/${n}</strong></div>`;
+}
+function insAuto() { if (!ins.done) { insStep(); setTimeout(insAuto, DELAY/1.5); } }
+
+// ═══════════════════════════════════════
+// GREEDY CHANGE
+// ═══════════════════════════════════════
+let gre = {};
+function greInit() {
+  gre = { coins: parse($('gre-coins').value).sort((a,b)=>b-a), amount: parseInt($('gre-amount').value), remaining: parseInt($('gre-amount').value), idx: 0, result: [], totalCoins: 0, done: false };
+  $('gre-visual').innerHTML = `<div style="text-align:center;padding:40px;font-size:18px;color:var(--sub)">거스름돈: <strong style="font-size:28px;color:var(--title)">${gre.amount}원</strong><br>동전: [${gre.coins.join(', ')}]원</div>`;
+  $('gre-info').innerHTML = `${gre.amount}원을 [${gre.coins.join(', ')}]원 동전으로 거슬러 준다. 가장 큰 동전부터 사용.`;
+  $('gre-stats').innerHTML = '';
+}
+function greStep() {
+  if (!gre.coins || gre.done) return;
+  if (gre.idx >= gre.coins.length || gre.remaining <= 0) {
+    gre.done = true;
+    $('gre-info').innerHTML = `<span class="step-num">완료!</span> 총 ${gre.totalCoins}개 동전. ${gre.result.map(r=>`${r[0]}원x${r[1]}`).join(' + ')}`;
+    return;
+  }
+  const c = gre.coins[gre.idx];
+  const count = Math.floor(gre.remaining / c);
+  const used = c * count;
+  gre.remaining -= used;
+  if (count > 0) { gre.result.push([c, count]); gre.totalCoins += count; }
+  // Visual
+  let html = '<div style="display:flex;gap:16px;padding:20px;flex-wrap:wrap;justify-content:center">';
+  gre.result.forEach(([coin, cnt]) => {
+    for (let i = 0; i < cnt; i++) {
+      const size = Math.max(40, Math.min(80, coin/8));
+      html += `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--blue);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${size/4}px;box-shadow:0 2px 6px rgba(0,0,0,0.15)">${coin}</div>`;
+    }
+  });
+  html += '</div>';
+  html += `<div style="text-align:center;margin-top:12px;font-size:16px">남은 금액: <strong style="color:${gre.remaining>0?'var(--red)':'var(--green)'}">${gre.remaining}원</strong></div>`;
+  $('gre-visual').innerHTML = html;
+  $('gre-info').innerHTML = `<span class="step-num">${c}원</span> ${count}개 사용 (${used}원). 남은 금액: ${gre.remaining}원.`;
+  $('gre-stats').innerHTML = `<div class="stat">사용 동전: <strong>${gre.totalCoins}개</strong></div><div class="stat">남은 금액: <strong>${gre.remaining}원</strong></div>`;
+  gre.idx++;
+}
+function greAuto() { if (!gre.done) { greStep(); setTimeout(greAuto, DELAY*1.5); } }
+
+// ═══ Init all ═══
+linInit(); binInit(); bubInit(); insInit(); greInit();
+
+// ═══════════════════════════════════════
+// SageMath Cell 초기화 (재시도 로직 포함)
+// ═══════════════════════════════════════
+function initSageCells() {
+  if (typeof sagecell !== 'undefined' && sagecell.makeSagecell) {
+    sagecell.makeSagecell({
+      inputLocation:  'div.compute',
+      languages:      ['python'],
+      evalButtonText: '▶ 실행 (Run)',
+      hide:           ['permalink', 'fullScreen'],
+      autoeval:       false
+    });
+    console.log('✅ SageMath cells 초기화 완료');
+  } else {
+    console.log('⏳ SageMath 스크립트 로딩 대기 중...');
+    setTimeout(initSageCells, 300);
+  }
+}
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(initSageCells, 100);
+} else {
+  window.addEventListener('DOMContentLoaded', () => setTimeout(initSageCells, 100));
+}
+</script>
+</body>
+</html>
