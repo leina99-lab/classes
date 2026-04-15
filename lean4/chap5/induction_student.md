@@ -1,5 +1,5 @@
 # 수학적 귀납법 (Mathematical Induction)
-## 학생용 교재
+
 
 Rosen 이산수학 8판 §5.1 + Lean 4
 
