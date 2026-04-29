@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG 인터랙티브 학습 — §4.1 부속 자료</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  startup: {
+    typeset: true
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+<style>
+:root {
+  --bg: #FFFFFF;
+  --fg: #333333;
+  --muted: #7BA7AD;
+  --mutedDeep: #2D5E5E;
+  --accent: #D4726A;
+  --accentSoft: #F0F5F4;
+  --thmBg: #E0F0ED;
+  --thmFg: #2D5E5E;
+  --codeBg: #F5F5F5;
+  --codeFg: #2D3436;
+  --warnBg: #FDF0E6;
+  --warnFg: #B85F3D;
+  --tryBg: #F0F7F0;
+  --tryFg: #3F7A4F;
+  --divider: #DDE3EA;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Malgun Gothic', '맑은 고딕', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.65;
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+header {
+  background: var(--muted);
+  color: white;
+  padding: 1.6rem 2rem;
+}
+header h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header .sub {
+  margin: 0.4rem 0 0;
+  opacity: 0.95;
+  font-size: 0.95rem;
+}
+
+nav.tabs {
+  display: flex;
+  background: var(--accentSoft);
+  border-bottom: 1px solid var(--divider);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+nav.tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.95rem 0.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--fg);
+  font-family: inherit;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+}
+nav.tabs button.active {
+  background: var(--bg);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+  color: var(--accent);
+}
+nav.tabs button:hover:not(.active) {
+  background: rgba(255,255,255,0.5);
+}
+
+.section {
+  display: none;
+  padding: 2rem;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.section.active { display: block; }
+
+h2 {
+  color: var(--mutedDeep);
+  border-left: 4px solid var(--accent);
+  padding-left: 0.8rem;
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+h3 {
+  color: var(--mutedDeep);
+  margin: 1.6rem 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.definition {
+  background: var(--accentSoft);
+  border-left: 4px solid var(--accent);
+  padding: 1rem 1.4rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+}
+.definition .lab {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.theorem {
+  background: var(--thmBg);
+  padding: 1rem 1.4rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+.theorem .lab {
+  color: var(--thmFg);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.warn {
+  background: var(--warnBg);
+  border-left: 4px solid var(--warnFg);
+  padding: 1rem 1.4rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+}
+.warn .lab {
+  color: var(--warnFg);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.answer-box {
+  background: var(--tryBg);
+  border-left: 4px solid var(--tryFg);
+  padding: 1rem 1.4rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+}
+.answer-box .lab {
+  color: var(--tryFg);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+pre, code {
+  font-family: 'Consolas', 'D2Coding', monospace;
+  background: var(--codeBg);
+  color: var(--codeFg);
+}
+pre {
+  padding: 0.9rem 1.1rem;
+  overflow-x: auto;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0.8rem 0;
+}
+code {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.simulator {
+  border: 1.5px solid var(--divider);
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  background: var(--bg);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.sim-header {
+  background: var(--accentSoft);
+  padding: 0.85rem 1.2rem;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.sim-header h3 {
+  margin: 0;
+  color: var(--mutedDeep);
+  font-size: 1.05rem;
+}
+.sim-stage {
+  font-size: 0.9rem;
+  color: var(--mutedDeep);
+  font-weight: 700;
+  background: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--divider);
+}
+
+.sim-body {
+  padding: 1.4rem;
+  min-height: 360px;
+}
+.sim-body h4 {
+  color: var(--accent);
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.query-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.query-options button {
+  background: var(--bg);
+  border: 1.5px solid var(--divider);
+  color: var(--fg);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+  text-align: left;
+}
+.query-options button:hover {
+  border-color: var(--muted);
+  background: var(--accentSoft);
+}
+.query-options .qnote {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+.sim-controls {
+  background: var(--accentSoft);
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid var(--divider);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sim-controls button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.sim-controls button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+.sim-controls button:disabled {
+  background: var(--divider);
+  color: #888;
+  cursor: not-allowed;
+}
+.sim-controls button.secondary {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--divider);
+}
+
+.vector-display {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Consolas', monospace;
+  font-size: 0.9rem;
+  background: var(--codeBg);
+  padding: 0.8rem 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0.8rem 0;
+}
+.vector-display .lbr, .vector-display .rbr {
+  font-size: 1.3rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+.vec-num {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--divider);
+  border-radius: 3px;
+  min-width: 60px;
+  text-align: center;
+}
+.vec-dim {
+  margin-left: 0.6rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.result-item {
+  display: flex;
+  background: var(--bg);
+  border: 1.5px solid var(--divider);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.result-item.top {
+  border-color: var(--accent);
+  background: #FFF8F5;
+}
+.result-rank {
+  background: var(--muted);
+  color: white;
+  padding: 0.7rem 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+}
+.result-item.top .result-rank {
+  background: var(--accent);
+}
+.result-text {
+  padding: 0.7rem 1rem;
+  flex: 1;
+  font-size: 0.92rem;
+}
+.result-text code {
+  background: rgba(0,0,0,0.04);
+  font-size: 0.88em;
+}
+.result-score {
+  padding: 0.7rem 1rem;
+  font-family: 'Consolas', monospace;
+  color: var(--muted);
+  font-size: 0.85rem;
+  border-left: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.compare-card {
+  border: 1.5px solid var(--divider);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  background: var(--bg);
+}
+.compare-card h4 {
+  color: var(--accent);
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+.compare-card ul, .compare-card ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.compare-card li {
+  margin-bottom: 0.4rem;
+  font-size: 0.93rem;
+}
+
+ul, ol { padding-left: 1.4rem; }
+li { margin-bottom: 0.3rem; }
+
+p { margin: 0.6rem 0; }
+
+.note {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  background: #FAFAFA;
+  border-left: 3px solid var(--muted);
+  padding: 0.7rem 1rem;
+  color: #555;
+}
+
+.highlight {
+  background: #FFF7E6;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.pass { color: var(--tryFg); font-weight: 700; }
+.fail { color: var(--warnFg); font-weight: 700; }
+
+@media (max-width: 720px) {
+  .comparison { grid-template-columns: 1fr; }
+  nav.tabs button { font-size: 0.82rem; padding: 0.7rem 0.3rem; }
+  .section { padding: 1.2rem; }
+  header { padding: 1.2rem 1.2rem; }
+  header h1 { font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>RAG 인터랙티브 학습</h1>
+  <p class="sub">검색 증강 생성(Retrieval-Augmented Generation)을 단계별 시뮬레이션으로 이해한다 — §4.1 부속 자료</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-target="intro">RAG란 무엇인가</button>
+  <button class="tab-btn" data-target="general">일반 RAG 시뮬레이터</button>
+  <button class="tab-btn" data-target="alphaproof">AlphaProof 시뮬레이터</button>
+  <button class="tab-btn" data-target="connect">§4.1과의 연결</button>
+</nav>
+
+<!-- =================================================
+     TAB 1: RAG란 무엇인가
+     ================================================= -->
+<section class="section active" id="intro">
+  <h2>RAG가 무엇인가</h2>
+
+  <div class="definition">
+    <div class="lab">정의</div>
+    <strong>RAG</strong>(Retrieval-Augmented Generation, 검색 증강 생성)는 LLM이 답을 만들 때 자기 학습 데이터에만 의존하지 않고, <strong>외부 지식 베이스에서 관련 자료를 먼저 검색</strong>한 뒤 그 자료를 참고하여 답을 생성하는 방법이다.
+  </div>
+
+  <h3>왜 필요한가</h3>
+
+  <p>**LLM**(Large Language Model, 거대 언어 모델 — GPT, Claude, Gemini 등)은 학습이 끝난 시점까지의 정보만 안다. 그리고 학습한 정보도 모두 정확하게 기억하지는 못한다. 두 가지 문제가 있다.</p>
+
+  <ul>
+    <li><strong>지식의 시간적 한계</strong> — 어제 발표된 회사 보고서, 방금 작성된 사내 문서, 최근 출판된 논문은 학습에 포함되지 않았다. ‘2026년 4월에 출시된 Claude 4.7'을 2025년에 학습이 끝난 모델은 알 수 없다.</li>
+    <li><strong>환각</strong>(hallucination) — LLM은 모르는 것을 ‘모른다'고 하지 않는다. 그럴듯하게 지어낸다. 존재하지 않는 논문을 인용하거나, 틀린 사실을 자신있게 말한다.</li>
+  </ul>
+
+  <p>RAG는 이 두 문제를 한 번에 해결한다. <strong>매번 답하기 전에 외부 자료를 먼저 검색</strong>해서, <strong>실제 문서를 보고 답</strong>하게 만든다.</p>
+
+  <h3>3분 비유 — 시험의 두 가지 모드</h3>
+
+  <p>여러분이 어떤 시험을 본다고 하자. 두 가지 모드가 있다.</p>
+
+  <div class="comparison">
+    <div class="compare-card">
+      <h4>모드 1 — 닫힌 책 시험</h4>
+      <p style="margin: 0;">머릿속 기억만으로 답해야 한다. 외워 둔 게 정답이면 맞고, 까먹었으면 틀린다. 까먹은 부분에서 ‘아마 이럴 것이다'라고 추측하면 종종 틀린다.</p>
+      <p style="margin: 0.5rem 0 0; color: var(--accent); font-weight: 600;">일반 LLM이 이 모드이다.</p>
+    </div>
+    <div class="compare-card">
+      <h4>모드 2 — 오픈 북 시험</h4>
+      <p style="margin: 0;">책장에서 관련 페이지를 찾아 펼치고 답한다. 책에 있는 정보면 정확하게 답할 수 있다. 검색 능력이 핵심이다.</p>
+      <p style="margin: 0.5rem 0 0; color: var(--accent); font-weight: 600;">RAG가 이 모드이다.</p>
+    </div>
+  </div>
+
+  <p>그리고 RAG의 진짜 핵심은 — <strong>‘책장에서 관련 페이지를 어떻게 빨리 찾는가'</strong>이다. 이걸 ‘검색'(Retrieval)이라 부른다. 단순한 키워드 검색이 아니라 <strong>의미적 검색</strong>(semantic search)이다. ‘파리 수도'와 ‘프랑스의 수도는?'이 같은 의미라는 걸 인식해야 한다.</p>
+
+  <p>이 의미적 검색을 가능하게 하는 두 도구가 <strong>임베딩</strong>과 <strong>벡터 DB</strong>이다. 다음 탭에서 직접 시뮬레이션해 보자.</p>
+
+  <div class="note">
+    <strong>참고</strong> — RAG라는 용어는 Facebook AI(현 Meta AI)가 2020년 발표한 동명의 논문에서 유래했다. 그 후 ChatGPT 시대에 들어 사실상 LLM 응용의 표준 패턴이 되었다. 사내 문서 챗봇, 법률 자료 검색, 의료 AI 보조, 그리고 우리가 다음 탭에서 보는 <strong>수학 정리 자동 증명</strong>까지 — 응용 범위는 계속 넓어지고 있다.
+  </div>
+</section>
+
+<!-- =================================================
+     TAB 2: 일반 RAG 시뮬레이터
+     ================================================= -->
+<section class="section" id="general">
+  <h2>일반 RAG 시뮬레이터</h2>
+  <p>질문을 하나 골라 보고, RAG가 5단계로 어떻게 작동하는지 한 단계씩 클릭하며 확인하라.</p>
+
+  <div class="simulator">
+    <div class="sim-header">
+      <h3>RAG 5단계 파이프라인</h3>
+      <div class="sim-stage" id="genStage">단계 1 / 5</div>
+    </div>
+    <div class="sim-body" id="genBody"></div>
+    <div class="sim-controls">
+      <button id="genReset" class="secondary">처음부터</button>
+      <button id="genNext">다음 단계 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================
+     TAB 3: AlphaProof 시뮬레이터
+     ================================================= -->
+<section class="section" id="alphaproof">
+  <h2>AlphaProof 시뮬레이터 — 수학 정리 RAG</h2>
+  <p>AlphaProof는 DeepMind가 2024년 발표한 자동 증명기로, IMO 2024에서 6문제 중 5문제를 풀어 은메달급 성적을 거뒀다. 그 핵심 동작은 <strong>‘수학 정리 라이브러리에서 RAG로 도구를 검색'</strong>하는 것이다.</p>
+
+  <p>아래 시뮬레이터에서 §4.1의 <strong>따름정리 1</strong>($a \mid b$, $a \mid c \Rightarrow a \mid (mb + nc)$)을 입력하고 AlphaProof가 6단계로 어떻게 자동 증명하는지 본다.</p>
+
+  <div class="simulator">
+    <div class="sim-header">
+      <h3>AlphaProof 6단계 파이프라인</h3>
+      <div class="sim-stage" id="apStage">단계 1 / 6</div>
+    </div>
+    <div class="sim-body" id="apBody"></div>
+    <div class="sim-controls">
+      <button id="apReset" class="secondary">처음부터</button>
+      <button id="apNext">다음 단계 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================
+     TAB 4: §4.1과의 연결
+     ================================================= -->
+<section class="section" id="connect">
+  <h2>§4.1과 RAG의 연결</h2>
+
+  <p>여러분이 강의 중 따름정리 1을 머릿속에서 풀 때 한 동작을 다시 떠올려 보자.</p>
+
+  <div class="theorem">
+    <div class="lab">따름정리 1</div>
+    <strong>$a \mid b$이고 $a \mid c$이면 $a \mid (mb + nc)$.</strong>
+  </div>
+
+  <p>여러분의 머릿속에서 일어난 일은 다음과 같다.</p>
+
+  <ol>
+    <li><strong>‘새 정리이지만 비슷한 것을 본 적이 있다'</strong> — 머릿속 기억에서 ‘$a \mid b$를 어떤 정수와 곱하면 어떻게 되더라'를 떠올린다.</li>
+    <li><strong>‘아, 정리 1-(ii)였다'</strong> — $a \mid b \Rightarrow a \mid bc$. 이걸 두 번 쓰면 $a \mid mb$, $a \mid nc$.</li>
+    <li><strong>‘그리고 합도 합치는 정리가 있었지'</strong> — 정리 1-(i). $a \mid mb$와 $a \mid nc$를 이걸로 합치면 $a \mid (mb + nc)$.</li>
+    <li><strong>증명 완성</strong>.</li>
+  </ol>
+
+  <p>이게 정확히 RAG의 동작이다.</p>
+
+  <div class="comparison">
+    <div class="compare-card">
+      <h4>여러분의 머릿속</h4>
+      <ul>
+        <li>이미 본 정리들 = <strong>지식 베이스</strong></li>
+        <li>새 목표를 보고 ‘비슷한 것'을 떠올림 = <strong>검색</strong></li>
+        <li>찾은 정리를 조립해 새 증명 작성 = <strong>생성</strong></li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>AlphaProof</h4>
+      <ul>
+        <li>Mathlib 정리 수만 개 = <strong>벡터 DB</strong></li>
+        <li>현재 목표를 임베딩해 k-NN 검색 = <strong>검색</strong></li>
+        <li>찾은 정리로 <code>rw</code>·<code>exact</code> 시도 = <strong>생성</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="answer-box">
+    <div class="lab">결론</div>
+    <p style="margin: 0;"><strong>여러분이 ‘정리를 떠올려 조립한다'는 그 동작이 RAG의 심장이다.</strong> AlphaProof는 그 동작을 자동화한다. 단지 여러분은 커피로 작동하고 AlphaProof는 전기로 작동할 뿐이다.</p>
+  </div>
+
+  <h3>강의 자료에서 확인할 곳</h3>
+  <ul>
+    <li><strong>슬라이드 11</strong> — 따름정리 1 + RAG 첫 등장. 위 그림과 같은 ‘조립 흐름도'가 있다.</li>
+    <li><strong>슬라이드 29</strong> — AI 응용 4박스. 그중 R(RAG & LSH)과 A(AlphaProof)가 본 자료의 두 시나리오에 직접 대응한다.</li>
+    <li><strong>워크북 G3</strong> — Mathlib의 <code>exact?</code> 전술 직접 사용. 이게 ‘작은 RAG'이다 — 현재 목표에 맞는 정리를 라이브러리에서 검색해 추천한다.</li>
+  </ul>
+
+  <h3>한 걸음 더 — RAG가 §4.1에서 다른 곳에도 숨어 있다</h3>
+
+  <div class="comparison">
+    <div class="compare-card">
+      <h4>정리 5 → 벡터 DB의 일관성</h4>
+      <p style="margin: 0;">RAG의 검색 단계는 <strong>Locality-Sensitive Hashing</strong>(LSH)으로 가속한다. LSH 안에는 ‘$\sum a_i x_i \;\mathrm{mod}\; p$' 같은 모듈로 큰 소수 산술이 있고, 정리 5의 ‘+, ·에서 보존'이 분산 환경에서의 해시 일관성을 보장한다.</p>
+    </div>
+    <div class="compare-card">
+      <h4>$\mathbb{Z}_m$ → 임베딩 공간</h4>
+      <p style="margin: 0;">RoPE(Rotary Position Embedding)는 ‘회전 각도 mod $2\pi$'를 사용한다. 이게 연속판 $\mathbb{Z}_m$이다. 정수 대신 실수일 뿐, ‘<strong>주기성</strong>'이라는 핵심 직관은 동일하다.</p>
+    </div>
+  </div>
+
+  <p style="margin-top: 1.5rem;">즉 §4.1은 단순한 정수론 한 절이 아니다 — <strong>현대 AI의 검색 인프라 전체에 대한 수학적 토대</strong>이다.</p>
+</section>
+
+<script>
+/* ==========================================================
+   MathJax 재렌더링 헬퍼
+   ========================================================== */
+function retypeset(el) {
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([el]).catch(err => {
+      console.warn('MathJax typeset error:', err);
+    });
+  }
+}
+
+/* ==========================================================
+   탭 전환
+   ========================================================== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    const target = document.getElementById(btn.dataset.target);
+    target.classList.add('active');
+    window.scrollTo(0, 0);
+    retypeset(target);
+  });
+});
+
+/* ==========================================================
+   일반 RAG 시뮬레이터
+   ========================================================== */
+
+const queries = [
+  {
+    q: "Anthropic의 Claude 4.7은 언제 출시됐나?",
+    note: "최신 정보 — 학습 데이터에 없을 가능성 높음",
+    docs: [
+      { text: "Anthropic이 2026년 4월 Claude 4.7 모델 패밀리를 발표. Opus 4.7이 가장 강력한 모델로 공개됐다.", score: 0.18 },
+      { text: "Claude 4.6 모델군은 Sonnet과 Opus로 구성됐으며 2025년 말 출시되었다.", score: 0.42 },
+      { text: "OpenAI, GPT-5의 코딩 성능 벤치마크 비교 발표.", score: 0.71 }
+    ],
+    answer: "검색된 자료에 따르면 <strong>Anthropic의 Claude 4.7 모델 패밀리는 2026년 4월에 출시</strong>되었다. 가장 강력한 모델은 Claude Opus 4.7이다.",
+    vec: ["0.42", "-0.18", "0.91", "0.05", "-0.33"]
+  },
+  {
+    q: "우리 회사 2026년 1분기 매출은?",
+    note: "사내 문서 — 일반 LLM은 절대 모름",
+    docs: [
+      { text: "[2026 Q1 재무보고서] 1분기 총매출 142억 원, 전년 동기 대비 +18%. 영업이익 24억 원.", score: 0.12 },
+      { text: "[2025 Q4 재무보고서] 4분기 총매출 138억 원, 영업이익 22억 원.", score: 0.39 },
+      { text: "[조직개편 공고] 2026년 5월부터 신설 데이터 부문 가동 예정.", score: 0.65 }
+    ],
+    answer: "사내 재무 자료에 따르면 <strong>2026년 1분기 총매출은 142억 원</strong>으로 전년 동기 대비 18% 성장했다. 영업이익은 24억 원이다.",
+    vec: ["-0.21", "0.67", "0.14", "-0.48", "0.29"]
+  },
+  {
+    q: "프랑스의 수도는 어디인가?",
+    note: "일반 상식 — RAG가 굳이 필요 없는 경우",
+    docs: [
+      { text: "프랑스의 수도는 파리(Paris)이며 인구는 약 210만 명이다.", score: 0.09 },
+      { text: "유럽의 주요 수도 — 런던, 파리, 베를린, 로마, 마드리드.", score: 0.38 },
+      { text: "파리는 센 강을 따라 형성된 도시로, 에펠탑이 대표 명소이다.", score: 0.41 }
+    ],
+    answer: "<strong>프랑스의 수도는 파리(Paris)</strong>이다. 인구는 약 210만 명이며 센 강을 따라 형성된 도시이다.",
+    vec: ["0.55", "0.31", "-0.12", "0.78", "-0.04"]
+  }
+];
+
+const ragSteps = [
+  // 단계 1: 질문 선택
+  (idx) => {
+    if (idx === null) {
+      return `
+        <h4>단계 1 — 질문 입력</h4>
+        <p>먼저 질문을 하나 골라 보자. 종류에 따라 RAG의 효과가 크게 달라진다.</p>
+        <div class="query-options" id="queryOptions">
+          ${queries.map((q, i) => `
+            <button data-idx="${i}">
+              <strong>${q.q}</strong>
+              <span class="qnote">${q.note}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+    return `
+      <h4>단계 1 — 질문 입력 (선택 완료)</h4>
+      <p>선택한 질문:</p>
+      <div class="definition">
+        <strong style="font-size: 1.05rem;">"${queries[idx].q}"</strong>
+        <p style="margin: 0.5rem 0 0; font-size: 0.88rem; color: var(--muted);">${queries[idx].note}</p>
+      </div>
+      <p style="margin-top: 0.8rem;">‘다음 단계'를 눌러 이 질문이 어떻게 처리되는지 보자.</p>
+    `;
+  },
+  // 단계 2: 임베딩
+  (idx) => `
+    <h4>단계 2 — 임베딩(벡터화)</h4>
+    <p>질문을 ‘<strong>숫자 벡터</strong>'로 바꾼다. 비슷한 의미의 문장은 비슷한 벡터로 변환된다는 성질이 핵심이다.</p>
+    <p>실제 시스템은 보통 768차원, 1536차원 같은 큰 차원을 쓰지만 여기서는 시각화를 위해 5차원으로 단순화한다.</p>
+    <p style="margin-top: 1.2rem;"><strong>"${queries[idx].q}"</strong></p>
+    <div style="text-align: center; font-size: 1.3rem; color: var(--muted); margin: 0.4rem 0;">↓</div>
+    <div class="vector-display">
+      <span class="lbr">[</span>
+      ${queries[idx].vec.map(v => `<span class="vec-num">${v}</span>`).join('')}
+      <span class="rbr">]</span>
+      <span class="vec-dim">∈ ℝ⁵</span>
+    </div>
+    <div class="note">
+      이 변환을 담당하는 게 <strong>임베딩 모델</strong>이다(OpenAI text-embedding-3, Voyage, Cohere 등). 핵심 성질 — <span class="highlight">의미가 비슷한 문장 = 벡터 공간에서 가까운 점</span>. 즉 ‘파리 수도'와 ‘프랑스의 수도는?'은 거의 같은 벡터로 변환된다.
+    </div>
+  `,
+  // 단계 3: 검색
+  (idx) => {
+    const q = queries[idx];
+    return `
+      <h4>단계 3 — 벡터 DB에서 k-NN 검색</h4>
+      <p>벡터 DB(Pinecone, Weaviate, FAISS 등)에 저장된 수백만 개 문서 청크 중에서, 질문 벡터와 <strong>가장 가까운 k개</strong>(여기서는 3개)를 찾는다. 거리가 작을수록 의미가 비슷하다.</p>
+      <div class="search-results">
+        ${q.docs.map((d, i) => `
+          <div class="result-item ${i === 0 ? 'top' : ''}">
+            <div class="result-rank">${i + 1}</div>
+            <div class="result-text">${d.text}</div>
+            <div class="result-score">d = ${d.score}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="note">
+        이 단계가 RAG의 R(Retrieval, 검색). <strong>이 검색 안에 모듈로 큰 소수 산술이 들어 있다</strong> — Locality-Sensitive Hashing(LSH)이라는 기법이고, §4.1의 정리 5(‘합동은 +, ·에서 보존')가 LSH의 일관성을 수학적으로 보장한다.
+      </div>
+    `;
+  },
+  // 단계 4: 프롬프트
+  (idx) => {
+    const q = queries[idx];
+    return `
+      <h4>단계 4 — 프롬프트 구성</h4>
+      <p>검색된 문서를 질문과 함께 LLM에 전달한다. LLM이 받는 입력은 다음과 같다.</p>
+      <pre>다음 자료를 참고하여 답변하시오.
+
+[자료 1] ${q.docs[0].text}
+
+[자료 2] ${q.docs[1].text}
+
+[자료 3] ${q.docs[2].text}
+
+질문: ${q.q}
+답변:</pre>
+      <div class="note">
+        LLM은 이제 ‘외운 지식'이 아니라 ‘<strong>방금 받은 자료</strong>'를 보면서 답한다. 모르는 정보도, 학습 후 발생한 사건도, 사내 문서도 — 자료에 들어 있으면 정확히 답한다.
+      </div>
+    `;
+  },
+  // 단계 5: 답변
+  (idx) => {
+    const q = queries[idx];
+    return `
+      <h4>단계 5 — 답변 생성 및 완료</h4>
+      <p>LLM이 받은 자료를 참고하여 답을 생성한다.</p>
+      <div class="answer-box">
+        <div class="lab">RAG 답변</div>
+        ${q.answer}
+      </div>
+      <h3 style="margin-top: 1.5rem;">5단계 요약</h3>
+      <ol>
+        <li><strong>질문 입력</strong> — 사용자가 자연어 질문 작성</li>
+        <li><strong>임베딩</strong> — 질문을 벡터로 변환</li>
+        <li><strong>k-NN 검색</strong> — 벡터 DB에서 가장 가까운 k개 문서 검색</li>
+        <li><strong>프롬프트 구성</strong> — 검색된 자료 + 질문을 LLM에 전달</li>
+        <li><strong>답변 생성</strong> — LLM이 자료 기반으로 답변</li>
+      </ol>
+      <p>이게 RAG의 전부이다 — <strong>R</strong>etrieval(검색) + <strong>A</strong>ugmented(증강) + <strong>G</strong>eneration(생성).</p>
+      <p>이제 다음 탭에서 같은 구조가 <strong>수학 정리에 적용</strong>되면 어떻게 되는지 보자 — AlphaProof 시나리오.</p>
+    `;
+  }
+];
+
+let genIdx = null;
+let genStep = 0;
+
+function renderGen() {
+  document.getElementById('genStage').textContent = `단계 ${genStep + 1} / 5`;
+  document.getElementById('genBody').innerHTML = ragSteps[genStep](genIdx);
+
+  const nextBtn = document.getElementById('genNext');
+  if (genStep === 0 && genIdx === null) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = '질문을 먼저 선택';
+    document.querySelectorAll('#queryOptions button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        genIdx = parseInt(btn.dataset.idx);
+        renderGen();
+      });
+    });
+  } else if (genStep < ragSteps.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = '다음 단계 →';
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.textContent = '완료';
+  }
+
+  retypeset(document.getElementById('genBody'));
+}
+
+document.getElementById('genNext').addEventListener('click', () => {
+  if (genStep === 0 && genIdx === null) return;
+  if (genStep < ragSteps.length - 1) {
+    genStep++;
+    renderGen();
+  }
+});
+
+document.getElementById('genReset').addEventListener('click', () => {
+  genStep = 0;
+  genIdx = null;
+  renderGen();
+});
+
+renderGen();
+
+/* ==========================================================
+   AlphaProof 시뮬레이터
+   ========================================================== */
+
+const apSteps = [
+  // 단계 1: 목표 입력
+  () => `
+    <h4>단계 1 — 증명 목표 입력</h4>
+    <p>AlphaProof에게 풀어야 할 정리를 준다. §4.1의 따름정리 1을 입력해 보자.</p>
+    <div class="theorem">
+      <div class="lab">증명 목표</div>
+      <pre style="margin: 0.5rem 0 0; background: rgba(255,255,255,0.5);">theorem corollary_1
+    (a b c m n : ℤ)
+    (hab : a ∣ b) (hac : a ∣ c) :
+    a ∣ (m * b + n * c) := by
+  ?</pre>
+    </div>
+    <p>‘<code>?</code>'에 무엇을 채워야 증명이 완성되는가? 사람이 강의 중 머릿속에서 한 일을 이제 AlphaProof가 자동으로 수행한다.</p>
+    <div class="note">
+      <strong>참고</strong> — Lean 4에서 ‘<code>by ?</code>'는 ‘여기를 채워야 한다'는 자리이다. 학생들의 워크북에서는 ‘<code>____</code>'(언더스코어 4개)로 표기한다.
+    </div>
+  `,
+  // 단계 2: 임베딩
+  () => `
+    <h4>단계 2 — 증명 목표 임베딩</h4>
+    <p>증명 목표를 벡터로 변환한다. 일반 RAG의 단계 2와 같은 동작이지만, 임베딩 모델이 <strong>수학 정리에 특화</strong>되어 있다(예: ReProver의 ByT5 기반 인코더, PACT 등).</p>
+    <p style="margin-top: 1.2rem;"><code>a ∣ (m * b + n * c)</code></p>
+    <div style="text-align: center; font-size: 1.3rem; color: var(--muted); margin: 0.4rem 0;">↓</div>
+    <div class="vector-display">
+      <span class="lbr">[</span>
+      <span class="vec-num">0.41</span>
+      <span class="vec-num">-0.17</span>
+      <span class="vec-num">0.83</span>
+      <span class="vec-num">0.22</span>
+      <span class="vec-num">-0.65</span>
+      <span class="rbr">]</span>
+      <span class="vec-dim">∈ ℝ⁵</span>
+    </div>
+    <div class="note">
+      이 벡터에는 ‘<strong>가분성과 합의 분배</strong>'라는 의미가 인코딩되어 있다. 비슷한 의미의 다른 정리(예: <code>dvd_add</code>, <code>dvd_mul_left</code>)도 가까운 벡터로 변환된다.
+    </div>
+  `,
+  // 단계 3: Mathlib 검색
+  () => `
+    <h4>단계 3 — Mathlib 라이브러리 검색</h4>
+    <p>Mathlib에 있는 수만 개의 정리 중 <strong>현재 목표와 가장 비슷한 정리</strong>를 찾는다.</p>
+    <div class="search-results">
+      <div class="result-item top">
+        <div class="result-rank">1</div>
+        <div class="result-text"><code>dvd_add</code> :  a ∣ b → a ∣ c → a ∣ (b + c)</div>
+        <div class="result-score">d = 0.14</div>
+      </div>
+      <div class="result-item top">
+        <div class="result-rank">2</div>
+        <div class="result-text"><code>Dvd.Dvd.mul_left</code> :  a ∣ b → ∀ c, a ∣ (c * b)</div>
+        <div class="result-score">d = 0.19</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">3</div>
+        <div class="result-text"><code>dvd_mul_of_dvd_right</code> :  a ∣ b → ∀ c, a ∣ (c * b)</div>
+        <div class="result-score">d = 0.22</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">4</div>
+        <div class="result-text"><code>mul_add</code> :  a * (b + c) = a*b + a*c</div>
+        <div class="result-score">d = 0.51</div>
+      </div>
+    </div>
+    <div class="note">
+      위쪽 두 개가 <strong>핵심 도구</strong>이다 — <strong>강의의 정리 1-(i)와 1-(ii)에 정확히 대응</strong>한다. 즉 AlphaProof가 ‘떠올린 정리'와 학생이 ‘떠올린 정리'가 같다.
+    </div>
+  `,
+  // 단계 4: 전술 후보
+  () => `
+    <h4>단계 4 — 전술(tactic) 후보 생성</h4>
+    <p>LLM(또는 별도의 정책 모델)이 검색된 정리들을 ‘조립'할 후보 전술 시퀀스를 여러 개 생성한다.</p>
+    <pre><strong>후보 A (직접 적용):</strong>
+exact dvd_add
+        (Dvd.Dvd.mul_left hab m)
+        (Dvd.Dvd.mul_left hac n)
+
+
+<strong>후보 B (refine으로 분해):</strong>
+refine dvd_add ?_ ?_
+· exact Dvd.Dvd.mul_left hab m
+· exact Dvd.Dvd.mul_left hac n
+
+
+<strong>후보 C (have로 단계 분리):</strong>
+have h1 := Dvd.Dvd.mul_left hab m
+have h2 := Dvd.Dvd.mul_left hac n
+exact dvd_add h1 h2</pre>
+    <div class="note">
+      세 후보 모두 <strong>같은 수학적 아이디어</strong>이지만 표현이 다르다. AlphaProof는 여러 후보를 동시에(또는 순서대로) 시도한다.
+    </div>
+  `,
+  // 단계 5: Lean 검증
+  () => `
+    <h4>단계 5 — Lean 4 컴파일러 검증</h4>
+    <p>각 후보를 Lean 4 컴파일러에 보낸다. 통과하면 정답, 실패하면 다음 후보로.</p>
+    <pre>후보 A → Lean 컴파일러 → <span class="pass">PASS</span>
+후보 B → Lean 컴파일러 → <span class="pass">PASS</span>
+후보 C → Lean 컴파일러 → <span class="pass">PASS</span></pre>
+    <p>셋 다 통과했다면 가장 짧은 후보 A를 채택한다.</p>
+    <div class="warn">
+      <div class="lab">왜 검증 단계가 필수인가</div>
+      <p style="margin: 0;">LLM은 <strong>그럴듯한 거짓말</strong>을 한다. ‘<code>exact dvd_add ...</code>'라고 자신 있게 답해도, 정리 이름이 살짝 틀렸거나 인자 순서가 틀리면 — Lean 컴파일러가 즉시 거부한다. <strong>이게 단순 RAG 시스템이 줄 수 없는 ‘형식적 검증'</strong>(formal verification)이다. AlphaProof가 신뢰할 만한 이유이다.</p>
+    </div>
+  `,
+  // 단계 6: 완성
+  () => `
+    <h4>단계 6 — 증명 완성</h4>
+    <p>최종 증명이 완성되었다.</p>
+    <pre>theorem corollary_1
+    (a b c m n : ℤ)
+    (hab : a ∣ b) (hac : a ∣ c) :
+    a ∣ (m * b + n * c) := by
+  exact dvd_add
+          (Dvd.Dvd.mul_left hab m)
+          (Dvd.Dvd.mul_left hac n)</pre>
+    <div class="answer-box">
+      <div class="lab">완료</div>
+      AlphaProof가 따름정리 1을 자동으로 증명했다. <strong>학생이 강의 중 머릿속에서 한 일</strong>을 자동화한 것이다.
+    </div>
+    <h3 style="margin-top: 1.5rem;">6단계 요약</h3>
+    <ol>
+      <li><strong>증명 목표 입력</strong> — Lean 정리 진술</li>
+      <li><strong>목표 임베딩</strong> — 정리를 벡터로 변환(수학 특화)</li>
+      <li><strong>Mathlib 검색</strong> — 비슷한 정리들을 k-NN으로 검색</li>
+      <li><strong>전술 후보 생성</strong> — LLM이 후보 증명 시퀀스 작성</li>
+      <li><strong>Lean 검증</strong> — 컴파일러가 후보들을 채점</li>
+      <li><strong>최종 증명</strong> — 통과한 후보 채택</li>
+    </ol>
+    <p>실제 AlphaProof는 이 사이클을 수만 번 반복하며 IMO 2024에서 <strong>6문제 중 5문제</strong>를 풀어 은메달급 성적을 거뒀다. 한 문제에 평균 2~4시간이 걸렸으니 사람과 비슷한 시간이다.</p>
+    <p>이제 마지막 탭에서 ‘여러분의 머릿속'과 ‘AlphaProof'가 어떻게 같은 일을 하는지 정리한다.</p>
+  `
+];
+
+let apStep = 0;
+
+function renderAp() {
+  document.getElementById('apStage').textContent = `단계 ${apStep + 1} / 6`;
+  document.getElementById('apBody').innerHTML = apSteps[apStep]();
+
+  const nextBtn = document.getElementById('apNext');
+  if (apStep < apSteps.length - 1) {
+    nextBtn.disabled = false;
+    nextBtn.textContent = '다음 단계 →';
+  } else {
+    nextBtn.disabled = true;
+    nextBtn.textContent = '완료';
+  }
+
+  retypeset(document.getElementById('apBody'));
+}
+
+document.getElementById('apNext').addEventListener('click', () => {
+  if (apStep < apSteps.length - 1) {
+    apStep++;
+    renderAp();
+  }
+});
+
+document.getElementById('apReset').addEventListener('click', () => {
+  apStep = 0;
+  renderAp();
+});
+
+renderAp();
+</script>
+</body>
+</html>
