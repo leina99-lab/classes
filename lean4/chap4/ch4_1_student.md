@@ -201,12 +201,12 @@ theorem divides_add (a b c : ℤ) (hab : a ∣ b) (hac : a ∣ c) :
 
 | 수학 | Lean 4 | InfoView 상태 |
 |------|--------|---------------|
-| "$b = as$인 $s$ 존재" | `obtain ⟨s, hs⟩ := hab` | `hs : b = a * s` |
-| "$c = at$인 $t$ 존재" | `obtain ⟨t, ht⟩ := hac` | `ht : c = a * t` |
-| "증인은 $s + t$" | `refine ⟨s + t, ?_⟩` | `⊢ b + c = a * (s + t)` |
-| "$b$를 $as$로 치환" | `rw [hs]` | `⊢ a*s + c = a * (s + t)` |
-| "$c$를 $at$로 치환" | `rw [ht]` | `⊢ a*s + a*t = a * (s + t)` |
-| "분배법칙 역방향" | `rw [← mul_add]` | `⊢ a*(s+t) = a*(s+t)` (종료) |
+| $b = as$인 $s$ 존재 | `obtain ⟨s, hs⟩ := hab` | `hs : b = a * s` |
+| $c = at$인 $t$ 존재 | `obtain ⟨t, ht⟩ := hac` | `ht : c = a * t` |
+| 증인은 $s + t$ | `refine ⟨s + t, ?_⟩` | `⊢ b + c = a * (s + t)` |
+| $b$를 $as$로 치환 | `rw [hs]` | `⊢ a*s + c = a * (s + t)` |
+| $c$를 $at$로 치환 | `rw [ht]` | `⊢ a*s + a*t = a * (s + t)` |
+| 분배법칙 역방향 | `rw [← mul_add]` | `⊢ a*(s+t) = a*(s+t)` (종료) |
 
 **이 표를 외우면, 다른 정리도 같은 방식으로 뜯을 수 있다**.
 
