@@ -611,7 +611,7 @@ $\gcd(a, m) = 1$. 즉 $a$와 $m$이 서로소일 때만. 특히 $m$이 소수이
 | `mul_comm` | $a \cdot b = b \cdot a$ | 정리 4 양방향 증명 |
 | `sub_add_cancel` | $(a - b) + b = a$ | 정리 4 (→) 방향 |
 | `add_sub_cancel_left` | $(a + b) - a = b$ | 정리 4 (←) 방향 |
-| `Nat.dvd_iff_exists_eq_mul_left` | $a \mid b \iff \exists k,\ b = k \cdot a$ | 가분성 동치 표현 |
+| `dvd_iff_exists_eq_mul_left` | $a \mid b \iff \exists k,\ b = k \cdot a$ | 가분성 동치 표현 |
 | `dvd_add` | $a \mid b \to a \mid c \to a \mid (b + c)$ | 따름정리 1, AlphaProof 검색 결과 |
 | `Dvd.Dvd.mul_left` | $a \mid b \to \forall c,\ a \mid (c \cdot b)$ | 따름정리 1, AlphaProof 검색 결과 |
 | `AddCommGroup (ZMod m)` | $(\mathbb{Z}_m, +_m)$이 교환군임 | 5.4절 자동 인스턴스 |
@@ -620,4 +620,3 @@ $\gcd(a, m) = 1$. 즉 $a$와 $m$이 서로소일 때만. 특히 $m$이 소수이
 
 ---
 
-**END OF STUDENT SCRIPT**
