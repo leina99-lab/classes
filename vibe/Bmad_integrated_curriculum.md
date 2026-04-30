@@ -1,11 +1,16 @@
-# 바이브코딩 기반 Python-first AI/Data Lab 구축
+# 바이브코딩 기반 Python-first AI/Data Lab 구축 — 통합 교안 (최종판)
+
 > **과정명**: 바이브코딩으로 만드는 데이터분석·AI 알고리즘 구현 시스템
+> **총 회차**: 8회 (각 3시간, 총 24시간)
+> **문체**: ~다/~이다 학술 문어체
 
 ---
 
 ## 1. 과정 개요
 
 ### 1.1 수업 목표
+
+수강생은 이 과정을 통해 다음 역량을 갖추게 된다.
 
 - **AI 코딩 도구**(Claude Code 또는 Gemini CLI)를 사용하여 터미널에서 데이터분석 repo를 구축한다.
 - BMAD를 설치하고, 6종 AI 에이전트를 활용하여 문제 정의·요구사항·아키텍처·구현 Story를 체계적으로 관리한다.
@@ -62,7 +67,8 @@
 - Python 기초 문법
 - 파일/폴더 개념
 - CSV 또는 Excel 데이터에 대한 기본 이해
-- Git은 몰라도 수업 중 필요한 수준만 익힌다.
+- Git은 몰라도 수업 중 필요한 수준만 익힌다
+- SQL은 사용하지 않는다. 이 수업은 Python-first 흐름이다.
 
 ---
 
@@ -226,7 +232,7 @@ Phase 4: Implementation      → Story 단위 코드 작성
 
 **BMAD 황금률**: 모든 워크플로는 새 채팅 세션에서 시작한다.
 
-> Claude Code에서 새 세션을 여는 방법: `/clear` 입력 또는 터미널에서 `claude`를 새로 실행한다.
+> 새 세션을 여는 방법: `/clear` 입력 또는 터미널에서 `claude`(또는 `gemini`)를 새로 실행한다.
 
 **데이터분석에서 BMAD가 해결하는 네 가지 문제:**
 
@@ -406,7 +412,7 @@ AI agents must:
 
 #### 실습 2: Product Brief 작성
 
-Claude Code에서 새 세션을 열고(`/clear` 또는 `claude` 재실행) 다음을 입력한다.
+AI 코딩 도구에서 새 세션을 열고(`/clear`) 다음을 입력한다.
 
 ```
 bmad-product-brief
@@ -416,7 +422,7 @@ Mary(Analyst)의 질문에 답하며 product brief를 작성한다.
 
 #### 실습 3: PRD 작성
 
-Claude Code에서 새 세션을 열고(`/clear` 또는 `claude` 재실행) 다음을 입력한다.
+AI 코딩 도구에서 새 세션을 열고(`/clear`) 다음을 입력한다.
 
 ```
 bmad-create-prd
@@ -467,7 +473,7 @@ BMAD Phase 3(Solutioning)을 실행하여 기술 아키텍처를 설계하고, �
 
 #### 실습 1: Architecture 설계
 
-Claude Code에서 새 세션을 열고(`/clear` 또는 `claude` 재실행) 다음을 입력한다.
+AI 코딩 도구에서 새 세션을 열고(`/clear`) 다음을 입력한다.
 
 ```
 bmad-create-architecture
@@ -483,7 +489,7 @@ Winston(Architect)이 PRD를 자동으로 읽고 기술 질문을 던진다. 답
 
 #### 실습 2: Epic/Story 분해
 
-Claude Code에서 새 세션을 열고(`/clear` 또는 `claude` 재실행) 다음을 입력한다.
+AI 코딩 도구에서 새 세션을 열고(`/clear`) 다음을 입력한다.
 
 ```
 bmad-create-epics-and-stories
