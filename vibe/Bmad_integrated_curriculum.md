@@ -190,20 +190,7 @@ ai-data-lab/
 #### 수업 목표
 수강생이 BMAD가 무엇이며 왜 필요한지 이해하고, AI 코딩 도구·BMAD·ChatGPT Projects 환경을 세팅하여 `bmad-help`까지 실행한다.
 
-#### 시간 배분
 
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:30 | BMAD란 무엇인가: 정의, 6종 에이전트, 4단계 워크플로 | 강의 |
-| 0:30~0:50 | 데이터분석에서 BMAD가 필요한 이유: 네 가지 문제와 해결 메커니즘 | 강의 |
-| 0:50~1:00 | 웹앱 바이브코딩 vs 데이터분석 바이브코딩의 차이 | 강의 |
-| 1:00~1:10 | 휴식 | — |
-| 1:10~1:40 | Node.js → AI 코딩 도구(Claude Code 또는 Gemini CLI) → uv 설치 → Python 환경 세팅 | 실습 |
-| 1:40~2:00 | BMAD 설치: npx bmad-method install (마법사 질문별 가이드) | 실습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:30 | bmad-help 첫 실행 및 폴더 구조 확인 | 실습 |
-| 2:30~2:50 | BMAD 황금률 + 공식 마스터클래스 영상 소개 | 강의 |
-| 2:50~3:00 | 과제 안내 및 Q&A | — |
 
 #### 핵심 개념
 
@@ -322,19 +309,6 @@ README.md에 다음 내용을 작성한다.
 #### 수업 목표
 수강생이 BMAD의 Phase 1~2를 실행하여 project-context.md, product brief, PRD를 작성한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:20 | Quick Flow를 쓰지 않는 이유, 전체 흐름 복습 | 강의 |
-| 0:20~0:50 | project-context.md 작성 | 실습 |
-| 0:50~1:00 | 휴식 | — |
-| 1:00~1:30 | Phase 1: bmad-product-brief 실행 | 실습 |
-| 1:30~2:00 | Phase 2: bmad-create-prd 실행 | 실습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:40 | PRD 검토 및 수정 | 실습 |
-| 2:40~2:50 | ChatGPT Projects 보조 공간 세팅 | 실습 |
-| 2:50~3:00 | 과제 안내 | — |
 
 #### 핵심 개념
 
@@ -455,19 +429,7 @@ ChatGPT Projects에 새 프로젝트를 만들고 다음 custom instruction을 �
 #### 수업 목표
 BMAD Phase 3(Solutioning)을 실행하여 기술 아키텍처를 설계하고, 표준 repo 구조를 생성하며, Epic/Story를 분해한다.
 
-#### 시간 배분
 
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:30 | Phase 3: bmad-create-architecture 실행 | 실습 |
-| 0:30~1:00 | architecture.md 검토 및 디렉터리 구조 확인 | 실습 |
-| 1:00~1:10 | 휴식 | — |
-| 1:10~1:40 | bmad-create-epics-and-stories 실행 | 실습 |
-| 1:40~2:00 | bmad-check-implementation-readiness 실행 | 실습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:40 | repo 구조 생성 (AI 코딩 도구 프롬프트 활용) | 실습 |
-| 2:40~2:55 | 합성 데이터 생성 | 실습 |
-| 2:55~3:00 | 과제 안내 | — |
 
 #### 실습 1: Architecture 설계
 
@@ -603,19 +565,6 @@ README.md에 다음 규칙을 추가한다.
 #### 수업 목표
 pandas로 데이터를 읽고, 결측치·중복·이상치·스키마를 점검하고, Claude API로 EDA 결과를 자동 해석하는 모듈을 구현한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:20 | BMAD Phase 4 시작: bmad-sprint-planning | 실습 |
-| 0:20~0:50 | Story 구현: data loaders, schema validation | 실습 |
-| 0:50~1:00 | 휴식 | — |
-| 1:00~1:30 | Story 구현: quality_checks.py (결측, 중복, 이상치) | 실습 |
-| 1:30~2:00 | Story 구현: 01_eda.ipynb + eda.py | 실습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:40 | AI 해석 모듈 구현: src/ai/interpreter.py | 실습 |
-| 2:40~2:55 | ChatGPT Projects에 EDA 질문 10개 의뢰 | 실습 |
-| 2:55~3:00 | 과제 안내 | — |
 
 #### 실습 1: 스프린트 시작
 
@@ -778,18 +727,6 @@ reports/analysis_summary.md에 다음 질문에 답한다.
 #### 수업 목표
 노트북에서 하던 분석을 `uv run python scripts/run_pipeline.py` 한 줄로 재실행 가능한 파이프라인으로 전환한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:30 | 파이프라인 개념: 왜 노트북만으로는 부족한가 | 강의 |
-| 0:30~1:00 | Story 구현: src/data/cleaning.py, src/analysis/kpis.py | 실습 |
-| 1:00~1:10 | 휴식 | — |
-| 1:10~1:50 | Story 구현: scripts/run_pipeline.py 통합 | 실습 |
-| 1:50~2:10 | 품질 게이트 구현: quality_gate.py | 실습 |
-| 2:10~2:20 | 휴식 | — |
-| 2:20~2:50 | config.yaml 기반 재사용 테스트 | 실습 |
-| 2:50~3:00 | BMAD 코드 리뷰 실행 및 과제 안내 | 실습 |
 
 #### 핵심 코드: scripts/run_pipeline.py
 
