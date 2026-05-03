@@ -1,4 +1,4 @@
-# 바이브코딩 기반 Python-first AI/Data Lab 구축 — 통합 교안 (최종판)
+# 바이브코딩 기반 Python-first AI/Data Lab 구축 
 
 > **과정명**: 바이브코딩으로 만드는 데이터분석·AI 알고리즘 구현 시스템
 
@@ -831,19 +831,6 @@ hardcoded paths, missing tests, misleading analysis risks.
 #### 수업 목표
 정제된 데이터를 이용해 `returned` 컬럼을 예측하는 binary classification baseline 모델을 구축한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:20 | ML 개념: target, feature, leakage, train/test split | 강의 |
-| 0:20~0:50 | Story 구현: build_features.py | 실습 |
-| 0:50~1:00 | 휴식 | — |
-| 1:00~1:40 | Story 구현: train_sklearn.py, evaluate.py | 실습 |
-| 1:40~2:00 | scripts/train_baseline.py 실행 | 실습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:30 | AI 모델 어드바이저로 개선 제안 받기 | 실습 |
-| 2:30~2:50 | reports/model_report.md 작성 | 실습 |
-| 2:50~3:00 | 과제 안내 | — |
 
 #### 핵심 코드: src/models/train_sklearn.py
 
@@ -951,21 +938,7 @@ reports/model_report.md에 다음 섹션을 작성한다.
 #### 수업 목표
 scikit-learn 이후 PyTorch로 넘어가는 이유를 이해하고, 동일한 tabular 데이터로 간단한 MLP를 구현한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:20 | PyTorch 개념: tensor, Dataset, DataLoader, Module | 강의 |
-| 0:20~0:30 | PyTorch가 꼭 필요한 상황과 불필요한 상황 | 강의 |
-| 0:30~1:00 | Story 구현: torch_models.py (MLP 정의) | 실습 |
-| 1:00~1:10 | 휴식 | — |
-| 1:10~1:50 | Story 구현: train_pytorch.py (training loop) | 실습 |
-| 1:50~2:00 | 휴식 | — |
-| 2:00~2:30 | scripts/train_deep_learning.py 실행 | 실습 |
-| 2:30~2:50 | scikit-learn baseline과 비교, pytorch_report.md 작성 | 실습 |
-| 2:50~3:00 | 과제 안내 | — |
-
-#### 강의 포인트
+####  포인트
 
 PyTorch는 "무조건 더 좋은 모델"이 아니다. tabular 데이터에서는 scikit-learn baseline이 더 빠르고 해석하기 쉬운 경우가 많다. PyTorch는 다음 상황에서 의미가 있다.
 - 이미지, 텍스트, 음성 데이터
@@ -1032,18 +1005,6 @@ uv run python scripts/train_deep_learning.py
 #### 수업 목표
 지금까지 만든 repo를 하나의 **"AI/Data Lab 템플릿"** 으로 정리하고, BMAD 최종 리뷰를 수행하며 발표한다.
 
-#### 시간 배분
-
-| 시간 | 내용 | 형태 |
-|------|------|------|
-| 0:00~0:30 | 최종 점검 10항목 확인 | 실습 |
-| 0:30~1:00 | BMAD 최종 코드 리뷰 실행 | 실습 |
-| 1:00~1:10 | 휴식 | — |
-| 1:10~1:30 | README.md 최종 정리 | 실습 |
-| 1:30~2:00 | 발표 준비 | 자습 |
-| 2:00~2:10 | 휴식 | — |
-| 2:10~2:50 | 최종 발표 (팀별 또는 개인별) | 발표 |
-| 2:50~3:00 | 수업 정리 및 다음 학습 경로 안내 | 강의 |
 
 #### 최종 점검 10항목
 
@@ -1187,28 +1148,10 @@ Add tests when reusable logic changes. Do not introduce SQL. Do not over-enginee
 Prefer clear, beginner-readable code. Use config.yaml for variable parameters.
 ```
 
----
-
-## 7. 수업 평가 기준
-
-총점 100점
-
-| 평가 항목 | 배점 | 기준 |
-|----------|------|------|
-| repo 구조 | 15 | 폴더 책임이 명확하고 재사용 가능 |
-| 데이터 품질검사 | 15 | 결측치, 중복, 이상치, 스키마 검증 포함 |
-| 재현성 | 15 | 단일 명령으로 주요 결과 재생성 가능 |
-| pandas 분석 | 10 | EDA와 KPI가 명확함 |
-| scikit-learn baseline | 15 | target, feature, metrics, leakage 설명 가능 |
-| PyTorch 구현 | 10 | Dataset, DataLoader, model, training loop 구현 |
-| 문서화 | 10 | README, reports, assumptions, limitations 포함 |
-| BMAD 활용 | 10 | PRD, architecture, story, review 흐름 사용 |
 
 ---
 
-## 8. 강사용 운영 가이드
-
-### 수업에서 계속 강조할 원칙
+## 7. 강조할 원칙
 
 1. ChatGPT는 분석 보조이다. repo의 source of truth는 AI 코딩 도구(Claude Code/Gemini CLI)에서 관리한다.
 2. notebook은 실험실이다. 재사용 로직은 src/로 옮긴다.
@@ -1231,7 +1174,7 @@ Prefer clear, beginner-readable code. Use config.yaml for variable parameters.
 
 ---
 
-## 9. 압축형 2일 워크숍 버전
+## 8. 압축형 2일 워크숍 버전
 
 8회차가 길다면 아래처럼 2일(각 6시간) 과정으로 축약할 수 있다.
 
