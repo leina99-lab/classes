@@ -175,7 +175,8 @@ example : Nat.Prime 113 := by decide
 #eval (List.range 1000).reverse.find? Nat.Prime  -- some 997
 
 -- 소수 무한성 (Mathlib에 이미 있음)
-example : ∀ n, ∃ p, n < p ∧ Nat.Prime p :=
+-- 진술: 모든 n에 대해, n ≤ p이면서 소수인 p가 존재한다
+example : ∀ n, ∃ p, n ≤ p ∧ Nat.Prime p :=
   Nat.exists_infinite_primes
 ```
 
