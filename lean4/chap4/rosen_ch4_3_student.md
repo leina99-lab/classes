@@ -514,7 +514,7 @@ GPT-4, Claude, Gemini 모두 사용하는 **RoPE**(Rotary Position Embedding)는
 
 $$\mathrm{RoPE}(x, \mathrm{pos}) = x \cdot e^{i \cdot \mathrm{pos} \cdot \theta}$$
 
-여기서 '회전 각도 mod $2\pi$ '가 핵심 — 즉 **연속판 $\mathbb{Z}_m$ **이다. 정수 대신 실수이지만, '**주기성**'이라는 핵심 직관은 동일하다. '위치가 멀어져도 같은 패턴이 다시 나타난다'는 RoPE의 강점이 'mod $m$ '의 순환성과 같은 자리에서 나온다.
+여기서 '회전 각도 mod $2\pi$ '가 핵심 — 즉 **연속판 $\mathbb{Z}_m$**이다. 정수 대신 실수이지만, '**주기성**'이라는 핵심 직관은 동일하다. '위치가 멀어져도 같은 패턴이 다시 나타난다'는 RoPE의 강점이 'mod $m$ '의 순환성과 같은 자리에서 나온다.
 
 ### 6.3 RSA — 빠른 나머지 지수승
 
