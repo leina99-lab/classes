@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제6장: 범주형 자료에 대한 추론 — OpenIntro Statistics</title>
+
+<!-- SageMath 임베디드 셀 -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+
+<!-- MathJax 수식 렌더링 -->
+<script>
+window.MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+    /* ====== 기본 ====== */
+    body {
+        font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        background-color: #eef2f5;
+        margin: 0; padding: 0;
+        color: #2c3e50;
+        line-height: 1.7;
+    }
+    .container {
+        max-width: 1080px; margin: 0 auto; background: white;
+        min-height: 100vh; padding-bottom: 120px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.08);
+    }
+
+    /* ====== 표지 ====== */
+    .cover {
+        background: linear-gradient(135deg, #1a3a5c 0%, #2c5282 50%, #4A6FA5 100%);
+        color: white; padding: 80px 40px; text-align: center;
+    }
+    .cover .chapter-num {
+        font-size: 1.1em; letter-spacing: 0.3em; opacity: 0.85; margin-bottom: 12px;
+    }
+    .cover h1 {
+        margin: 0; font-size: 2.6em; font-weight: 700; letter-spacing: -0.02em;
+    }
+    .cover .subtitle {
+        margin-top: 14px; font-size: 1.05em; color: #cbd5e0;
+    }
+    .cover .meta {
+        margin-top: 28px; font-size: 0.9em; color: #a0aec0;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        padding-top: 18px; max-width: 600px; margin-left: auto; margin-right: auto;
+    }
+
+    /* ====== 목차 ====== */
+    .toc {
+        background: #f7fafc; padding: 30px 50px; border-bottom: 1px solid #e2e8f0;
+    }
+    .toc h2 {
+        margin-top: 0; color: #1a3a5c; border-bottom: 2px solid #4A6FA5;
+        padding-bottom: 8px; display: inline-block;
+    }
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc li {
+        padding: 6px 0; border-bottom: 1px dotted #cbd5e0;
+    }
+    .toc a { color: #2c5282; text-decoration: none; font-weight: 500; }
+    .toc a:hover { color: #1a3a5c; text-decoration: underline; }
+
+    /* ====== 섹션 ====== */
+    .section {
+        padding: 50px 50px 30px;
+        border-bottom: 4px solid #f0f4f8;
+    }
+    .section-num {
+        display: inline-block; background: #4A6FA5; color: white;
+        padding: 6px 16px; border-radius: 20px; font-size: 0.9em;
+        font-weight: 600; margin-bottom: 12px;
+    }
+    .section h2 {
+        font-size: 1.9em; color: #1a3a5c; margin: 0 0 8px;
+        font-weight: 700; letter-spacing: -0.01em;
+    }
+    .section h3 {
+        font-size: 1.35em; color: #2c5282;
+        border-left: 5px solid #4A6FA5; padding-left: 14px;
+        margin-top: 40px; margin-bottom: 16px;
+    }
+    .section h4 {
+        font-size: 1.1em; color: #1a3a5c;
+        margin-top: 24px; margin-bottom: 10px;
+    }
+    .section p { margin: 14px 0; }
+
+    /* ====== 정의 박스 ====== */
+    .definition {
+        background: #f0f5fa; border-left: 5px solid #4A6FA5;
+        padding: 18px 24px; margin: 22px 0; border-radius: 0 8px 8px 0;
+    }
+    .definition .label {
+        font-weight: 700; color: #1a3a5c; font-size: 0.95em;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        margin-bottom: 8px; display: block;
+    }
+
+    /* ====== 새로운 시각 박스 ====== */
+    .insight {
+        background: linear-gradient(135deg, #fef9e7 0%, #fef5e7 100%);
+        border-left: 5px solid #d4a017;
+        padding: 22px 28px; margin: 28px 0; border-radius: 0 10px 10px 0;
+        box-shadow: 0 2px 8px rgba(212, 160, 23, 0.08);
+    }
+    .insight .insight-title {
+        font-size: 1.2em; font-weight: 700; color: #8a6d11;
+        margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .insight .insight-title::before {
+        content: "💡"; font-size: 1.2em;
+    }
+    .insight p { margin: 10px 0; }
+    .insight strong { color: #6b5510; }
+
+    /* ====== 예제 박스 ====== */
+    .example {
+        background: #fafafa; border: 2px solid #e2e8f0;
+        border-radius: 12px; padding: 24px 28px; margin: 28px 0;
+    }
+    .example .example-label {
+        display: inline-block; background: #4A6FA5; color: white;
+        padding: 4px 12px; border-radius: 16px; font-size: 0.85em;
+        font-weight: 600; margin-bottom: 10px;
+    }
+    .example .example-title {
+        font-size: 1.15em; font-weight: 700; color: #1a3a5c;
+        margin-bottom: 12px;
+    }
+    .example .problem {
+        background: white; padding: 16px 20px;
+        border-left: 4px solid #4A6FA5; border-radius: 0 6px 6px 0;
+        margin-bottom: 14px;
+    }
+
+    /* ====== 토글 (정답/풀이) ====== */
+    details.solution {
+        margin-top: 12px;
+        border: 1px solid #cbd5e0; border-radius: 8px;
+        background: white; overflow: hidden;
+    }
+    details.solution > summary {
+        padding: 14px 20px; cursor: pointer; outline: none;
+        background: #edf2f7; color: #2c5282;
+        font-weight: 600; user-select: none;
+        list-style: none;
+    }
+    details.solution > summary::-webkit-details-marker { display: none; }
+    details.solution > summary::before {
+        content: "▶ "; display: inline-block; transition: transform 0.2s;
+        margin-right: 4px;
+    }
+    details.solution[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    details.solution > summary:hover { background: #e2e8f0; }
+    details.solution[open] > summary {
+        background: #4A6FA5; color: white;
+        border-bottom: 1px solid #2c5282;
+    }
+    .solution-body { padding: 20px 24px; }
+
+    /* ====== 연습문제 ====== */
+    .practice {
+        background: #fef5f5; border: 2px solid #fc8181;
+        border-radius: 12px; padding: 24px 28px; margin: 36px 0;
+    }
+    .practice .practice-label {
+        display: inline-block; background: #c53030; color: white;
+        padding: 4px 14px; border-radius: 16px; font-size: 0.85em;
+        font-weight: 600; margin-bottom: 10px;
+    }
+    .practice .practice-title {
+        font-size: 1.15em; font-weight: 700; color: #742a2a;
+        margin-bottom: 12px;
+    }
+    .practice .hint {
+        background: #fff5f5; border-left: 3px solid #fc8181;
+        padding: 10px 14px; margin: 12px 0; font-size: 0.95em;
+    }
+
+    /* ====== 인터랙티브 코드 안내 ====== */
+    .try-it {
+        background: #e6fffa; border: 1px dashed #38b2ac;
+        border-radius: 6px; padding: 10px 14px; margin: 12px 0;
+        font-size: 0.92em; color: #234e52;
+    }
+    .try-it::before { content: "🧪 실험해 보십시오: "; font-weight: 700; }
+
+    /* ====== 코드 셀 ====== */
+    .compute, .compute-lazy {
+        margin: 14px 0;
+    }
+    code {
+        background: #edf2f7; padding: 2px 6px; border-radius: 4px;
+        font-family: "JetBrains Mono", "Consolas", monospace;
+        font-size: 0.92em; color: #2d3748;
+    }
+
+    /* ====== 표 ====== */
+    table.data-table {
+        width: 100%; border-collapse: collapse; margin: 16px 0;
+        background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    table.data-table th, table.data-table td {
+        padding: 10px 14px; border: 1px solid #cbd5e0;
+        text-align: center;
+    }
+    table.data-table th {
+        background: #4A6FA5; color: white; font-weight: 600;
+    }
+    table.data-table tr:nth-child(even) { background: #f7fafc; }
+
+    /* ====== 비교 표 ====== */
+    table.compare-table {
+        width: 100%; border-collapse: collapse; margin: 16px 0;
+    }
+    table.compare-table th, table.compare-table td {
+        padding: 12px 16px; border: 1px solid #d4a017;
+        text-align: left;
+    }
+    table.compare-table th {
+        background: #fef5e7; color: #8a6d11; font-weight: 700;
+    }
+
+    /* ====== 강조 ====== */
+    .emph {
+        background: linear-gradient(180deg, transparent 60%, #fef08a 60%);
+        padding: 0 2px; font-weight: 600;
+    }
+    blockquote.summary-box {
+        background: #f7fafc; border: 1px solid #cbd5e0;
+        border-left: 5px solid #4A6FA5;
+        padding: 16px 22px; margin: 20px 0; border-radius: 0 8px 8px 0;
+    }
+
+    /* ====== 진행바 ====== */
+    .progress-bar {
+        position: fixed; top: 0; left: 0; height: 4px;
+        background: #4A6FA5; z-index: 1000; width: 0%;
+        transition: width 0.1s;
+    }
+
+    /* ====== 마무리 ====== */
+    .epilogue {
+        text-align: center; padding: 60px 40px;
+        background: linear-gradient(135deg, #1a3a5c 0%, #2c5282 100%);
+        color: white;
+    }
+    .epilogue h2 { margin: 0; font-size: 1.8em; }
+    .epilogue p { color: #cbd5e0; margin-top: 12px; }
+</style>
+</head>
+
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="container">
+
+<!-- ============== 표지 ============== -->
+<div class="cover">
+    <div class="chapter-num">CHAPTER 6</div>
+    <h1>범주형 자료에 대한 추론</h1>
+    <div class="subtitle">Inference for Categorical Data</div>
+    <div class="meta">
+        OpenIntro Statistics 한국어 강의자료 · 3시간 분량<br>
+        단일 비율 · 두 비율의 차이 · 카이제곱 적합도 · 독립성 검정
+    </div>
+</div>
+
+<!-- ============== 목차 ============== -->
+<div class="toc">
+    <h2>학습 목차</h2>
+    <ul>
+        <li><a href="#sec61">6.1 단일 비율에 대한 추론</a></li>
+        <li><a href="#sec62">6.2 두 비율의 차이</a></li>
+        <li><a href="#sec63">6.3 카이제곱을 이용한 적합도 검정</a></li>
+        <li><a href="#sec64">6.4 이원분할표에서의 독립성 검정</a></li>
+        <li><a href="#summary">장 요약</a></li>
+    </ul>
+</div>
+
+<!-- ============== 도입 ============== -->
+<div class="section">
+    <p>이 장에서는 제5장에서 학습한 추론의 원리를 범주형 자료의 여러 상황에 적용한다. 먼저 단일 비율에 대한 내용을 복습하면서 정규분포로 표본비율의 불확실성을 모형화하는 방법을 다루고, 동일한 아이디어를 두 비율의 차이로 확장한다. 이후 분할표에 추론 기법을 적용하는데, 이 맥락에서는 카이제곱 분포라는 다른 분포를 사용하지만 가설검정의 핵심 논리는 그대로 유지된다.</p>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ===================== 6.1 단일 비율 추론 ====================== -->
+<!-- ============================================================ -->
+<div class="section" id="sec61">
+    <span class="section-num">SECTION 6.1</span>
+    <h2>단일 비율에 대한 추론</h2>
+    <p>제5장에서 점추정, 신뢰구간, 가설검정을 탐구하면서 단일 비율에 대한 추론 방법을 접하였다. 이 절에서는 이러한 주제를 복습하고, 단일 비율 상황에서 자료를 수집할 때 적절한 표본크기를 선택하는 방법도 함께 다룬다.</p>
+
+    <!-- 6.1.1 -->
+    <h3>6.1.1 표본비율이 근사적으로 정규분포를 따르는 조건</h3>
+    <p>표본 관측값이 독립이고 표본크기가 충분히 클 때, 표본비율 $\hat{p}$은 정규분포를 사용하여 모형화할 수 있다.</p>
+
+    <div class="definition">
+        <span class="label">$\hat{p}$의 표집분포</span>
+        참 비율이 $p$인 모집단에서 크기 $n$인 표본에 기초한 $\hat{p}$의 표집분포는 다음 두 조건이 충족될 때 근사적으로 정규분포를 따른다.
+        <ol>
+            <li>표본의 관측값이 독립이다(예: 단순무작위표본).</li>
+            <li>표본에서 최소 10개의 성공과 10개의 실패가 예상된다. 즉 $np \geq 10$이고 $n(1-p) \geq 10$이다. 이를 <strong>성공-실패 조건</strong>(success-failure condition)이라 한다.</li>
+        </ol>
+        조건이 충족되면 $\hat{p}$의 표집분포는 평균 $p$, 표준오차 $SE = \sqrt{p(1-p)/n}$인 근사 정규분포를 따른다.
+    </div>
+
+    <p>일반적으로 참 비율 $p$는 알려져 있지 않으므로, 조건을 확인하고 표준오차를 추정할 때 어떤 값을 대입한다. <strong>신뢰구간</strong>의 경우 표본비율 $\hat{p}$을 사용하고, <strong>가설검정</strong>의 경우 일반적으로 귀무값 $p_0$을 사용한다.</p>
+
+    <!-- 새로운 시각 1 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 성공-실패 조건의 직관적 이해</div>
+        <p>성공-실패 조건 $np \geq 10$, $n(1-p) \geq 10$은 왜 필요한가? 이는 이항분포의 정규근사가 충분히 정확해지는 시점을 보장하는 <strong>경험 법칙</strong>이다.</p>
+        <p><strong>핵심 통찰</strong>: 이항분포는 본질적으로 이산분포이므로 성공 횟수는 $0, 1, 2, \ldots, n$의 정수값만 가질 수 있다. 반면 정규분포는 연속분포이다. 성공-실패 조건은 이산적인 막대그래프가 연속적인 종 모양 곡선과 충분히 비슷해지는 시점을 보장한다.</p>
+        <p><strong>기하학적 해석</strong>: $n$이 작거나 $p$가 0 또는 1에 가까우면 이항분포가 심하게 치우친다. 예를 들어 $n=20$, $p=0.05$이면 $np=1$로 조건이 충족되지 않으며 분포가 오른쪽으로 심하게 치우치므로 정규근사가 실패한다.</p>
+        <p><strong>역사적 배경</strong>: 드 무아브르(de Moivre)가 1733년에 이항분포의 정규근사를 처음 발견하였다. 그러나 실용적인 "10의 규칙"은 20세기 통계 실무에서 경험적으로 확립된 것이다.</p>
+
+        <p style="margin-top:14px;"><strong>아래 셀로 직접 확인해 보십시오.</strong> $p$와 $n$ 값을 바꾸어 가며 이항분포가 정규분포에 얼마나 가까워지는지 시각적으로 비교할 수 있다.</p>
+        <div class="try-it">아래 코드의 <code>p</code>와 <code>n</code> 값을 바꾸어 분포 모양의 변화를 관찰해 보십시오.</div>
+        <div class="compute">
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import stats
+
+# === 학생이 바꾸어 볼 변수 ===
+p = 0.3      # 성공 확률 (0 ~ 1)
+n = 50       # 시행 횟수
+# ===========================
+
+x = np.arange(0, n+1)
+binom_pmf = stats.binom.pmf(x, n, p)
+mu, sigma = n*p, np.sqrt(n*p*(1-p))
+xs = np.linspace(max(0, mu-4*sigma), min(n, mu+4*sigma), 200)
+norm_pdf = stats.norm.pdf(xs, mu, sigma)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.bar(x, binom_pmf, alpha=0.5, label=f'Binomial(n={n}, p={p})')
+ax.plot(xs, norm_pdf, 'r-', lw=2, label=f'Normal(mu={mu:.1f}, sd={sigma:.2f})')
+ax.set_xlabel('Number of successes'); ax.set_ylabel('Probability')
+ax.legend(); ax.set_title(f'np = {n*p:.1f}, n(1-p) = {n*(1-p):.1f}')
+plt.show()
+
+print(f"성공-실패 조건: np = {n*p:.1f}, n(1-p) = {n*(1-p):.1f}")
+print(f"두 값이 모두 10 이상인가? {n*p >= 10 and n*(1-p) >= 10}")
+        </div>
+    </div>
+
+    <!-- 6.1.2 신뢰구간 -->
+    <h3>6.1.2 비율에 대한 신뢰구간</h3>
+    <p>신뢰구간은 모수 $p$에 대한 그럴듯한 값의 범위를 제공한다. $\hat{p}$이 정규분포로 모형화될 수 있을 때, $p$에 대한 신뢰구간은 다음 형태를 갖는다.</p>
+    $$\hat{p} \pm z^{\ast} \times SE$$
+
+    <!-- 예제 6.1 -->
+    <div class="example">
+        <span class="example-label">예제 6.1</span>
+        <div class="example-title">조건 확인 — 페이데이 대출 차입자 조사</div>
+        <div class="problem">
+            <strong>[문제]</strong> 826명의 급여담보대출(payday loan) 차입자를 대상으로 한 단순무작위표본 조사에서 응답자의 70%가 급여담보대출 업체에 대한 새로운 규제를 지지하였다. $\hat{p}=0.70$을 정규분포로 모형화하는 것이 타당한가?
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p>자료가 무작위표본이므로 관측값은 독립이고 관심 모집단을 대표한다. 신뢰구간 맥락이므로 $p$ 대신 $\hat{p}$을 사용하여 성공-실패 조건을 확인한다.</p>
+                $$n\hat{p} = 826 \times 0.70 = 578, \qquad n(1-\hat{p}) = 826 \times 0.30 = 248$$
+                <p>두 값 모두 10 이상이므로 $\hat{p}$을 정규분포로 모형화할 수 있다.</p>
+                <div class="compute-lazy">
+n = 826
+p_hat = 0.70
+
+successes = n * p_hat
+failures  = n * (1 - p_hat)
+
+print(f"성공 횟수 (n*p_hat): {successes:.0f}")
+print(f"실패 횟수 n(1-p_hat): {failures:.0f}")
+print(f"성공-실패 조건 충족 여부: {successes >= 10 and failures >= 10}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 예제 6.3 -->
+    <div class="example">
+        <span class="example-label">예제 6.3</span>
+        <div class="example-title">95% 신뢰구간의 구성</div>
+        <div class="problem">
+            <strong>[문제]</strong> 위 조사에서 규제를 지지하는 차입자 비율 $p$에 대한 95% 신뢰구간을 구성하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p>점추정 $\hat{p}=0.70$, $z^{\ast}=1.96$, 표준오차 $SE = \sqrt{0.70 \times 0.30 / 826} \approx 0.016$이다.</p>
+                $$0.70 \pm 1.96 \times 0.016 \;\rightarrow\; (0.669, \, 0.731)$$
+                <p>여론조사 시점에 규제를 지지하는 참 비율이 $0.669$에서 $0.731$ 사이에 있다고 95% 신뢰한다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+# === 변수 ===
+n = 826
+p_hat = 0.70
+confidence_level = 0.95
+# ===========
+
+se = np.sqrt(p_hat * (1 - p_hat) / n)
+z_star = stats.norm.ppf((1 + confidence_level) / 2)
+me = z_star * se
+
+print(f"표준오차 SE = {se:.4f}")
+print(f"임계값 z* = {z_star:.4f}")
+print(f"오차한계 ME = {me:.4f}")
+print(f"{int(confidence_level*100)}% 신뢰구간: ({p_hat-me:.3f}, {p_hat+me:.3f})")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div class="try-it">신뢰수준을 90%, 99% 등으로 바꾸어 신뢰구간의 폭이 어떻게 변화하는지 직접 확인해 보십시오.</div>
+    <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 학생이 바꾸어 볼 변수 ===
+n = 826
+p_hat = 0.70
+confidence_level = 0.95   # 0.90, 0.95, 0.99 등으로 변경
+# ===========================
+
+se = np.sqrt(p_hat * (1 - p_hat) / n)
+z_star = stats.norm.ppf((1 + confidence_level) / 2)
+me = z_star * se
+
+print(f"신뢰수준: {confidence_level*100:.0f}%")
+print(f"임계값 z* = {z_star:.4f}")
+print(f"오차한계 = {me:.4f}")
+print(f"신뢰구간: ({p_hat-me:.4f}, {p_hat+me:.4f})")
+print(f"구간의 폭: {2*me:.4f}")
+    </div>
+
+    <!-- 6.1.3 가설검정 -->
+    <h3>6.1.3 비율에 대한 가설검정</h3>
+    <p>가설검정의 절차는 다음과 같다. 우선 가설을 설정하고, 정규근사 조건을 확인한 뒤(이때는 <strong>귀무값 $p_0$</strong>를 사용한다), 검정통계량과 $p$-값을 계산하여 결론을 내린다.</p>
+
+    <!-- 예제 6.6 -->
+    <div class="example">
+        <span class="example-label">예제 6.6</span>
+        <div class="example-title">단일 비율 양측 검정 — 신용조회 규제 지지율</div>
+        <div class="problem">
+            <strong>[문제]</strong> 826명 차입자 무작위표본에서 51%가 새로운 신용조회 규제를 지지한다고 응답하였다. 차입자의 다수가 이 규제를 지지(또는 반대)한다는 설득력 있는 증거가 있는가? 유의수준 $\alpha = 0.05$로 검정하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>가설</strong>: $H_0: p = 0.50$, $H_A: p \neq 0.50$</p>
+                <p><strong>조건 확인(귀무값 사용)</strong>: $np_0 = n(1-p_0) = 413 \geq 10$이므로 정규근사가 가능하다.</p>
+                <p><strong>표준오차</strong>: $SE = \sqrt{0.5 \times 0.5 / 826} \approx 0.017$</p>
+                <p><strong>검정통계량</strong>: $Z = (0.51 - 0.50)/0.017 = 0.59$</p>
+                <p><strong>$p$-값(양측)</strong>: $2 \times P(Z > 0.59) \approx 0.555$</p>
+                <p><strong>결론</strong>: $p$-값이 $\alpha=0.05$보다 크므로 $H_0$을 기각하지 못한다. 차입자의 다수가 이 규제에 대해 일관된 입장을 가진다는 설득력 있는 증거는 없다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+# === 변수 ===
+n = 826
+p_hat = 0.51
+p_0 = 0.50
+alpha = 0.05
+# ===========
+
+se = np.sqrt(p_0 * (1 - p_0) / n)   # 가설검정에서는 귀무값 사용
+z = (p_hat - p_0) / se
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))
+
+print(f"표준오차 SE (귀무값 사용) = {se:.4f}")
+print(f"검정통계량 Z = {z:.3f}")
+print(f"p-값 = {p_value:.4f}")
+print(f"결론: H0를 {'기각한다' if p_value < alpha else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 새로운 시각 2 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 신뢰구간과 가설검정에서 표준오차의 차이</div>
+        <p>학생들이 자주 혼란스러워하는 부분이 있다. 왜 신뢰구간에서는 $\hat{p}$을 사용하고, 가설검정에서는 $p_0$을 사용하는가?</p>
+        <table class="compare-table">
+            <tr><th>맥락</th><th>사용하는 비율</th><th>이유</th></tr>
+            <tr>
+                <td>신뢰구간</td>
+                <td>$\hat{p}$ (표본비율)</td>
+                <td>모수 $p$의 범위를 추정하는 것이 목적이다. $p$를 모르므로 최선의 추정값인 $\hat{p}$을 사용한다.</td>
+            </tr>
+            <tr>
+                <td>가설검정</td>
+                <td>$p_0$ (귀무값)</td>
+                <td>"귀무가설이 참이라면"이라는 조건부 세계에서 분석한다. 따라서 $p = p_0$을 가정한다.</td>
+            </tr>
+        </table>
+        <p><strong>직관적 이해</strong>: 가설검정은 검찰의 역할과 비슷하다. 피고인(귀무가설)이 무죄(참)라고 가정하고 시작하여, 그 가정 하에서 관측된 증거가 얼마나 이상한지를 평가한다. 따라서 모든 계산을 $p_0$ 가정 위에서 수행해야 한다.</p>
+    </div>
+
+    <!-- 6.1.5 표본크기 -->
+    <h3>6.1.5 비율 추정을 위한 표본크기 결정</h3>
+    <p>자료를 수집할 때 적절한 표본크기를 선택해야 한다. 일반적으로 오차한계 $ME$가 충분히 작도록 다음을 만족하는 가장 작은 $n$을 찾는다.</p>
+    $$z^{\ast}\sqrt{\frac{p(1-p)}{n}} \leq ME \;\;\Longleftrightarrow\;\; n \geq \frac{p(1-p)\,(z^{\ast})^{2}}{ME^{2}}$$
+
+    <!-- 예제 6.7 -->
+    <div class="example">
+        <span class="example-label">예제 6.7</span>
+        <div class="example-title">표본크기 계산 — 등록금 인상 설문</div>
+        <div class="problem">
+            <strong>[문제]</strong> 95% 신뢰수준에서 오차한계가 0.04보다 작도록 하려면 몇 명을 표본에 포함해야 하는가? $p$에 대한 사전 정보가 없는 경우와, $p \approx 0.35$의 사전 정보가 있는 경우를 비교하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p>$p$를 모를 때는 $p(1-p)$를 최대화하는 $p=0.5$를 보수적으로 사용한다.</p>
+                $$n \geq \frac{0.25 \times 1.96^{2}}{0.04^{2}} = 600.25 \;\Rightarrow\; n = 601$$
+                <p>$p \approx 0.35$인 경우 $p(1-p) = 0.2275$이므로</p>
+                $$n \geq \frac{0.2275 \times 1.96^{2}}{0.04^{2}} = 546.2 \;\Rightarrow\; n = 547$$
+                <p>사전 정보가 있을 때 더 작은 표본으로도 동일한 정밀도를 달성할 수 있다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+ME = 0.04
+conf = 0.95
+z_star = stats.norm.ppf((1 + conf) / 2)
+
+# 사전 정보 없음 (p = 0.5 보수적)
+p1 = 0.5
+n1 = p1 * (1 - p1) * (z_star / ME)**2
+
+# 사전 정보 있음 (p = 0.35)
+p2 = 0.35
+n2 = p2 * (1 - p2) * (z_star / ME)**2
+
+print(f"사전 정보 없음 (p=0.5): n >= {np.ceil(n1):.0f}")
+print(f"사전 정보 있음 (p=0.35): n >= {np.ceil(n2):.0f}")
+print(f"절약된 표본 수: {np.ceil(n1) - np.ceil(n2):.0f} 명")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 새로운 시각 3 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: $p(1-p)$ 함수와 표본크기 계산</div>
+        <p>표본크기 공식의 핵심에 있는 함수 $f(p) = p(1-p) = p - p^{2}$는 위로 볼록한 이차함수이다. $f'(p) = 1 - 2p = 0$을 풀면 $p = 0.5$에서 최댓값 $0.25$를 가진다.</p>
+        <p><strong>직관적 의미</strong>: $p = 0.5$일 때 불확실성이 최대이다. 성공과 실패가 반반일 때 가장 예측하기 어렵다. 반면 $p$가 0이나 1에 가까우면 거의 모든 결과가 한쪽으로 쏠리므로 예측이 쉬워진다.</p>
+        <p><strong>실용적 함의</strong>: 사전 정보가 없을 때 $p = 0.5$를 사용하면 "최악의 시나리오"에 대비한 보수적 표본크기를 얻는다. 사전 정보가 있다면 더 작은 표본으로 동일한 정밀도를 달성할 수 있다.</p>
+        <div class="try-it">아래 코드는 $p(1-p)$ 함수를 시각화한다. 곡선이 $p=0.5$에서 최대가 되는 것을 확인하라.</div>
+        <div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+
+p = np.linspace(0, 1, 200)
+f = p * (1 - p)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(p, f, 'b-', lw=2)
+ax.axvline(0.5, color='red', linestyle='--', alpha=0.5)
+ax.axhline(0.25, color='red', linestyle='--', alpha=0.5)
+ax.scatter([0.5], [0.25], color='red', s=80, zorder=5)
+ax.annotate('Maximum at p=0.5\n  f(0.5) = 0.25',
+            xy=(0.5, 0.25), xytext=(0.65, 0.20),
+            fontsize=11, color='red')
+ax.set_xlabel('p'); ax.set_ylabel('p(1-p)')
+ax.set_title('Variance function p(1-p)')
+ax.grid(True, alpha=0.3)
+plt.show()
+        </div>
+    </div>
+
+    <!-- 연습문제 1 -->
+    <div class="practice" id="practice1">
+        <span class="practice-label">연습문제 6.1</span>
+        <div class="practice-title">대학 흡연자 비율 추정</div>
+        <p>한 대학에서 학생 200명을 무작위로 추출하여 조사한 결과 40명이 흡연자였다.</p>
+        <ol>
+            <li>흡연자 비율에 대한 90% 신뢰구간을 구성하라.</li>
+            <li>오차한계를 절반으로 줄이려면 표본을 몇 명으로 해야 하는가?</li>
+            <li>흡연율이 25%라는 주장에 대해 양측 검정을 수행하라($\alpha = 0.05$).</li>
+        </ol>
+        <div class="hint">힌트: 신뢰구간에서는 $\hat{p}$, 가설검정에서는 $p_0 = 0.25$를 표준오차에 사용한다. 표본크기 4배가 오차한계 절반에 해당함을 기억하라.</div>
+
+        <p><strong>아래 셀에서 직접 코드를 작성하여 풀어 보십시오.</strong></p>
+        <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 주어진 자료 ===
+n = 200
+smokers = 40
+p_hat = smokers / n
+# ==================
+
+# (1) 90% 신뢰구간 — 코드를 완성하시오
+conf = 0.90
+se_ci = np.sqrt(p_hat * (1 - p_hat) / n)
+z_star = stats.norm.ppf((1 + conf) / 2)
+print(f"점추정: {p_hat:.3f}")
+print(f"표준오차(신뢰구간용): {se_ci:.4f}")
+# ME = ?
+# 신뢰구간 = ?
+
+# (2) 오차한계 절반에 필요한 표본크기 — 코드를 완성하시오
+# 힌트: 새 ME = 기존 ME / 2 → n은 4배 필요
+
+# (3) p_0 = 0.25 양측 검정 — 코드를 완성하시오
+p_0 = 0.25
+# se_test = ?
+# z = ?
+# p_value = ?
+        </div>
+
+        <details class="solution">
+            <summary>정답 및 풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>(1)</strong> $SE_{\text{CI}} = \sqrt{0.20 \times 0.80 / 200} \approx 0.0283$, $z^{\ast}=1.645$이므로 $0.20 \pm 1.645 \times 0.0283 \to (0.153, 0.247)$.</p>
+                <p><strong>(2)</strong> $ME$를 절반으로 만들려면 $n$이 4배가 되어야 한다. 따라서 $n=800$.</p>
+                <p><strong>(3)</strong> $SE_{\text{test}} = \sqrt{0.25 \times 0.75 / 200} \approx 0.0306$, $Z = (0.20-0.25)/0.0306 \approx -1.63$, 양측 $p$-값 $\approx 0.103$. $\alpha=0.05$에서 $H_0$을 기각하지 못한다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+n = 200
+smokers = 40
+p_hat = smokers / n
+
+# (1) 90% 신뢰구간
+conf = 0.90
+se_ci = np.sqrt(p_hat * (1 - p_hat) / n)
+z_star = stats.norm.ppf((1 + conf) / 2)
+me = z_star * se_ci
+print("(1) 90% 신뢰구간")
+print(f"    SE = {se_ci:.4f}, ME = {me:.4f}")
+print(f"    구간: ({p_hat - me:.3f}, {p_hat + me:.3f})")
+
+# (2) ME 절반 → n 4배
+print(f"\n(2) ME 절반에 필요한 표본크기: n = {4*n}")
+
+# (3) p_0 = 0.25 양측 검정
+p_0 = 0.25
+se_test = np.sqrt(p_0 * (1 - p_0) / n)
+z = (p_hat - p_0) / se_test
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))
+print(f"\n(3) 가설검정 (p_0 = 0.25)")
+print(f"    SE = {se_test:.4f}, Z = {z:.3f}")
+print(f"    양측 p-값 = {p_value:.4f}")
+print(f"    결론: H0를 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ===================== 6.2 두 비율의 차이 ====================== -->
+<!-- ============================================================ -->
+<div class="section" id="sec62">
+    <span class="section-num">SECTION 6.2</span>
+    <h2>두 비율의 차이</h2>
+    <p>이 절에서는 두 그룹의 성공 비율을 비교하는 상황을 다룬다. 점추정은 $\hat{p}_{1} - \hat{p}_{2}$이며, 단일 비율 상황과 동일한 절차(조건 확인 → 표준오차 계산 → 추론)를 따른다.</p>
+
+    <h3>6.2.1 $\hat{p}_{1} - \hat{p}_{2}$의 표집분포</h3>
+
+    <div class="definition">
+        <span class="label">정규근사 조건</span>
+        $\hat{p}_{1} - \hat{p}_{2}$은 다음 조건이 충족될 때 정규분포로 모형화할 수 있다.
+        <ul>
+            <li><strong>독립성</strong>(확장): 자료가 두 그룹 내에서 그리고 두 그룹 사이에서 독립이다.</li>
+            <li><strong>성공-실패 조건</strong>: 두 그룹 모두에서 각각 성공과 실패의 기대 횟수가 10 이상이다.</li>
+        </ul>
+        조건이 충족되면 표준오차는 다음과 같다.
+        $$SE = \sqrt{\frac{p_{1}(1-p_{1})}{n_{1}} + \frac{p_{2}(1-p_{2})}{n_{2}}}$$
+    </div>
+
+    <!-- 새로운 시각: 분산 덧셈 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 두 비율 차이의 분산 공식</div>
+        <p>두 독립 확률변수 $X, Y$의 차에 대해 다음이 성립한다.</p>
+        $$\mathrm{Var}(X - Y) = \mathrm{Var}(X) + \mathrm{Var}(Y)$$
+        <p>차이를 구하더라도 분산은 <strong>더해진다</strong>. 직관에 반하는 듯 보이지만, 두 불확실한 양을 비교할 때 첫 번째가 실제보다 높게 추정되고 두 번째가 실제보다 낮게 추정되는 경우 두 오차가 결합되어 차이의 불확실성이 오히려 커지기 때문이다.</p>
+        <p>따라서 $\mathrm{Var}(\hat{p}_{1} - \hat{p}_{2}) = \mathrm{Var}(\hat{p}_{1}) + \mathrm{Var}(\hat{p}_{2})$이며, 표준오차는 그 제곱근이다.</p>
+    </div>
+
+    <h3>6.2.2 $p_{1} - p_{2}$에 대한 신뢰구간</h3>
+    $$\hat{p}_{1} - \hat{p}_{2} \pm z^{\ast} \sqrt{\frac{\hat{p}_{1}(1-\hat{p}_{1})}{n_{1}} + \frac{\hat{p}_{2}(1-\hat{p}_{2})}{n_{2}}}$$
+
+    <!-- 예제 6.12 -->
+    <div class="example">
+        <span class="example-label">예제 6.12</span>
+        <div class="example-title">CPR 연구 — 90% 신뢰구간</div>
+        <div class="problem">
+            <strong>[문제]</strong> 심정지 환자에 대해 혈전용해제 처치군과 대조군의 24시간 생존율을 비교하였다.
+            <table class="data-table">
+                <tr><th></th><th>생존</th><th>사망</th><th>합계</th></tr>
+                <tr><td>대조군</td><td>11</td><td>39</td><td>50</td></tr>
+                <tr><td>처치군</td><td>14</td><td>26</td><td>40</td></tr>
+            </table>
+            처치군과 대조군의 생존율 차이에 대한 90% 신뢰구간을 구성하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>조건 확인</strong>: 두 그룹 모두 성공/실패가 10 이상(11, 39, 14, 26).</p>
+                <p><strong>점추정</strong>: $\hat{p}_{T} - \hat{p}_{C} = 14/40 - 11/50 = 0.35 - 0.22 = 0.13$</p>
+                <p><strong>표준오차</strong>(신뢰구간용 — 각 표본비율 사용):</p>
+                $$SE = \sqrt{\frac{0.35 \times 0.65}{40} + \frac{0.22 \times 0.78}{50}} \approx 0.095$$
+                <p><strong>90% 신뢰구간</strong>: $0.13 \pm 1.645 \times 0.095 \to (-0.026, 0.286)$</p>
+                <p><strong>해석</strong>: 신뢰구간이 0을 포함하므로 혈전용해제가 생존율에 영향을 미치지 않을 가능성도 배제할 수 없다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+# 처치군
+n_T = 40; survived_T = 14
+# 대조군
+n_C = 50; survived_C = 11
+
+p_T = survived_T / n_T
+p_C = survived_C / n_C
+diff = p_T - p_C
+
+se = np.sqrt(p_T*(1-p_T)/n_T + p_C*(1-p_C)/n_C)
+
+conf = 0.90
+z_star = stats.norm.ppf((1 + conf) / 2)
+me = z_star * se
+
+print(f"처치군 생존율: {p_T:.3f}")
+print(f"대조군 생존율: {p_C:.3f}")
+print(f"점추정 (p_T - p_C): {diff:.3f}")
+print(f"표준오차: {se:.4f}")
+print(f"90% 신뢰구간: ({diff-me:.3f}, {diff+me:.3f})")
+print(f"0을 포함하는가? {'예' if diff-me <= 0 <= diff+me else '아니오'}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <h3>6.2.3 두 비율의 차이에 대한 가설검정</h3>
+    <p>$H_{0}: p_{1} = p_{2}$를 검정할 때, 귀무가설 하에서 두 비율이 같으므로 두 표본을 합쳐 <strong>합동 비율</strong>(pooled proportion)을 사용한다.</p>
+
+    <div class="definition">
+        <span class="label">합동 비율과 표준오차</span>
+        $$\hat{p}_{\text{pool}} = \frac{x_{1}+x_{2}}{n_{1}+n_{2}}, \qquad SE_{\text{test}} = \sqrt{\hat{p}_{\text{pool}}(1-\hat{p}_{\text{pool}})\!\left(\frac{1}{n_{1}} + \frac{1}{n_{2}}\right)}$$
+    </div>
+
+    <!-- 예제 6.14 -->
+    <div class="example">
+        <span class="example-label">예제 6.14</span>
+        <div class="example-title">합동 비율을 사용한 가설검정 — 승진율 비교</div>
+        <div class="problem">
+            <strong>[문제]</strong> 남성 21명 중 14명 승진, 여성 24명 중 12명 승진. 남녀 승진율이 다른지 $\alpha=0.05$로 검정하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>가설</strong>: $H_{0}: p_{m} = p_{f}$, $H_{A}: p_{m} \neq p_{f}$</p>
+                <p><strong>합동 비율</strong>: $(14+12)/(21+24) = 26/45 \approx 0.578$</p>
+                <p><strong>표준오차</strong>: $\sqrt{0.578 \times 0.422 \times (1/21 + 1/24)} \approx 0.148$</p>
+                <p><strong>$Z$</strong>: $(0.667-0.500)/0.148 \approx 1.13$, $p$-값 $\approx 0.258$</p>
+                <p><strong>결론</strong>: $p$-값이 $\alpha$보다 크므로 $H_0$을 기각하지 못한다. 남녀 승진율이 다르다는 충분한 증거가 없다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+# === 자료 ===
+n_m, x_m = 21, 14
+n_f, x_f = 24, 12
+alpha = 0.05
+# ============
+
+p_m = x_m / n_m
+p_f = x_f / n_f
+diff = p_m - p_f
+
+# 합동 비율
+p_pool = (x_m + x_f) / (n_m + n_f)
+se = np.sqrt(p_pool * (1 - p_pool) * (1/n_m + 1/n_f))
+
+z = diff / se
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))
+
+print(f"남성 승진율: {p_m:.3f}")
+print(f"여성 승진율: {p_f:.3f}")
+print(f"합동 비율: {p_pool:.3f}")
+print(f"표준오차(합동): {se:.4f}")
+print(f"검정통계량 Z: {z:.3f}")
+print(f"양측 p-값: {p_value:.4f}")
+print(f"결론: H0를 {'기각' if p_value < alpha else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 새로운 시각: 신뢰구간 vs 가설검정 SE -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 신뢰구간 vs 가설검정의 표준오차</div>
+        <p>두 비율 차이를 분석할 때, 신뢰구간과 가설검정에서 사용하는 표준오차 공식이 다르다.</p>
+        <table class="compare-table">
+            <tr><th>목적</th><th>사용하는 비율</th><th>표준오차 공식</th></tr>
+            <tr>
+                <td>신뢰구간</td><td>각 그룹의 $\hat{p}_{1}, \hat{p}_{2}$</td>
+                <td>$\sqrt{\hat{p}_{1}(1-\hat{p}_{1})/n_{1} + \hat{p}_{2}(1-\hat{p}_{2})/n_{2}}$</td>
+            </tr>
+            <tr>
+                <td>가설검정</td><td>합동 비율 $\hat{p}_{\text{pool}}$</td>
+                <td>$\sqrt{\hat{p}_{\text{pool}}(1-\hat{p}_{\text{pool}})(1/n_{1} + 1/n_{2})}$</td>
+            </tr>
+        </table>
+        <p><strong>이유</strong>: 신뢰구간은 두 비율 차이의 불확실성을 추정하므로 각 그룹의 최선 추정치를 사용한다. 가설검정은 $p_{1}=p_{2}$라는 귀무가설 하에서 분석하므로 두 비율이 같다는 가정을 반영한 합동 비율을 사용한다.</p>
+    </div>
+
+    <div class="try-it">아래에서 처치군 $n_T$, 대조군 $n_C$ 등의 값을 바꾸어 검정통계량과 $p$-값이 어떻게 변하는지 관찰해 보십시오.</div>
+    <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 두 비율 비교 — 자유롭게 변경 ===
+n_T, x_T = 40, 14   # 처치군
+n_C, x_C = 50, 11   # 대조군
+# =====================================
+
+p_T, p_C = x_T/n_T, x_C/n_C
+diff = p_T - p_C
+
+# (1) 신뢰구간 SE
+se_ci = np.sqrt(p_T*(1-p_T)/n_T + p_C*(1-p_C)/n_C)
+# (2) 가설검정 SE (합동)
+p_pool = (x_T + x_C) / (n_T + n_C)
+se_test = np.sqrt(p_pool*(1-p_pool)*(1/n_T + 1/n_C))
+
+z = diff / se_test
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))
+
+print(f"점추정 차이: {diff:.4f}")
+print(f"신뢰구간용 SE: {se_ci:.4f}")
+print(f"가설검정용 SE: {se_test:.4f}")
+print(f"Z = {z:.3f}, 양측 p-값 = {p_value:.4f}")
+    </div>
+
+    <!-- 연습문제 2 -->
+    <div class="practice" id="practice2">
+        <span class="practice-label">연습문제 6.2</span>
+        <div class="practice-title">천식 유병률 — 두 인종 그룹 비교</div>
+        <p>유럽계 미국인 262명 중 26명, 히스패닉 180명 중 40명이 천식 환자였다. 두 그룹의 천식 유병률 차이에 대해 다음을 수행하라.</p>
+        <ol>
+            <li>95% 신뢰구간을 구성하라.</li>
+            <li>$\alpha = 0.05$로 두 그룹의 유병률이 같다는 귀무가설을 양측 검정하라.</li>
+        </ol>
+        <div class="hint">힌트: 신뢰구간에서는 각 표본비율을, 가설검정에서는 합동 비율을 표준오차 계산에 사용한다.</div>
+
+        <p><strong>자유롭게 코드를 작성하여 풀어 보십시오.</strong></p>
+        <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 자료 ===
+n1, x1 = 262, 26   # 유럽계 미국인
+n2, x2 = 180, 40   # 히스패닉
+# ============
+
+# (1) 95% 신뢰구간 — 직접 작성하시오
+p1 = x1 / n1
+p2 = x2 / n2
+diff = p2 - p1
+print(f"점추정 (히스패닉 - 유럽계): {diff:.4f}")
+# se_ci = ?
+# 신뢰구간 = ?
+
+# (2) 가설검정 — 직접 작성하시오
+# p_pool = ?
+# se_test = ?
+# z = ?
+        </div>
+
+        <details class="solution">
+            <summary>정답 및 풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>(1)</strong> $\hat{p}_{1} \approx 0.099$, $\hat{p}_{2} \approx 0.222$, 차이 $0.123$. $SE_{\text{CI}} \approx 0.036$. 95% 신뢰구간 $(0.052, 0.194)$.</p>
+                <p><strong>(2)</strong> 합동 비율 $\hat{p}_{\text{pool}} = 66/442 \approx 0.149$. $SE_{\text{test}} \approx 0.0349$. $Z \approx 3.53$, 양측 $p$-값 $\approx 0.0004$. $H_0$을 강하게 기각한다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+n1, x1 = 262, 26
+n2, x2 = 180, 40
+
+p1 = x1/n1; p2 = x2/n2
+diff = p2 - p1
+
+# (1) 95% 신뢰구간
+se_ci = np.sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
+me = 1.96 * se_ci
+print("(1) 95% 신뢰구간")
+print(f"    p1 = {p1:.4f}, p2 = {p2:.4f}, 차이 = {diff:.4f}")
+print(f"    SE = {se_ci:.4f}")
+print(f"    구간: ({diff-me:.4f}, {diff+me:.4f})")
+
+# (2) 가설검정
+p_pool = (x1 + x2) / (n1 + n2)
+se_test = np.sqrt(p_pool*(1-p_pool)*(1/n1 + 1/n2))
+z = diff / se_test
+p_value = 2 * (1 - stats.norm.cdf(abs(z)))
+print(f"\n(2) 가설검정")
+print(f"    합동 비율: {p_pool:.4f}")
+print(f"    SE = {se_test:.4f}, Z = {z:.3f}")
+print(f"    양측 p-값 = {p_value:.6f}")
+print(f"    결론: H0를 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- ================ 6.3 카이제곱 적합도 검정 ===================== -->
+<!-- ============================================================ -->
+<div class="section" id="sec63">
+    <span class="section-num">SECTION 6.3</span>
+    <h2>카이제곱을 이용한 적합도 검정</h2>
+    <p>지금까지 정규분포를 사용한 단일 비율 및 두 비율의 추론을 다루었다. 이 절에서는 관측 도수가 어떤 이론적 분포(예: 균등분포, 기하분포)에 부합하는지를 검정하는 <strong>적합도 검정</strong>(goodness-of-fit test)을 다룬다. 검정통계량으로는 카이제곱 분포를 따르는 $X^{2}$ 통계량을 사용한다.</p>
+
+    <div class="definition">
+        <span class="label">카이제곱 검정통계량</span>
+        $k$개 범주에서 관측 도수 $O_{i}$와 기대 도수 $E_{i}$가 주어졌을 때
+        $$X^{2} = \sum_{i=1}^{k} \frac{(O_{i} - E_{i})^{2}}{E_{i}} \sim \chi^{2}_{(k-1)}$$
+        <ul>
+            <li><strong>자유도</strong>: $df = k - 1$</li>
+            <li><strong>조건</strong>: 모든 기대 도수가 5 이상, 관측은 독립</li>
+            <li>$X^{2}$가 클수록 관측이 기대와 멀어 $H_{0}$을 기각하는 증거가 된다.</li>
+        </ul>
+    </div>
+
+    <h3>6.3.1 카이제곱 분포의 성질</h3>
+    <p>카이제곱 분포는 양의 값만 가지며 오른쪽으로 치우친 분포이다. 자유도가 커질수록 분포의 평균과 분산이 커지고 점차 정규분포에 가까워진다.</p>
+
+    <div class="try-it">자유도 $df$를 바꾸어 카이제곱 분포의 모양 변화를 관찰해 보십시오.</div>
+    <div class="compute">
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# === 자유도 — 자유롭게 변경 ===
+dfs = [2, 4, 9]
+# ===============================
+
+x = np.linspace(0, 25, 400)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+for df in dfs:
+    ax.plot(x, stats.chi2.pdf(x, df), lw=2, label=f'df = {df}')
+ax.set_xlabel('X^2'); ax.set_ylabel('Density')
+ax.set_title('Chi-square distributions by degrees of freedom')
+ax.legend(); ax.grid(True, alpha=0.3)
+plt.show()
+    </div>
+
+    <h3>6.3.2 적합도 검정 — S&P 500 사례</h3>
+    <p>최근 10년간 S&P 500 일별 자료에서 다음 양일 거래 사이의 양의 수익률 발생 간격(대기 시간)이 거래일 독립을 가정한 기하분포에 부합하는지 검정한다고 하자.</p>
+
+    <!-- 예제 6.36 -->
+    <div class="example">
+        <span class="example-label">예제 6.36</span>
+        <div class="example-title">기하분포 적합도 검정</div>
+        <div class="problem">
+            <strong>[문제]</strong> 다음과 같이 7개 그룹의 관측 도수 $O_{i}$와 기대 도수 $E_{i}$가 주어졌다. 거래일 독립 가설($H_{0}$)을 $\alpha = 0.05$로 검정하라.
+            <table class="data-table">
+                <tr><th>대기 일수</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7+</th></tr>
+                <tr><td>관측 $O_{i}$</td><td>717</td><td>369</td><td>155</td><td>69</td><td>28</td><td>14</td><td>10</td></tr>
+                <tr><td>기대 $E_{i}$</td><td>743</td><td>338</td><td>154</td><td>70</td><td>32</td><td>15</td><td>12</td></tr>
+            </table>
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p>$X^{2} = 0.91 + 2.84 + 0.01 + 0.01 + 0.50 + 0.07 + 0.33 \approx 4.61$, $df = 7-1 = 6$, $p$-값 $\approx 0.595$.</p>
+                <p>$p$-값이 $\alpha=0.05$보다 매우 크므로 $H_{0}$(거래일이 독립이라는 가정 아래 기하분포에 적합)을 기각하지 못한다. 즉, 자료는 거래일 독립 가설과 일관성을 가진다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+observed = np.array([717, 369, 155, 69, 28, 14, 10])
+expected = np.array([743, 338, 154, 70, 32, 15, 12])
+
+# 각 셀의 카이제곱 기여도
+contrib = (observed - expected)**2 / expected
+print("각 셀의 카이제곱 기여도:")
+for i, c in enumerate(contrib, 1):
+    print(f"  대기 {i}일: ({observed[i-1]}-{expected[i-1]})^2/{expected[i-1]} = {c:.3f}")
+
+X2 = contrib.sum()
+df = len(observed) - 1
+p_value = 1 - stats.chi2.cdf(X2, df)
+
+print(f"\n검정통계량 X^2 = {X2:.3f}")
+print(f"자유도 df = {df}")
+print(f"p-값 = {p_value:.4f}")
+print(f"결론: H0를 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 새로운 시각: 적합도 검정 철학 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 적합도 검정의 철학적 의미</div>
+        <p>S&P 500 사례에서 $p$-값 $\approx 0.595$이므로 기하분포(거래일 독립성)를 기각하지 못하였다. 그러나 이것이 거래일이 <strong>확실히</strong> 독립임을 증명하는 것은 아니다. 단지 자료가 독립성 가정과 <strong>일관성을 가진다</strong>는 의미일 뿐이다.</p>
+        <p><strong>비유</strong>: 형사재판에서 무죄 판결을 받았다고 해서 결백이 증명되는 것은 아니다. 단지 유죄를 입증할 증거가 부족했을 뿐이다.</p>
+        <p><strong>실용적 함의</strong>:</p>
+        <ul>
+            <li>주식 시장에서 단순한 패턴(예: 연속 하락 후 상승 확률 증가)을 찾으려는 시도가 자료에서 지지되지 않는다는 것을 보여준다.</li>
+            <li>이는 "효율적 시장 가설"(EMH)과 일관성을 가지는 결과이다.</li>
+            <li>그러나 더 정교한 의존 구조까지 부정하는 것은 아니다.</li>
+        </ul>
+    </div>
+
+    <!-- 연습문제 3 -->
+    <div class="practice" id="practice3">
+        <span class="practice-label">연습문제 6.3</span>
+        <div class="practice-title">주사위 공정성 검정</div>
+        <p>한 주사위를 600번 던진 결과 각 면이 나온 횟수가 다음과 같다.</p>
+        <table class="data-table">
+            <tr><th>눈</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+            <tr><td>관측 도수</td><td>92</td><td>110</td><td>105</td><td>88</td><td>97</td><td>108</td></tr>
+        </table>
+        <p>주사위가 공정하다는 귀무가설을 $\alpha = 0.05$로 검정하라.</p>
+        <div class="hint">힌트: 공정한 주사위라면 각 면의 기대 도수는 $600/6 = 100$. 자유도는 $k-1 = 5$.</div>
+
+        <p><strong>아래 셀에서 직접 계산해 보십시오.</strong></p>
+        <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 자료 ===
+observed = np.array([92, 110, 105, 88, 97, 108])
+n_total = observed.sum()
+k = len(observed)
+# ============
+
+# 공정한 경우 기대 도수 — 직접 작성
+# expected = ?
+
+# 카이제곱 통계량 — 직접 작성
+# X2 = ?
+
+# p-값 — 직접 작성
+# p_value = ?
+
+print(f"관측 합계: {n_total}")
+print(f"범주 수: {k}")
+        </div>
+
+        <details class="solution">
+            <summary>정답 및 풀이 보기</summary>
+            <div class="solution-body">
+                <p>기대 도수 $E_{i} = 100$ (모든 $i$). $X^{2} = \sum (O_{i}-100)^{2}/100 \approx 3.86$, $df = 5$, $p$-값 $\approx 0.570$. $H_{0}$(주사위 공정)을 기각하지 못한다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+observed = np.array([92, 110, 105, 88, 97, 108])
+n_total = observed.sum()
+k = len(observed)
+
+# 공정한 주사위라면 모든 면의 확률이 1/6
+expected = np.full(k, n_total / k)
+
+X2 = ((observed - expected)**2 / expected).sum()
+df = k - 1
+p_value = 1 - stats.chi2.cdf(X2, df)
+
+print(f"기대 도수: {expected}")
+print(f"X^2 = {X2:.4f}")
+print(f"자유도 df = {df}")
+print(f"p-값 = {p_value:.4f}")
+print(f"결론: H0(주사위 공정)을 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+
+# scipy 내장 함수와 비교
+chi2_stat, p_val = stats.chisquare(observed, expected)
+print(f"\nscipy 결과: X^2 = {chi2_stat:.4f}, p = {p_val:.4f}")
+                </div>
+            </div>
+        </details>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- =============== 6.4 이원분할표 독립성 검정 =================== -->
+<!-- ============================================================ -->
+<div class="section" id="sec64">
+    <span class="section-num">SECTION 6.4</span>
+    <h2>이원분할표에서의 독립성 검정</h2>
+    <p>일원분할표에 대한 카이제곱 검정을 두 변수가 동시에 분류된 <strong>이원분할표</strong>(two-way table)로 확장하여, 두 범주형 변수가 독립인지를 검정할 수 있다.</p>
+
+    <h3>6.4.1 이원분할표에서 기대 도수의 계산</h3>
+
+    <div class="definition">
+        <span class="label">기대 도수 공식</span>
+        독립성 가정 하에 $i$행 $j$열의 기대 도수는 다음과 같다.
+        $$E_{ij} = \frac{(\text{행 } i \text{ 합계}) \times (\text{열 } j \text{ 합계})}{\text{전체 합계}}$$
+        <strong>자유도</strong>: $df = (R-1)(C-1)$
+    </div>
+
+    <h3>6.4.2 iPod 판매자 실험</h3>
+    <p>중고 iPod 판매자가 화면 결함을 알고 있는 상태에서, 질문 형식이 결함 공개에 영향을 미치는지를 검정한다. 219명을 세 그룹에 무작위 배정하여 다음과 같이 질문하였다.</p>
+    <ol>
+        <li><strong>일반</strong>(General): "iPod에 문제가 있습니까?"</li>
+        <li><strong>긍정 가정</strong>(Positive Assumption): "문제가 무엇입니까?"</li>
+        <li><strong>부정 가정</strong>(Negative Assumption): "문제가 없습니까?"</li>
+    </ol>
+
+    <table class="data-table">
+        <tr><th></th><th>일반</th><th>긍정 가정</th><th>부정 가정</th><th>합계</th></tr>
+        <tr><td>문제 공개</td><td>2</td><td>23</td><td>36</td><td>61</td></tr>
+        <tr><td>문제 숨김</td><td>71</td><td>50</td><td>37</td><td>158</td></tr>
+        <tr><td>합계</td><td>73</td><td>73</td><td>73</td><td>219</td></tr>
+    </table>
+
+    <!-- 예제 6.40 -->
+    <div class="example">
+        <span class="example-label">예제 6.40</span>
+        <div class="example-title">독립성 검정의 수행</div>
+        <div class="problem">
+            <strong>[문제]</strong> 질문 형식과 공개 여부가 독립이라는 귀무가설을 검정하라.
+        </div>
+        <details class="solution">
+            <summary>풀이 보기</summary>
+            <div class="solution-body">
+                <p><strong>가설</strong>: $H_{0}$ — 두 변수가 독립이다, $H_{A}$ — 종속이다.</p>
+                <p><strong>기대 도수</strong>: 공개 행 기대값 $61 \times 73 / 219 \approx 20.33$ (모든 열 동일), 숨김 행 기대값 $\approx 52.67$.</p>
+                <p><strong>$X^{2}$</strong>: $16.53 + 0.35 + 12.06 + 6.38 + 0.14 + 4.66 \approx 40.13$</p>
+                <p><strong>자유도</strong>: $df = (2-1)(3-1) = 2$, $p$-값 $\approx 2 \times 10^{-9}$</p>
+                <p><strong>결론</strong>: $H_{0}$을 강하게 기각한다. 질문 형식이 결함 공개에 영향을 미친다는 강한 증거가 있다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+# 관측 분할표: [공개, 숨김] x [일반, 긍정, 부정]
+observed = np.array([
+    [ 2, 23, 36],   # 공개
+    [71, 50, 37],   # 숨김
+])
+
+chi2, p_value, dof, expected = stats.chi2_contingency(observed)
+
+print("관측 도수:")
+print(observed)
+print("\n기대 도수 (독립성 가정 하):")
+print(np.round(expected, 2))
+print(f"\nX^2 = {chi2:.3f}")
+print(f"자유도 df = {dof}")
+print(f"p-값 = {p_value:.2e}")
+print(f"결론: H0(독립)을 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 새로운 시각: iPod 심리학 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: iPod 실험의 심리학적 통찰</div>
+        <p>이 실험은 <strong>질문 프레이밍 효과</strong>(question framing effect)의 강력한 사례이다.</p>
+        <ul>
+            <li>일반 질문 — 공개율 $2/73 = 2.7\%$</li>
+            <li>긍정 가정 — 공개율 $23/73 = 31.5\%$</li>
+            <li>부정 가정 — 공개율 $36/73 = 49.3\%$</li>
+        </ul>
+        <p><strong>해석</strong>: 일반 질문은 판매자에게 문제를 숨길 "탈출구"를 제공한다. 긍정 가정 질문("문제가 무엇입니까?")은 문제가 있다고 가정하므로 거짓말의 심리적 비용을 높인다. 부정 가정 질문("문제가 없습니까?")은 직접적인 부정 진술을 요구하므로 가장 강한 압력으로 작용한다.</p>
+        <p><strong>실용적 적용</strong>: 감사 절차, 법적 심문, 의료 면담, 설문조사 설계에서 질문 형식의 미묘한 변화가 정보 공개율을 18배 이상 증가시킬 수 있음을 시사한다.</p>
+    </div>
+
+    <!-- 새로운 시각: 카이제곱 vs Z-검정 -->
+    <div class="insight">
+        <div class="insight-title">새로운 시각: 카이제곱 검정 vs Z-검정의 선택</div>
+        <p>학생들은 종종 언제 카이제곱 검정을 사용하고 언제 $Z$-검정(단일/두 비율)을 사용해야 하는지 혼란스러워한다.</p>
+        <table class="compare-table">
+            <tr><th>상황</th><th>권장 방법</th></tr>
+            <tr><td>단일 비율과 특정 값 비교</td><td>$Z$-검정 (단일 비율)</td></tr>
+            <tr><td>두 그룹의 비율 비교</td><td>$Z$-검정 (두 비율) 또는 $2 \times 2$ 카이제곱</td></tr>
+            <tr><td>3개 이상 그룹의 비율 비교</td><td>카이제곱 검정</td></tr>
+            <tr><td>이론 분포 적합도 검정</td><td>카이제곱 검정</td></tr>
+            <tr><td>두 범주형 변수의 독립성</td><td>카이제곱 검정</td></tr>
+        </table>
+        <p><strong>중요한 관계</strong>: $2 \times 2$ 분할표에서 $X^{2} = Z^{2}$가 성립하며, 두 검정은 동일한 $p$-값을 산출한다.</p>
+        <p><strong>선택 기준</strong>: 방향성(어느 그룹이 더 높은지)에 관심이 있으면 $Z$-검정이 더 정보적이다. 단순히 차이의 유무가 관심이라면 두 방법 모두 적합하다.</p>
+    </div>
+
+    <div class="try-it">아래 셀로 직접 분할표 자료를 입력하여 카이제곱 검정을 수행해 보십시오. 행과 열의 개수도 자유롭게 변경할 수 있다.</div>
+    <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 자유롭게 변경할 분할표 ===
+# 예: 행 = 처치, 열 = 결과
+table = np.array([
+    [ 2, 23, 36],
+    [71, 50, 37],
+])
+# ==============================
+
+chi2, p_value, dof, expected = stats.chi2_contingency(table)
+
+print("관측 도수:"); print(table)
+print("\n기대 도수:"); print(np.round(expected, 2))
+print(f"\n행/열: {table.shape}, df = {dof}")
+print(f"X^2 = {chi2:.3f}, p-값 = {p_value:.2e}")
+
+# 모든 기대 도수가 5 이상인지 점검
+ok = (expected >= 5).all()
+print(f"\n조건(모든 기대 도수 >= 5): {'충족' if ok else '미충족'}")
+    </div>
+
+    <!-- 연습문제 4 -->
+    <div class="practice" id="practice4">
+        <span class="practice-label">연습문제 6.4</span>
+        <div class="practice-title">금연 지원 그룹 효과</div>
+        <p>금연 시도자 300명을 두 그룹에 무작위 배정하였다. 결과는 다음과 같다.</p>
+        <table class="data-table">
+            <tr><th></th><th>금연 성공</th><th>금연 실패</th><th>합계</th></tr>
+            <tr><td>패치 + 지원 그룹</td><td>40</td><td>110</td><td>150</td></tr>
+            <tr><td>패치만</td><td>30</td><td>120</td><td>150</td></tr>
+            <tr><td>합계</td><td>70</td><td>230</td><td>300</td></tr>
+        </table>
+        <p>지원 그룹 추가가 금연율과 독립이라는 귀무가설을 $\alpha = 0.05$로 검정하라.</p>
+        <div class="hint">힌트: $E_{ij} = (\text{행 합계}) \times (\text{열 합계}) / 300$. $df = (2-1)(2-1) = 1$.</div>
+
+        <p><strong>아래에서 직접 계산해 보십시오.</strong></p>
+        <div class="compute">
+import numpy as np
+from scipy import stats
+
+# === 분할표 ===
+observed = np.array([
+    [40, 110],   # 패치 + 지원
+    [30, 120],   # 패치만
+])
+# ==============
+
+# 직접 작성: 기대 도수, X^2, p-값
+# chi2, p_value, dof, expected = ?
+        </div>
+
+        <details class="solution">
+            <summary>정답 및 풀이 보기</summary>
+            <div class="solution-body">
+                <p>기대 도수 $E_{11} = E_{21} = 35$, $E_{12} = E_{22} = 115$. $X^{2} \approx 1.86$, $df = 1$, $p$-값 $\approx 0.172$. $\alpha = 0.05$에서 $H_{0}$을 기각하지 못한다. 지원 그룹 효과가 통계적으로 유의하다는 충분한 증거가 없다.</p>
+                <div class="compute-lazy">
+import numpy as np
+from scipy import stats
+
+observed = np.array([
+    [40, 110],
+    [30, 120],
+])
+
+chi2, p_value, dof, expected = stats.chi2_contingency(observed)
+
+print("기대 도수:")
+print(np.round(expected, 2))
+print(f"\nX^2 = {chi2:.4f}")
+print(f"df = {dof}")
+print(f"p-값 = {p_value:.4f}")
+print(f"결론: H0(독립)을 {'기각' if p_value < 0.05 else '기각하지 못한다'}")
+
+# 2x2이므로 z-검정과 동등함을 확인
+n1 = observed[0].sum(); x1 = observed[0,0]
+n2 = observed[1].sum(); x2 = observed[1,0]
+p_pool = (x1 + x2) / (n1 + n2)
+se = np.sqrt(p_pool*(1-p_pool)*(1/n1 + 1/n2))
+z = (x1/n1 - x2/n2) / se
+print(f"\nz-검정과의 비교:")
+print(f"Z = {z:.4f}, Z^2 = {z**2:.4f} (X^2와 일치)")
+                </div>
+            </div>
+        </details>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- =================== 장 요약 ================================ -->
+<!-- ============================================================ -->
+<div class="section" id="summary">
+    <span class="section-num">CHAPTER SUMMARY</span>
+    <h2>장 요약</h2>
+
+    <h3>핵심 공식 한눈에 보기</h3>
+    <table class="compare-table">
+        <tr><th>상황</th><th>표준오차 / 검정통계량</th><th>분포</th></tr>
+        <tr>
+            <td>단일 비율 신뢰구간</td>
+            <td>$SE = \sqrt{\hat{p}(1-\hat{p})/n}$</td>
+            <td>$N(0,1)$</td>
+        </tr>
+        <tr>
+            <td>단일 비율 가설검정</td>
+            <td>$SE = \sqrt{p_{0}(1-p_{0})/n}$</td>
+            <td>$N(0,1)$</td>
+        </tr>
+        <tr>
+            <td>두 비율 차이 신뢰구간</td>
+            <td>$SE = \sqrt{\hat{p}_{1}(1-\hat{p}_{1})/n_{1} + \hat{p}_{2}(1-\hat{p}_{2})/n_{2}}$</td>
+            <td>$N(0,1)$</td>
+        </tr>
+        <tr>
+            <td>두 비율 차이 가설검정</td>
+            <td>$SE = \sqrt{\hat{p}_{\text{pool}}(1-\hat{p}_{\text{pool}})(1/n_{1} + 1/n_{2})}$</td>
+            <td>$N(0,1)$</td>
+        </tr>
+        <tr>
+            <td>적합도 검정</td>
+            <td>$X^{2} = \sum (O_{i}-E_{i})^{2}/E_{i}$</td>
+            <td>$\chi^{2}_{(k-1)}$</td>
+        </tr>
+        <tr>
+            <td>이원분할표 독립성</td>
+            <td>$X^{2} = \sum (O_{ij}-E_{ij})^{2}/E_{ij}$</td>
+            <td>$\chi^{2}_{(R-1)(C-1)}$</td>
+        </tr>
+    </table>
+
+    <h3>학습 점검</h3>
+    <blockquote class="summary-box">
+        <ol>
+            <li>신뢰구간과 가설검정에서 표준오차 공식이 다른 이유를 설명할 수 있는가?</li>
+            <li>성공-실패 조건이 충족되지 않을 때 어떻게 대처하는가?</li>
+            <li>$2 \times 2$ 분할표에서 카이제곱과 $Z$-검정이 동등함을 보일 수 있는가?</li>
+            <li>적합도 검정에서 $H_{0}$을 기각하지 못한 결과의 해석상 한계를 이해하는가?</li>
+            <li>표본크기 결정 공식에서 $p$를 모를 때 $0.5$를 사용하는 이유를 설명할 수 있는가?</li>
+        </ol>
+    </blockquote>
+
+    <div class="try-it">아래 셀에서 본 장의 모든 검정 함수를 종합 활용해 볼 수 있다.</div>
+    <div class="compute">
+import numpy as np
+from scipy import stats
+
+print("=" * 50)
+print("제6장 종합 도구함")
+print("=" * 50)
+
+# (A) 단일 비율 신뢰구간
+def one_prop_ci(x, n, conf=0.95):
+    p = x/n
+    se = np.sqrt(p*(1-p)/n)
+    z = stats.norm.ppf((1+conf)/2)
+    return p, (p - z*se, p + z*se)
+
+# (B) 단일 비율 검정
+def one_prop_test(x, n, p0):
+    p = x/n
+    se = np.sqrt(p0*(1-p0)/n)
+    z = (p - p0)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z)))
+
+# (C) 두 비율 검정
+def two_prop_test(x1, n1, x2, n2):
+    p1, p2 = x1/n1, x2/n2
+    p_pool = (x1 + x2)/(n1 + n2)
+    se = np.sqrt(p_pool*(1-p_pool)*(1/n1 + 1/n2))
+    z = (p1 - p2)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z)))
+
+# (D) 카이제곱 검정 — scipy 내장 활용
+print("\n예시 사용:")
+p, ci = one_prop_ci(40, 200, 0.90)
+print(f"흡연율 90% CI: 점추정={p:.3f}, 구간=({ci[0]:.3f}, {ci[1]:.3f})")
+
+z, pv = two_prop_test(14, 40, 11, 50)
+print(f"CPR 두 비율 검정: Z={z:.3f}, p={pv:.4f}")
+
+table = np.array([[40, 110], [30, 120]])
+chi2, pv, df, exp = stats.chi2_contingency(table)
+print(f"금연 분할표: X^2={chi2:.3f}, df={df}, p={pv:.4f}")
+    </div>
+</div>
+
+
+<!-- ============== 마무리 ============== -->
+<div class="epilogue">
+    <h2>제6장을 마치며</h2>
+    <p>범주형 자료에 대한 추론은 정규분포를 이용한 비율 추론과 카이제곱 분포를 이용한 분할표 분석이라는 두 축으로 정리된다. 다음 장에서는 수치형 자료에 대한 추론으로 나아간다.</p>
+</div>
+
+</div><!-- /container -->
+
+
+<!-- ============== SageCell 초기화 ============== -->
+<script>
+(function() {
+    function initVisibleCells() {
+        if (typeof sagecell === 'undefined') {
+            setTimeout(initVisibleCells, 200);
+            return;
+        }
+        // 항상 보이는 셀 즉시 초기화
+        sagecell.makeSagecell({
+            inputLocation:  '.compute',
+            languages:      ["python"],
+            evalButtonText: '실행 (Run)',
+            hide:           ["permalink", "fullScreen"],
+            autoeval:       false
+        });
+
+        // 토글로 감춰진 셀: 펼쳤을 때 한 번만 초기화 (lazy init)
+        document.querySelectorAll('details.solution').forEach(function(det) {
+            det.addEventListener('toggle', function() {
+                if (!this.open) return;
+                var cells = this.querySelectorAll('.compute-lazy:not([data-sage-init])');
+                cells.forEach(function(cell) {
+                    cell.setAttribute('data-sage-init', '1');
+                    sagecell.makeSagecell({
+                        inputLocation:  cell,
+                        languages:      ["python"],
+                        evalButtonText: '실행 (Run)',
+                        hide:           ["permalink", "fullScreen"],
+                        autoeval:       false
+                    });
+                });
+            });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVisibleCells);
+    } else {
+        initVisibleCells();
+    }
+})();
+
+// 진행바
+window.addEventListener('scroll', function() {
+    var h = document.documentElement;
+    var scrolled = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = scrolled + '%';
+});
+</script>
+
+</body>
+</html>

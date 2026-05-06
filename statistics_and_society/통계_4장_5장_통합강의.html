@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>확률변수의 분포와 통계적 추론의 기초 (Master Courseware)</title>
+
+<!-- MathJax -->
+<script>
+window.MathJax = {
+    tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<!-- SageMath embedded -->
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+function initSageCells() {
+    if (typeof sagecell === 'undefined') {
+        setTimeout(initSageCells, 100);
+        return;
+    }
+    // ⚠️ 핵심: 모든 코드 셀(.compute)이 단 하나의 makeSagecell() 호출에 묶여 있어야
+    //    같은 SageMath worker session을 공유한다 (linked: true).
+    //    여러 번 호출하면 그룹마다 별도 세션이 생겨 함수가 공유되지 않는다!
+    sagecell.makeSagecell({
+        inputLocation: 'div.compute',
+        languages: ["python"],
+        evalButtonText: '실행 (Run)',
+        hide: ["permalink", "fullScreen"],
+        autoeval: false,
+        linked: true
+    });
+}
+if (document.readyState !== 'loading') {
+    initSageCells();
+} else {
+    document.addEventListener('DOMContentLoaded', initSageCells);
+}
+</script>
+
+<style>
+    :root {
+        --primary: #1e3a5f;
+        --accent: #2563eb;
+        --accent-light: #dbeafe;
+        --warm: #d97706;
+        --warm-light: #fef3c7;
+        --rose: #be185d;
+        --teal: #0f766e;
+        --teal-light: #ccfbf1;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-700: #334155;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+        font-family: "Pretendard", "Malgun Gothic", -apple-system, sans-serif;
+        background-color: var(--gray-50);
+        margin: 0; padding: 0;
+        color: var(--gray-700);
+        line-height: 1.7;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background: white;
+        min-height: 100vh;
+        padding-bottom: 100px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.08);
+    }
+
+    /* 헤더 */
+    .header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: white;
+        padding: 60px 30px;
+        text-align: center;
+    }
+    .header h1 { margin: 0; font-size: 2.6em; font-weight: 800; letter-spacing: -0.02em; }
+    .header .subtitle { color: #cbd5e1; margin-top: 12px; font-size: 1.1em; }
+    .header .meta { color: #94a3b8; margin-top: 8px; font-size: 0.95em; }
+
+    /* 챕터 헤더 */
+    .chapter-header {
+        background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+        color: white;
+        padding: 50px 40px;
+        margin-top: 0;
+    }
+    .chapter-header.ch5 {
+        background: linear-gradient(135deg, #be185d 0%, #ec4899 100%);
+    }
+    .chapter-header h2 { margin: 0; font-size: 2.2em; font-weight: 800; }
+    .chapter-header p { margin-top: 14px; color: rgba(255,255,255,0.92); font-size: 1.05em; }
+
+    /* 절 컨테이너 */
+    .section {
+        padding: 50px 40px 30px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    .section h3 {
+        font-size: 1.7em;
+        color: var(--primary);
+        border-left: 6px solid var(--accent);
+        padding-left: 18px;
+        margin: 0 0 30px;
+        font-weight: 700;
+    }
+    .section h4 {
+        font-size: 1.3em;
+        color: var(--primary);
+        margin: 32px 0 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--gray-200);
+    }
+    .section p { margin: 14px 0; }
+
+    /* 강조 박스 */
+    .key-box {
+        background: var(--accent-light);
+        border-left: 5px solid var(--accent);
+        padding: 20px 25px;
+        margin: 25px 0;
+        border-radius: 0 8px 8px 0;
+    }
+    .key-box .label {
+        display: inline-block;
+        background: var(--accent);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    /* 새로운 시각 */
+    .insight {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-left: 5px solid var(--warm);
+        padding: 24px 28px;
+        margin: 30px 0;
+        border-radius: 0 12px 12px 0;
+    }
+    .insight .label {
+        display: inline-block;
+        background: var(--warm);
+        color: white;
+        padding: 5px 14px;
+        border-radius: 14px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+    .insight h5 {
+        margin: 0 0 12px;
+        font-size: 1.15em;
+        color: #78350f;
+    }
+
+    /* 예제 박스 */
+    .example {
+        border: 2px solid var(--gray-200);
+        border-radius: 14px;
+        padding: 28px;
+        margin: 28px 0;
+        background: white;
+    }
+    .example .ex-label {
+        display: inline-block;
+        background: var(--accent);
+        color: white;
+        padding: 5px 14px;
+        border-radius: 14px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+    .example .ex-label.gp { background: var(--teal); }
+    .example .ex-label.ex { background: var(--rose); }
+    .example h5 {
+        font-size: 1.2em;
+        color: var(--primary);
+        margin: 0 0 16px;
+        font-weight: 700;
+    }
+    .problem-desc {
+        background: var(--gray-50);
+        padding: 18px 22px;
+        border-left: 4px solid var(--accent);
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 18px;
+    }
+    .problem-desc strong { color: var(--primary); }
+
+    /* 풀이 토글 */
+    details.solution {
+        margin: 14px 0;
+        background: #f0f9ff;
+        border: 1px solid #7dd3fc;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    details.solution > summary {
+        padding: 14px 20px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #0c4a6e;
+        background: #e0f2fe;
+        list-style: none;
+        user-select: none;
+    }
+    details.solution > summary::before {
+        content: "▶ ";
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+    details.solution[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    details.solution > summary:hover { background: #bae6fd; }
+    details.solution[open] > summary { background: #7dd3fc; color: white; }
+    .solution-body { padding: 18px 22px; background: white; }
+
+    /* 코드 셀 안내 */
+    .code-hint {
+        background: #fef3c7;
+        border: 1px dashed var(--warm);
+        padding: 10px 14px;
+        margin: 10px 0;
+        border-radius: 6px;
+        font-size: 0.92em;
+        color: #78350f;
+    }
+
+    /* 인용/note */
+    blockquote {
+        border-left: 4px solid var(--teal);
+        background: var(--teal-light);
+        margin: 20px 0;
+        padding: 18px 24px;
+        border-radius: 0 8px 8px 0;
+    }
+    blockquote strong { color: #134e4a; }
+
+    /* 표 */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    th {
+        background: var(--primary);
+        color: white;
+        font-weight: 600;
+    }
+    tr:nth-child(even) { background: var(--gray-50); }
+
+    /* 코드 인라인 */
+    code {
+        background: var(--gray-100);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: "SF Mono", Consolas, monospace;
+        font-size: 0.92em;
+        color: var(--rose);
+    }
+
+    /* 목차 */
+    .toc {
+        background: var(--gray-50);
+        padding: 30px 40px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    .toc h3 { margin-top: 0; color: var(--primary); }
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc > ul > li { margin: 10px 0; font-weight: 600; color: var(--primary); }
+    .toc ul ul { padding-left: 20px; margin-top: 5px; }
+    .toc ul ul li { font-weight: normal; margin: 4px 0; color: var(--gray-700); }
+    .toc a { color: inherit; text-decoration: none; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+    /* 네비게이션 바 */
+    .nav-bar {
+        position: fixed; bottom: 20px; right: 20px;
+        background: rgba(30, 58, 95, 0.95);
+        color: white; padding: 14px 24px;
+        border-radius: 30px; font-weight: bold;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        z-index: 999;
+        font-size: 0.92em;
+    }
+    .nav-bar.hidden { display: none; }
+
+    /* 학생 변형 박스 */
+    .tweak-box {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border: 2px dashed var(--teal);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .tweak-box .tweak-label {
+        display: inline-block;
+        background: var(--teal);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .tweak-box p { margin: 8px 0; }
+
+    /* 수식 강조 */
+    .formula-box {
+        background: white;
+        border: 2px solid var(--gray-200);
+        padding: 18px 24px;
+        margin: 18px 0;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .section, .toc { padding: 30px 20px; }
+        .chapter-header { padding: 40px 20px; }
+        .header h1 { font-size: 1.9em; }
+        .nav-bar { font-size: 0.85em; padding: 10px 18px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="nav-bar" id="navbar">📘 OpenIntro Statistics 4–5장</div>
+
+<div class="container">
+
+    <!-- ========== 메인 헤더 ========== -->
+    <div class="header">
+        <h1>확률변수의 분포와 통계적 추론의 기초</h1>
+        <p class="subtitle">OpenIntro Statistics 제4장 · 제5장 통합 강의 자료</p>
+        <p class="meta">SageMath 실습 · 인터랙티브 코드 · 약 3시간 분량</p>
+    </div>
+
+    <!-- ========== 목차 ========== -->
+    <div class="toc">
+        <h3>📋 목차</h3>
+        <ul>
+            <li>제4장 · 확률변수의 분포
+                <ul>
+                    <li><a href="#sec-4-1">4.1 정규분포</a></li>
+                    <li><a href="#sec-4-2">4.2 이항분포</a></li>
+                    <li><a href="#sec-4-3">4.3 포아송분포</a></li>
+                </ul>
+            </li>
+            <li>제5장 · 통계적 추론의 기초
+                <ul>
+                    <li><a href="#sec-5-1">5.1 점추정과 표본 변동성</a></li>
+                    <li><a href="#sec-5-2">5.2 비율에 대한 신뢰구간</a></li>
+                    <li><a href="#sec-5-3">5.3 비율에 대한 가설검정</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    
+
+    <!-- ============================================== -->
+    <!-- ============= 제4장 시작 ====================== -->
+    <!-- ============================================== -->
+
+    <div class="chapter-header" id="chapter-4">
+        <h2>제4장 · 확률변수의 분포</h2>
+        <p>본 장에서는 5장의 통계적 추론으로 직결되는 세 가지 핵심 분포를 다룬다.
+        연속분포의 대표인 <strong>정규분포</strong>(normal distribution)는 Z-점수, 표준오차, 신뢰구간, 가설검정의 토대가 된다.
+        이산분포인 <strong>이항분포</strong>(binomial)는 비율 추론과 직결되며, 큰 표본에서 정규분포로 근사된다.
+        마지막으로 <strong>포아송분포</strong>(Poisson)는 이항분포의 극한으로서 드문 사건을 다루는 강력한 도구이다.</p>
+    </div>
+
+    <!-- ========== 4.1 정규분포 ========== -->
+    <div class="section" id="sec-4-1">
+        <h3>4.1 정규분포 (Normal Distribution)</h3>
+
+        <p>통계학에서 가장 흔히 마주치는 분포는 대칭적이고, <strong>단봉</strong>(unimodal)이며, 종 모양의 곡선을 갖는다. 이 분포는 매우 빈번하게 나타나기 때문에 <strong>정규분포</strong>(normal distribution) 또는 <strong>가우스 분포</strong>(Gaussian distribution)라 불린다. SAT 점수와 미국 성인 남성의 키 등은 정규분포를 매우 잘 따른다.</p>
+
+        <blockquote>
+            <strong>정규분포의 핵심 사실</strong><br>
+            많은 변수가 거의 정규분포를 따르지만, 어떤 변수도 정확히 정규분포를 따르지는 않는다. 따라서 정규분포는 단일 문제에 완벽하지는 않으나, 다양한 문제에 매우 유용하다.
+        </blockquote>
+
+        <h4>4.1.1 정규분포 모형</h4>
+        <p>정규분포는 항상 대칭적이고 단봉인 종 모양 곡선을 나타낸다. 그러나 이 곡선은 <strong>두 가지 모수</strong>(parameter)에 따라 다르게 보일 수 있다.</p>
+        <ul>
+            <li><strong>평균</strong>(μ): 곡선을 좌우로 이동시킨다.</li>
+            <li><strong>표준편차</strong>(σ): 곡선을 늘리거나 좁힌다.</li>
+        </ul>
+        <p>정규분포가 평균 $\mu$와 표준편차 $\sigma$를 가질 때, 이를 $N(\mu, \sigma)$로 표기한다.</p>
+
+        <blockquote>
+            <strong>표준정규분포</strong>(Standard Normal Distribution)<br>
+            평균 $\mu = 0$이고 표준편차 $\sigma = 1$인 정규분포를 표준정규분포라 한다.
+        </blockquote>
+        <!-- 예제 4.1 -->
+        <div class="example">
+            <span class="ex-label gp">Guided Practice 4.1</span>
+            <h5>정규분포의 약식 표기</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 다음 정규분포를 약식으로 표기하라.
+                <ul>
+                    <li>(a) 평균 5, 표준편차 3</li>
+                    <li>(b) 평균 -100, 표준편차 10</li>
+                    <li>(c) 평균 2, 표준편차 9</li>
+                </ul>
+            </div>
+            <details class="solution">
+                <summary>풀이 보기</summary>
+                <div class="solution-body">
+                    <ul>
+                        <li>(a) $N(\mu = 5, \sigma = 3)$</li>
+                        <li>(b) $N(\mu = -100, \sigma = 10)$</li>
+                        <li>(c) $N(\mu = 2, \sigma = 9)$</li>
+                    </ul>
+                    <p>모수의 순서는 항상 평균이 먼저, 표준편차가 다음이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <h4>4.1.2 Z-점수를 이용한 표준화</h4>
+        <p>데이터를 표준화된 척도로 변환하면 비교가 더 합리적이 된다.</p>
+
+        <div class="key-box">
+            <span class="label">정의</span>
+            <p><strong>Z-점수</strong>(Z-score)는 관측값이 평균으로부터 몇 표준편차 떨어져 있는지를 나타낸다.</p>
+            <div class="formula-box">$$Z = \frac{x - \mu}{\sigma}$$</div>
+            <ul style="margin: 10px 0;">
+                <li>$Z > 0$: 평균보다 위</li>
+                <li>$Z < 0$: 평균보다 아래</li>
+                <li>$Z = 0$: 평균과 같음</li>
+            </ul>
+        </div>
+
+        <!-- 예제 4.2 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.2</span>
+            <h5>SAT와 ACT 점수 비교</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> SAT의 평균은 1100, 표준편차는 200이다. ACT의 평균은 21, 표준편차는 6이다.<br>
+                Ann은 SAT에서 1300점을, Tom은 ACT에서 24점을 받았다. 누가 상대적으로 더 잘했는가?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+def z_score(x, mu, sigma): return (x - mu) / sigma
+# === 본 코드 ===
+
+# 두 학생의 Z-점수 비교
+ann_z = z_score(1300, 1100, 200)   # SAT: 평균 1100, 표준편차 200
+tom_z = z_score(24, 21, 6)         # ACT: 평균 21, 표준편차 6
+
+print(f"Ann의 Z-점수 (SAT 1300점): {ann_z}")
+print(f"Tom의 Z-점수 (ACT 24점):  {tom_z}")
+print()
+print(f"→ Ann은 평균보다 {ann_z} 표준편차 위")
+print(f"→ Tom은 평균보다 {tom_z} 표준편차 위")
+print(f"→ {'Ann' if ann_z > tom_z else 'Tom'}이 상대적으로 더 잘했다.")
+            </div>
+            <details class="solution">
+                <summary>해석 및 결론 보기</summary>
+                <div class="solution-body">
+                    <p>Ann의 Z-점수는 1.0, Tom의 Z-점수는 0.5이다. 즉 Ann은 평균보다 1 표준편차 위에 있고, Tom은 0.5 표준편차 위에 있다. 따라서 <strong>Ann이 자신의 시험 응시자 집단 안에서 더 우수한 위치에 있다</strong>고 결론지을 수 있다.</p>
+                    <p>이처럼 Z-점수는 <strong>서로 다른 척도의 점수를 공정하게 비교할 수 있게 해 주는 표준화 도구</strong>이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 학생용 변형 셀 -->
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기</span>
+            <p>아래 셀에서 점수와 모수를 바꿔 가며 다양한 비교를 직접 해 보자.</p>
+            <div class="compute">
+# === 도우미 함수 ===
+def z_score(x, mu, sigma): return (x - mu) / sigma
+# === 본 코드 ===
+
+# 자유롭게 값을 바꿔 보자
+# 예: 동생이 다른 시험에서 80점(평균 70, 표준편차 8)을 받았다면 누가 더 잘했는가?
+
+내_점수 = 1300
+내_평균 = 1100
+내_표준편차 = 200
+
+상대_점수 = 24
+상대_평균 = 21
+상대_표준편차 = 6
+
+내_z = z_score(내_점수, 내_평균, 내_표준편차)
+상대_z = z_score(상대_점수, 상대_평균, 상대_표준편차)
+
+print(f"내 Z-점수:   {내_z:.3f}")
+print(f"상대 Z-점수: {상대_z:.3f}")
+print(f"→ 결론: {'내가 더 잘했다' if 내_z > 상대_z else '상대가 더 잘했다' if 상대_z > 내_z else '동점'}")
+            </div>
+        </div>
+
+        <!-- 예제 4.5 -->
+        <div class="example">
+            <span class="ex-label gp">Guided Practice 4.5</span>
+            <h5>붓꼬리주머니쥐의 머리 길이</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 붓꼬리주머니쥐(brushtail possum)의 머리 길이는 평균 92.6mm, 표준편차 3.6mm인 정규분포를 따른다. 머리 길이가 95.4mm인 경우와 85.8mm인 경우의 Z-점수를 각각 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+def z_score(x, mu, sigma): return (x - mu) / sigma
+# === 본 코드 ===
+
+# z_score 함수 사용
+z1 = z_score(95.4, 92.6, 3.6)
+z2 = z_score(85.8, 92.6, 3.6)
+
+print(f"95.4mm의 Z-점수: {z1:.2f}")
+print(f"85.8mm의 Z-점수: {z2:.2f}")
+print()
+print(f"|Z₁| = {abs(z1):.2f}, |Z₂| = {abs(z2):.2f}")
+print(f"→ {'85.8mm' if abs(z2) > abs(z1) else '95.4mm'} 쪽이 더 이례적이다.")
+            </div>
+            <details class="solution">
+                <summary>풀이 보기</summary>
+                <div class="solution-body">
+                    <p>$Z_1 = (95.4 - 92.6)/3.6 = 0.78$, $Z_2 = (85.8 - 92.6)/3.6 = -1.89$이다.</p>
+                    <p>절댓값이 큰 쪽이 평균에서 더 멀리 떨어져 있는 값이므로, <strong>85.8mm가 더 이례적</strong>이다. Z-점수의 부호는 방향(평균보다 위/아래)을, 절댓값은 거리를 나타낸다.</p>
+                </div>
+            </details>
+        </div>
+
+        <h4>4.1.3 꼬리 영역과 정규분포 확률</h4>
+        <p>SAT 점수는 $N(\mu = 1100, \sigma = 200)$으로 잘 근사된다. 정규분포 확률 계산은 통계 소프트웨어를 사용하면 매우 간단하다.</p>
+
+        <!-- 예제 4.7 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.7</span>
+            <h5>최소 1190점을 받을 확률</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> Shannon이 SAT에서 최소 1190점을 받을 확률은 얼마인가?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def z_score(x, mu, sigma): return (x - mu) / sigma
+def normal_right(z): return 1 - stats.norm.cdf(z)
+# === 본 코드 ===
+
+# 1단계: Z-점수 계산
+mu, sigma = 1100, 200
+x = 1190
+z = z_score(x, mu, sigma)
+
+# 2단계: 오른쪽 꼬리 영역 (1190점 이상)
+prob_right = normal_right(z)
+
+print(f"x = {x}, μ = {mu}, σ = {sigma}")
+print(f"Z = ({x} - {mu})/{sigma} = {z}")
+print(f"P(X ≥ {x}) = P(Z ≥ {z}) = {prob_right:.4f}")
+print(f"→ 약 {prob_right*100:.2f}%의 확률이다.")
+            </div>
+            <details class="solution">
+                <summary>해설 보기</summary>
+                <div class="solution-body">
+                    <p><strong>1단계</strong>: $Z = (1190 - 1100)/200 = 0.45$</p>
+                    <p><strong>2단계</strong>: 통계 소프트웨어로 $Z = 0.45$ 이상의 영역을 구하면 약 0.3264이다.</p>
+                    <p><strong>결론</strong>: Shannon이 1190점 이상을 받을 확률은 <strong>약 32.64%</strong>이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 예제 4.13: 백분위 → 점수 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.13</span>
+            <h5>백분위에서 관측값 찾기 — Erik의 키</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 미국 성인 남성의 키가 $N(70.0, 3.3)$(인치)을 따른다고 하자. Erik의 키는 40번째 백분위에 있다. Erik의 키는 얼마인가?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def percentile_to_z(p): return stats.norm.ppf(p)
+# === 본 코드 ===
+
+# 1단계: 40번째 백분위에 해당하는 Z-점수
+percentile = 0.40
+z = percentile_to_z(percentile)
+
+# 2단계: x = μ + Z·σ
+mu, sigma = 70.0, 3.3
+x = mu + z * sigma
+
+print(f"40번째 백분위의 Z-점수: {z:.3f}")
+print(f"Erik의 키: {x:.2f} 인치")
+print(f"(약 {int(x//12)}피트 {x%12:.1f}인치)")
+            </div>
+            <details class="solution">
+                <summary>풀이 보기</summary>
+                <div class="solution-body">
+                    <p>40번째 백분위의 Z-점수는 약 $-0.25$이다. 따라서</p>
+                    <p>$$x = \mu + Z\sigma = 70 + (-0.25)(3.3) \approx 69.18 \text{ 인치}$$</p>
+                    <p>Erik의 키는 약 <strong>69.18인치(약 5'9")</strong>이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기 — 백분위 변환</span>
+            <p>다양한 백분위에 해당하는 점수를 빠르게 확인해 보자.</p>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def percentile_to_z(p): return stats.norm.ppf(p)
+# === 본 코드 ===
+
+# 백분위 값만 바꿔서 결과 확인
+백분위들 = [0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99]
+
+# SAT 모수: μ=1100, σ=200
+mu, sigma = 1100, 200
+
+print(f"SAT 분포 N({mu}, {sigma})")
+print("-" * 40)
+for p in 백분위들:
+    z = percentile_to_z(p)
+    score = mu + z * sigma
+    print(f"  {int(p*100):3d}번째 백분위 → SAT {score:6.1f}점 (Z={z:+.2f})")
+            </div>
+        </div>
+
+        <h4>4.1.4 68-95-99.7 규칙</h4>
+        <p>정규분포에서 평균을 중심으로 1, 2, 3 표준편차 이내에 들어갈 확률에 대한 유용한 규칙이 있다.</p>
+
+        <table>
+            <thead>
+                <tr><th>범위</th><th>확률</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>$\mu \pm 1\sigma$</td><td><strong>약 68%</strong></td></tr>
+                <tr><td>$\mu \pm 2\sigma$</td><td><strong>약 95%</strong></td></tr>
+                <tr><td>$\mu \pm 3\sigma$</td><td><strong>약 99.7%</strong></td></tr>
+            </tbody>
+        </table>
+
+        <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def normal_left(z): return stats.norm.cdf(z)
+# === 본 코드 ===
+
+# 68-95-99.7 규칙을 직접 검증
+for k in [1, 2, 3]:
+    prob = normal_left(k) - normal_left(-k)
+    print(f"P(-{k} ≤ Z ≤ {k}) = {prob:.4f} ({prob*100:.2f}%)")
+        </div>
+
+        <!-- 새로운 시각 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>표준화의 힘</h5>
+            <p>Z-점수 변환은 단순해 보이나, 그 위력은 막대하다. 서로 다른 척도의 데이터를 동일한 기준(표준정규분포)으로 변환함으로써 다음의 일을 할 수 있다.</p>
+            <ol>
+                <li><strong>서로 다른 시험 점수의 공정한 비교</strong>(SAT vs ACT)</li>
+                <li><strong>이상치의 객관적 식별</strong>(|Z| > 2 또는 3)</li>
+                <li><strong>확률 계산의 통일</strong> — 모든 정규분포 문제가 표준정규분포표 하나로 해결된다.</li>
+            </ol>
+            <p>이 개념은 후술하는 <strong>검정통계량</strong>(test statistic)의 토대가 된다. 가설검정에서 우리는 관측된 통계량을 Z-점수처럼 표준화하여 "얼마나 극단적인가"를 판단한다.</p>
+        </div>
+
+        <!-- 연습문제 -->
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 4.3</span>
+            <h5>GRE 점수의 비교</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> Sophia는 GRE Verbal Reasoning에서 160점, Quantitative Reasoning에서 157점을 받았다. 각 섹션의 분포는 다음과 같다.
+                <ul>
+                    <li>Verbal: 평균 151, 표준편차 7</li>
+                    <li>Quantitative: 평균 153, 표준편차 7.67</li>
+                </ul>
+                두 분포가 정규분포에 가깝다고 가정한다. (a) Sophia의 각 섹션 Z-점수를 구하라. (b) 어느 섹션에서 상대적으로 더 잘했는가? (c) 각 섹션의 백분위는?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def z_score(x, mu, sigma): return (x - mu) / sigma
+def normal_left(z): return stats.norm.cdf(z)
+# === 본 코드 ===
+
+# 두 섹션의 Z-점수 및 백분위 한꺼번에 계산
+verbal_z = z_score(160, 151, 7)
+quant_z  = z_score(157, 153, 7.67)
+
+verbal_pct = normal_left(verbal_z)
+quant_pct  = normal_left(quant_z)
+
+print(f"Verbal:       Z = {verbal_z:.2f}, 백분위 ≈ {verbal_pct*100:.1f}")
+print(f"Quantitative: Z = {quant_z:.2f}, 백분위 ≈ {quant_pct*100:.1f}")
+print()
+print(f"→ Sophia는 {'Verbal' if verbal_z > quant_z else 'Quantitative'}에서 상대적으로 더 잘했다.")
+            </div>
+            <details class="solution">
+                <summary>전체 풀이 보기</summary>
+                <div class="solution-body">
+                    <p><strong>(a) Z-점수</strong>:
+                        $Z_{VR} = (160-151)/7 \approx 1.29$,
+                        $Z_{QR} = (157-153)/7.67 \approx 0.52$.</p>
+                    <p><strong>(b) 상대적 성과</strong>: Z-점수가 더 큰 <strong>Verbal Reasoning</strong>에서 상대적으로 더 잘했다.</p>
+                    <p><strong>(c) 백분위</strong>: Verbal은 약 90번째 백분위, Quantitative는 약 70번째 백분위이다. 즉 원점수만 비교(160 > 157)하면 잘못된 결론에 이르므로, <strong>표준화된 비교</strong>가 필수적이다.</p>
+                </div>
+            </details>
+        </div>
+
+    </div>
+    <!-- ========== 4.1 끝 ========== -->
+
+    <!-- ========== 4.2 이항분포 ========== -->
+    <div class="section" id="sec-4-2">
+        <h3>4.2 이항분포 (Binomial Distribution)</h3>
+
+        <p>이항분포는 <strong>고정된 횟수의 독립 시행에서 성공의 수</strong>를 나타내는 분포이다. 비율 추론의 직접적 토대가 되는 분포이므로, 5장 통계적 추론으로 진입하기 전에 반드시 익혀 둘 필요가 있다.</p>
+
+        <div class="key-box">
+            <span class="label">정의 — 이항분포</span>
+            <p>$n$번의 독립적인 시행에서 성공 확률이 $p$일 때, 정확히 $k$번 성공할 확률은 다음과 같다.</p>
+            <div class="formula-box">
+                $$P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}$$
+            </div>
+            <p>평균, 분산, 표준편차는 다음과 같다.</p>
+            <div class="formula-box">
+                $$\mu = np, \quad \sigma^2 = np(1-p), \quad \sigma = \sqrt{np(1-p)}$$
+            </div>
+        </div>
+
+        <h4>이항분포의 적용 조건 (4가지)</h4>
+        <ol>
+            <li>시행이 <strong>독립</strong>이다.</li>
+            <li>시행 횟수 $n$이 <strong>고정</strong>되어 있다.</li>
+            <li>각 시행의 결과는 <strong>성공 또는 실패</strong>로 분류된다.</li>
+            <li>성공 확률 $p$가 모든 시행에서 <strong>동일</strong>하다.</li>
+        </ol>
+
+        <!-- 이항분포 도우미 함수 -->
+        <!-- 예제 4.30 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.30</span>
+            <h5>8명 중 5명이 공제액을 초과하지 않을 확률</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 70%의 고객이 공제액을 초과하지 않는다고 하자. 8명 중 정확히 5명이 공제액을 초과하지 않을 확률은?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def binom_pmf(k, n, p): return stats.binom.pmf(k, n, p)
+# === 본 코드 ===
+
+n, k, p = 8, 5, 0.7
+prob = binom_pmf(k, n, p)
+combo = math.comb(n, k)
+
+print(f"C({n},{k}) = {combo}")
+print(f"p^k × (1-p)^(n-k) = {p**k:.5f} × {(1-p)**(n-k):.5f}")
+print(f"P(X = {k}) = {combo} × {p**k:.5f} × {(1-p)**(n-k):.5f}")
+print(f"        = {prob:.4f}  (약 {prob*100:.2f}%)")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>$\binom{8}{5} = 56$이고, $(0.7)^5(0.3)^3 \approx 0.00454$이므로</p>
+                    <p>$$P(X=5) = 56 \times 0.00454 \approx 0.254$$</p>
+                    <p>약 <strong>25.4%</strong>의 확률로 정확히 5명이 공제액을 초과하지 않는다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 학생용 변형 셀: 매개변수만 바꿔 실행 -->
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기 — 이항분포 탐색</span>
+            <p>$n$, $p$, $k$ 값만 바꿔 보면서 이항분포가 어떻게 변하는지 관찰해 보자.</p>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def binom_pmf(k, n, p): return stats.binom.pmf(k, n, p)
+def binom_mean(n, p): return n * p
+def binom_std(n, p): return math.sqrt(n * p * (1 - p))
+# === 본 코드 ===
+
+# 자유롭게 값을 바꿔보자
+n = 10     # 시행 횟수
+p = 0.30   # 성공 확률
+
+print(f"=== 이항분포 B(n={n}, p={p}) ===")
+print(f"평균:     μ = np = {binom_mean(n, p):.2f}")
+print(f"표준편차: σ = √(np(1-p)) = {binom_std(n, p):.3f}")
+print()
+print("k별 확률 분포:")
+for k in range(n + 1):
+    pmf = binom_pmf(k, n, p)
+    bar = "█" * int(pmf * 50)
+    print(f"  k={k:2d}: {pmf:.4f}  {bar}")
+            </div>
+        </div>
+
+        <!-- 예제 Guided Practice 4.33 -->
+        <div class="example">
+            <span class="ex-label gp">Guided Practice 4.33</span>
+            <h5>흡연 친구 4명의 폐 질환 발생</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 흡연자의 30%가 심각한 폐 질환에 걸린다고 가정하자. 흡연하는 친구 4명이 있을 때 (a) 아무도 걸리지 않을 확률, (b) 1명만 걸릴 확률, (c) 최대 1명이 걸릴 확률을 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def binom_pmf(k, n, p): return stats.binom.pmf(k, n, p)
+def binom_cdf(k, n, p): return stats.binom.cdf(k, n, p)
+# === 본 코드 ===
+
+n, p = 4, 0.30  # 친구 수와 발병 확률
+
+p0 = binom_pmf(0, n, p)
+p1 = binom_pmf(1, n, p)
+p_at_most_1 = binom_cdf(1, n, p)
+
+print(f"(a) P(k=0)    = {p0:.4f}")
+print(f"(b) P(k=1)    = {p1:.4f}")
+print(f"(c) P(k ≤ 1)  = {p_at_most_1:.4f}  (약 {p_at_most_1*100:.1f}%)")
+            </div>
+            <details class="solution">
+                <summary>풀이 보기</summary>
+                <div class="solution-body">
+                    <p>(a) $P(k=0) = (0.7)^4 = 0.2401$</p>
+                    <p>(b) $P(k=1) = \binom{4}{1}(0.3)(0.7)^3 = 0.4116$</p>
+                    <p>(c) $P(k \le 1) = 0.2401 + 0.4116 = 0.6517$</p>
+                    <p>4명의 흡연 친구 중 <strong>최대 1명만 폐 질환에 걸릴 확률은 약 65%</strong>이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <h4>4.2.2 이항분포의 정규근사</h4>
+        <p>표본 크기가 충분히 클 때, 이항분포는 정규분포로 근사할 수 있다. 다음 두 조건을 만족하면 근사가 충분히 정확하다.</p>
+        <div class="formula-box">
+            $$np \geq 10 \quad \text{이고} \quad n(1-p) \geq 10$$
+        </div>
+        <p>이 조건이 충족되면 $\text{Binomial}(n, p) \approx N(\mu = np, \sigma = \sqrt{np(1-p)})$이다.</p>
+
+        <!-- 예제 4.38 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.38</span>
+            <h5>흡연율 조사 — 정규근사</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 미국 인구의 약 15%가 흡연한다. 400명을 무작위로 조사했을 때 42명 이하가 흡연자일 확률을 정규근사로 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def z_score(x, mu, sigma): return (x - mu) / sigma
+def normal_left(z): return stats.norm.cdf(z)
+def binom_cdf(k, n, p): return stats.binom.cdf(k, n, p)
+def binom_mean(n, p): return n * p
+def binom_std(n, p): return math.sqrt(n * p * (1 - p))
+# === 본 코드 ===
+
+n, p = 400, 0.15
+k = 42
+
+# 조건 확인
+np_  = n * p
+nq_ = n * (1 - p)
+print(f"조건: np = {np_}, n(1-p) = {nq_}  → 정규근사 가능: {np_ >= 10 and nq_ >= 10}")
+
+# 정규분포 모수
+mu_b = binom_mean(n, p)
+sd_b = binom_std(n, p)
+
+# Z-점수와 근사 확률
+z = z_score(k, mu_b, sd_b)
+approx = normal_left(z)
+exact  = binom_cdf(k, n, p)
+
+print(f"\n정규근사: μ = {mu_b}, σ = {sd_b:.3f}")
+print(f"Z = ({k} - {mu_b})/{sd_b:.3f} = {z:.2f}")
+print(f"근사 P(X ≤ {k}) = {approx:.4f}")
+print(f"정확 P(X ≤ {k}) = {exact:.4f}  (이항분포 직접 계산)")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>정규근사로 얻은 0.0059와 정확한 이항분포 값 0.0054는 <strong>매우 가깝다</strong>. 따라서 $np \ge 10$, $n(1-p) \ge 10$ 조건이 만족될 때 정규근사는 실용적으로 충분하다.</p>
+                    <p>이 정규근사는 곧이어 다룰 <strong>중심극한정리</strong>의 한 사례라고 볼 수 있다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>이항분포의 정규근사가 작동하는 이유 — 중심극한정리</h5>
+            <p>이항분포에서 성공 횟수 $X$는 $n$개의 독립적인 베르누이 확률변수의 합이다.</p>
+            <div class="formula-box">$$X = X_1 + X_2 + \cdots + X_n$$</div>
+            <p>여기서 각 $X_i$는 성공이면 1, 실패면 0이다. <strong>중심극한정리</strong>(Central Limit Theorem)에 의하면 $n$이 충분히 크면 독립 확률변수들의 합은 정규분포에 가까워진다. 따라서 $n$이 클 때 $X \sim N(np, \sqrt{np(1-p)})$로 근사된다.</p>
+            <p>조건 $np \ge 10$과 $n(1-p) \ge 10$의 의미는 다음과 같다.</p>
+            <ul>
+                <li>$np \ge 10$: 평균적으로 최소 10번의 성공이 예상된다.</li>
+                <li>$n(1-p) \ge 10$: 평균적으로 최소 10번의 실패가 예상된다.</li>
+            </ul>
+            <p>이 조건은 분포가 양쪽 끝으로 충분히 퍼져 종 모양에 가까워지도록 보장하는 역할을 한다.</p>
+        </div>
+
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 4.17</span>
+            <h5>미성년자 음주</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 18-20세의 69.7%가 주류를 소비한다고 하자. 5명의 표본에서 (d) 최대 2명이 음주했을 확률, (e) 최소 1명이 음주했을 확률을 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def binom_pmf(k, n, p): return stats.binom.pmf(k, n, p)
+def binom_cdf(k, n, p): return stats.binom.cdf(k, n, p)
+# === 본 코드 ===
+
+n, p = 5, 0.697
+
+# (d) P(k ≤ 2)
+p_at_most_2 = binom_cdf(2, n, p)
+
+# (e) P(k ≥ 1) = 1 - P(k=0)
+p_at_least_1 = 1 - binom_pmf(0, n, p)
+
+print(f"(d) P(k ≤ 2) = {p_at_most_2:.4f}  (약 {p_at_most_2*100:.2f}%)")
+print(f"(e) P(k ≥ 1) = {p_at_least_1:.4f}  (약 {p_at_least_1*100:.2f}%)")
+            </div>
+        </div>
+
+    </div>
+    <!-- ========== 4.2 끝 ========== -->
+
+    <!-- ========== 4.3 포아송분포 ========== -->
+    <div class="section" id="sec-4-3">
+        <h3>4.3 포아송분포 (Poisson Distribution)</h3>
+
+        <p>포아송분포는 <strong>주어진 시간이나 공간에서 드문 사건이 발생하는 횟수</strong>를 모델링한다. 단위 시간당 평균 발생률을 $\lambda$로 둘 때, 발생 횟수 $X$의 분포는 다음과 같다.</p>
+
+        <div class="formula-box">
+            $$P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}, \quad k = 0, 1, 2, \ldots$$
+        </div>
+
+        <div class="key-box">
+            <span class="label">포아송분포의 특별한 성질</span>
+            <p>평균과 분산이 모두 $\lambda$로 같다.</p>
+            <div class="formula-box">$$\mu = \lambda, \qquad \sigma^2 = \lambda, \qquad \sigma = \sqrt{\lambda}$$</div>
+        </div>
+        <!-- 예제 4.51 -->
+        <div class="example">
+            <span class="ex-label ex">Example 4.51</span>
+            <h5>NYC 심장마비 환자 — 정확히 2명</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 뉴욕시에서 하루에 평균 4.4명이 급성 심근경색(AMI)으로 입원한다. 어떤 날 정확히 2명의 환자가 입원할 확률은?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def poisson_pmf(k, lam): return stats.poisson.pmf(k, lam)
+# === 본 코드 ===
+
+lam = 4.4
+k = 2
+
+prob = poisson_pmf(k, lam)
+print(f"λ = {lam}, k = {k}")
+print(f"P(X = {k}) = ({lam}^{k} × e^(-{lam})) / {k}!")
+print(f"          = {lam**k:.3f} × {math.exp(-lam):.4f} / {math.factorial(k)}")
+print(f"          = {prob:.4f}  (약 {prob*100:.2f}%)")
+            </div>
+        </div>
+
+        <!-- 학생용 변형 셀: λ만 바꿔서 분포 비교 -->
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기 — λ가 분포 모양을 바꾼다</span>
+            <p>$\lambda$ 값을 다양하게 바꿔 가며 포아송분포의 모양 변화를 관찰해 보자.</p>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def poisson_pmf(k, lam): return stats.poisson.pmf(k, lam)
+# === 본 코드 ===
+
+# λ만 바꿔서 분포 모양을 비교
+lam = 3.0   # 시도해 볼 값: 0.5, 2, 5, 10, 20
+
+print(f"=== Poisson(λ = {lam}) ===")
+print(f"평균 = {lam}, 표준편차 = {math.sqrt(lam):.3f}\n")
+
+# 0~max_k까지 PMF 출력
+max_k = max(15, int(lam * 2.5))
+for k in range(max_k + 1):
+    pmf = poisson_pmf(k, lam)
+    if pmf < 0.001 and k > lam: break
+    bar = "█" * int(pmf * 60)
+    print(f"  k={k:2d}: {pmf:.4f}  {bar}")
+            </div>
+        </div>
+
+        <!-- 누적확률 예제 -->
+        <div class="example">
+            <span class="ex-label gp">Guided Practice 4.52</span>
+            <h5>3명 이하의 환자 입원 확률</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> $\lambda = 4.4$일 때 어떤 날 3명 이하의 AMI 환자가 입원할 확률은?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def poisson_pmf(k, lam): return stats.poisson.pmf(k, lam)
+def poisson_cdf(k, lam): return stats.poisson.cdf(k, lam)
+# === 본 코드 ===
+
+lam = 4.4
+
+# 두 가지 방법으로 누적확률 계산
+방법1 = sum(poisson_pmf(k, lam) for k in range(4))  # 직접 합
+방법2 = poisson_cdf(3, lam)                          # CDF
+
+print(f"방법 1 (직접 합산): {방법1:.4f}")
+print(f"방법 2 (CDF):       {방법2:.4f}")
+
+print("\n각 항의 분해:")
+for k in range(4):
+    pmf = poisson_pmf(k, lam)
+    print(f"  P(X={k}) = {pmf:.4f}")
+            </div>
+        </div>
+
+        <!-- 새로운 시각 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>포아송분포는 이항분포의 극한이다</h5>
+            <p>이항분포 $B(n, p)$에서 다음 조건이 성립할 때, 분포는 포아송분포에 수렴한다.</p>
+            <ul>
+                <li>$n \to \infty$ (시행 횟수가 매우 커진다)</li>
+                <li>$p \to 0$ (성공 확률이 매우 작아진다)</li>
+                <li>$np = \lambda$ (평균은 일정하게 유지된다)</li>
+            </ul>
+            <p><strong>NYC 심장마비 사례로 이해하기</strong>: 뉴욕시 800만 명 각각이 하루 중 심장마비를 일으킬지(성공)/아닐지(실패)를 결정하는 베르누이 시행이라고 가정해 보자. $n = 8{,}000{,}000$, $p \approx 0.00000055$이며, $np \approx 4.4$이다. 이항분포 $B(8{,}000{,}000, 0.00000055)$를 직접 계산하기는 사실상 불가능하지만, <strong>포아송분포 $\text{Poisson}(4.4)$</strong>로 훌륭하게 근사할 수 있다.</p>
+            <p>이것이 포아송분포가 흔히 <strong>"드문 사건의 분포"</strong>(distribution of rare events)라 불리는 이유이다.</p>
+        </div>
+
+        <!-- 분포 간 관계도 -->
+        <div class="key-box">
+            <span class="label">4장 종합 — 분포들의 관계</span>
+<pre style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto;">
+베르누이 시행 (1회: 성공/실패)
+        │
+        ▼
+   이항분포 B(n, p)  ← n회 시행에서의 성공 횟수
+        │
+        ├──→ 정규분포 N(np, √(np(1-p)))   [n이 클 때, np≥10, n(1-p)≥10]
+        │
+        └──→ 포아송분포 Poisson(λ)        [n→∞, p→0, np=λ 일정]
+                          │
+                          (드문 사건의 분포)
+</pre>
+            <p><strong>핵심 통찰</strong></p>
+            <ol>
+                <li>모든 분포는 <strong>베르누이 시행</strong>에서 출발한다.</li>
+                <li>이항분포는 표본 크기 $n$이 충분히 크면 <strong>정규분포로 근사</strong>되며, 이는 5장 비율 추론에서 성공-실패 조건의 근거가 된다.</li>
+                <li>이항분포의 또 다른 극한이 <strong>포아송분포</strong>이다. 사건이 드물수록(작은 $p$) 포아송 근사가 유리하다.</li>
+                <li>5장에서 이루어지는 모든 추론은 결국 <strong>표본비율 $\hat{p}$의 정규분포 근사</strong> 위에 세워진다.</li>
+            </ol>
+        </div>
+
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 4.31</span>
+            <h5>주간 교통사고</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 어떤 고속도로 구간에서 주간 평균 사고 건수가 2.2건이다. 다음 주에 (b) 정확히 3건, (c) 2건 이하, (d) 적어도 1건 발생할 확률을 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+from scipy import stats
+def poisson_pmf(k, lam): return stats.poisson.pmf(k, lam)
+def poisson_cdf(k, lam): return stats.poisson.cdf(k, lam)
+# === 본 코드 ===
+
+lam = 2.2
+
+b = poisson_pmf(3, lam)         # 정확히 3건
+c = poisson_cdf(2, lam)         # 2건 이하
+d = 1 - poisson_pmf(0, lam)     # 적어도 1건
+
+print(f"(b) P(X = 3)  = {b:.4f}  (약 {b*100:.2f}%)")
+print(f"(c) P(X ≤ 2)  = {c:.4f}  (약 {c*100:.2f}%)")
+print(f"(d) P(X ≥ 1)  = {d:.4f}  (약 {d*100:.2f}%)")
+            </div>
+        </div>
+
+    </div>
+    <!-- ========== 4.3 끝 ========== -->
+
+    <!-- ============================================== -->
+    <!-- ============= 제5장 시작 ====================== -->
+    <!-- ============================================== -->
+
+    <div class="chapter-header ch5" id="chapter-5">
+        <h2>제5장 · 통계적 추론의 기초</h2>
+        <p><strong>통계적 추론</strong>(statistical inference)은 모수 추정의 불확실성을 이해하고 정량화하는 학문이다. 본 장에서는 친숙한 주제인 표본비율을 통해 모집단비율을 추정하는 아이디어로 시작하여, <strong>신뢰구간</strong>(confidence interval), 그리고 <strong>가설검정</strong>(hypothesis testing) 프레임워크까지 차례로 소개한다.</p>
+    </div>
+
+    <!-- ========== 5.1 점추정과 표본 변동성 ========== -->
+    <div class="section" id="sec-5-1">
+        <h3>5.1 점추정과 표본 변동성</h3>
+
+        <p>Pew Research와 같은 기관은 정치, 과학적 이해, 브랜드 인지도 등 많은 주제에 대한 여론을 파악하기 위해 자주 여론조사를 실시한다. 여론조사의 궁극적인 목표는 응답 표본을 사용하여 더 넓은 모집단의 의견을 추정하는 것이다.</p>
+
+        <h4>5.1.1 점추정과 오차</h4>
+        <p>어떤 여론조사에서 미국 대통령의 지지율이 45%라고 했다 하자. 우리는 45%를 전체 모집단 응답에서 나타날 지지율의 <strong>점추정값</strong>(point estimate)으로 간주한다. 이 모집단 비율을 <strong>모수</strong>(parameter)라 하며 $p$로 표기하고, 표본비율은 $\hat{p}$로 표기한다.</p>
+
+        <p>두 번째 여론조사를 실시하면 약간 다른 점추정값을 얻을 것이다. 이러한 표본 간 차이를 <strong>표본오차</strong>(sampling error)라 한다. 표본오차와 함께 주의해야 할 또 하나의 오차가 <strong>편향</strong>(bias)이다. 편향은 추정값이 모수를 체계적으로 과대 또는 과소 추정하도록 만들 때 발생한다.</p>
+
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>표본오차와 편향의 차이</h5>
+            <ul>
+                <li><strong>표본오차</strong>: 무작위성으로 인한 자연스러운 변동. 표본 크기를 늘리면 줄일 수 있다.</li>
+                <li><strong>편향</strong>: 체계적인 오차. 표본 크기를 늘려도 해결되지 않으며, 데이터 수집 방법 자체를 개선해야 한다.</li>
+            </ul>
+            <p>예를 들어 전화 여론조사에서 젊은 세대가 응답하지 않는 경향이 있다면 이는 편향을 만들어낸다. 더 많은 전화를 걸어도 이 문제는 해결되지 않는다.</p>
+        </div>
+
+        <h4>5.1.2 점추정의 변동성 이해</h4>
+        <p>Pew Research는 태양 에너지 역할 확대를 지지하는 미국 성인의 비율을 약 $p = 0.88$로 추정한다. 만약 1000명의 미국 성인을 다시 표본추출한다면 표본비율 $\hat{p}$이 얼마나 달라질 것인가? 이 변동성을 시뮬레이션을 통해 이해할 수 있다.</p>
+        <!-- 예제 5.1 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.1</span>
+            <h5>표본 크기와 표준오차</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 만약 훨씬 작은 표본 크기 $n = 50$을 사용했다면, $\hat{p}$의 표준오차가 $n = 1000$을 사용했을 때보다 클까 작을까?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+def se_proportion(p, n): return math.sqrt(p * (1 - p) / n)
+# === 본 코드 ===
+
+p = 0.88
+
+# 두 가지 표본 크기 비교
+for n in [1000, 50]:
+    se = se_proportion(p, n)
+    print(f"n = {n:>5}: SE = {se:.4f}")
+
+print()
+print("→ 더 큰 표본 크기 = 더 작은 표준오차")
+print("  n이 4배가 되면 SE는 절반으로 줄어든다 (∝ 1/√n).")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>$n = 50$일 때 $SE \approx 0.046$이고, $n = 1000$일 때 $SE \approx 0.010$이다. 약 4.47배 차이가 난다. 이는 표준오차가 $1/\sqrt{n}$에 비례한다는 사실에서 비롯된다 ($\sqrt{1000/50} = \sqrt{20} \approx 4.47$).</p>
+                    <p><strong>결론</strong>: 더 큰 표본은 더 작은 표본보다 더 정확한 점추정값을 제공하는 경향이 있다.</p>
+                </div>
+            </details>
+        </div>
+
+        <h4>5.1.3 중심극한정리</h4>
+        <div class="key-box">
+            <span class="label">중심극한정리와 성공-실패 조건</span>
+            <p>관측값들이 독립이고 표본 크기가 충분히 크면, 표본비율 $\hat{p}$은 다음의 평균과 표준오차를 가진 정규분포를 따르는 경향이 있다.</p>
+            <div class="formula-box">
+                $$\mu_{\hat{p}} = p, \qquad SE_{\hat{p}} = \sqrt{\frac{p(1-p)}{n}}$$
+            </div>
+            <p><strong>성공-실패 조건</strong>(success-failure condition): $np \geq 10$이고 $n(1-p) \geq 10$일 때 표본 크기가 충분하다고 본다.</p>
+        </div>
+
+        <!-- 예제 5.2 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.2 & 5.3</span>
+            <h5>중심극한정리 조건 확인 및 표준오차 계산</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> $p = 0.88$이고 $n = 1000$일 때, 성공-실패 조건을 확인하고 $\hat{p}$의 이론적 평균과 표준오차를 계산하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+def se_proportion(p, n): return math.sqrt(p * (1 - p) / n)
+def check_success_failure(p, n, t=10):
+    s, f = n*p, n*(1-p); return s>=t and f>=t, s, f
+# === 본 코드 ===
+
+# p와 n만 바꾸면 빠르게 다른 시나리오를 검증할 수 있다
+p = 0.88
+n = 1000
+
+ok, s, f = check_success_failure(p, n)
+mu_p_hat = p
+se_p_hat = se_proportion(p, n)
+
+print(f"=== 분포: 비율 p = {p}, 표본 크기 n = {n} ===")
+print(f"성공-실패 조건: np = {s}, n(1-p) = {f}")
+print(f"  → {'✅ 만족' if ok else '❌ 불만족'}")
+print()
+print(f"이론적 평균:    μ_p̂ = {mu_p_hat}")
+print(f"이론적 표준오차: SE_p̂ = √(p(1-p)/n) = {se_p_hat:.4f}")
+            </div>
+        </div>
+
+        <!-- 예제 5.4 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.4</span>
+            <h5>정규분포로 확률 계산</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 표본비율 $\hat{p}$이 모집단 값 $p = 0.88$의 $\pm 0.02$ 이내에 있을 확률을 구하라. 분포는 $N(0.88, 0.010)$으로 근사된다.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+def z_score(x, mu, sigma): return (x - mu) / sigma
+# === 본 코드 ===
+
+mu, se = 0.88, 0.010
+lower, upper = 0.86, 0.90
+
+# 양쪽 절단점의 Z-점수 계산
+z_lo = z_score(lower, mu, se)
+z_hi = z_score(upper, mu, se)
+
+# 중앙 영역
+prob_central = stats.norm.cdf(z_hi) - stats.norm.cdf(z_lo)
+
+print(f"하한 Z = {z_lo:.2f},  상한 Z = {z_hi:.2f}")
+print(f"P({lower} ≤ p̂ ≤ {upper}) = {prob_central:.4f}")
+print(f"→ 약 {prob_central*100:.2f}%의 표본비율이 ±0.02 이내에 있다.")
+            </div>
+        </div>
+
+        <h4>5.1.4 플러그인 원리</h4>
+        <p>실제 연구에서는 모집단비율 $p$를 알지 못한다. 따라서 성공-실패 조건을 확인하거나 표준오차를 계산할 때, $p$ 대신 $\hat{p}$를 대체하여 사용한다. 이를 <strong>플러그인 원리</strong>(plug-in principle)라 한다.</p>
+        <div class="formula-box">
+            $$SE_{\hat{p}} = \sqrt{\frac{p(1-p)}{n}} \approx \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+        </div>
+
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>플러그인 원리의 실용성</h5>
+            <p>실제 연구에서는 거의 항상 $p$를 모르므로 $\hat{p}$를 대신 사용하는 플러그인 원리가 매우 중요하다.</p>
+            <ol>
+                <li><strong>신뢰구간 계산</strong>: $SE = \sqrt{\hat{p}(1-\hat{p})/n}$ 사용</li>
+                <li><strong>조건 확인</strong>: $n\hat{p} \geq 10$, $n(1-\hat{p}) \geq 10$ 확인</li>
+            </ol>
+            <p>이 방법이 작동하는 이유는 표본 크기가 충분히 크면 $\hat{p}$이 $p$에 가까워지기 때문이다.</p>
+        </div>
+
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 5.5</span>
+            <h5>물 표본의 납 수치</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 비영리 단체가 식수에서 납 수치가 높은 가구의 비율($p \approx 0.08$)을 조사한다. 800가구 표본의 분포에 대해 (c) 표준오차를 구하고, (e) 표본 크기가 250으로 줄어들면 변동성이 어떻게 변하는지 비교하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+def se_proportion(p, n): return math.sqrt(p * (1 - p) / n)
+def check_success_failure(p, n, t=10):
+    s, f = n*p, n*(1-p); return s>=t and f>=t, s, f
+# === 본 코드 ===
+
+p = 0.08
+
+# 두 가지 표본 크기 비교
+for n in [800, 250]:
+    se = se_proportion(p, n)
+    ok, s, f = check_success_failure(p, n)
+    print(f"n = {n:>4}: SE = {se:.4f}, np = {s:.1f}, n(1-p) = {f:.1f}, 조건 {'✅' if ok else '❌'}")
+
+# 변동성 비율
+se_800 = se_proportion(p, 800)
+se_250 = se_proportion(p, 250)
+print(f"\n변동성 비율: SE(n=250) / SE(n=800) = {se_250/se_800:.2f}배 증가")
+            </div>
+            <details class="solution">
+                <summary>전체 풀이 보기</summary>
+                <div class="solution-body">
+                    <p>(a) 이 분포의 이름은 <strong>표본추출 분포</strong>(sampling distribution).</p>
+                    <p>(c) $SE = \sqrt{0.08 \times 0.92 / 800} \approx 0.0096$</p>
+                    <p>(d) 이 값의 정식 명칭은 <strong>표준오차</strong>(standard error).</p>
+                    <p>(e) $n = 250$이면 $SE \approx 0.0172$로, 변동성이 약 1.79배 증가한다. 표본 크기가 줄어들면 변동성은 커진다.</p>
+                </div>
+            </details>
+        </div>
+
+    </div>
+    <!-- ========== 5.1 끝 ========== -->
+
+    <!-- ========== 5.2 신뢰구간 ========== -->
+    <div class="section" id="sec-5-2">
+        <h3>5.2 비율에 대한 신뢰구간</h3>
+
+        <h4>5.2.1 모집단 모수 포착하기</h4>
+        <p>점추정값만 사용하는 것은 흐린 호수에서 작살로 물고기를 잡으려는 것과 같다. 반면 그물을 던지면 물고기를 잡을 좋은 기회를 얻는다. <strong>신뢰구간</strong>(confidence interval)은 그물로 낚시하는 것에 해당하며, 모집단 모수가 있을 가능성이 큰 값들의 범위를 나타낸다.</p>
+
+        <h4>5.2.2 95% 신뢰구간 구성</h4>
+        <p>점추정값 분포가 정규분포에 가까울 때, 95% 신뢰구간은 다음과 같이 구성한다.</p>
+        <div class="formula-box">
+            $$\text{점추정값} \pm 1.96 \times SE$$
+        </div>
+
+        <p>일반적인 신뢰수준에 대한 신뢰구간은 다음 형태이다.</p>
+        <div class="formula-box">
+            $$\text{점추정값} \pm z^* \times SE$$
+        </div>
+
+        <table>
+            <thead>
+                <tr><th>신뢰수준</th><th>$z^*$</th><th>각 꼬리 면적</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>90%</td><td>1.645</td><td>5%</td></tr>
+                <tr><td>95%</td><td>1.960</td><td>2.5%</td></tr>
+                <tr><td>99%</td><td>2.576</td><td>0.5%</td></tr>
+            </tbody>
+        </table>
+
+        <!-- 예제 5.8 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.8</span>
+            <h5>태양 에너지 지지율 — 95% 신뢰구간</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 1000명의 미국 성인 무작위 표본 중 88.7%가 태양열 발전 확대를 지지한다. 95% 신뢰구간을 구하고 해석하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def check_success_failure(p, n, t=10):
+    s, f = n*p, n*(1-p); return s>=t and f>=t, s, f
+def confidence_interval_p(p_hat, n, conf=0.95):
+    z_star = stats.norm.ppf((1+conf)/2); se = math.sqrt(p_hat*(1-p_hat)/n)
+    return (p_hat-z_star*se, p_hat+z_star*se), z_star, se
+# === 본 코드 ===
+
+p_hat = 0.887
+n = 1000
+
+# 조건 확인 → SE 계산 → 신뢰구간
+ok, s, f = check_success_failure(p_hat, n)
+ci, z_star, se = confidence_interval_p(p_hat, n, conf=0.95)
+
+print(f"성공-실패 조건: np̂ = {s:.0f}, n(1-p̂) = {f:.0f} → {'✅ 만족' if ok else '❌ 불만족'}")
+print(f"표준오차:       SE = {se:.4f}")
+print(f"임계값:         z* = {z_star:.3f}")
+print(f"오차한계:       margin = {z_star * se:.4f}")
+print()
+print(f"95% 신뢰구간: ({ci[0]:.4f}, {ci[1]:.4f})")
+print(f"            = ({ci[0]*100:.1f}%, {ci[1]*100:.1f}%)")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>태양열 발전 확대를 지지하는 미국 성인의 실제 비율이 <strong>86.7%에서 90.7% 사이</strong>에 있다고 95% 확신한다.</p>
+                    <p><strong>주의</strong>: "이 구간이 참값을 포함할 확률이 95%"라고 해석하면 안 된다. 정확한 해석은 "이 방법으로 100번 구간을 만들면 약 95번이 참값을 포함한다"이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 학생용 변형 셀: 신뢰수준만 바꿔서 비교 -->
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기 — 신뢰수준 변경</span>
+            <p>신뢰수준을 바꾸면 구간 너비가 어떻게 변하는지 관찰해 보자. (앞서 계산한 결과를 함수로 재사용하므로 매번 다시 import하거나 SE를 다시 계산할 필요가 없다.)</p>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def confidence_interval_p(p_hat, n, conf=0.95):
+    z_star = stats.norm.ppf((1+conf)/2); se = math.sqrt(p_hat*(1-p_hat)/n)
+    return (p_hat-z_star*se, p_hat+z_star*se), z_star, se
+# === 본 코드 ===
+
+# p_hat과 n은 그대로, 신뢰수준만 바꿔서 비교
+p_hat = 0.887
+n = 1000
+
+print(f"=== p̂ = {p_hat}, n = {n}일 때 신뢰수준별 비교 ===")
+print()
+for conf in [0.80, 0.90, 0.95, 0.99]:
+    ci, z_star, se = confidence_interval_p(p_hat, n, conf)
+    width = ci[1] - ci[0]
+    print(f"{int(conf*100):3d}% CI: z*={z_star:.3f}  ({ci[0]*100:.2f}%, {ci[1]*100:.2f}%)  너비={width*100:.2f}%")
+
+print("\n→ 신뢰수준이 높을수록 구간이 넓어진다 (트레이드오프).")
+            </div>
+        </div>
+
+        <!-- 예제 5.13 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.13</span>
+            <h5>에볼라 격리 지지율</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 2014년 10월 뉴욕에서 1,042명을 조사한 결과 82%가 에볼라 환자 접촉자에 대한 의무 격리를 지지했다. 95% 신뢰구간을 구하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def confidence_interval_p(p_hat, n, conf=0.95):
+    z_star = stats.norm.ppf((1+conf)/2); se = math.sqrt(p_hat*(1-p_hat)/n)
+    return (p_hat-z_star*se, p_hat+z_star*se), z_star, se
+# === 본 코드 ===
+
+# 다른 사례 — p̂과 n만 바꿔서 동일한 함수로 즉시 계산
+p_hat = 0.82
+n = 1042
+
+ci, z_star, se = confidence_interval_p(p_hat, n, conf=0.95)
+
+print(f"점추정값: p̂ = {p_hat}")
+print(f"표본 크기: n = {n}")
+print(f"표준오차: SE = {se:.4f}")
+print(f"95% CI: ({ci[0]:.3f}, {ci[1]:.3f})")
+print(f"      = ({ci[0]*100:.1f}%, {ci[1]*100:.1f}%)")
+            </div>
+        </div>
+
+        <blockquote>
+            <strong>단일 비율에 대한 신뢰구간 구성 단계</strong>
+            <ol>
+                <li><strong>준비</strong>(Prepare): $\hat{p}$와 $n$을 식별하고 신뢰수준을 결정한다.</li>
+                <li><strong>확인</strong>(Check): $\hat{p}$이 거의 정규분포임을 보장하는 조건을 확인한다.</li>
+                <li><strong>계산</strong>(Calculate): SE를 계산하고 $z^*$를 찾아 구간을 구성한다.</li>
+                <li><strong>결론</strong>(Conclude): 문제의 맥락에서 신뢰구간을 해석한다.</li>
+            </ol>
+        </blockquote>
+
+        <!-- 새로운 시각 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>신뢰구간의 참된 의미</h5>
+            <ul>
+                <li>신뢰수준(95%)은 <strong>방법</strong>에 대한 것이지, 특정 구간에 대한 것이 아니다.</li>
+                <li>"이 방법으로 100번 구간을 만들면, 약 95번은 참값을 포함할 것이다"가 올바른 해석이다.</li>
+                <li>특정 구간에 대해 "참값이 이 구간에 있을 확률이 95%다"라고 말하는 것은 <strong>잘못된</strong> 해석이다.</li>
+                <li>모수는 구간 안에 있거나 없다 — 확률의 문제가 아니다!</li>
+            </ul>
+        </div>
+
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 5.7</span>
+            <h5>만성 질환 비율</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 미국 성인의 45%가 하나 이상의 만성 질환을 앓고 있다고 보고되었으며, 표준오차는 약 1.2%이다. 95% 신뢰구간을 구하라.
+            </div>
+            <div class="compute">
+# 이 문제는 SE가 직접 주어졌으므로 confidence_interval_p가 아니라 수동으로
+p_hat = 0.45
+se = 0.012
+z_star = 1.96
+
+margin = z_star * se
+ci_lower = p_hat - margin
+ci_upper = p_hat + margin
+
+print(f"점추정값: {p_hat}")
+print(f"표준오차: {se}")
+print(f"95% CI: ({ci_lower:.4f}, {ci_upper:.4f})")
+print(f"      = ({ci_lower*100:.1f}%, {ci_upper*100:.1f}%)")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>$\hat{p} \pm z^* \cdot SE = 0.45 \pm 1.96 \times 0.012 = (0.4265, 0.4735)$이다. 즉 만성 질환을 앓고 있는 미국 성인의 비율이 <strong>42.6%에서 47.4% 사이</strong>에 있다고 95% 확신한다.</p>
+                    <p>이 구간이 50%를 포함하지 않으므로, "비율이 50% 미만"이라는 가설검정도 5% 유의수준에서 통계적으로 유의한 결론을 내릴 수 있다.</p>
+                </div>
+            </details>
+        </div>
+
+    </div>
+    <!-- ========== 5.2 끝 ========== -->
+
+    <!-- ========== 5.3 가설검정 ========== -->
+    <div class="section" id="sec-5-3">
+        <h3>5.3 비율에 대한 가설검정</h3>
+
+        <p>본 절에서는 경쟁하는 아이디어와 주장을 엄격하게 평가하는 데 사용되는 프레임워크인 <strong>가설검정</strong>(hypothesis tests)에 대해 학습한다.</p>
+
+        <h4>5.3.1 가설검정 프레임워크</h4>
+        <blockquote>
+            <strong>귀무가설과 대립가설</strong>
+            <ul>
+                <li><strong>귀무가설</strong>($H_0$): 회의적인 시각 또는 "아무 일도 일어나지 않았다"는 주장.</li>
+                <li><strong>대립가설</strong>($H_A$): "무언가 새로운 것이 일어나고 있다"는 대안적 주장.</li>
+            </ul>
+        </blockquote>
+
+        <p>2014년 Pew Research 조사에서 50명의 대학 교육을 받은 미국 성인에게 신생아 백신 접종 일정을 물었다. 응답자의 24%만이 정답("의사 권장대로 빨리 맞아야 한다")을 골랐다. 무작위 추측이라면 1/3 ≈ 33.3%가 정답을 맞혀야 한다. 24%와 33.3%의 차이는 우연인가, 아니면 실제 차이인가?</p>
+
+        <div class="formula-box">
+            $H_0: p = 0.333$ (무작위 추측과 같음) <br>
+            $H_A: p \neq 0.333$ (무작위 추측과 다름)
+        </div>
+
+        <!-- 예제 5.20 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.20</span>
+            <h5>신뢰구간을 통한 가설검정</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 50명 중 12명이 정답을 맞혔다($\hat{p} = 0.24$). 95% 신뢰구간을 구성하여 귀무가설 $p_0 = 1/3$을 검정하라.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def confidence_interval_p(p_hat, n, conf=0.95):
+    z_star = stats.norm.ppf((1+conf)/2); se = math.sqrt(p_hat*(1-p_hat)/n)
+    return (p_hat-z_star*se, p_hat+z_star*se), z_star, se
+# === 본 코드 ===
+
+p_hat = 12 / 50  # 0.24
+n = 50
+p0 = 1/3
+
+# 5.2절에서 정의한 confidence_interval_p 함수를 그대로 재사용
+ci, z_star, se = confidence_interval_p(p_hat, n, conf=0.95)
+
+print(f"표본비율: p̂ = {p_hat}")
+print(f"표준오차: SE = {se:.4f}")
+print(f"95% CI: ({ci[0]:.3f}, {ci[1]:.3f})")
+print()
+print(f"귀무값 p₀ = {p0:.3f}")
+print(f"귀무값이 95% CI 내에 있는가? {'✅ 예' if ci[0] <= p0 <= ci[1] else '❌ 아니오'}")
+print()
+if ci[0] <= p0 <= ci[1]:
+    print("→ 결론: H₀를 기각하지 않는다. 차이를 우연으로 설명할 수 있다.")
+else:
+    print("→ 결론: H₀를 기각한다.")
+            </div>
+        </div>
+
+        <h4>5.3.3 의사결정 오류</h4>
+        <table>
+            <thead>
+                <tr><th></th><th>$H_0$가 참</th><th>$H_A$가 참</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>$H_0$ 기각하지 않음</strong></td><td>올바른 결정</td><td><strong>제2종 오류</strong></td></tr>
+                <tr><td><strong>$H_0$ 기각</strong></td><td><strong>제1종 오류</strong></td><td>올바른 결정</td></tr>
+            </tbody>
+        </table>
+        <p><strong>제1종 오류</strong>(Type I Error): $H_0$가 실제로 참일 때 귀무가설을 기각.<br>
+           <strong>제2종 오류</strong>(Type II Error): $H_A$가 실제로 참일 때 귀무가설을 기각하지 못함.</p>
+
+        <p><strong>유의수준</strong>(significance level) $\alpha$는 귀무가설이 참일 때 데이터가 $H_0$를 잘못 기각하도록 이끄는 빈도이다. 일반적인 값은 $\alpha = 0.05$이다.</p>
+
+        <h4>5.3.4 p-값을 사용한 공식적인 검정</h4>
+        <blockquote>
+            <strong>p-값 정의</strong><br>
+            <strong>p-값</strong>은 귀무가설이 참이라면, 현재 데이터 세트만큼 대립가설에 유리하거나 더 유리한 데이터를 관찰할 확률이다.
+        </blockquote>
+
+        <!-- 예제 5.28 -->
+        <div class="example">
+            <span class="ex-label ex">Example 5.28</span>
+            <h5>석탄 에너지 지지율 — Z-검정</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 1000명 중 37%만이 석탄 에너지 확대를 지지했다. 미국 성인의 과반수가 석탄 에너지 확대에 찬성하지 않는다는 강력한 증거가 있는가?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def z_test_proportion(p_hat, p0, n):
+    se = math.sqrt(p0*(1-p0)/n); z = (p_hat-p0)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z))), se
+# === 본 코드 ===
+
+p_hat = 0.37
+p0 = 0.5
+n = 1000
+alpha = 0.05
+
+# z_test_proportion 함수로 검정 수행
+z, p_value, se = z_test_proportion(p_hat, p0, n)
+
+print(f"H₀: p = {p0}")
+print(f"Hₐ: p ≠ {p0}")
+print(f"유의수준 α = {alpha}")
+print()
+print(f"표본비율: p̂ = {p_hat}")
+print(f"표준오차 (귀무값으로 계산): SE = {se:.4f}")
+print(f"검정통계량: Z = ({p_hat} - {p0})/{se:.4f} = {z:.2f}")
+print(f"양측 p-값:  = {p_value:.2e}")
+print()
+if p_value < alpha:
+    print(f"→ p-값 < α 이므로 H₀를 기각한다.")
+    print(f"  결론: 미국 성인의 과반수가 석탄 에너지 확대를 지지하지 않는다는 강력한 증거.")
+else:
+    print(f"→ p-값 ≥ α 이므로 H₀를 기각하지 않는다.")
+            </div>
+            <details class="solution">
+                <summary>풀이 단계 보기</summary>
+                <div class="solution-body">
+                    <ol>
+                        <li><strong>가설</strong>: $H_0: p = 0.5$, $H_A: p \neq 0.5$</li>
+                        <li><strong>조건 확인</strong>: $np_0 = 500 \ge 10$, $n(1-p_0) = 500 \ge 10$ ✓</li>
+                        <li><strong>표준오차</strong>(귀무값 사용): $SE = \sqrt{0.5 \cdot 0.5 / 1000} \approx 0.0158$</li>
+                        <li><strong>Z-점수</strong>: $Z = (0.37 - 0.5)/0.0158 \approx -8.23$</li>
+                        <li><strong>p-값</strong> $\approx 0$, 따라서 $H_0$를 기각.</li>
+                    </ol>
+                    <p><strong>결론</strong>: 미국 성인의 과반수가 석탄 에너지 확대를 지지하지 않는다는 매우 강력한 증거가 있다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 학생용 변형 셀: 다양한 시나리오에 동일 함수 적용 -->
+        <div class="tweak-box">
+            <span class="tweak-label">🔧 직접 풀어보기 — 같은 함수로 다양한 검정 즉시 수행</span>
+            <p>$\hat{p}$, $p_0$, $n$ 값만 바꾸면 같은 <code>z_test_proportion</code> 함수로 다양한 검정을 즉시 수행할 수 있다. 매번 SE와 Z를 다시 import하거나 새로 정의할 필요가 없다.</p>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def z_test_proportion(p_hat, p0, n):
+    se = math.sqrt(p0*(1-p0)/n); z = (p_hat-p0)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z))), se
+# === 본 코드 ===
+
+# 시도해 볼 시나리오들 (값을 바꿔보자)
+시나리오 = [
+    ("핵무기 감축 지지율 (예제 5.33)", 0.56, 0.50, 1028),
+    ("최저임금 지지율 (연습 5.21)",   0.42, 0.50, 1000),
+    ("근시 비율 (연습 5.32)",         21/194, 0.08, 194),
+]
+
+print(f"{'사례':<35} {'p̂':>7} {'p₀':>6} {'n':>5} {'Z':>7} {'p-값':>10} {'결론':<10}")
+print("-" * 90)
+for name, p_hat, p0, n in 시나리오:
+    z, p_value, se = z_test_proportion(p_hat, p0, n)
+    decision = "H₀ 기각" if p_value < 0.05 else "H₀ 유지"
+    print(f"{name:<35} {p_hat:>7.3f} {p0:>6.2f} {n:>5} {z:>+7.2f} {p_value:>10.4f} {decision:<10}")
+            </div>
+        </div>
+
+        <!-- 새로운 시각 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>빅 데이터 시대의 통계적 vs 실질적 유의성</h5>
+            <p>표본 크기가 매우 크면 실질적 가치가 없는 작은 차이도 <strong>통계적으로 유의</strong>하게 감지될 수 있다. 데이터 과학에서 빅 데이터가 보편화됨에 따라 이 구분은 매우 중요해졌다.</p>
+            <ul>
+                <li>수백만 명의 데이터가 있으면 거의 모든 작은 차이도 통계적으로 유의해질 수 있다.</li>
+                <li><strong>"통계적으로 유의미하다"와 "실제로 중요하다"는 매우 다른 질문</strong>이다.</li>
+                <li>항상 <strong>효과 크기</strong>(effect size)를 검토하고 실제 응용에서 의미가 있는지 질문해야 한다.</li>
+                <li>p-값만 보고하지 말고 신뢰구간이나 효과 크기도 함께 보고하는 것이 좋은 관행이다.</li>
+            </ul>
+        </div>
+
+        <!-- 통계적 vs 실질적 유의성 시연 -->
+        <div class="example">
+            <span class="ex-label">Exercise 5.35 시연</span>
+            <h5>표본 크기에 따른 검정 결과 변화</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 효과 크기 1%(0.51 vs 0.50)의 같은 차이라도 표본 크기에 따라 검정 결과가 달라진다. 직접 확인해 보자.
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def z_test_proportion(p_hat, p0, n):
+    se = math.sqrt(p0*(1-p0)/n); z = (p_hat-p0)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z))), se
+# === 본 코드 ===
+
+# 효과 크기는 고정 (1%), 표본 크기만 변화
+p_hat = 0.51
+p0 = 0.50
+
+print(f"고정된 효과 크기: {(p_hat - p0)*100:.1f}% (실질적으로 매우 작음)")
+print()
+print(f"{'n':>8} {'SE':>8} {'Z':>7} {'p-값':>10} {'유의?':>10}")
+print("-" * 50)
+for n in [100, 1000, 10000, 100000]:
+    z, p_value, se = z_test_proportion(p_hat, p0, n)
+    sig = "유의" if p_value < 0.05 else "유의 안 함"
+    print(f"{n:>8} {se:>8.4f} {z:>+7.2f} {p_value:>10.4f} {sig:>10}")
+
+print("\n→ 같은 1% 차이라도 n이 클수록 통계적으로 유의해진다.")
+print("  하지만 1% 차이가 실제 의사결정에서 중요한가? 별개의 질문이다.")
+            </div>
+        </div>
+
+        <h4>📝 절 연습문제</h4>
+        <div class="example">
+            <span class="ex-label">Exercise 5.32</span>
+            <h5>근시 비율 검정</h5>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 근시는 모든 어린이의 약 8%에게 영향을 미친다고 알려져 있다. 194명의 표본에서 21명이 근시였다. 8%가 정확하지 않다는 증거가 있는가?
+            </div>
+            <div class="compute">
+# === 도우미 함수 ===
+import math
+from scipy import stats
+def z_test_proportion(p_hat, p0, n):
+    se = math.sqrt(p0*(1-p0)/n); z = (p_hat-p0)/se
+    return z, 2*(1 - stats.norm.cdf(abs(z))), se
+# === 본 코드 ===
+
+# 같은 z_test_proportion 함수를 그대로 재사용
+p_hat = 21 / 194
+p0 = 0.08
+n = 194
+alpha = 0.05
+
+z, p_value, se = z_test_proportion(p_hat, p0, n)
+
+print(f"H₀: p = {p0}")
+print(f"Hₐ: p ≠ {p0}")
+print()
+print(f"표본비율: p̂ = {p_hat:.4f}")
+print(f"SE = {se:.4f}")
+print(f"Z  = {z:.2f}")
+print(f"p-값 = {p_value:.3f}")
+print()
+print(f"결론: {'H₀ 기각' if p_value < alpha else 'H₀ 기각 실패 — 8%가 부정확하다는 충분한 증거 없음'}")
+            </div>
+            <details class="solution">
+                <summary>해석 보기</summary>
+                <div class="solution-body">
+                    <p>$\hat{p} = 21/194 \approx 0.108$, $SE \approx 0.0195$, $Z \approx 1.44$, p-값 $\approx 0.150$이다.</p>
+                    <p>p-값 (0.150) > $\alpha$ (0.05)이므로 $H_0$를 기각하지 않는다. 즉 <strong>8%가 정확하지 않다는 충분한 증거가 없다</strong>.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 가설검정의 한계 -->
+        <div class="insight">
+            <span class="label">◈ 새로운 시각</span>
+            <h5>가설검정의 한계와 대안</h5>
+            <p>가설검정은 강력한 도구이지만 한계가 있다.</p>
+            <ol>
+                <li><strong>이분법적 결론</strong>: "기각" 또는 "기각하지 않음"만 있다.</li>
+                <li><strong>p-값 오용</strong>: p-값 = 0.049와 p-값 = 0.051이 질적으로 다른가?</li>
+                <li><strong>효과 크기 무시</strong>: 통계적으로 유의해도 실질적으로 의미 없을 수 있다.</li>
+            </ol>
+            <p><strong>대안과 보완책</strong>: 신뢰구간을 함께 보고하고, 효과 크기(Cohen's d 등)를 계산하며, 베이지안 접근법을 고려하고, 재현성 연구를 수행하는 것이 좋다. 좋은 연구는 p-값뿐 아니라 <strong>효과의 크기와 실질적 의미</strong>를 함께 고려한다.</p>
+        </div>
+
+    </div>
+    <!-- ========== 5.3 끝 ========== -->
+
+    <!-- ========== 마무리 ========== -->
+    <div style="text-align: center; padding: 60px 30px; background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: white;">
+        <h2 style="margin: 0 0 12px; font-size: 2em;">🎓 교재 완전 정복!</h2>
+        <p style="font-size: 1.1em; opacity: 0.92;">제4장 확률변수의 분포와 제5장 통계적 추론의 기초를 모두 마스터하였다.</p>
+        <p style="font-size: 0.95em; opacity: 0.8; margin-top: 20px;">
+            확률분포 → 표본추출 분포 → 신뢰구간 → 가설검정. <br>
+            모든 통계적 추론의 기둥이 이 흐름 위에 세워진다.
+        </p>
+    </div>
+
+</div>
+
+<script>
+// 네비게이션 바: 현재 보고 있는 섹션 표시
+const navbar = document.getElementById('navbar');
+const sections = {
+    'sec-4-1': '4.1 정규분포',
+    
+    'sec-4-2': '4.2 이항분포',
+    
+    'sec-4-3': '4.3 포아송분포',
+    'sec-5-1': '5.1 점추정',
+    'sec-5-2': '5.2 신뢰구간',
+    'sec-5-3': '5.3 가설검정'
+};
+window.addEventListener('scroll', () => {
+    let current = '📘 OpenIntro 4–5장';
+    for (const id in sections) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top < 200) current = sections[id];
+    }
+    navbar.textContent = '📍 ' + current;
+});
+</script>
+
+</body>
+</html>

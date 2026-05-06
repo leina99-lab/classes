@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제4장 확률변수의 분포 (Distributions of Random Variables)</title>
+
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>
+// DOM이 완전히 로드된 후 SageCell을 초기화한다
+window.addEventListener('load', function() {
+    function initSageCell() {
+        if (typeof sagecell !== 'undefined') {
+            sagecell.makeSagecell({
+                inputLocation: 'div.compute',
+                languages: ["python"],
+                evalButtonText: '▶ 실행 (Run)',
+                hide: ["permalink", "fullScreen"],
+                autoeval: false
+            });
+        } else {
+            // SageCell 로딩 실패 시 재시도
+            setTimeout(initSageCell, 500);
+        }
+    }
+    initSageCell();
+});
+</script>
+
+<style>
+    body { font-family: "Pretendard", "Malgun Gothic", sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; color: #333; line-height: 1.7; }
+    .container { max-width: 1100px; margin: 0 auto; background: white; min-height: 100vh; padding-bottom: 100px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+
+    /* 헤더: 오션 그라디언트 */
+    .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #3498db 100%); color: white; padding: 60px 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 2.6em; letter-spacing: -1px; font-weight: 800; }
+    .header .subtitle { color: #cfe4ff; margin-top: 12px; font-size: 1.1em; letter-spacing: 0.5px; }
+    .header .meta { color: #a9c9ef; margin-top: 25px; font-size: 0.95em; }
+
+    /* 목차 */
+    .toc { background: #f8fafc; padding: 30px 40px; border-bottom: 2px solid #e3e8ef; }
+    .toc h2 { color: #1e3c72; margin-top: 0; font-size: 1.4em; }
+    .toc ol { line-height: 2; color: #334155; }
+    .toc a { color: #2a5298; text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* 섹션 */
+    .section { padding: 45px 40px; border-bottom: 1px solid #eaecef; }
+    .section-title { font-size: 1.9em; font-weight: 700; color: #1e3c72; border-left: 6px solid #2a5298; padding-left: 18px; margin: 0 0 25px 0; letter-spacing: -0.5px; }
+    .subsection-title { font-size: 1.35em; color: #2a5298; margin-top: 35px; margin-bottom: 15px; font-weight: 700; padding-bottom: 8px; border-bottom: 2px dashed #cfe4ff; }
+
+    /* 본문 */
+    p { margin: 14px 0; color: #2c3e50; }
+    .intro-text { background: linear-gradient(to right, #f0f7ff, #ffffff); padding: 20px 25px; border-left: 5px solid #3498db; border-radius: 6px; margin: 20px 0; }
+
+    /* 정의 박스 */
+    .definition-box { background: #fffbeb; border: 2px solid #fbbf24; border-radius: 10px; padding: 22px 28px; margin: 25px 0; box-shadow: 0 2px 6px rgba(251, 191, 36, 0.15); }
+    .definition-box .def-title { color: #b45309; font-weight: 700; font-size: 1.1em; margin-bottom: 10px; display: block; }
+    .definition-box p { margin: 8px 0; }
+
+    /* 공식 박스 */
+    .formula-box { background: #f1f5f9; border-left: 5px solid #475569; padding: 18px 25px; margin: 18px 0; border-radius: 6px; font-size: 1.05em; text-align: center; }
+
+    /* 새로운 시각 박스 */
+    .new-perspective { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 25px 30px; margin: 30px 0; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+    .new-perspective .np-title { color: #92400e; font-weight: 800; font-size: 1.2em; margin-bottom: 15px; }
+    .new-perspective p { color: #78350f; }
+    .new-perspective strong { color: #451a03; }
+
+    /* 예제 박스 */
+    .example-box { border: 2px solid #dbeafe; border-radius: 12px; padding: 25px 30px; margin: 25px 0; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .ex-label { display: inline-block; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.3px; }
+    .ex-title { font-size: 1.2em; font-weight: 700; color: #1e3c72; margin-bottom: 15px; display: block; }
+    .problem-desc { background: #f8fafc; padding: 18px 22px; border-left: 4px solid #3b82f6; margin-bottom: 18px; border-radius: 4px; }
+
+    /* 연습문제 박스 */
+    .exercise-box { border: 2px solid #fecaca; border-radius: 12px; padding: 25px 30px; margin: 25px 0; background: #fef2f2; }
+    .exercise-box .ex-label { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+    /* 퀴즈/정답 토글 */
+    details.quiz { background: #eff6ff; padding: 14px 18px; border-radius: 8px; cursor: pointer; border: 1px solid #93c5fd; margin-top: 15px; transition: all 0.2s; }
+    details.quiz[open] { background: #dbeafe; }
+    details.quiz summary { font-weight: 700; color: #1e40af; outline: none; user-select: none; }
+    details.quiz summary:hover { color: #1e3a8a; }
+    .answer { margin-top: 12px; padding: 15px 18px; background: white; border-radius: 6px; color: #1f2937; border-left: 3px solid #3b82f6; }
+    .answer p { margin: 8px 0; }
+
+    /* 코드/수식 */
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: "Consolas", "Monaco", monospace; font-size: 0.95em; color: #be123c; }
+    .math { font-family: "Cambria Math", "STIX Two Math", serif; font-style: italic; }
+
+    /* 미션 박스 */
+    .mission { background: #ecfdf5; border: 2px dashed #10b981; border-radius: 8px; padding: 14px 20px; margin: 15px 0; }
+    .mission strong { color: #047857; }
+
+    /* 표 */
+    table { border-collapse: collapse; margin: 18px auto; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    th { background: #1e3c72; color: white; padding: 10px 18px; font-weight: 600; }
+    td { padding: 10px 18px; border: 1px solid #e5e7eb; text-align: center; }
+    tr:nth-child(even) td { background: #f8fafc; }
+
+    /* 네비게이션 */
+    .nav-bar { position: fixed; bottom: 20px; right: 20px; background: rgba(30, 60, 114, 0.95); color: white; padding: 14px 26px; border-radius: 30px; font-weight: 600; box-shadow: 0 5px 20px rgba(30, 60, 114, 0.4); z-index: 999; font-size: 0.95em; }
+
+    /* SageCell 컨테이너 스타일 보강 */
+    .compute { margin: 15px 0; }
+
+    /* 마무리 */
+    .finale { text-align: center; padding: 60px 30px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
+    .finale h2 { color: #1e3c72; font-size: 1.8em; }
+    .finale p { color: #475569; font-size: 1.05em; }
+</style>
+</head>
+
+<body>
+
+<div class="nav-bar">▼ 스크롤하여 학습을 진행하라</div>
+
+<div class="container">
+
+    <div class="header">
+        <h1>제4장 확률변수의 분포</h1>
+        <div class="subtitle">Distributions of Random Variables</div>
+        <div class="meta">OpenIntro Statistics 4판 · 3시간 강의용 · SageMath 인터랙티브 교재</div>
+    </div>
+
+    <!-- 목차 -->
+    <div class="toc">
+        <h2>목차 (Table of Contents)</h2>
+        <ol>
+            <li><a href="#sec41">4.1 정규분포 (Normal Distribution)</a></li>
+            <li><a href="#sec42">4.2 기하분포 (Geometric Distribution)</a></li>
+            <li><a href="#sec43">4.3 이항분포 (Binomial Distribution)</a></li>
+            <li><a href="#sec44">4.4 음이항분포 (Negative Binomial Distribution)</a></li>
+            <li><a href="#sec45">4.5 포아송분포 (Poisson Distribution)</a></li>
+        </ol>
+    </div>
+
+    <!-- 서론 -->
+    <div class="section">
+        <div class="intro-text">
+            <p>본 장에서는 데이터 분석 및 통계적 추론의 맥락에서 빈번히 등장하는 <strong>통계적 분포</strong>(statistical distributions)를 논의한다. 첫 번째 절에서 다루는 <strong>정규분포</strong>(normal distribution)는 이 책의 후반부 장들에서 반복적으로 사용된다. 나머지 절들은 때때로 참조되지만, 본 교재의 논의를 위해서는 선택적으로 고려될 수 있다.</p>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- 4.1 정규분포 -->
+    <!-- ================================================================= -->
+    <div class="section" id="sec41">
+        <div class="section-title">4.1 정규분포 (Normal Distribution)</div>
+
+        <p>실제로 관찰되는 모든 분포 중에서 압도적으로 가장 흔히 나타나는 분포가 존재한다. 대칭적이고 단봉형(unimodal)인 종 모양 곡선은 통계학 전반에서 편재한다. 이것은 너무나 흔하여 <strong>정규 곡선</strong>(normal curve) 또는 <strong>정규분포</strong>라고 불린다. SAT 점수나 미국 성인 남성의 키와 같은 변수들은 정규분포를 밀접하게 따른다.</p>
+
+        <div class="definition-box">
+            <span class="def-title">정규분포에 대한 사실</span>
+            <p>많은 변수가 거의 정규분포를 따르지만, 정확하게 정규분포인 변수는 존재하지 않는다. 따라서 정규분포는 어떤 단일 문제에도 완벽하지 않으나, 다양한 문제에 매우 유용하다.</p>
+        </div>
+
+        <!-- 새로운 시각 1 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: 정규분포의 본질적 의미</div>
+            <p>정규분포가 왜 이토록 자연계와 사회현상에서 널리 나타나는가? 이 질문에 대한 답은 <strong>중심극한정리</strong>(Central Limit Theorem)에 있다.</p>
+            <p>많은 자연현상과 사회현상은 수많은 작고 독립적인 요인들의 합으로 결정된다. 예컨대 사람의 키는 수백 개의 유전자, 영양 상태, 환경 요인의 복합적 영향으로 결정되며, 주식 시장의 일일 변동은 수천 명 투자자들의 개별 결정의 총합으로 형성되고, 측정 오차는 여러 작은 오차원의 누적으로 나타난다.</p>
+            <p>중심극한정리에 따르면, 독립적인 확률변수들의 합은 그 개별 분포가 무엇이든 간에 정규분포에 수렴한다. 이것이 바로 정규분포가 <strong>"정상(normal)"</strong>이라고 불리는 이유이다.</p>
+            <p>역사적으로 이 분포는 <strong>가우스 분포</strong>(Gaussian distribution)라고도 불리는데, 독일 수학자 칼 프리드리히 가우스(1777-1855)가 천문학적 측정 오차를 분석하면서 이 분포의 수학적 표현을 처음으로 공식화하였기 때문이다.</p>
+        </div>
+
+        <!-- 4.1.1 -->
+        <div class="subsection-title">4.1.1 정규분포 모형 (Normal Distribution Model)</div>
+
+        <p>정규분포는 두 개의 <strong>모수</strong>(parameter)로 조정된다: <strong>평균</strong>(μ)과 <strong>표준편차</strong>(σ)이다. 평균을 변경하면 곡선이 좌우로 이동하며, 표준편차를 변경하면 곡선이 늘어나거나 좁아진다. 평균 μ와 표준편차 σ를 가진 정규분포는 <strong>N(μ, σ)</strong>로 표기한다. 특히 μ = 0, σ = 1인 정규분포를 <strong>표준정규분포</strong>(standard normal distribution)라고 부른다.</p>
+
+        <!-- 실습 1: 정규분포 시각화 -->
+        <div class="example-box">
+            <span class="ex-label">실습 4.1</span>
+            <span class="ex-title">정규분포 곡선 그려보기 (모수 바꾸어 실험)</span>
+            <div class="problem-desc">
+                <strong>[미션]</strong> 아래 코드에서 <code>mu</code>와 <code>sigma</code> 값을 바꾸어가며 정규분포 곡선이 어떻게 변하는지 관찰하라. 평균이 바뀌면 곡선이 이동하고, 표준편차가 바뀌면 곡선의 폭이 변한다.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# ▼ 학생이 직접 바꿔가며 실험할 값 ▼
+mu = 0        # 평균 (예: 0, 5, -3, 10)
+sigma = 1     # 표준편차 (예: 0.5, 1, 2, 3)
+# ▲ ─────────────────────────── ▲
+
+x = np.linspace(mu - 4*sigma, mu + 4*sigma, 300)
+y = stats.norm.pdf(x, loc=mu, scale=sigma)
+
+plt.figure(figsize=(9, 5))
+plt.plot(x, y, color='#1e3c72', linewidth=2.5)
+plt.fill_between(x, y, alpha=0.3, color='#3498db')
+plt.axvline(mu, color='red', linestyle='--', label=f'평균 μ = {mu}')
+plt.title(f'정규분포 N(μ={mu}, σ={sigma})', fontsize=14)
+plt.xlabel('x'); plt.ylabel('확률밀도 f(x)')
+plt.grid(True, alpha=0.3); plt.legend()
+plt.show()
+
+print(f">> N(μ={mu}, σ={sigma})의 특성")
+print(f"   평균 = {mu}, 표준편차 = {sigma}")
+print(f"   곡선의 최고점은 x = {mu}에 위치한다.")
+</script></div>
+            <details class="quiz">
+                <summary>관찰 포인트 (정답 보기)</summary>
+                <div class="answer">
+                    <p><strong>μ의 역할</strong>: 평균이 커지면 곡선 전체가 오른쪽으로 이동하고, 작아지면 왼쪽으로 이동한다.</p>
+                    <p><strong>σ의 역할</strong>: 표준편차가 커지면 곡선이 납작해지고 넓어지며(산포 증가), 작아지면 뾰족해지고 좁아진다(집중도 증가).</p>
+                    <p><strong>곡선 아래 전체 면적은 항상 1</strong>이다. 이는 확률밀도함수의 기본 성질이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 예제 4.1 -->
+        <div class="example-box">
+            <span class="ex-label">Guided Practice 4.1</span>
+            <span class="ex-title">정규분포의 약칭 표기법</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 다음 정규분포의 약칭을 기술하라.<br>
+                (a) 평균 5, 표준편차 3 &nbsp; (b) 평균 -100, 표준편차 10 &nbsp; (c) 평균 2, 표준편차 9
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+distributions = [("(a)", 5, 3), ("(b)", -100, 10), ("(c)", 2, 9)]
+
+print("=" * 45)
+print("정규분포 약칭 표기")
+print("=" * 45)
+for label, mu, sigma in distributions:
+    dist = stats.norm(loc=mu, scale=sigma)
+    print(f"{label} N(μ = {mu}, σ = {sigma})")
+    print(f"     평균 = {dist.mean()},  표준편차 = {dist.std()}")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>(a) <strong>N(μ = 5, σ = 3)</strong> 또는 N(5, 3)</p>
+                    <p>(b) <strong>N(μ = -100, σ = 10)</strong> 또는 N(-100, 10)</p>
+                    <p>(c) <strong>N(μ = 2, σ = 9)</strong> 또는 N(2, 9)</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 4.1.2 Z-점수 -->
+        <div class="subsection-title">4.1.2 Z-점수를 이용한 표준화 (Standardizing with Z-scores)</div>
+
+        <p>서로 다른 척도를 가진 데이터를 비교하기 위해서는 <strong>표준화</strong>가 필요하다. 관측값의 <strong>Z-점수</strong>(Z-score)는 해당 관측값이 평균보다 몇 표준편차만큼 위 혹은 아래에 위치하는지를 나타낸다.</p>
+
+        <div class="formula-box">
+            <strong>Z-점수 공식:</strong> &nbsp; Z = (x − μ) / σ
+        </div>
+
+        <!-- 예제 4.2 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.2</span>
+            <span class="ex-title">SAT vs ACT — 누가 상대적으로 더 잘했는가?</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> Ann이 SAT에서 1300점을, Tom이 ACT에서 24점을 받았다.<br>
+                SAT: N(1100, 200), &nbsp; ACT: N(21, 6). 누가 상대적으로 더 우수한 성과를 거두었는가?
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+# ▼ 학생이 바꿔볼 수 있는 값 ▼
+x_ann = 1300          # Ann의 SAT 점수
+x_tom = 24            # Tom의 ACT 점수
+mu_sat, sigma_sat = 1100, 200
+mu_act, sigma_act = 21, 6
+# ▲ ─────────────────────── ▲
+
+z_ann = (x_ann - mu_sat) / sigma_sat
+z_tom = (x_tom - mu_act) / sigma_act
+
+print(f"Ann의 Z-점수: ({x_ann} - {mu_sat}) / {sigma_sat} = {z_ann:.2f}")
+print(f"Tom의 Z-점수: ({x_tom} - {mu_act}) / {sigma_act} = {z_tom:.2f}")
+print()
+if z_ann > z_tom:
+    print(f">> Ann의 Z-점수({z_ann:.2f}) > Tom의 Z-점수({z_tom:.2f})")
+    print(f">> 결론: Ann이 상대적으로 더 우수하다.")
+else:
+    print(f">> Tom이 상대적으로 더 우수하다.")
+</script></div>
+            <details class="quiz">
+                <summary>상세 풀이 (정답 보기)</summary>
+                <div class="answer">
+                    <p><strong>Ann</strong>의 Z-점수: (1300 − 1100) / 200 = <strong>1.00</strong> (평균보다 1 표준편차 위)</p>
+                    <p><strong>Tom</strong>의 Z-점수: (24 − 21) / 6 = <strong>0.50</strong> (평균보다 0.5 표준편차 위)</p>
+                    <p>Z-점수 비교에 의해 <strong>Ann이 상대적으로 더 우수한 성과</strong>를 거두었음을 알 수 있다. Z-점수는 서로 다른 척도의 관측값을 비교 가능한 공통 척도로 변환하는 역할을 수행한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 예제 4.5: Z-점수 특이성 -->
+        <div class="example-box">
+            <span class="ex-label">Guided Practice 4.5</span>
+            <span class="ex-title">붓꼬리주머니쥐의 머리 길이 — 어느 관측값이 더 특이한가?</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 붓꼬리주머니쥐의 머리 길이는 <strong>N(μ = 92.6mm, σ = 3.6mm)</strong>를 따른다. 머리 길이가 95.4mm와 85.8mm인 주머니쥐의 Z-점수를 계산하고, 어느 쪽이 더 특이한 값인지 판정하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+# ▼ 숫자를 바꾸어 실험하라 ▼
+mu, sigma = 92.6, 3.6
+x1 = 95.4
+x2 = 85.8
+# ▲ ──────────────── ▲
+
+z1 = (x1 - mu) / sigma
+z2 = (x2 - mu) / sigma
+
+print(f"분포: N(μ = {mu}, σ = {sigma})")
+print("-" * 45)
+print(f"x₁ = {x1} → Z₁ = ({x1} - {mu}) / {sigma} = {z1:+.2f}")
+print(f"x₂ = {x2} → Z₂ = ({x2} - {mu}) / {sigma} = {z2:+.2f}")
+print()
+print(f"|Z₁| = {abs(z1):.2f},  |Z₂| = {abs(z2):.2f}")
+if abs(z2) > abs(z1):
+    print(f">> |Z₂| > |Z₁|: x₂ = {x2}가 더 특이한 값이다.")
+else:
+    print(f">> |Z₁| > |Z₂|: x₁ = {x1}가 더 특이한 값이다.")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>Z₁ = (95.4 − 92.6) / 3.6 = <strong>+0.78</strong> (평균보다 0.78σ 위)</p>
+                    <p>Z₂ = (85.8 − 92.6) / 3.6 = <strong>−1.89</strong> (평균보다 1.89σ 아래)</p>
+                    <p>|Z₂| = 1.89 > |Z₁| = 0.78 이므로, <strong>85.8mm의 관측값이 더 특이</strong>하다. Z-점수의 절댓값이 클수록 평균으로부터 더 멀리 떨어진, 즉 보다 드문 값임을 의미한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각 2 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: Z-점수의 직관적 이해</div>
+            <p>Z-점수는 단순히 "평균에서 얼마나 떨어져 있는가"를 <strong>표준편차 단위</strong>로 측정한 것이다. 반 평균이 70점이고 표준편차가 10점인 시험을 상정하자.</p>
+            <ul>
+                <li>80점을 취득하면 Z = 1.0 (평균보다 1σ 위, "꽤 잘함")</li>
+                <li>90점을 취득하면 Z = 2.0 (평균보다 2σ 위, "매우 잘함")</li>
+                <li>60점을 취득하면 Z = −1.0 (평균보다 1σ 아래, "약간 못함")</li>
+            </ul>
+            <p><strong>Z-점수의 경험적 해석 지침</strong>:</p>
+            <ul>
+                <li>|Z| &lt; 1: 대부분의 데이터가 여기에 분포 (약 68%)</li>
+                <li>|Z| &lt; 2: 거의 모든 데이터가 여기에 분포 (약 95%)</li>
+                <li>|Z| &gt; 2: 상당히 특이한 값</li>
+                <li>|Z| &gt; 3: 매우 드문 값 (1000개 중 약 3개)</li>
+            </ul>
+            <p>이러한 직관은 데이터 분석에서 <strong>이상치</strong>(outlier)를 탐지하거나, 결과의 통계적 유의성을 신속히 판단하는 데 유용하다.</p>
+        </div>
+
+        <!-- 4.1.3 꼬리 면적 -->
+        <div class="subsection-title">4.1.3 꼬리 면적과 확률 계산 (Finding Tail Areas)</div>
+
+        <p>통계학에서 분포의 <strong>꼬리 면적</strong>(tail area)을 계산하는 것은 매우 유용하다. 이는 특정 Z-점수 이하 또는 이상의 확률을 의미하며, <strong>백분위수</strong>(percentile)의 개념과 직결된다. Python에서는 <code>scipy.stats.norm.cdf()</code> 함수를 사용하여 하위 꼬리 면적을 계산한다.</p>
+
+        <!-- 예제 4.7 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.7</span>
+            <span class="ex-title">Shannon이 최소 1190점을 받을 확률</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> SAT 점수가 N(1100, 200)을 따를 때, 무작위로 선택된 응시자가 최소 1190점을 받을 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ▼ 바꿔볼 값 ▼
+mu, sigma = 1100, 200
+x = 1190           # 기준 점수
+# ▲ ──────── ▲
+
+z = (x - mu) / sigma
+prob_upper = 1 - stats.norm.cdf(z)
+
+# 시각화
+xx = np.linspace(mu - 4*sigma, mu + 4*sigma, 300)
+yy = stats.norm.pdf(xx, mu, sigma)
+plt.figure(figsize=(9, 4.5))
+plt.plot(xx, yy, color='#1e3c72', linewidth=2)
+plt.fill_between(xx, yy, where=(xx >= x), color='#ef4444', alpha=0.4, label=f'P(X ≥ {x})')
+plt.axvline(x, color='#b91c1c', linestyle='--')
+plt.title(f'P(X ≥ {x}) 시각화 (상위 꼬리)', fontsize=13)
+plt.xlabel('SAT 점수'); plt.ylabel('밀도'); plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+print(f"Z = ({x} - {mu}) / {sigma} = {z}")
+print(f"P(Z < {z}) = {stats.norm.cdf(z):.4f}")
+print(f"P(X ≥ {x}) = 1 - {stats.norm.cdf(z):.4f} = {prob_upper:.4f}")
+print(f">> Shannon이 최소 {x}점을 받을 확률은 {prob_upper*100:.2f}% 이다.")
+</script></div>
+            <details class="quiz">
+                <summary>상세 풀이</summary>
+                <div class="answer">
+                    <p><strong>단계 1</strong>: Z-점수 계산<br>Z = (1190 − 1100) / 200 = <strong>0.45</strong></p>
+                    <p><strong>단계 2</strong>: 하위 꼬리 면적 조회<br>P(Z &lt; 0.45) = 0.6736</p>
+                    <p><strong>단계 3</strong>: 상위 꼬리 면적 계산<br>P(Z ≥ 0.45) = 1 − 0.6736 = <strong>0.3264</strong></p>
+                    <p>따라서 Shannon이 최소 1190점을 받을 확률은 <strong>약 32.64%</strong>이다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 예제 4.13 역방향 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.13</span>
+            <span class="ex-title">백분위수로부터 원점수 역산하기</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 미국 성인 남성 키 분포가 N(70, 3.3) 인치일 때, Erik이 40번째 백분위수에 위치한다면 그의 키는 얼마인가?
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+# ▼ 바꿔볼 값 ▼
+mu, sigma = 70, 3.3
+percentile = 0.40    # 40번째 백분위수 (0.10, 0.25, 0.50, 0.75, 0.95 등 시도)
+# ▲ ──────── ▲
+
+# 백분위수에 대응하는 Z-점수 계산 (ppf: percent point function = 역 CDF)
+z = stats.norm.ppf(percentile)
+x = mu + z * sigma
+
+print(f"분포: N(μ = {mu}, σ = {sigma})")
+print(f"{percentile*100:.0f}번째 백분위수에 대응하는 Z = {z:.4f}")
+print(f"x = μ + Z · σ = {mu} + ({z:.4f}) × {sigma} = {x:.2f}")
+print(f">> {percentile*100:.0f}번째 백분위수의 키는 약 {x:.2f}인치이다.")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>40번째 백분위수에 대응하는 Z-점수는 약 <strong>−0.25</strong>이다.</p>
+                    <p>x = 70 + (−0.25) × 3.3 = <strong>69.18인치</strong> (약 5피트 9인치)</p>
+                    <p><strong>핵심 아이디어</strong>: 확률 → Z-점수 → 원점수의 역변환 과정이다. <code>scipy.stats.norm.ppf()</code>는 CDF의 역함수 역할을 수행한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 예제 4.17: 구간 확률 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.17</span>
+            <span class="ex-title">구간 확률 — 5피트 9인치와 6피트 2인치 사이</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 성인 남성 키 N(70, 3.3)에서 키가 69인치와 74인치 사이일 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ▼ 바꿔볼 값 ▼
+mu, sigma = 70, 3.3
+x_low, x_high = 69, 74
+# ▲ ──────── ▲
+
+z_low = (x_low - mu) / sigma
+z_high = (x_high - mu) / sigma
+prob_between = stats.norm.cdf(z_high) - stats.norm.cdf(z_low)
+
+# 시각화
+xx = np.linspace(mu - 4*sigma, mu + 4*sigma, 300)
+yy = stats.norm.pdf(xx, mu, sigma)
+plt.figure(figsize=(9, 4.5))
+plt.plot(xx, yy, color='#1e3c72', linewidth=2)
+plt.fill_between(xx, yy, where=((xx >= x_low) & (xx <= x_high)),
+                 color='#10b981', alpha=0.4, label=f'P({x_low} ≤ X ≤ {x_high})')
+plt.title(f'구간 확률 P({x_low} ≤ X ≤ {x_high})', fontsize=13)
+plt.xlabel('키 (인치)'); plt.ylabel('밀도'); plt.legend(); plt.grid(True, alpha=0.3)
+plt.show()
+
+print(f"Z_low  = ({x_low} - {mu}) / {sigma} = {z_low:.2f}")
+print(f"Z_high = ({x_high} - {mu}) / {sigma} = {z_high:.2f}")
+print(f"P({x_low} ≤ X ≤ {x_high}) = Φ({z_high:.2f}) - Φ({z_low:.2f}) = {prob_between:.4f}")
+print(f">> 확률: {prob_between*100:.2f}%")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>Z_low = (69 − 70) / 3.3 = −0.30</p>
+                    <p>Z_high = (74 − 70) / 3.3 = +1.21</p>
+                    <p>P(69 ≤ X ≤ 74) = Φ(1.21) − Φ(−0.30) = 0.8869 − 0.3821 = <strong>0.5048</strong></p>
+                    <p>즉, 약 <strong>50.48%</strong>의 성인 남성이 해당 구간에 속한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 4.1.5 68-95-99.7 규칙 -->
+        <div class="subsection-title">4.1.5 68-95-99.7 규칙</div>
+
+        <p>정규분포에서 평균의 ±1, ±2, ±3 표준편차 이내에 관측값이 떨어질 확률에 대한 유용한 경험 법칙이 존재한다. 이는 계산기나 확률표 없이도 신속한 추정을 가능케 한다.</p>
+
+        <div class="formula-box">
+            <strong>68-95-99.7 규칙</strong><br>
+            P(μ − σ ≤ X ≤ μ + σ) ≈ 0.68 &nbsp;|&nbsp;
+            P(μ − 2σ ≤ X ≤ μ + 2σ) ≈ 0.95 &nbsp;|&nbsp;
+            P(μ − 3σ ≤ X ≤ μ + 3σ) ≈ 0.997
+        </div>
+
+        <div class="example-box">
+            <span class="ex-label">실습 4.20</span>
+            <span class="ex-title">68-95-99.7 규칙 수치적 검증</span>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+print("=" * 55)
+print("68-95-99.7 규칙 검증")
+print("=" * 55)
+for k in [1, 2, 3]:
+    prob = stats.norm.cdf(k) - stats.norm.cdf(-k)
+    print(f"  평균 ± {k}σ 이내: {prob:.4f} ({prob*100:.2f}%)")
+
+print()
+print("극단적 Z-점수의 드묾")
+print("-" * 55)
+for k in [4, 5, 6]:
+    prob_extreme = 2 * (1 - stats.norm.cdf(k))
+    prob_one_in = 1 / prob_extreme
+    print(f"  |Z| > {k}: {prob_extreme:.2e} (약 {prob_one_in:,.0f}분의 1)")
+</script></div>
+        </div>
+
+        <!-- 새로운 시각 3 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: 68-95-99.7 규칙의 실생활 응용</div>
+            <p>68-95-99.7 규칙은 단순한 암기 대상이 아니라, 실생활에서 강력한 의사결정 도구이다.</p>
+            <p><strong>품질 관리 — 6시그마</strong>: 제조업의 "6시그마"(Six Sigma) 방법론은 이 규칙에서 파생되었다. 제품 불량률을 평균으로부터 6 표준편차 이내로 유지하면, 100만 개당 약 3.4개의 불량품만 발생하며, 이는 99.99966%의 품질 수준을 의미한다.</p>
+            <p><strong>의학적 진단</strong>: "정상 범위"는 대개 평균 ± 2 표준편차로 정의된다. 혈압, 콜레스테롤, 혈당 수치 등의 검사 결과가 이 범위를 벗어나면 추가 검사가 요구된다.</p>
+            <p><strong>투자에서의 위험 평가</strong>: 주식 수익률이 정규분포를 따른다고 가정하면, 68% 확률로 수익률이 평균 ± 1σ 이내에 위치하고, 2.5% 확률로 평균보다 2σ 이상의 손실이 발생한다.</p>
+            <p><strong>주의 사항</strong>: 실제 금융 데이터는 <strong>두꺼운 꼬리</strong>(fat tails)를 가지므로, 정규분포보다 극단적 사건이 더 빈번히 발생한다. 2008년 금융위기는 정규분포 가정 하에서 거의 불가능한 사건이었으나 실제로 발생하였다. 이는 정규분포 가정의 한계를 명백히 보여주는 사례이다.</p>
+        </div>
+
+        <!-- 연습문제 (하나만) -->
+        <div class="exercise-box">
+            <span class="ex-label">연습문제 4.1</span>
+            <span class="ex-title">GRE 점수 비교 분석</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> Sophia가 GRE 언어추론에서 160점, 양적추론에서 157점을 받았다.<br>
+                언어추론: N(151, 7), &nbsp; 양적추론: N(153, 7.67)<br>
+                (a) 각 시험의 Z-점수를 계산하라. (b) 어느 영역에서 상대적으로 더 잘했는가? (c) 각 시험의 백분위수는?
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+# ▼ 학생이 직접 계산을 수정하며 풀어보라 ▼
+x_verbal, mu_v, sigma_v = 160, 151, 7
+x_quant,  mu_q, sigma_q = 157, 153, 7.67
+
+# (a) Z-점수
+z_verbal = (x_verbal - mu_v) / sigma_v
+z_quant  = (x_quant  - mu_q) / sigma_q
+print(f"(a) Z-점수")
+print(f"    언어추론 Z = ({x_verbal} - {mu_v}) / {sigma_v} = {z_verbal:.3f}")
+print(f"    양적추론 Z = ({x_quant} - {mu_q}) / {sigma_q} = {z_quant:.3f}")
+
+# (b) 상대적 성과
+print(f"\n(b) 상대적 우수 영역")
+print(f"    {'언어추론' if z_verbal > z_quant else '양적추론'}에서 상대적으로 더 우수하다.")
+
+# (c) 백분위수
+perc_v = stats.norm.cdf(z_verbal) * 100
+perc_q = stats.norm.cdf(z_quant) * 100
+print(f"\n(c) 백분위수")
+print(f"    언어추론: {perc_v:.1f}번째 백분위수")
+print(f"    양적추론: {perc_q:.1f}번째 백분위수")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>(a) Z_언어 ≈ <strong>1.286</strong>, Z_양적 ≈ <strong>0.522</strong></p>
+                    <p>(b) <strong>언어추론</strong>이 상대적으로 더 우수하다 (Z가 더 크므로).</p>
+                    <p>(c) 언어추론 약 <strong>90번째</strong> 백분위수, 양적추론 약 <strong>70번째</strong> 백분위수</p>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- 4.2 기하분포 -->
+    <!-- ================================================================= -->
+    <div class="section" id="sec42">
+        <div class="section-title">4.2 기하분포 (Geometric Distribution)</div>
+
+        <p>동전을 앞면이 나올 때까지 몇 번 던져야 하는가? 주사위에서 1이 나올 때까지 몇 번을 굴려야 하는가? 이러한 질문은 <strong>기하분포</strong>를 통해 답할 수 있다. 먼저 각 시행을 <strong>베르누이 분포</strong>로 형식화한 후, 기하분포를 구성한다.</p>
+
+        <div class="subsection-title">4.2.1 베르누이 분포 (Bernoulli Distribution)</div>
+
+        <p>개별 시행이 두 가지 가능한 결과만을 가질 때 — 보통 <strong>성공</strong>(success)과 <strong>실패</strong>(failure)로 표기 — 이를 <strong>베르누이 확률변수</strong>라고 한다.</p>
+
+        <div class="definition-box">
+            <span class="def-title">베르누이 확률변수</span>
+            <p>확률 p로 값 1을, 확률 1−p로 값 0을 취하는 확률변수의 평균과 표준편차는 다음과 같다.</p>
+            <p style="text-align:center; font-size:1.1em;">μ = p, &nbsp;&nbsp; σ = √(p(1−p))</p>
+        </div>
+
+        <div class="subsection-title">4.2.2 기하분포</div>
+
+        <div class="definition-box">
+            <span class="def-title">기하분포 공식</span>
+            <p>단일 시행의 성공 확률이 p일 때, n번째 시행에서 <strong>첫 번째 성공</strong>을 관측할 확률:</p>
+            <p style="text-align:center; font-size:1.15em;">P(X = n) = (1−p)<sup>n−1</sup> · p</p>
+            <p>평균, 분산, 표준편차:</p>
+            <p style="text-align:center;">μ = 1/p, &nbsp;&nbsp; σ² = (1−p)/p², &nbsp;&nbsp; σ = √((1−p)/p²)</p>
+        </div>
+
+        <!-- 예제 4.22 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.22</span>
+            <span class="ex-title">첫 성공이 n번째 시행에서 나타날 확률</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 보험 가입자의 70%가 자기부담금을 초과하지 않는다. 무작위 추출에서 첫 번째 "미초과" 사례가 n번째 시행에서 나타날 확률을 n = 1, 2, 3, …에 대해 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+p = 0.7      # 성공 확률 (0.1, 0.3, 0.5, 0.9 등 시도)
+n_max = 10
+# ▲ ──────── ▲
+
+ns = list(range(1, n_max + 1))
+probs = [((1-p)**(n-1)) * p for n in ns]
+
+print(f"기하분포 (p = {p})")
+print("=" * 35)
+for n, pr in zip(ns, probs):
+    print(f"  P(X = {n:2d}) = {pr:.4f}")
+
+print(f"\n평균 μ = 1/p = {1/p:.3f}")
+print(f"표준편차 σ = √((1-p)/p²) = {np.sqrt((1-p)/p**2):.3f}")
+
+plt.figure(figsize=(9, 4))
+plt.bar(ns, probs, color='#3498db', edgecolor='#1e3c72', alpha=0.8)
+plt.title(f'기하분포 P(X=n), p={p}', fontsize=13)
+plt.xlabel('n (첫 성공까지의 시행 수)'); plt.ylabel('확률')
+plt.grid(True, alpha=0.3, axis='y')
+plt.show()
+</script></div>
+            <details class="quiz">
+                <summary>해석</summary>
+                <div class="answer">
+                    <p>첫 번째 성공이 n번째에서 나타나려면 앞의 n−1번은 모두 실패, n번째는 성공이어야 한다.</p>
+                    <p>P(X=1) = 0.7, &nbsp; P(X=2) = 0.3 × 0.7 = 0.21, &nbsp; P(X=3) = 0.3² × 0.7 = 0.063, …</p>
+                    <p>기하분포는 <strong>항상 오른쪽으로 치우친(right-skewed) 분포</strong>이며, n이 증가함에 따라 확률이 기하급수적으로 감소한다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각: 무기억성 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: 기하분포의 "무기억성"</div>
+            <p>기하분포의 놀라운 특성 중 하나는 <strong>무기억성</strong>(memorylessness)이다. 이는 이미 실패한 시행들이 미래의 성공 확률에 영향을 미치지 않음을 의미한다.</p>
+            <p style="text-align:center;">P(X > n + k | X > n) = P(X > k)</p>
+            <p>예컨대 동전을 던져 앞면을 기다리는 상황에서 이미 10번 연속 뒷면이 나왔더라도, "이제 앞면이 나올 확률이 더 높아졌다"는 판단은 <strong>도박꾼의 오류</strong>(Gambler's Fallacy)에 해당한다. 각 시행은 독립이므로 11번째 시행의 앞면 확률은 여전히 0.5이다.</p>
+            <p>이 성질은 이산 분포 중 기하분포에서만, 연속 분포 중 지수분포에서만 성립하는 매우 특수한 성질이다.</p>
+        </div>
+
+        <!-- 연습문제 4.2 -->
+        <div class="exercise-box">
+            <span class="ex-label">연습문제 4.2</span>
+            <span class="ex-title">눈 색깔 유전학</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 어떤 지역에서 파란 눈의 확률이 p = 0.125일 때, (a) 세 번째 아이가 첫 파란 눈 아이일 확률, (b) 첫 파란 눈 아이를 찾기까지의 기대 시행수와 표준편차를 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+p = 0.125
+target_n = 3
+# ▲ ──────── ▲
+
+# (a) target_n 번째에서 첫 성공
+prob_a = ((1-p)**(target_n-1)) * p
+print(f"(a) P(X = {target_n}) = (1-{p})^{target_n-1} × {p} = {prob_a:.4f}")
+
+# (b) 기대값과 표준편차
+mu = 1/p
+sigma = np.sqrt((1-p) / p**2)
+print(f"\n(b) μ = 1/p = {mu:.2f}")
+print(f"    σ = √((1-p)/p²) = {sigma:.2f}")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>(a) P(X = 3) = 0.875² × 0.125 = <strong>0.0957</strong></p>
+                    <p>(b) μ = 1/0.125 = <strong>8</strong>, &nbsp; σ = √(0.875 / 0.015625) ≈ <strong>7.48</strong></p>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- 4.3 이항분포 -->
+    <!-- ================================================================= -->
+    <div class="section" id="sec43">
+        <div class="section-title">4.3 이항분포 (Binomial Distribution)</div>
+
+        <p><strong>이항분포</strong>는 <strong>고정된 횟수</strong>의 독립 시행에서 성공 횟수의 분포를 기술한다. 이는 첫 번째 성공까지의 시행 횟수를 기술하는 기하분포와 본질적으로 구별된다.</p>
+
+        <div class="definition-box">
+            <span class="def-title">이항분포 공식</span>
+            <p>단일 시행의 성공 확률이 p일 때, n번의 독립 시행에서 정확히 k번 성공할 확률:</p>
+            <p style="text-align:center; font-size:1.15em;">
+                P(X = k) = C(n, k) · p<sup>k</sup> · (1−p)<sup>n−k</sup> = n! / (k!(n−k)!) · p<sup>k</sup> (1−p)<sup>n−k</sup>
+            </p>
+            <p>평균, 분산, 표준편차:</p>
+            <p style="text-align:center;">μ = np, &nbsp;&nbsp; σ² = np(1−p), &nbsp;&nbsp; σ = √(np(1−p))</p>
+        </div>
+
+        <div class="definition-box" style="background:#fef2f2; border-color:#ef4444;">
+            <span class="def-title" style="color:#991b1b;">이항분포의 네 가지 전제 조건</span>
+            <p>① 시행들이 서로 <strong>독립</strong>이다.<br>
+               ② 시행 횟수 n이 <strong>고정</strong>되어 있다.<br>
+               ③ 각 시행의 결과가 <strong>성공 또는 실패</strong>로 분류될 수 있다.<br>
+               ④ 성공 확률 p가 <strong>모든 시행에서 동일</strong>하다.</p>
+        </div>
+
+        <!-- 예제 4.30 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.30</span>
+            <span class="ex-title">8명 중 5명이 자기부담금을 초과하지 않을 확률</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 개인의 70%가 자기부담금을 초과하지 않을 때, 8명 중 정확히 5명이 초과하지 않을 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+from math import comb
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+n = 8
+k = 5
+p = 0.7
+# ▲ ──────── ▲
+
+coef = comb(n, k)
+prob = coef * (p**k) * ((1-p)**(n-k))
+prob_scipy = stats.binom.pmf(k, n, p)
+
+print(f"n = {n},  k = {k},  p = {p}")
+print(f"이항계수 C({n},{k}) = {coef}")
+print(f"P(X = {k}) = {coef} × {p}^{k} × {1-p}^{n-k} = {prob:.4f}")
+print(f"scipy 검증: {prob_scipy:.4f}")
+
+# 전체 분포 시각화
+ks = np.arange(0, n+1)
+probs = stats.binom.pmf(ks, n, p)
+plt.figure(figsize=(9, 4))
+colors = ['#ef4444' if kk == k else '#3498db' for kk in ks]
+plt.bar(ks, probs, color=colors, edgecolor='#1e3c72', alpha=0.85)
+plt.title(f'이항분포 Binomial(n={n}, p={p}) — k={k} 강조', fontsize=13)
+plt.xlabel('k (성공 횟수)'); plt.ylabel('확률')
+plt.grid(True, alpha=0.3, axis='y')
+plt.show()
+</script></div>
+            <details class="quiz">
+                <summary>상세 풀이</summary>
+                <div class="answer">
+                    <p>C(8, 5) = 8! / (5! · 3!) = 56</p>
+                    <p>P(X = 5) = 56 × 0.7⁵ × 0.3³ = 56 × 0.16807 × 0.027 ≈ <strong>0.2541</strong></p>
+                    <p>이 확률은 그래프에서 k=5에 해당하는 막대의 높이로 확인할 수 있다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 4.3.2 정규 근사 -->
+        <div class="subsection-title">4.3.2 이항분포의 정규 근사</div>
+
+        <div class="definition-box">
+            <span class="def-title">정규 근사 조건</span>
+            <p>n이 충분히 크고 <strong>np ≥ 10</strong> 및 <strong>n(1−p) ≥ 10</strong>을 만족하면, 이항분포는 다음 정규분포로 근사된다.</p>
+            <p style="text-align:center;">N(μ = np, σ = √(np(1−p)))</p>
+        </div>
+
+        <div class="example-box">
+            <span class="ex-label">실습 4.3</span>
+            <span class="ex-title">이항분포가 정규분포에 수렴하는 과정 관찰</span>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+p = 0.3
+n_values = [10, 30, 100, 300]
+# ▲ ──────── ▲
+
+fig, axes = plt.subplots(1, 4, figsize=(16, 3.5))
+for ax, n in zip(axes, n_values):
+    ks = np.arange(0, n+1)
+    probs = stats.binom.pmf(ks, n, p)
+    ax.bar(ks, probs, color='#3498db', alpha=0.7, edgecolor='#1e3c72')
+
+    # 정규 근사 곡선
+    mu, sigma = n*p, np.sqrt(n*p*(1-p))
+    xx = np.linspace(mu - 4*sigma, mu + 4*sigma, 200)
+    ax.plot(xx, stats.norm.pdf(xx, mu, sigma), color='red', linewidth=2)
+    ax.set_title(f'n = {n},  np = {n*p:.1f}')
+    ax.set_xlabel('k'); ax.grid(True, alpha=0.3)
+
+plt.suptitle(f'이항분포의 정규 근사 (p = {p})', fontsize=14)
+plt.tight_layout()
+plt.show()
+
+print("관찰: n이 커질수록 이항분포의 막대가 정규분포 곡선에 점점 더 가까워진다.")
+</script></div>
+        </div>
+
+        <!-- 새로운 시각: 베이지안 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: 이항분포와 베이지안 관점</div>
+            <p>이항분포에서 성공 확률 p를 어떻게 해석해야 하는가? 이에 대한 두 가지 주요 관점이 존재한다.</p>
+            <p><strong>빈도주의적 관점</strong>: p는 고정된 미지의 상수이다. 데이터를 통해 점추정값 p̂ = k/n을 산출한다.</p>
+            <p><strong>베이지안 관점</strong>: p 자체가 확률변수이다. 데이터를 관측한 후 p에 대한 믿음(사후분포)을 갱신한다. n번 시행에서 k번 성공을 관측한 경우, 균등 사전분포 하에서 p의 사후분포는 <strong>Beta(k+1, n−k+1)</strong>이다.</p>
+            <p>베이지안 접근의 장점은 작은 표본에서도 보다 안정적인 추정이 가능하고, 사전 지식을 반영할 수 있으며, 불확실성을 확률적으로 표현할 수 있다는 점이다.</p>
+        </div>
+
+        <!-- 연습문제 4.3 -->
+        <div class="exercise-box">
+            <span class="ex-label">연습문제 4.3</span>
+            <span class="ex-title">미성년 음주 조사</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 18-20세 중 69.7%가 음주를 한다고 알려져 있다. 무작위로 10명을 표본 추출할 때, (a) 정확히 6명이 음주자일 확률, (b) 최소 8명이 음주자일 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+# ▼ 바꿔볼 값 ▼
+n = 10
+p = 0.697
+# ▲ ──────── ▲
+
+# (a) 정확히 6명
+prob_a = stats.binom.pmf(6, n, p)
+print(f"(a) P(X = 6) = {prob_a:.4f}")
+
+# (b) 최소 8명 (= P(X ≥ 8) = 1 - P(X ≤ 7))
+prob_b = 1 - stats.binom.cdf(7, n, p)
+print(f"(b) P(X ≥ 8) = 1 - P(X ≤ 7) = {prob_b:.4f}")
+
+# 기댓값과 표준편차
+import numpy as np
+mu, sigma = n*p, np.sqrt(n*p*(1-p))
+print(f"\n참고: μ = {mu:.2f}, σ = {sigma:.2f}")
+</script></div>
+            <details class="quiz">
+                <summary>정답 확인</summary>
+                <div class="answer">
+                    <p>(a) P(X = 6) ≈ <strong>0.2028</strong></p>
+                    <p>(b) P(X ≥ 8) ≈ <strong>0.3828</strong></p>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- 4.4 음이항분포 -->
+    <!-- ================================================================= -->
+    <div class="section" id="sec44">
+        <div class="section-title">4.4 음이항분포 (Negative Binomial Distribution)</div>
+
+        <p><strong>음이항분포</strong>는 k번째 성공이 정확히 n번째 시행에서 나타날 확률을 기술한다. 이는 기하분포의 일반화로서, k = 1인 특수한 경우가 바로 기하분포이다.</p>
+
+        <div class="definition-box">
+            <span class="def-title">음이항분포 공식</span>
+            <p>k번째 성공이 n번째 시행에서 나타날 확률:</p>
+            <p style="text-align:center; font-size:1.15em;">
+                P(n번째 시행에서 k번째 성공) = C(n−1, k−1) · p<sup>k</sup> · (1−p)<sup>n−k</sup>
+            </p>
+        </div>
+
+        <div class="definition-box" style="background:#f0f9ff; border-color:#0ea5e9;">
+            <span class="def-title" style="color:#075985;">이항분포 vs 음이항분포</span>
+            <p><strong>이항분포</strong>: 고정된 n번의 시행에서 <strong>성공 횟수 k가 확률변수</strong></p>
+            <p><strong>음이항분포</strong>: 고정된 k번의 성공을 위한 <strong>시행 횟수 n이 확률변수</strong> (마지막 시행은 반드시 성공)</p>
+        </div>
+
+        <!-- 예제 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.4</span>
+            <span class="ex-title">6번째 시행에서 4번째 성공을 얻을 확률</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 성공 확률 p = 0.5인 시행을 반복할 때, 6번째 시행에서 정확히 4번째 성공을 얻을 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from math import comb
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+n = 6     # 총 시행 수
+k = 4     # 목표 성공 횟수 (n번째에서 k번째 성공)
+p = 0.5   # 성공 확률
+# ▲ ──────── ▲
+
+coef = comb(n-1, k-1)
+prob = coef * (p**k) * ((1-p)**(n-k))
+
+print(f"음이항분포: {n}번째 시행에서 {k}번째 성공 (p = {p})")
+print("=" * 45)
+print(f"배열 방법 수: C({n-1},{k-1}) = {coef}")
+print(f"P = {coef} × {p}^{k} × {1-p}^{n-k} = {prob:.4f}")
+
+# 분포 전체 시각화
+ns_plot = range(k, k+15)
+probs_plot = [comb(nn-1, k-1) * (p**k) * ((1-p)**(nn-k)) for nn in ns_plot]
+plt.figure(figsize=(9, 4))
+colors = ['#ef4444' if nn == n else '#3498db' for nn in ns_plot]
+plt.bar(ns_plot, probs_plot, color=colors, edgecolor='#1e3c72', alpha=0.85)
+plt.title(f'음이항분포: k={k}번째 성공까지의 시행 수', fontsize=13)
+plt.xlabel('n (총 시행 수)'); plt.ylabel('확률')
+plt.grid(True, alpha=0.3, axis='y')
+plt.show()
+</script></div>
+            <details class="quiz">
+                <summary>풀이</summary>
+                <div class="answer">
+                    <p>마지막(6번째) 시행은 반드시 성공이어야 하므로, 앞의 5번 중에서 3번의 성공을 임의로 배치한다.</p>
+                    <p>C(5, 3) = 10가지 배열 × 0.5⁴ × 0.5² = 10 × 0.0625 × 0.25 ≈ <strong>0.1563</strong></p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 연습문제 4.4 -->
+        <div class="exercise-box">
+            <span class="ex-label">연습문제 4.4</span>
+            <span class="ex-title">주사위의 세 번째 6</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 공정한 주사위를 반복해서 굴릴 때, 5번째 굴림에서 정확히 세 번째 6이 나올 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from math import comb
+
+# ▼ 값 ▼
+n, k, p = 5, 3, 1/6
+# ▲ ─── ▲
+
+prob = comb(n-1, k-1) * (p**k) * ((1-p)**(n-k))
+print(f"P({n}번째 시행에서 {k}번째 6) = C({n-1},{k-1}) × (1/6)^{k} × (5/6)^{n-k}")
+print(f"  = {comb(n-1,k-1)} × {p**k:.6f} × {(1-p)**(n-k):.6f}")
+print(f"  = {prob:.4f}")
+</script></div>
+            <details class="quiz">
+                <summary>정답</summary>
+                <div class="answer">
+                    <p>C(4, 2) × (1/6)³ × (5/6)² = 6 × (1/216) × (25/36) ≈ <strong>0.0193</strong></p>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <!-- ================================================================= -->
+    <!-- 4.5 포아송분포 -->
+    <!-- ================================================================= -->
+    <div class="section" id="sec45">
+        <div class="section-title">4.5 포아송분포 (Poisson Distribution)</div>
+
+        <p><strong>포아송분포</strong>는 일정한 시간 또는 공간 단위에서 발생하는 <strong>희귀 사건의 수</strong>를 모델링하는 데 활용된다. 콜센터의 시간당 전화 수, 웹사이트의 분당 방문자 수, 하루 응급실 환자 수 등이 대표적 예시이다.</p>
+
+        <div class="definition-box">
+            <span class="def-title">포아송분포 공식</span>
+            <p style="text-align:center; font-size:1.15em;">
+                P(X = k) = λ<sup>k</sup> · e<sup>−λ</sup> / k!
+            </p>
+            <p>평균과 분산이 모두 λ와 같다:</p>
+            <p style="text-align:center;">μ = λ, &nbsp;&nbsp; σ² = λ, &nbsp;&nbsp; σ = √λ</p>
+        </div>
+
+        <div class="definition-box" style="background:#f0fdf4; border-color:#22c55e;">
+            <span class="def-title" style="color:#14532d;">포아송분포의 전제</span>
+            <p>① 사건들이 <strong>독립적</strong>으로 발생한다.<br>
+               ② 두 사건이 정확히 동시에 발생할 확률은 0이다.<br>
+               ③ 평균 발생률 <strong>λ가 시간·공간에 걸쳐 일정</strong>하다.</p>
+        </div>
+
+        <!-- 예제 4.5 -->
+        <div class="example-box">
+            <span class="ex-label">예제 4.5</span>
+            <span class="ex-title">뉴욕시 하루 심장마비 발생 건수</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 뉴욕시에서 하루 평균 λ = 4.4건의 심장마비가 발생한다. (a) 하루에 정확히 5건이 발생할 확률, (b) 하루에 3건 이하 발생할 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ▼ 바꿔볼 값 ▼
+lam = 4.4       # 단위시간당 평균 발생 횟수
+target_k = 5    # 관심 사건 수
+# ▲ ──────── ▲
+
+# (a) 정확히 target_k건
+prob_a = stats.poisson.pmf(target_k, lam)
+print(f"(a) P(X = {target_k}) = {lam}^{target_k} × e^(-{lam}) / {target_k}! = {prob_a:.4f}")
+
+# (b) 3건 이하
+prob_b = stats.poisson.cdf(3, lam)
+print(f"(b) P(X ≤ 3) = {prob_b:.4f}")
+
+# 전체 분포 시각화
+ks = np.arange(0, 15)
+probs = stats.poisson.pmf(ks, lam)
+plt.figure(figsize=(9, 4))
+colors = ['#ef4444' if kk == target_k else '#3498db' for kk in ks]
+plt.bar(ks, probs, color=colors, edgecolor='#1e3c72', alpha=0.85)
+plt.axvline(lam, color='green', linestyle='--', label=f'λ = {lam}')
+plt.title(f'포아송분포 Poisson(λ = {lam})', fontsize=13)
+plt.xlabel('k (사건 발생 수)'); plt.ylabel('확률')
+plt.legend(); plt.grid(True, alpha=0.3, axis='y')
+plt.show()
+
+print(f"\n평균 μ = λ = {lam}")
+print(f"표준편차 σ = √λ = {np.sqrt(lam):.3f}")
+</script></div>
+            <details class="quiz">
+                <summary>풀이</summary>
+                <div class="answer">
+                    <p>(a) P(X = 5) = 4.4⁵ · e⁻⁴·⁴ / 5! ≈ <strong>0.1714</strong></p>
+                    <p>(b) P(X ≤ 3) = Σ<sub>k=0</sub><sup>3</sup> P(X=k) ≈ <strong>0.3594</strong></p>
+                    <p>포아송분포는 λ 근처에서 최댓값을 가지며, λ가 작을수록 오른쪽으로 치우치고 λ가 커지면 대칭에 가까워진다.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- 새로운 시각: 포아송-이항 관계 -->
+        <div class="new-perspective">
+            <div class="np-title">새로운 시각: 포아송-이항 관계와 "희귀 사건의 법칙"</div>
+            <p>n이 크고 p가 작을 때, 이항분포는 포아송분포로 근사된다:</p>
+            <p style="text-align:center;">Binomial(n, p) ≈ Poisson(λ = np)</p>
+            <p>이 근사를 <strong>희귀 사건의 법칙</strong>(Law of Rare Events)이라 부른다. 많은 시행에서 각각의 성공 확률이 매우 작은 경우에 유용하다. 예컨대 공장의 불량품 발생, 보험사의 대형 사고 접수, 교통사고 발생 등은 모두 이항 상황이지만 n이 크고 p가 작으므로 실무에서는 포아송분포로 다룬다.</p>
+            <p>이 근사는 계산의 단순화뿐만 아니라, 개별 시행의 확률 p를 정확히 알기 어려운 상황에서도 전체 평균 λ만 알면 분석이 가능하게 한다는 점에서 실용적 가치가 크다.</p>
+        </div>
+
+        <div class="example-box">
+            <span class="ex-label">실습 4.5</span>
+            <span class="ex-title">이항-포아송 근사 비교</span>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+import numpy as np
+
+# ▼ 바꿔볼 값 (n은 크게, p는 작게) ▼
+n = 1000
+p = 0.003
+# ▲ ───────────────────────── ▲
+
+lam = n * p
+
+print(f"Binomial(n={n}, p={p}) vs Poisson(λ={lam})")
+print(f"{'k':>3} {'이항 확률':>14} {'포아송 확률':>14} {'차이':>10}")
+print("-" * 50)
+for k in range(8):
+    b = stats.binom.pmf(k, n, p)
+    po = stats.poisson.pmf(k, lam)
+    print(f"{k:>3} {b:>14.6f} {po:>14.6f} {abs(b-po):>10.2e}")
+
+print(f"\n결론: n이 크고 p가 작으면 두 분포가 매우 유사하다.")
+</script></div>
+        </div>
+
+        <!-- 연습문제 4.5 -->
+        <div class="exercise-box">
+            <span class="ex-label">연습문제 4.5</span>
+            <span class="ex-title">커피숍 고객 방문</span>
+            <div class="problem-desc">
+                <strong>[문제]</strong> 어떤 커피숍에 시간당 평균 λ = 75명의 고객이 방문한다. (a) 한 시간 동안 정확히 80명이 방문할 확률, (b) 70명 이상 80명 이하가 방문할 확률을 구하라.
+            </div>
+<div class="compute"><script type="text/x-sage">
+
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
+
+# --- [한글 폰트 설정 시작] ---
+_font_url  = 'https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf'
+_font_path = '/tmp/NanumGothic.ttf'
+if not os.path.exists(_font_path):
+    urllib.request.urlretrieve(_font_url, _font_path)
+_fe = fm.FontEntry(fname=_font_path, name='NanumGothic')
+fm.fontManager.ttflist.insert(0, _fe)
+# 한글은 NanumGothic, 그리스 문자(μ, σ, λ 등)는 DejaVu Sans에서 대체
+plt.rcParams.update({
+    'font.family': ['NanumGothic', 'DejaVu Sans'],
+    'axes.unicode_minus': False,
+})
+# --- [한글 폰트 설정 끝] ---
+from scipy import stats
+
+# ▼ 바꿔볼 값 ▼
+lam = 75
+# ▲ ──────── ▲
+
+# (a) 정확히 80명
+prob_a = stats.poisson.pmf(80, lam)
+print(f"(a) P(X = 80) = {prob_a:.4f}")
+
+# (b) 70 ≤ X ≤ 80
+prob_b = stats.poisson.cdf(80, lam) - stats.poisson.cdf(69, lam)
+print(f"(b) P(70 ≤ X ≤ 80) = {prob_b:.4f}")
+</script></div>
+            <details class="quiz">
+                <summary>정답</summary>
+                <div class="answer">
+                    <p>(a) P(X = 80) ≈ <strong>0.0386</strong></p>
+                    <p>(b) P(70 ≤ X ≤ 80) ≈ <strong>0.4978</strong></p>
+                </div>
+            </details>
+        </div>
+    </div>
+
+
+    <!-- 마무리 -->
+    <div class="finale">
+        <h2>제4장 학습 완료!</h2>
+        <p>본 장에서 정규분포, 기하분포, 이항분포, 음이항분포, 포아송분포의 다섯 가지 핵심 확률분포를 학습하였다.</p>
+        <p>각 분포의 <strong>모수</strong>, <strong>적용 조건</strong>, <strong>상호 관계</strong>를 이해하는 것이 통계적 추론의 토대가 된다.</p>
+        <p style="margin-top: 25px; font-size: 0.9em; color: #64748b;">— OpenIntro Statistics 4판 · SageMath 인터랙티브 교재 —</p>
+    </div>
+
+</div>
+
+</body>
+</html>
