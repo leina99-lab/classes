@@ -179,9 +179,9 @@ $\gcd(12, 15) = 3$ 이므로 $12x \equiv 7 \pmod{15}$ 의 해 존재 ↔ $3 \mid
 ## 2부 — 중국인의 나머지 정리 (CRT, 정리 2)
 
 ### 2.1 정리 2 — CRT 진술
-
-> **정리 2 (CRT)**. $m_1, m_2, \ldots, m_n$ 이 **쌍쌍 서로소**(pairwise coprime)인 양의 정수라 하자. 임의의 정수 $a_1, \ldots, a_n$ 에 대해 다음 연립 합동
-> $$ x \equiv a_j \pmod{m_j}, \quad j = 1, \ldots, n $$
+  
+> **정리 2 (CRT)**. $m_1, m_2, \ldots, m_n$ 이 **쌍쌍 서로소**(pairwise coprime)인 양의 정수라 하자. 임의의 정수 $a_1, \ldots, a_n$ 에 대해 다음 연립 합동  
+ $$ x \equiv a_j \pmod{m_j}, \quad j = 1, \ldots, n $$
 > 은 $\bmod\,M = m_1 m_2 \cdots m_n$ 에 대해 **유일한 해를 가진다**.
 
 ### 2.2 명시적 해 — `M_k` 와 `y_k`
