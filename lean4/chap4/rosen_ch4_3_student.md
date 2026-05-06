@@ -56,7 +56,7 @@ $$2 \cdot 2 \cdot 3 \cdot 5$$.
 
 ### 1.2 산술의 기본정리
 
-이제 본 강의 첫 핵심 정리.
+
 
 **정리 1** (산술의 기본정리, Fundamental Theorem of Arithmetic)
 
