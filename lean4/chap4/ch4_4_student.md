@@ -204,20 +204,20 @@ $M_k\,y_k \equiv \mathbf{1} \pmod{m_k}$ — 따라서 $a_k M_k y_k \equiv a_k \p
 
 연립합동: $x \equiv 2 \pmod 3, \ x \equiv 3 \pmod 5, \ x \equiv 2 \pmod 7$.
 
-- $M = 3 \cdot 5 \cdot 7 = $ ____
-- $M_1 = $ ____ , $M_2 = $ ____ , $M_3 = $ ____
-- $y_1 \equiv 35^{-1} \pmod 3$ : $35 \equiv 2 \pmod 3$, 그리고 $2 \cdot 2 \equiv 1 \pmod 3$ 이므로 $y_1 = $ ____.
-- $y_2 \equiv 21^{-1} \pmod 5$ : $21 \equiv 1 \pmod 5$, 그러므로 $y_2 = $ ____.
-- $y_3 \equiv 15^{-1} \pmod 7$ : $15 \equiv 1 \pmod 7$, 그러므로 $y_3 = $ ____.
-- $x \equiv 2 \cdot 35 \cdot 2 + 3 \cdot 21 \cdot 1 + 2 \cdot 15 \cdot 1 = $ ____ $\equiv$ ____ $\pmod{105}$.
+-  $M = 3 \cdot 5 \cdot 7 = $ ____  
+-  $M_1 = $ ____ , $M_2 = $ ____ , $M_3 = $ ____  
+-  $y_1 \equiv 35^{-1} \pmod 3$ : $35 \equiv 2 \pmod 3$, 그리고 $2 \cdot 2 \equiv 1 \pmod 3$ 이므로 $y_1 = $ ____.  
+-  $y_2 \equiv 21^{-1} \pmod 5$ : $21 \equiv 1 \pmod 5$, 그러므로 $y_2 = $ ____.  
+-  $y_3 \equiv 15^{-1} \pmod 7$ : $15 \equiv 1 \pmod 7$, 그러므로 $y_3 = $ ____.  
+-  $x \equiv 2 \cdot 35 \cdot 2 + 3 \cdot 21 \cdot 1 + 2 \cdot 15 \cdot 1 = $ ____ $\equiv$ ____ $\pmod{105}$.  
 
 <details><summary>정답</summary>
 
-- $M = \mathbf{105}$, $M_1 = \mathbf{35}$, $M_2 = \mathbf{21}$, $M_3 = \mathbf{15}$
-- $y_1 = 2$, $y_2 = 1$, $y_3 = 1$
-- $x \equiv 140 + 63 + 30 = \mathbf{233} \equiv \mathbf{23} \pmod{105}$
+- $M = \mathbf{105}$, $M_1 = \mathbf{35}$, $M_2 = \mathbf{21}$, $M_3 = \mathbf{15}$  
+- $y_1 = 2$, $y_2 = 1$, $y_3 = 1$  
+- $x \equiv 140 + 63 + 30 = \mathbf{233} \equiv \mathbf{23} \pmod{105}$  
 
-검산: $23 \mod 3 = 2$ ✓, $23 \mod 5 = 3$ ✓, $23 \mod 7 = 2$ ✓.
+검산: $23 \mod 3 = 2$ ✓, $23 \mod 5 = 3$ ✓, $23 \mod 7 = 2$ ✓.  
 
 </details>
 
