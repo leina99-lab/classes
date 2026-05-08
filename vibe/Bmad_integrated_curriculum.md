@@ -185,7 +185,7 @@ ai-data-lab/
 
 ---
 
-### 1회차: BMAD의 이해와 도구 세팅 (3시간)
+### 1회차: BMAD의 이해와 도구 세팅 
 
 #### 수업 목표
 수강생이 BMAD가 무엇이며 왜 필요한지 이해하고, AI 코딩 도구·BMAD·ChatGPT Projects 환경을 세팅하여 `bmad-help`까지 실행한다.
@@ -194,7 +194,7 @@ ai-data-lab/
 
 #### 핵심 개념
 
-**BMAD(Breakthrough Method for Agile AI-Driven Development)**는 AI 에이전트들에게 각각 역할을 부여하고, 정해진 워크플로에 따라 협업시키는 오픈소스 프레임워크이다.
+**BMAD**(Breakthrough Method for Agile AI-Driven Development)는 AI 에이전트들에게 각각 역할을 부여하고, 정해진 워크플로에 따라 협업시키는 오픈소스 프레임워크이다.
 
 **6종 기본 에이전트:**
 
