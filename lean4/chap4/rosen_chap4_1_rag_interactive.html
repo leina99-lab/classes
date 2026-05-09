@@ -479,11 +479,11 @@ p { margin: 0.6rem 0; }
 
   <h3>왜 필요한가</h3>
 
-  <p>**LLM**(Large Language Model, 거대 언어 모델 — GPT, Claude, Gemini 등)은 학습이 끝난 시점까지의 정보만 안다. 그리고 학습한 정보도 모두 정확하게 기억하지는 못한다. 두 가지 문제가 있다.</p>
+  <p>LLM(Large Language Model, 거대 언어 모델 — GPT, Claude, Gemini 등)은 학습이 끝난 시점까지의 정보만 안다. 그리고 학습한 정보도 모두 정확하게 기억하지는 못한다. 두 가지 문제가 있다.</p>
 
   <ul>
-    <li><strong>지식의 시간적 한계</strong> — 어제 발표된 회사 보고서, 방금 작성된 사내 문서, 최근 출판된 논문은 학습에 포함되지 않았다. ‘2026년 4월에 출시된 Claude 4.7'을 2025년에 학습이 끝난 모델은 알 수 없다.</li>
-    <li><strong>환각</strong>(hallucination) — LLM은 모르는 것을 ‘모른다'고 하지 않는다. 그럴듯하게 지어낸다. 존재하지 않는 논문을 인용하거나, 틀린 사실을 자신있게 말한다.</li>
+    <li><strong>지식의 시간적 한계</strong> — 어제 발표된 회사 보고서, 방금 작성된 사내 문서, 최근 출판된 논문은 학습에 포함되지 않았다. '2026년 4월에 출시된 Claude 4.7'을 2025년에 학습이 끝난 모델은 알 수 없다.</li>
+    <li><strong>환각</strong>(hallucination) — LLM은 모르는 것을 '모른다'고 하지 않는다. 그럴듯하게 지어낸다. 존재하지 않는 논문을 인용하거나, 틀린 사실을 자신있게 말한다.</li>
   </ul>
 
   <p>RAG는 이 두 문제를 한 번에 해결한다. <strong>매번 답하기 전에 외부 자료를 먼저 검색</strong>해서, <strong>실제 문서를 보고 답</strong>하게 만든다.</p>
@@ -495,7 +495,7 @@ p { margin: 0.6rem 0; }
   <div class="comparison">
     <div class="compare-card">
       <h4>모드 1 — 닫힌 책 시험</h4>
-      <p style="margin: 0;">머릿속 기억만으로 답해야 한다. 외워 둔 게 정답이면 맞고, 까먹었으면 틀린다. 까먹은 부분에서 ‘아마 이럴 것이다'라고 추측하면 종종 틀린다.</p>
+      <p style="margin: 0;">머릿속 기억만으로 답해야 한다. 외워 둔 게 정답이면 맞고, 까먹었으면 틀린다. 까먹은 부분에서 '아마 이럴 것이다'라고 추측하면 종종 틀린다.</p>
       <p style="margin: 0.5rem 0 0; color: var(--accent); font-weight: 600;">일반 LLM이 이 모드이다.</p>
     </div>
     <div class="compare-card">
@@ -505,7 +505,7 @@ p { margin: 0.6rem 0; }
     </div>
   </div>
 
-  <p>그리고 RAG의 진짜 핵심은 — <strong>‘책장에서 관련 페이지를 어떻게 빨리 찾는가'</strong>이다. 이걸 ‘검색'(Retrieval)이라 부른다. 단순한 키워드 검색이 아니라 <strong>의미적 검색</strong>(semantic search)이다. ‘파리 수도'와 ‘프랑스의 수도는?'이 같은 의미라는 걸 인식해야 한다.</p>
+  <p>그리고 RAG의 진짜 핵심은 — <strong>'책장에서 관련 페이지를 어떻게 빨리 찾는가'</strong>이다. 이걸 '검색'(Retrieval)이라 부른다. 단순한 키워드 검색이 아니라 <strong>의미적 검색</strong>(semantic search)이다. '파리 수도'와 '프랑스의 수도는?'이 같은 의미라는 걸 인식해야 한다.</p>
 
   <p>이 의미적 검색을 가능하게 하는 두 도구가 <strong>임베딩</strong>과 <strong>벡터 DB</strong>이다. 다음 탭에서 직접 시뮬레이션해 보자.</p>
 
@@ -539,7 +539,7 @@ p { margin: 0.6rem 0; }
      ================================================= -->
 <section class="section" id="alphaproof">
   <h2>AlphaProof 시뮬레이터 — 수학 정리 RAG</h2>
-  <p>AlphaProof는 DeepMind가 2024년 발표한 자동 증명기로, IMO 2024에서 6문제 중 5문제를 풀어 은메달급 성적을 거뒀다. 그 핵심 동작은 <strong>‘수학 정리 라이브러리에서 RAG로 도구를 검색'</strong>하는 것이다.</p>
+  <p>AlphaProof는 DeepMind가 2024년 발표한 자동 증명기로, IMO 2024에서 6문제 중 5문제를 풀어 은메달급 성적을 거뒀다. 그 핵심 동작은 <strong>'수학 정리 라이브러리에서 RAG로 도구를 검색'</strong>하는 것이다.</p>
 
   <p>아래 시뮬레이터에서 §4.1의 <strong>따름정리 1</strong>($a \mid b$, $a \mid c \Rightarrow a \mid (mb + nc)$)을 입력하고 AlphaProof가 6단계로 어떻게 자동 증명하는지 본다.</p>
 
@@ -572,9 +572,9 @@ p { margin: 0.6rem 0; }
   <p>여러분의 머릿속에서 일어난 일은 다음과 같다.</p>
 
   <ol>
-    <li><strong>‘새 정리이지만 비슷한 것을 본 적이 있다'</strong> — 머릿속 기억에서 ‘$a \mid b$를 어떤 정수와 곱하면 어떻게 되더라'를 떠올린다.</li>
-    <li><strong>‘아, 정리 1-(ii)였다'</strong> — $a \mid b \Rightarrow a \mid bc$. 이걸 두 번 쓰면 $a \mid mb$, $a \mid nc$.</li>
-    <li><strong>‘그리고 합도 합치는 정리가 있었지'</strong> — 정리 1-(i). $a \mid mb$와 $a \mid nc$를 이걸로 합치면 $a \mid (mb + nc)$.</li>
+    <li><strong>'새 정리이지만 비슷한 것을 본 적이 있다'</strong> — 머릿속 기억에서 '$a \mid b$를 어떤 정수와 곱하면 어떻게 되더라'를 떠올린다.</li>
+    <li><strong>'아, 정리 1-(ii)였다'</strong> — $a \mid b \Rightarrow a \mid bc$. 이걸 두 번 쓰면 $a \mid mb$, $a \mid nc$.</li>
+    <li><strong>'그리고 합도 합치는 정리가 있었지'</strong> — 정리 1-(i). $a \mid mb$와 $a \mid nc$를 이걸로 합치면 $a \mid (mb + nc)$.</li>
     <li><strong>증명 완성</strong>.</li>
   </ol>
 
@@ -585,7 +585,7 @@ p { margin: 0.6rem 0; }
       <h4>여러분의 머릿속</h4>
       <ul>
         <li>이미 본 정리들 = <strong>지식 베이스</strong></li>
-        <li>새 목표를 보고 ‘비슷한 것'을 떠올림 = <strong>검색</strong></li>
+        <li>새 목표를 보고 '비슷한 것'을 떠올림 = <strong>검색</strong></li>
         <li>찾은 정리를 조립해 새 증명 작성 = <strong>생성</strong></li>
       </ul>
     </div>
@@ -601,14 +601,14 @@ p { margin: 0.6rem 0; }
 
   <div class="answer-box">
     <div class="lab">결론</div>
-    <p style="margin: 0;"><strong>여러분이 ‘정리를 떠올려 조립한다'는 그 동작이 RAG의 심장이다.</strong> AlphaProof는 그 동작을 자동화한다. 단지 여러분은 커피로 작동하고 AlphaProof는 전기로 작동할 뿐이다.</p>
+    <p style="margin: 0;"><strong>여러분이 '정리를 떠올려 조립한다'는 그 동작이 RAG의 심장이다.</strong> AlphaProof는 그 동작을 자동화한다. 단지 여러분은 커피로 작동하고 AlphaProof는 전기로 작동할 뿐이다.</p>
   </div>
 
   <h3>강의 자료에서 확인할 곳</h3>
   <ul>
-    <li><strong>슬라이드 11</strong> — 따름정리 1 + RAG 첫 등장. 위 그림과 같은 ‘조립 흐름도'가 있다.</li>
+    <li><strong>슬라이드 11</strong> — 따름정리 1 + RAG 첫 등장. 위 그림과 같은 '조립 흐름도'가 있다.</li>
     <li><strong>슬라이드 29</strong> — AI 응용 4박스. 그중 R(RAG & LSH)과 A(AlphaProof)가 본 자료의 두 시나리오에 직접 대응한다.</li>
-    <li><strong>워크북 G3</strong> — Mathlib의 <code>exact?</code> 전술 직접 사용. 이게 ‘작은 RAG'이다 — 현재 목표에 맞는 정리를 라이브러리에서 검색해 추천한다.</li>
+    <li><strong>워크북 G3</strong> — Mathlib의 <code>exact?</code> 전술 직접 사용. 이게 '작은 RAG'이다 — 현재 목표에 맞는 정리를 라이브러리에서 검색해 추천한다.</li>
   </ul>
 
   <h3>한 걸음 더 — RAG가 §4.1에서 다른 곳에도 숨어 있다</h3>
@@ -616,11 +616,11 @@ p { margin: 0.6rem 0; }
   <div class="comparison">
     <div class="compare-card">
       <h4>정리 5 → 벡터 DB의 일관성</h4>
-      <p style="margin: 0;">RAG의 검색 단계는 <strong>Locality-Sensitive Hashing</strong>(LSH)으로 가속한다. LSH 안에는 ‘$\sum a_i x_i \;\mathrm{mod}\; p$' 같은 모듈로 큰 소수 산술이 있고, 정리 5의 ‘+, ·에서 보존'이 분산 환경에서의 해시 일관성을 보장한다.</p>
+      <p style="margin: 0;">RAG의 검색 단계는 <strong>Locality-Sensitive Hashing</strong>(LSH)으로 가속한다. LSH 안에는 '$\sum a_i x_i \;\mathrm{mod}\; p$' 같은 모듈로 큰 소수 산술이 있고, 정리 5의 '+, ·에서 보존'이 분산 환경에서의 해시 일관성을 보장한다.</p>
     </div>
     <div class="compare-card">
       <h4>$\mathbb{Z}_m$ → 임베딩 공간</h4>
-      <p style="margin: 0;">RoPE(Rotary Position Embedding)는 ‘회전 각도 mod $2\pi$'를 사용한다. 이게 연속판 $\mathbb{Z}_m$이다. 정수 대신 실수일 뿐, ‘<strong>주기성</strong>'이라는 핵심 직관은 동일하다.</p>
+      <p style="margin: 0;">RoPE(Rotary Position Embedding)는 '회전 각도 mod $2\pi$'를 사용한다. 이게 연속판 $\mathbb{Z}_m$이다. 정수 대신 실수일 뿐, '<strong>주기성</strong>'이라는 핵심 직관은 동일하다.</p>
     </div>
   </div>
 
@@ -718,13 +718,13 @@ const ragSteps = [
         <strong style="font-size: 1.05rem;">"${queries[idx].q}"</strong>
         <p style="margin: 0.5rem 0 0; font-size: 0.88rem; color: var(--muted);">${queries[idx].note}</p>
       </div>
-      <p style="margin-top: 0.8rem;">‘다음 단계'를 눌러 이 질문이 어떻게 처리되는지 보자.</p>
+      <p style="margin-top: 0.8rem;">'다음 단계'를 눌러 이 질문이 어떻게 처리되는지 보자.</p>
     `;
   },
   // 단계 2: 임베딩
   (idx) => `
     <h4>단계 2 — 임베딩(벡터화)</h4>
-    <p>질문을 ‘<strong>숫자 벡터</strong>'로 바꾼다. 비슷한 의미의 문장은 비슷한 벡터로 변환된다는 성질이 핵심이다.</p>
+    <p>질문을 '<strong>숫자 벡터</strong>'로 바꾼다. 비슷한 의미의 문장은 비슷한 벡터로 변환된다는 성질이 핵심이다.</p>
     <p>실제 시스템은 보통 768차원, 1536차원 같은 큰 차원을 쓰지만 여기서는 시각화를 위해 5차원으로 단순화한다.</p>
     <p style="margin-top: 1.2rem;"><strong>"${queries[idx].q}"</strong></p>
     <div style="text-align: center; font-size: 1.3rem; color: var(--muted); margin: 0.4rem 0;">↓</div>
@@ -735,7 +735,7 @@ const ragSteps = [
       <span class="vec-dim">∈ ℝ⁵</span>
     </div>
     <div class="note">
-      이 변환을 담당하는 게 <strong>임베딩 모델</strong>이다(OpenAI text-embedding-3, Voyage, Cohere 등). 핵심 성질 — <span class="highlight">의미가 비슷한 문장 = 벡터 공간에서 가까운 점</span>. 즉 ‘파리 수도'와 ‘프랑스의 수도는?'은 거의 같은 벡터로 변환된다.
+      이 변환을 담당하는 게 <strong>임베딩 모델</strong>이다(OpenAI text-embedding-3, Voyage, Cohere 등). 핵심 성질 — <span class="highlight">의미가 비슷한 문장 = 벡터 공간에서 가까운 점</span>. 즉 '파리 수도'와 '프랑스의 수도는?'은 거의 같은 벡터로 변환된다.
     </div>
   `,
   // 단계 3: 검색
@@ -754,7 +754,7 @@ const ragSteps = [
         `).join('')}
       </div>
       <div class="note">
-        이 단계가 RAG의 R(Retrieval, 검색). <strong>이 검색 안에 모듈로 큰 소수 산술이 들어 있다</strong> — Locality-Sensitive Hashing(LSH)이라는 기법이고, §4.1의 정리 5(‘합동은 +, ·에서 보존')가 LSH의 일관성을 수학적으로 보장한다.
+        이 단계가 RAG의 R(Retrieval, 검색). <strong>이 검색 안에 모듈로 큰 소수 산술이 들어 있다</strong> — Locality-Sensitive Hashing(LSH)이라는 기법이고, §4.1의 정리 5('합동은 +, ·에서 보존')가 LSH의 일관성을 수학적으로 보장한다.
       </div>
     `;
   },
@@ -775,7 +775,7 @@ const ragSteps = [
 질문: ${q.q}
 답변:</pre>
       <div class="note">
-        LLM은 이제 ‘외운 지식'이 아니라 ‘<strong>방금 받은 자료</strong>'를 보면서 답한다. 모르는 정보도, 학습 후 발생한 사건도, 사내 문서도 — 자료에 들어 있으면 정확히 답한다.
+        LLM은 이제 '외운 지식'이 아니라 '<strong>방금 받은 자료</strong>'를 보면서 답한다. 모르는 정보도, 학습 후 발생한 사건도, 사내 문서도 — 자료에 들어 있으면 정확히 답한다.
       </div>
     `;
   },
@@ -864,9 +864,9 @@ const apSteps = [
     a ∣ (m * b + n * c) := by
   ?</pre>
     </div>
-    <p>‘<code>?</code>'에 무엇을 채워야 증명이 완성되는가? 사람이 강의 중 머릿속에서 한 일을 이제 AlphaProof가 자동으로 수행한다.</p>
+    <p>'<code>?</code>'에 무엇을 채워야 증명이 완성되는가? 사람이 강의 중 머릿속에서 한 일을 이제 AlphaProof가 자동으로 수행한다.</p>
     <div class="note">
-      <strong>참고</strong> — Lean 4에서 ‘<code>by ?</code>'는 ‘여기를 채워야 한다'는 자리이다. 학생들의 워크북에서는 ‘<code>____</code>'(언더스코어 4개)로 표기한다.
+      <strong>참고</strong> — Lean 4에서 '<code>by ?</code>'는 '여기를 채워야 한다'는 자리이다. 학생들의 워크북에서는 '<code>____</code>'(언더스코어 4개)로 표기한다.
     </div>
   `,
   // 단계 2: 임베딩
@@ -886,7 +886,7 @@ const apSteps = [
       <span class="vec-dim">∈ ℝ⁵</span>
     </div>
     <div class="note">
-      이 벡터에는 ‘<strong>가분성과 합의 분배</strong>'라는 의미가 인코딩되어 있다. 비슷한 의미의 다른 정리(예: <code>dvd_add</code>, <code>dvd_mul_left</code>)도 가까운 벡터로 변환된다.
+      이 벡터에는 '<strong>가분성과 합의 분배</strong>'라는 의미가 인코딩되어 있다. 비슷한 의미의 다른 정리(예: <code>dvd_add</code>, <code>dvd_mul_left</code>)도 가까운 벡터로 변환된다.
     </div>
   `,
   // 단계 3: Mathlib 검색
@@ -916,13 +916,13 @@ const apSteps = [
       </div>
     </div>
     <div class="note">
-      위쪽 두 개가 <strong>핵심 도구</strong>이다 — <strong>강의의 정리 1-(i)와 1-(ii)에 정확히 대응</strong>한다. 즉 AlphaProof가 ‘떠올린 정리'와 학생이 ‘떠올린 정리'가 같다.
+      위쪽 두 개가 <strong>핵심 도구</strong>이다 — <strong>강의의 정리 1-(i)와 1-(ii)에 정확히 대응</strong>한다. 즉 AlphaProof가 '떠올린 정리'와 학생이 '떠올린 정리'가 같다.
     </div>
   `,
   // 단계 4: 전술 후보
   () => `
     <h4>단계 4 — 전술(tactic) 후보 생성</h4>
-    <p>LLM(또는 별도의 정책 모델)이 검색된 정리들을 ‘조립'할 후보 전술 시퀀스를 여러 개 생성한다.</p>
+    <p>LLM(또는 별도의 정책 모델)이 검색된 정리들을 '조립'할 후보 전술 시퀀스를 여러 개 생성한다.</p>
     <pre><strong>후보 A (직접 적용):</strong>
 exact dvd_add
         (Dvd.Dvd.mul_left hab m)
@@ -953,7 +953,7 @@ exact dvd_add h1 h2</pre>
     <p>셋 다 통과했다면 가장 짧은 후보 A를 채택한다.</p>
     <div class="warn">
       <div class="lab">왜 검증 단계가 필수인가</div>
-      <p style="margin: 0;">LLM은 <strong>그럴듯한 거짓말</strong>을 한다. ‘<code>exact dvd_add ...</code>'라고 자신 있게 답해도, 정리 이름이 살짝 틀렸거나 인자 순서가 틀리면 — Lean 컴파일러가 즉시 거부한다. <strong>이게 단순 RAG 시스템이 줄 수 없는 ‘형식적 검증'</strong>(formal verification)이다. AlphaProof가 신뢰할 만한 이유이다.</p>
+      <p style="margin: 0;">LLM은 <strong>그럴듯한 거짓말</strong>을 한다. '<code>exact dvd_add ...</code>'라고 자신 있게 답해도, 정리 이름이 살짝 틀렸거나 인자 순서가 틀리면 — Lean 컴파일러가 즉시 거부한다. <strong>이게 단순 RAG 시스템이 줄 수 없는 '형식적 검증'</strong>(formal verification)이다. AlphaProof가 신뢰할 만한 이유이다.</p>
     </div>
   `,
   // 단계 6: 완성
@@ -981,7 +981,7 @@ exact dvd_add h1 h2</pre>
       <li><strong>최종 증명</strong> — 통과한 후보 채택</li>
     </ol>
     <p>실제 AlphaProof는 이 사이클을 수만 번 반복하며 IMO 2024에서 <strong>6문제 중 5문제</strong>를 풀어 은메달급 성적을 거뒀다. 한 문제에 평균 2~4시간이 걸렸으니 사람과 비슷한 시간이다.</p>
-    <p>이제 마지막 탭에서 ‘여러분의 머릿속'과 ‘AlphaProof'가 어떻게 같은 일을 하는지 정리한다.</p>
+    <p>이제 마지막 탭에서 '여러분의 머릿속'과 'AlphaProof'가 어떻게 같은 일을 하는지 정리한다.</p>
   `
 ];
 
