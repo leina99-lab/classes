@@ -20,7 +20,7 @@ $$a \equiv b \pmod{m} \iff m \mid (a - b)$$
 
 1. **반사성**(reflexivity) — 모든 $a$ 에 대해 $a \equiv a \pmod{m}$.
 2. **대칭성**(symmetry) — $a \equiv b \pmod{m}$ 이면 $b \equiv a \pmod{m}$.
-3. **이행성**(transitivity) — $a \equiv b \pmod{m}$ 이고 $b \equiv c \pmod{m}$ 이면 $a \equiv c \pmod{m}$.
+3. **추이성**(transitivity) — $a \equiv b \pmod{m}$ 이고 $b \equiv c \pmod{m}$ 이면 $a \equiv c \pmod{m}$.
 
 세 성질의 직접적 결과로 정수 전체가 **잉여류**(residue classes)로 분할된다. $\bmod m$ 에서 정확히 $m$ 개의 잉여류가 존재하며 이를 $\mathbb{Z}/m\mathbb{Z}$, 혹은 Lean 4 에서 `ZMod m` 으로 표기한다.
 
@@ -30,44 +30,7 @@ $$a + c \equiv b + d \pmod m, \qquad a \cdot c \equiv b \cdot d \pmod m$$
 
 이 성립한다. 본 절의 모든 풀이가 이 두 사실에 의존한다.
 
-### 0.3 4.4절의 지형도(roadmap)
 
-본 절은 5 개의 부로 구성된다. 핵심 정리·정의 6 개를 차례로 확보한 뒤 5 부에서 AI 응용으로 통합한다.
-
-| 부 | 주제 | 핵심 정리 / 정의 |
-| --- | --- | --- |
-| 1부 | 선형 합동 $ax \equiv b \pmod m$ | **정리 1**(역원의 존재·유일성) |
-| 2부 | 연립 합동 | **정리 2**(중국인의 나머지 정리, CRT) |
-| 3부 | 거듭제곱 합동 | **정리 3**(페르마의 작은 정리) |
-| 4부 | 원시근·이산 로그 | **정의 3**(원시근), **정의 4**(이산 로그), **DLP** |
-| 5부 | RAG / AI 응용 | 위 6 개를 RAG, 분산 인덱스, 동형 암호, 영지식 증명, 양자화 LLM 에 적용 |
-
-본 절을 끝낼 때 학생은 "정수론의 6 개 카드"로 어떻게 RSA·Diffie-Hellman·블록체인·LLM 양자화의 토대가 만들어지는지 통합적으로 이해하게 된다.
-
-### 0.4 Lean 4 — `theorem`, `if/iff`, `rw` 의 입문
-
-본 절은 모든 수학 정리를 Lean 4 형식 증명으로도 함께 작성한다. 미리 알아 둘 세 가지 개념이 있다.
-
-**(1) `Prop` 타입** — Lean 4 에서 명제는 `Prop` 타입에 속한다. 예컨대 "$2 + 2 = 4$" 도 하나의 `Prop` 이며, 이 명제의 **증명**(proof)을 가지는 항(term)이 곧 그 명제가 참이라는 증거이다.
-
-**(2) `→` (단방향 함의)와 `↔` (동치)** — 자연어의 "만약 $P$ 이면 $Q$ 이다"는 Lean 에서 `P → Q` 로 적는다. 양방향 동치 "$P$ 이면 $Q$ 이고 $Q$ 이면 $P$"는 `P ↔ Q` 로 적으며 이는 `(P → Q) ∧ (Q → P)` 와 같다. 본 절 도입부의 정의 자체가 동치이다.
-
-$$a \equiv b \pmod{m} \iff m \mid (a - b)$$
-
-이 줄의 ↔ 가 바로 Lean 의 `Iff` 이다. 한 방향만 사용할 때는 `.mp` (modus ponens, $\rightarrow$)와 `.mpr` (modus ponens reverse, $\leftarrow$)를 붙여 추출한다.
-
-**(3) `rw` 전술** — `rw [h]` 는 "가설 $h$ 가 등식이라면, 그 등식을 한 번 적용하여 목표를 다시 써라"라는 명령이다. 본 절의 모든 증명은 자동화 전술(`simp`, `linarith`, `norm_num` 등)을 사용하지 않고 명시된 보조정리를 `rw` 로 직접 호출하는 **미시 전개**(microscopic unfolding)를 원칙으로 한다.
-
-```lean
-import Mathlib.Data.Int.ModEq
-
-theorem cong_refl (a m : ℤ) : a ≡ a [ZMOD m] :=
-  Int.ModEq.refl a
-```
-
-위는 본 절에서 만나는 가장 단순한 정리이다 — 합동의 반사성. `Int.ModEq.refl a` 는 Mathlib4 가 이미 가지고 있는 한 항(term)이며, 그 자체가 우리 정리의 증명이다.
-
----
 
 ## 1부 — 선형 합동과 모듈러 역원 (정리 1)
 
