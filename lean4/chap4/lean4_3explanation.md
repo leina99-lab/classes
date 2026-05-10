@@ -1,10 +1,10 @@
 
-# Lean 4 수론 코드 전체 해설 노트
+# Lean 4 4.3
 
-이 문서는 지금까지 다룬 Lean 4 / Mathlib 코드들을 하나의 흐름으로 정리한 해설 노트입니다.
-주제는 자연수 소수성, 소인수분해, 소수의 무한성, 최대공약수와 최소공배수, 유클리드 알고리즘, 베주 항등식, 유클리드 보조정리입니다.
 
-주의할 점이 있습니다. 여러 슬라이드에서 다음과 같은 코드는 “Mathlib에 이미 있는 정의 또는 정리의 모양을 설명하기 위한 코드”입니다.
+주제는 자연수 소수성, 소인수분해, 소수의 무한성, 최대공약수와 최소공배수, 유클리드 알고리즘, 베주 항등식, 유클리드 보조정리이다.
+
+주의할 점이 있다. 여러 슬라이드에서 다음과 같은 코드는 "Mathlib에 이미 있는 정의 또는 정리의 모양을 설명하기 위한 코드"이다.
 
 ```lean
 def Nat.gcd ...
@@ -13,49 +13,49 @@ theorem Nat.gcd_mul_lcm ...
 theorem Int.gcd_eq_gcd_ab ...
 ```
 
-이 이름들은 Mathlib에 이미 존재합니다. 실제 Lean 파일에서 같은 이름으로 다시 선언하면 이름 충돌이 납니다. 실제 사용 예제에서는 `example`을 쓰거나 `my_...` 같은 새 이름을 붙이는 것이 안전합니다.
+이 이름들은 Mathlib에 이미 존재한다. 실제 Lean 파일에서 같은 이름으로 다시 선언하면 이름 충돌이 난다.실제 사용 예제에서는 `example`을 쓰거나 `my_...` 같은 새 이름을 붙이는 것이 안전하다.
 
-학습용 파일에서는 보통 다음처럼 넓은 import를 쓰면 대부분의 예제가 동작합니다.
+학습용 파일에서는 보통 다음처럼 넓은 import를 쓰면 대부분의 예제가 동작한다.
 
 ```lean
 import Mathlib
 ```
 
-더 정교하게 import를 나누려면 `Nat.Prime`, `Nat.Factors`, `Nat.Factorial`, `Nat.GCD`, `Int.GCD`, `Tactic` 관련 모듈을 불러와야 합니다. Mathlib 버전에 따라 정확한 모듈 경로가 조금씩 달라질 수 있으므로, 초반 학습에서는 `import Mathlib`이 가장 단순합니다.
+더 정교하게 import를 나누려면 `Nat.Prime`, `Nat.Factors`, `Nat.Factorial`, `Nat.GCD`, `Int.GCD`, `Tactic` 관련 모듈을 불러와야 한다. Mathlib 버전에 따라 정확한 모듈 경로가 조금씩 달라질 수 있으므로, 초반 학습에서는 `import Mathlib`이 가장 단순하다.
 
 ---
 
 ## 0. 공통 Lean 문법과 전술 패턴
 
-이 문서에서 반복해서 등장하는 Lean 패턴은 다음과 같습니다.
+이 문서에서 반복해서 등장하는 Lean 패턴은 다음과 같다.
 
 ```lean
 example : P := by
   ...
 ```
 
-이름 없는 정리입니다. `P`라는 명제를 증명하는 예제입니다.
+이름 없는 정리이다. `P`라는 명제를 증명하는 예제이다.
 
 ```lean
 theorem my_theorem : P := by
   ...
 ```
 
-이름 있는 정리입니다. 나중에 `my_theorem`이라는 이름으로 다시 사용할 수 있습니다.
+이름 있는 정리이다. 나중에 `my_theorem`이라는 이름으로 다시 사용할 수 있다.
 
 ```lean
 def f : A := ...
 ```
 
-새로운 함수나 값을 정의합니다.
+새로운 함수나 값을 정의한다.
 
 ```lean
 #eval expression
 ```
 
-표현식을 계산해서 결과를 출력합니다. 증명 명령이 아니라 계산 확인용입니다.
+표현식을 계산해서 결과를 출력한다. 증명 명령이 아니라 계산 확인용이다.
 
-주요 전술은 다음과 같습니다.
+주요 전술은 다음과 같다.
 
 | 전술 | 의미 | 자주 쓰는 상황 |
 |---|---|---|
@@ -72,7 +72,7 @@ def f : A := ...
 | `.symm` | 등식의 좌우를 뒤집는다 | `a = b`에서 `b = a` |
 | `omega`, `norm_num` | 산술 자동화 | 자연수/정수 계산과 부등식 |
 
-Lean에서 증명은 “목표 명제 타입의 증거 객체를 구성하는 일”입니다. 예를 들어 `P ∧ Q`를 증명하려면 `P`의 증거와 `Q`의 증거를 함께 만들어야 하고, `∃ x, P x`를 증명하려면 실제 증인 `x`와 `P x`의 증거를 함께 제시해야 합니다.
+Lean에서 증명은 "목표 명제 타입의 증거 객체를 구성하는 일"이다. 예를 들어 `P ∧ Q`를 증명하려면 `P`의 증거와 `Q`의 증거를 함께 만들어야 하고, `∃ x, P x`를 증명하려면 실제 증인 `x`와 `P x`의 증거를 함께 제시해야 한다.
 
 ---
 
@@ -93,18 +93,18 @@ example : Nat.Prime 7 := by
 
 ### 설명
 
-`Nat.Prime p`는 “자연수 `p`가 소수이다”라는 명제입니다. 여기서 `: Prop`은 이것이 계산 데이터가 아니라 증명해야 할 명제라는 뜻입니다.
+`Nat.Prime p`는 "자연수 `p`가 소수이다"라는 명제다. 여기서 `: Prop`은 이것이 계산 데이터가 아니라 증명해야 할 명제라는 뜻이다.
 
-위의 `structure`는 실제 Mathlib 정의를 그대로 재정의하라는 뜻이 아니라, 소수성의 개념적 조건을 보여 주는 설명용 코드입니다. 실제 Mathlib에서 `Nat.Prime p`는 이미 정의되어 있습니다.
+위의 `structure`는 실제 Mathlib 정의를 그대로 재정의하라는 뜻이 아니라, 소수성의 개념적 조건을 보여 주는 설명용 코드이다. 실제 Mathlib에서 `Nat.Prime p`는 이미 정의되어 있다.
 
-소수 조건은 다음 두 가지로 이해할 수 있습니다.
+소수 조건은 다음 두 가지로 이해할 수 있다.
 
 ```text
 1. 2 ≤ p
 2. 2 ≤ m < p 인 자연수 m 중 p를 나누는 m은 없다.
 ```
 
-즉 `p = 7`이라면 다음을 확인해야 합니다.
+즉 `p = 7`이라면 다음을 확인해야 한다.
 
 ```text
 2 ≤ 7
@@ -115,23 +115,23 @@ example : Nat.Prime 7 := by
 6 ∤ 7
 ```
 
-`m ∣ p`는 “`m`이 `p`를 나눈다”는 뜻이고, `¬ m ∣ p`는 “`m`이 `p`를 나누지 못한다”는 뜻입니다.
+`m ∣ p`는 "`m`이 `p`를 나눈다"는 뜻이고, `¬ m ∣ p`는 "`m`이 `p`를 나누지 못한다"는 뜻이다.
 
-Lean에서 부정은 함수형으로 이해합니다.
+Lean에서 부정은 함수형으로 이해한다.
 
 ```lean
 ¬ P
 ```
 
-는 내부적으로 다음과 같습니다.
+는 내부적으로 다음과 같다.
 
 ```lean
 P → False
 ```
 
-따라서 `¬ m ∣ p`는 “`m ∣ p`라고 가정하면 모순이 나온다”는 뜻입니다.
+따라서 `¬ m ∣ p`는 "`m ∣ p`라고 가정하면 모순이 나온다"는 뜻이다.
 
-`example : Nat.Prime 7 := by decide`는 Lean에게 `7`이 소수라는 명제를 계산적으로 판정해서 증명하게 합니다. 작은 자연수의 소수성은 `decide`나 `norm_num`으로 처리할 수 있습니다.
+`example : Nat.Prime 7 := by decide`는 Lean에게 `7`이 소수라는 명제를 계산적으로 판정해서 증명하게 한다. 작은 자연수의 소수성은 `decide`나 `norm_num`으로 처리할 수 있다.
 
 ```lean
 example : Nat.Prime 7 := by
@@ -168,7 +168,7 @@ theorem composite_has_small_prime_factor
 
 ### 수학적 의미
 
-이 정리는 다음을 말합니다.
+이 정리는 다음을 말한다.
 
 ```text
 n > 1이고 n이 소수가 아니면,
@@ -176,7 +176,7 @@ n을 나누는 어떤 소수 p가 존재하고,
 p * p ≤ n 이다.
 ```
 
-즉 합성수는 `√n` 이하의 소인수를 가진다는 고전적 사실입니다. Lean에서는 제곱근 대신 다음 부등식을 씁니다.
+즉 합성수는 `√n` 이하의 소인수를 가진다는 고전적 사실이다. Lean에서는 제곱근 대신 다음 부등식을 쓴다.
 
 ```lean
 p * p ≤ n
@@ -184,93 +184,93 @@ p * p ≤ n
 
 ### 증명 흐름
 
-처음 가정은 다음입니다.
+처음 가정은 다음이다.
 
 ```lean
 h_comp : 1 < n ∧ ¬ Nat.Prime n
 ```
 
-이것을 분해합니다.
+이것을 분해한다.
 
 ```lean
 obtain ⟨h1, h_not_prime⟩ := h_comp
 ```
 
-이후 문맥에는 다음이 생깁니다.
+이후 문맥에는 다음이 생긴다.
 
 ```lean
 h1 : 1 < n
 h_not_prime : ¬ Nat.Prime n
 ```
 
-다음 두 보조 사실을 만듭니다.
+다음 두 보조 사실을 만든다.
 
 ```lean
 have hn_pos    : 0 < n := by omega
 have hn_ne_one : n ≠ 1 := by omega
 ```
 
-`1 < n`이면 당연히 `0 < n`이고 `n ≠ 1`입니다. `omega`가 이 자연수 산술을 자동으로 처리합니다.
+`1 < n`이면 당연히 `0 < n`이고 `n ≠ 1`이다. `omega`가 이 자연수 산술을 자동으로 처리한다.
 
-핵심은 최소 소인수입니다.
+핵심은 최소 소인수이다.
 
 ```lean
 set p := Nat.minFac n with hp_def
 ```
 
-수학적으로는 다음입니다.
+수학적으로는 다음이다.
 
 ```text
 p := n의 최소 소인수
 ```
 
-Mathlib는 최소 소인수에 대해 이미 세 가지 중요한 정리를 제공합니다.
+Mathlib는 최소 소인수에 대해 이미 세 가지 중요한 정리를 제공한다.
 
 ```lean
 Nat.minFac_prime hn_ne_one
 ```
 
-`n ≠ 1`이면 `Nat.minFac n`은 소수입니다.
+`n ≠ 1`이면 `Nat.minFac n`은 소수이다.
 
 ```lean
 Nat.minFac_dvd n
 ```
 
-`Nat.minFac n`은 `n`을 나눕니다.
+`Nat.minFac n`은 `n`을 나눈다.
 
 ```lean
 Nat.minFac_sq_le_self hn_pos h_not_prime
 ```
 
-`n > 0`이고 `n`이 소수가 아니면, 최소 소인수의 제곱은 `n` 이하입니다.
+`n > 0`이고 `n`이 소수가 아니면, 최소 소인수의 제곱은 `n` 이하이다.
 
-다만 `Nat.minFac_sq_le_self`가 주는 식은 보통 다음 모양입니다.
+다만 `Nat.minFac_sq_le_self`가 주는 식은 보통 다음 모양이다.
 
 ```lean
 p ^ 2 ≤ n
 ```
 
-목표는 다음 모양입니다.
+목표는 다음 모양이다.
 
 ```lean
 p * p ≤ n
 ```
 
-그래서 다음 rewrite를 씁니다.
+그래서 다음 rewrite를 쓴다.
 
 ```lean
 rw [pow_two] at h
 ```
 
-`pow_two`는 `p ^ 2 = p * p`라는 정리입니다.
+`pow_two`는 `p ^ 2 = p * p`라는 정리이다.
 
-마지막으로 존재명제를 조립합니다.
+마지막으로 존재명제를 조립한다.
 
 ```lean
 exact ⟨p, hp_prime, hp_sq, hp_dvd⟩
 ```
 
-이는 다음을 한 번에 제출합니다.
+이는 다음을 한 번에 제출한다.
 
 ```text
 증인: p
@@ -303,7 +303,7 @@ example (n : Nat) :
 
 ### 설명
 
-`Nat.primeFactorsList n`은 자연수 `n`의 소인수분해를 리스트로 반환합니다. 중복을 포함합니다.
+`Nat.primeFactorsList n`은 자연수 `n`의 소인수분해를 리스트로 반환한다. 중복을 포함한다.
 
 예를 들어:
 
@@ -343,20 +343,20 @@ example (n : Nat) (h : n ≠ 0) :
   Nat.prod_primeFactorsList h
 ```
 
-이 정리는 다음을 말합니다.
+이 정리는 다음을 말한다.
 
 ```text
 n ≠ 0이면,
 primeFactorsList n의 모든 원소를 곱하면 다시 n이 된다.
 ```
 
-`n ≠ 0` 조건이 필요한 이유는 `primeFactorsList 0 = []`이고, 빈 리스트의 곱은 `1`이기 때문입니다. 따라서 `n = 0`이면:
+`n ≠ 0` 조건이 필요한 이유는 `primeFactorsList 0 = []`이고, 빈 리스트의 곱은 `1`이기 때문이다. 따라서 `n = 0`이면:
 
 ```text
 [].prod = 1 ≠ 0
 ```
 
-입니다.
+이다.
 
 ### 리스트의 모든 원소는 소수
 
@@ -372,7 +372,7 @@ Lean의 문법:
 ∀ p ∈ Nat.primeFactorsList n, Nat.Prime p
 ```
 
-는 다음의 축약형입니다.
+는 다음의 축약형이다.
 
 ```lean
 ∀ p, p ∈ Nat.primeFactorsList n → Nat.Prime p
@@ -384,7 +384,7 @@ Lean의 문법:
 p가 primeFactorsList n 안에 들어 있다면 p는 소수이다.
 ```
 
-`fun _ hp => ...`에서 `_`는 원소 `p`의 이름을 생략한 것입니다. `hp`는 다음 타입의 증거입니다.
+`fun _ hp => ...`에서 `_`는 원소 `p`의 이름을 생략한 것이다. `hp`는 다음 타입의 증거이다.
 
 ```lean
 hp : p ∈ Nat.primeFactorsList n
@@ -402,7 +402,7 @@ Nat.prime_of_mem_primeFactorsList hp
 Nat.Prime p
 ```
 
-전술 모드로 쓰면 다음과 같습니다.
+전술 모드로 쓰면 다음과 같다.
 
 ```lean
 example (n : Nat) :
@@ -464,14 +464,14 @@ theorem my_infinite_primes (N : Nat) : ∃ p, N ≤ p ∧ Nat.Prime p := by
 theorem my_infinite_primes (N : Nat) : ∃ p, N ≤ p ∧ Nat.Prime p
 ```
 
-뜻은 다음입니다.
+뜻은 다음이다.
 
 ```text
 임의의 자연수 N에 대해,
 N 이상인 어떤 소수 p가 존재한다.
 ```
 
-즉 소수는 무한히 많다는 유클리드 정리의 한 형태입니다. 사실 이 증명은 더 강하게 `N < p`를 보입니다.
+즉 소수는 무한히 많다는 유클리드 정리의 한 형태이다. 사실 이 증명은 더 강하게 `N < p`를 보이다.
 
 ### 수학적 아이디어
 
@@ -480,11 +480,11 @@ Q := N! + 1
 p := Q의 최소 소인수
 ```
 
-그러면 `p`는 소수이고 `p ∣ Q`입니다. 만약 `p ≤ N`이라면 `p`는 `N!`을 나눕니다. 그런데 동시에 `p ∣ Q = N! + 1`입니다. 그러면 `p`는 차이인 `1`도 나눕니다. 하지만 소수는 `1`을 나눌 수 없습니다. 모순입니다. 따라서 `p ≤ N`은 불가능하고, `N < p`입니다.
+그러면 `p`는 소수이고 `p ∣ Q`이다. 만약 `p ≤ N`이라면 `p`는 `N!`을 나눈다. 그런데 동시에 `p ∣ Q = N! + 1`이다. 그러면 `p`는 차이인 `1`도 나눈다. 하지만 소수는 `1`을 나눌 수 없습니다. 모순이다. 따라서 `p ≤ N`은 불가능하고, `N < p`이다.
 
 ### 핵심 단계
 
-`Q`를 도입합니다.
+`Q`를 도입한다.
 
 ```lean
 set Q := Nat.factorial N + 1 with hQ
@@ -498,7 +498,7 @@ hQ : Q = Nat.factorial N + 1
 
 이 생깁니다.
 
-`Q ≥ 2`를 보입니다.
+`Q ≥ 2`를 보이다.
 
 ```lean
 have hQ_ge : 2 ≤ Q := by
@@ -507,7 +507,7 @@ have hQ_ge : 2 ≤ Q := by
   omega
 ```
 
-`Nat.factorial_pos N`은 `0 < N!`를 줍니다. 따라서 `2 ≤ N! + 1`입니다.
+`Nat.factorial_pos N`은 `0 < N!`를 줍니다. 따라서 `2 ≤ N! + 1`이다.
 
 최소 소인수를 잡습니다.
 
@@ -518,28 +518,28 @@ have hp_prime : Nat.Prime p := Nat.minFac_prime (by omega)
 
 `Q ≥ 2`이므로 `Q ≠ 1`이고, `Nat.minFac_prime`으로 `p`가 소수임을 얻습니다.
 
-결론은 존재명제입니다.
+결론은 존재명제이다.
 
 ```lean
 refine ⟨p, ?_, hp_prime⟩
 ```
 
-증인 `p`를 제시하고, `Nat.Prime p`는 `hp_prime`으로 해결합니다. 남은 목표는:
+증인 `p`를 제시하고, `Nat.Prime p`는 `hp_prime`으로 해결한다. 남은 목표는:
 
 ```lean
 N ≤ p
 ```
 
-입니다.
+이다.
 
-이를 귀류적으로 보입니다. `p ≤ N`이라고 가정하면:
+이를 귀류적으로 보이다. `p ≤ N`이라고 가정하면:
 
 ```lean
 have h_p_div_fact : p ∣ Nat.factorial N :=
   Nat.dvd_factorial (Nat.Prime.pos hp_prime) h
 ```
 
-`p`가 양수이고 `p ≤ N`이면 `p ∣ N!`입니다.
+`p`가 양수이고 `p ≤ N`이면 `p ∣ N!`이다.
 
 또한:
 
@@ -549,7 +549,7 @@ have h_p_div_Q : p ∣ Q := by
   exact Nat.minFac_dvd Q
 ```
 
-`p`는 `Q`의 최소 소인수이므로 `Q`를 나눕니다.
+`p`는 `Q`의 최소 소인수이므로 `Q`를 나눈다.
 
 `Q = N! + 1`이므로:
 
@@ -563,9 +563,9 @@ rw [hQ] at h_p_div_Q
 h_p_div_Q : p ∣ Nat.factorial N + 1
 ```
 
-입니다.
+이다.
 
-이제 `p ∣ N!`이고 `p ∣ N! + 1`이면 `p ∣ 1`입니다.
+이제 `p ∣ N!`이고 `p ∣ N! + 1`이면 `p ∣ 1`이다.
 
 ```lean
 exact (Nat.dvd_add_right h_p_div_fact).mp h_p_div_Q
@@ -577,7 +577,7 @@ exact (Nat.dvd_add_right h_p_div_fact).mp h_p_div_Q
 Nat.Prime.not_dvd_one hp_prime h_p_div_one : False
 ```
 
-따라서 `p ≤ N`은 모순이고, `N < p`, 그래서 `N ≤ p`입니다.
+따라서 `p ≤ N`은 모순이고, `N < p`, 그래서 `N ≤ p`이다.
 
 ---
 
@@ -605,7 +605,7 @@ example (a b : Nat) (h : a ≠ 0 ∨ b ≠ 0) : 0 < Nat.gcd a b := by
 
 ### 정의의 의미
 
-개념적으로 `Nat.gcd`는 유클리드 알고리즘입니다.
+개념적으로 `Nat.gcd`는 유클리드 알고리즘이다.
 
 ```text
 gcd(0, y) = y
@@ -633,15 +633,15 @@ example (a b : Nat) (h : a ≠ 0 ∨ b ≠ 0) : 0 < Nat.gcd a b := by
   rwa [← Nat.pos_iff_ne_zero, ← Nat.pos_iff_ne_zero] at h
 ```
 
-주석은 정확히는 다음이어야 합니다.
+주석은 정확히는 다음이어야 한다.
 
 ```text
 두 수가 동시에 0이 아니면 gcd는 양수이다.
 ```
 
-즉 `a ≠ 0 ∨ b ≠ 0`입니다. “둘 다 0이 아니다”라면 `a ≠ 0 ∧ b ≠ 0`이므로 다릅니다.
+즉 `a ≠ 0 ∨ b ≠ 0`이다. "둘 다 0이 아니다"라면 `a ≠ 0 ∧ b ≠ 0`이므로 다릅니다.
 
-`Nat.gcd_pos_iff`는 다음 동치입니다.
+`Nat.gcd_pos_iff`는 다음 동치이다.
 
 ```lean
 0 < Nat.gcd a b ↔ 0 < a ∨ 0 < b
@@ -659,7 +659,7 @@ example (a b : Nat) (h : a ≠ 0 ∨ b ≠ 0) : 0 < Nat.gcd a b := by
 0 < a ∨ 0 < b
 ```
 
-가 됩니다.
+가 된다.
 
 우리가 가진 가정은:
 
@@ -667,19 +667,19 @@ example (a b : Nat) (h : a ≠ 0 ∨ b ≠ 0) : 0 < Nat.gcd a b := by
 h : a ≠ 0 ∨ b ≠ 0
 ```
 
-자연수에서는 다음이 성립합니다.
+자연수에서는 다음이 성립한다.
 
 ```lean
 Nat.pos_iff_ne_zero : 0 < n ↔ n ≠ 0
 ```
 
-그래서 `← Nat.pos_iff_ne_zero`를 사용해 `a ≠ 0`, `b ≠ 0`를 각각 `0 < a`, `0 < b`로 바꿉니다.
+그래서 `← Nat.pos_iff_ne_zero`를 사용해 `a ≠ 0`, `b ≠ 0`를 각각 `0 < a`, `0 < b`로 바꾼다.
 
 ```lean
 rwa [← Nat.pos_iff_ne_zero, ← Nat.pos_iff_ne_zero] at h
 ```
 
-`rwa`는 `rw` 후 `exact`까지 하는 전술입니다. 즉 가정 `h`를 목표와 같은 모양으로 바꾼 뒤 그대로 사용합니다.
+`rwa`는 `rw` 후 `exact`까지 하는 전술이다. 즉 가정 `h`를 목표와 같은 모양으로 바꾼 뒤 그대로 사용한다.
 
 ---
 
@@ -702,13 +702,13 @@ example (m n : Nat) :
 
 ### 설명
 
-`Nat.lcm m n`은 `m`과 `n`의 최소공배수입니다. 수학적으로 다음 공식이 성립합니다.
+`Nat.lcm m n`은 `m`과 `n`의 최소공배수이다. 수학적으로 다음 공식이 성립한다.
 
 ```text
 lcm(m, n) = m * n / gcd(m, n)
 ```
 
-그리고 핵심 정리는 다음입니다.
+그리고 핵심 정리는 다음이다.
 
 ```lean
 Nat.gcd_mul_lcm m n :
@@ -749,7 +749,7 @@ example : Nat.gcd 120 500 * Nat.lcm 120 500 = 120 * 500 := by
 
 ### 첫 번째 예제 설명
 
-목표는 다음입니다.
+목표는 다음이다.
 
 ```lean
 Nat.lcm a b = a * b / Nat.gcd a b
@@ -768,38 +768,38 @@ Nat.gcd_mul_lcm a b :
   Nat.gcd a b * Nat.lcm a b = a * b
 ```
 
-를 반대 방향으로 rewrite합니다.
+를 반대 방향으로 rewrite한다.
 
 ```lean
 rw [← Nat.gcd_mul_lcm a b]
 ```
 
-그러면 오른쪽의 `a * b`가 다음으로 바뀝니다.
+그러면 오른쪽의 `a * b`가 다음으로 바뀐다.
 
 ```lean
 Nat.gcd a b * Nat.lcm a b
 ```
 
-목표는 다음 꼴이 됩니다.
+목표는 다음 꼴이 된다.
 
 ```lean
 Nat.lcm a b =
   (Nat.gcd a b * Nat.lcm a b) / Nat.gcd a b
 ```
 
-이제 오른쪽에서 `Nat.gcd a b`를 약분합니다.
+이제 오른쪽에서 `Nat.gcd a b`를 약분한다.
 
 ```lean
 rw [Nat.mul_div_cancel_left _ (Nat.pos_of_ne_zero h)]
 ```
 
-`Nat.mul_div_cancel_left`는 다음 형태입니다.
+`Nat.mul_div_cancel_left`는 다음 형태이다.
 
 ```lean
 n * m / n = m
 ```
 
-단, `0 < n`이 필요합니다. 여기서 `n := Nat.gcd a b`입니다. 그래서 가정:
+단, `0 < n`이 필요하다. 여기서 `n := Nat.gcd a b`이다. 그래서 가정:
 
 ```lean
 h : Nat.gcd a b ≠ 0
@@ -819,9 +819,9 @@ Nat.pos_of_ne_zero h : 0 < Nat.gcd a b
 Nat.lcm a b = Nat.lcm a b
 ```
 
-가 되어 끝납니다.
+가 되어 끝난다.
 
-참고로 Mathlib에는 이 공식을 직접 주는 정리도 있습니다.
+참고로 Mathlib에는 이 공식을 직접 주는 정리도 있다.
 
 ```lean
 example (a b : Nat) :
@@ -829,7 +829,7 @@ example (a b : Nat) :
   Nat.lcm_eq_mul_div a b
 ```
 
-위의 증명은 `gcd_mul_lcm`에서 나눗셈 약분으로 직접 공식을 유도하는 연습입니다.
+위의 증명은 `gcd_mul_lcm`에서 나눗셈 약분으로 직접 공식을 유도하는 연습이다.
 
 ---
 
@@ -857,7 +857,7 @@ example (a b : Nat) (h : b ≠ 0) :
 
 ### `Nat.gcd_rec`
 
-`Nat.gcd_rec a b`는 다음 정리입니다.
+`Nat.gcd_rec a b`는 다음 정리이다.
 
 ```lean
 Nat.gcd a b = Nat.gcd (b % a) a
@@ -869,15 +869,15 @@ Nat.gcd a b = Nat.gcd (b % a) a
 gcd(a,b) = gcd(b mod a, a)
 ```
 
-입니다.
+이다.
 
-교과서에서 더 자주 보는 형태는 다음입니다.
+교과서에서 더 자주 보는 형태는 다음이다.
 
 ```text
 gcd(a,b) = gcd(b, a mod b)
 ```
 
-이 형태를 얻기 위해 `Nat.gcd_comm`을 사용합니다.
+이 형태를 얻기 위해 `Nat.gcd_comm`을 사용한다.
 
 ### 두 번째 예제의 증명 흐름
 
@@ -893,7 +893,7 @@ Nat.gcd a b = Nat.gcd b (a % b)
 rw [Nat.gcd_comm a b]
 ```
 
-왼쪽을 바꿉니다.
+왼쪽을 바꾼다.
 
 ```lean
 Nat.gcd a b
@@ -905,7 +905,7 @@ Nat.gcd a b
 Nat.gcd b a
 ```
 
-가 됩니다.
+가 된다.
 
 두 번째 rewrite:
 
@@ -913,7 +913,7 @@ Nat.gcd b a
 rw [Nat.gcd_rec b a]
 ```
 
-`Nat.gcd b a`를 다음으로 바꿉니다.
+`Nat.gcd b a`를 다음으로 바꾼다.
 
 ```lean
 Nat.gcd (a % b) b
@@ -925,9 +925,9 @@ Nat.gcd (a % b) b
 rw [Nat.gcd_comm]
 ```
 
-`Nat.gcd (a % b) b`를 `Nat.gcd b (a % b)`로 바꿉니다. 목표는 양변이 같아져 닫힙니다.
+`Nat.gcd (a % b) b`를 `Nat.gcd b (a % b)`로 바꾼다. 목표는 양변이 같아져 닫힌다.
 
-`h : b ≠ 0`은 수학적 직관상 붙어 있지만, 이 증명에서는 사용되지 않습니다. Lean의 자연수 나머지 연산은 `b = 0`일 때도 정의되어 있으므로, 이 예제는 사실 `h` 없이도 성립합니다.
+`h : b ≠ 0`은 수학적 직관상 붙어 있지만, 이 증명에서는 사용되지 않는다. Lean의 자연수 나머지 연산은 `b = 0`일 때도 정의되어 있으므로, 이 예제는 사실 `h` 없이도 성립한다.
 
 ---
 
@@ -941,14 +941,14 @@ def myGcd : Nat → Nat → Nat
   | a, b+1 => myGcd (b+1) (a % (b+1))
 ```
 
-이 정의는 교과서식 유클리드 알고리즘입니다.
+이 정의는 교과서식 유클리드 알고리즘이다.
 
 ```text
 myGcd(a, 0) = a
 myGcd(a, b+1) = myGcd(b+1, a mod (b+1))
 ```
 
-두 번째 인수가 매번 다음 값으로 바뀝니다.
+두 번째 인수가 매번 다음 값으로 바뀐다.
 
 ```lean
 a % (b + 1)
@@ -960,9 +960,9 @@ a % (b + 1)
 Nat.mod_lt a (Nat.succ_pos b) : a % (b+1) < b+1
 ```
 
-따라서 재귀가 종료됩니다.
+따라서 재귀가 종료된다.
 
-환경에 따라 Lean이 종료성을 자동으로 못 잡을 수 있으므로, 안전한 정의는 다음처럼 작성할 수 있습니다.
+환경에 따라 Lean이 종료성을 자동으로 못 잡을 수 있으므로, 안전한 정의는 다음처럼 작성할 수 있다.
 
 ```lean
 def myGcd (a b : Nat) : Nat :=
@@ -1002,15 +1002,15 @@ theorem myGcd_eq (a b : Nat) : myGcd a b = Nat.gcd a b := by
 
 ### 설명
 
-목표는 다음입니다.
+목표는 다음이다.
 
 ```lean
 myGcd a b = Nat.gcd a b
 ```
 
-즉 직접 구현한 `myGcd`가 Mathlib의 표준 `Nat.gcd`와 항상 같은 값을 낸다는 것입니다.
+즉 직접 구현한 `myGcd`가 Mathlib의 표준 `Nat.gcd`와 항상 같은 값을 낸다는 것이다.
 
-증명은 두 번째 인수 `b`에 대한 강한 귀납법입니다. 강한 귀납법을 쓰는 이유는 재귀 호출의 두 번째 인수가 `b-1`이 아니라 `a % b`처럼 임의의 더 작은 수로 바뀌기 때문입니다.
+증명은 두 번째 인수 `b`에 대한 강한 귀납법이다. 강한 귀납법을 쓰는 이유는 재귀 호출의 두 번째 인수가 `b-1`이 아니라 `a % b`처럼 임의의 더 작은 수로 바뀌기 때문이다.
 
 ```lean
 revert a
@@ -1022,14 +1022,14 @@ revert a
 ∀ a, myGcd a b = Nat.gcd a b
 ```
 
-형태로 만듭니다. 이것이 필요한 이유는 재귀 호출에서 첫 번째 인수가 바뀌기 때문입니다.
+형태로 만듭니다. 이것이 필요한 이유는 재귀 호출에서 첫 번째 인수가 바뀌기 때문이다.
 
 ```lean
 myGcd a (b+1)
 = myGcd (b+1) (a % (b+1))
 ```
 
-귀납가정은 작은 두 번째 인수에 대해 모든 첫 번째 인수를 허용해야 합니다.
+귀납가정은 작은 두 번째 인수에 대해 모든 첫 번째 인수를 허용해야 한다.
 
 기저 경우 `b = 0`에서는:
 
@@ -1051,7 +1051,7 @@ myGcd(a, b+1)
 = gcd(a, b+1)                   -- 교환법칙
 ```
 
-따라서 `myGcd`가 실제로 gcd를 반환함이 기계적으로 검증됩니다.
+따라서 `myGcd`가 실제로 gcd를 반환함이 기계적으로 검증된다.
 
 ---
 
@@ -1079,7 +1079,7 @@ example : (252 : Int) * 4 + 198 * (-5) = 18 := by
 
 ### 중요한 정정
 
-다음 계수는 `18`을 만들지 않습니다.
+다음 계수는 `18`을 만들지 않는다.
 
 ```lean
 #eval Int.gcdA 252 198    -- s₀ = -3
@@ -1095,7 +1095,7 @@ example : (252 : Int) * 4 + 198 * (-5) = 18 := by
 = 36
 ```
 
-따라서 이 예제는 잘못된 검증입니다. `252`, `198`에 대해 Mathlib가 주는 계수가 `4`, `-5`라면:
+따라서 이 예제는 잘못된 검증이다. `252`, `198`에 대해 Mathlib가 주는 계수가 `4`, `-5`라면:
 
 ```text
 252 * 4 + 198 * (-5)
@@ -1103,7 +1103,7 @@ example : (252 : Int) * 4 + 198 * (-5) = 18 := by
 = 18
 ```
 
-입니다.
+이다.
 
 ### 베주 항등식
 
@@ -1113,7 +1113,7 @@ example : (252 : Int) * 4 + 198 * (-5) = 18 := by
 (Int.gcd a b : Int) = a * Int.gcdA a b + b * Int.gcdB a b
 ```
 
-는 베주 항등식입니다.
+는 베주 항등식이다.
 
 ```text
 gcd(a,b) = a*s + b*t
@@ -1126,9 +1126,9 @@ s = Int.gcdA a b
 t = Int.gcdB a b
 ```
 
-입니다.
+이다.
 
-`Int.gcd a b`는 이름은 `Int.gcd`이지만 값은 자연수입니다. 최대공약수는 음수가 아니기 때문입니다. 오른쪽은 정수식이므로 왼쪽을 정수로 캐스팅합니다.
+`Int.gcd a b`는 이름은 `Int.gcd`이지만 값은 자연수이다. 최대공약수는 음수가 아니기 때문이다. 오른쪽은 정수식이므로 왼쪽을 정수로 캐스팅한다.
 
 ```lean
 (Int.gcd a b : Int)
@@ -1160,7 +1160,7 @@ gcd(a,m) = 1
 1 = a*s + m*t
 ```
 
-입니다.
+이다.
 
 이를 `mod m`으로 보면:
 
@@ -1168,7 +1168,7 @@ gcd(a,m) = 1
 a*s ≡ 1 (mod m)
 ```
 
-입니다. 따라서 `s`는 `a`의 `mod m` 역원입니다. Mathlib에서는 이 `s`를 다음으로 잡습니다.
+이다. 따라서 `s`는 `a`의 `mod m` 역원이다. Mathlib에서는 이 `s`를 다음으로 잡는다.
 
 ```lean
 Int.gcdA a m
@@ -1180,16 +1180,16 @@ Int.gcdA a m
 (Int.gcdA a m) % m
 ```
 
-로 정의합니다.
+로 정의한다.
 
-단, `a`와 `m`이 서로소일 때만 진짜 역원입니다. 예를 들어 `a = 2`, `m = 4`이면 `gcd(2,4)=2`이므로 역원이 없습니다. 따라서 정확한 명제는 다음 형태입니다.
+단, `a`와 `m`이 서로소일 때만 진짜 역원이다. 예를 들어 `a = 2`, `m = 4`이면 `gcd(2,4)=2`이므로 역원이 없다. 따라서 정확한 명제는 다음 형태이다.
 
 ```text
 Int.gcd a m = 1 이면,
 a * modInv a m ≡ 1 (mod m).
 ```
 
-Lean에서는 합동을 보통 `Int.ModEq`로 표현합니다.
+Lean에서는 합동을 보통 `Int.ModEq`로 표현한다.
 
 ---
 
@@ -1207,14 +1207,14 @@ theorem euclid_lemma (p a b : Nat) (hp : Nat.Prime p) :
 
 ### 설명
 
-이 정리는 다음 수학 명제입니다.
+이 정리는 다음 수학 명제이다.
 
 ```text
 p가 소수이고 p ∣ a*b 이면,
 p ∣ a 또는 p ∣ b 이다.
 ```
 
-`Nat.Prime.dvd_mul hp`는 다음 동치입니다.
+`Nat.Prime.dvd_mul hp`는 다음 동치이다.
 
 ```lean
 p ∣ a * b ↔ p ∣ a ∨ p ∣ b
@@ -1227,19 +1227,19 @@ p ∣ a * b ↔ p ∣ a ∨ p ∣ b
 .mpr : B → A
 ```
 
-입니다. 따라서:
+이다. 따라서:
 
 ```lean
 (Nat.Prime.dvd_mul hp).mp
 ```
 
-는 다음 함수입니다.
+는 다음 함수이다.
 
 ```lean
 p ∣ a * b → p ∣ a ∨ p ∣ b
 ```
 
-정리의 결론과 정확히 일치하므로 한 줄로 증명됩니다.
+정리의 결론과 정확히 일치하므로 한 줄로 증명된다.
 
 전술 모드로 쓰면:
 
@@ -1272,7 +1272,7 @@ example (p a b : Nat) (hp : Nat.Prime p) (h : p ∣ a * b) :
 
 ### 설명
 
-증명 전략은 다음입니다.
+증명 전략은 다음이다.
 
 ```text
 p ∣ a 인지 아닌지로 나눈다.
@@ -1309,13 +1309,13 @@ exact ha
 ha : ¬ p ∣ a
 ```
 
-입니다. 목표는:
+이다. 목표는:
 
 ```lean
 p ∣ a ∨ p ∣ b
 ```
 
-인데, 왼쪽은 거짓인 경우이므로 오른쪽을 선택합니다.
+인데, 왼쪽은 거짓인 경우이므로 오른쪽을 선택한다.
 
 ```lean
 right
@@ -1327,42 +1327,42 @@ right
 p ∣ b
 ```
 
-입니다.
+이다.
 
-소수 `p`가 `a`를 나누지 않으면 `p`와 `a`는 서로소입니다.
+소수 `p`가 `a`를 나누지 않으면 `p`와 `a`는 서로소이다.
 
 ```lean
 have hcop : Nat.Coprime p a :=
   (hp.coprime_iff_not_dvd).mpr ha
 ```
 
-여기서 `hp.coprime_iff_not_dvd`는 다음 동치입니다.
+여기서 `hp.coprime_iff_not_dvd`는 다음 동치이다.
 
 ```lean
 Nat.Coprime p a ↔ ¬ p ∣ a
 ```
 
-우리는 오른쪽 `¬ p ∣ a`를 가지고 있으므로 `.mpr`로 왼쪽 `Nat.Coprime p a`를 얻습니다.
+우리는 오른쪽 `¬ p ∣ a`를 가지고 있으므로 `.mpr`로 왼쪽 `Nat.Coprime p a`를 얻는다.
 
-마지막으로 서로소 약분 정리를 사용합니다.
+마지막으로 서로소 약분 정리를 사용한다.
 
 ```lean
 exact (Nat.Coprime.dvd_mul_left hcop).mp h
 ```
 
-`Nat.Coprime.dvd_mul_left hcop`는 다음 동치입니다.
+`Nat.Coprime.dvd_mul_left hcop`는 다음 동치이다.
 
 ```lean
 p ∣ a * b ↔ p ∣ b
 ```
 
-그리고 `h : p ∣ a * b`가 있으므로 `.mp h`로 `p ∣ b`를 얻습니다.
+그리고 `h : p ∣ a * b`가 있으므로 `.mp h`로 `p ∣ b`를 얻는다.
 
 ---
 
 ## 14. 전체 주제 연결
 
-지금까지 다룬 내용은 하나의 흐름으로 연결됩니다.
+지금까지 다룬 내용은 하나의 흐름으로 연결된다.
 
 ```text
 소수 Nat.Prime
@@ -1384,7 +1384,7 @@ gcd와 lcm
 유클리드 보조정리
 ```
 
-Mathlib는 많은 정리를 이미 제공합니다. Lean 학습의 핵심은 이 정리들을 외워서 쓰는 것이 아니라, 다음을 익히는 것입니다.
+Mathlib는 많은 정리를 이미 제공한다. Lean 학습의 핵심은 이 정리들을 외워서 쓰는 것이 아니라, 다음을 익히는 것이다.
 
 ```text
 1. 목표가 어떤 논리 구조인지 본다.
@@ -1399,7 +1399,7 @@ Mathlib는 많은 정리를 이미 제공합니다. Lean 학습의 핵심은 이
 
 ## 15. 한 파일에 넣을 수 있는 정리된 코드 모음
 
-아래 코드는 위 내용을 실습하기 위한 정리본입니다. Mathlib 버전에 따라 일부 정리 이름이나 import가 달라질 수 있으므로, 학습용으로는 `import Mathlib`를 권장합니다.
+아래 코드는 위 내용을 실습하기 위한 정리본이다. Mathlib 버전에 따라 일부 정리 이름이나 import가 달라질 수 있으므로, 학습용으로는 `import Mathlib`를 권장한다.
 
 ```lean
 import Mathlib
@@ -1578,18 +1578,18 @@ example (p a b : Nat) (hp : Nat.Prime p) (h : p ∣ a * b) :
 
 ## 16. 최종 요약
 
-이 전체 코드 묶음은 Lean에서 수론을 다루는 기본 패턴을 보여 줍니다.
+이 전체 코드 묶음은 Lean에서 수론을 다루는 기본 패턴을 보여 준다.
 
-첫째, `Nat.Prime`, `Nat.minFac`, `Nat.primeFactorsList`를 통해 소수와 소인수분해를 다룹니다.
+첫째, `Nat.Prime`, `Nat.minFac`, `Nat.primeFactorsList`를 통해 소수와 소인수분해를 다룬다.
 
-둘째, `Nat.factorial N + 1`과 최소 소인수를 이용해 소수가 무한히 많다는 유클리드 증명을 Lean으로 구현합니다.
+둘째, `Nat.factorial N + 1`과 최소 소인수를 이용해 소수가 무한히 많다는 유클리드 증명을 Lean으로 구현한다.
 
-셋째, `Nat.gcd`, `Nat.lcm`, `Nat.gcd_rec`, `Nat.gcd_mul_lcm`을 통해 유클리드 알고리즘과 최대공약수/최소공배수 관계를 형식화합니다.
+셋째, `Nat.gcd`, `Nat.lcm`, `Nat.gcd_rec`, `Nat.gcd_mul_lcm`을 통해 유클리드 알고리즘과 최대공약수/최소공배수 관계를 형식화한다.
 
-넷째, 직접 구현한 `myGcd`가 Mathlib의 `Nat.gcd`와 같다는 정리를 통해 알고리즘 검증의 기본 형태를 확인합니다.
+넷째, 직접 구현한 `myGcd`가 Mathlib의 `Nat.gcd`와 같다는 정리를 통해 알고리즘 검증의 기본 형태를 확인한다.
 
-다섯째, `Int.gcdA`, `Int.gcdB`를 통해 확장 유클리드 알고리즘과 베주 항등식을 다룹니다.
+다섯째, `Int.gcdA`, `Int.gcdB`를 통해 확장 유클리드 알고리즘과 베주 항등식을 다룬다.
 
-마지막으로, `Nat.Prime.dvd_mul`과 서로소 약분 정리를 통해 유클리드 보조정리를 증명합니다.
+마지막으로, `Nat.Prime.dvd_mul`과 서로소 약분 정리를 통해 유클리드 보조정리를 증명한다.
 
-핵심은 Lean이 단순히 계산만 하는 것이 아니라, 각 알고리즘과 정리가 실제로 올바르다는 것을 명제와 증명 객체로 엄밀하게 확인한다는 점입니다.
+핵심은 Lean이 단순히 계산만 하는 것이 아니라, 각 알고리즘과 정리가 실제로 올바르다는 것을 명제와 증명 객체로 엄밀하게 확인한다는 점이다.
