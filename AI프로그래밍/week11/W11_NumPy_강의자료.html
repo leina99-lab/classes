@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>4주차 — NumPy 핵심 · 강의자료</title>
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<style>
+  :root {
+    --bg:#FAF6F1; --navy:#1E2A4A; --crimson:#C0392B; --gold:#B88600;
+    --green:#10B981; --blue:#3B82F6; --orange:#F59E0B; --purple:#8B5CF6;
+    --gray-lt:#E5E7EB; --gray-md:#6B7280; --gray-dk:#374151; --paper:#FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family:'Malgun Gothic','Nanum Gothic',-apple-system,BlinkMacSystemFont,sans-serif;
+    margin:0; padding:24px 16px; background:var(--bg); color:var(--gray-dk); line-height:1.75;
+  }
+  .wrap { max-width:1100px; margin:0 auto; }
+
+  .cover {
+    background:var(--paper); border-left:6px solid var(--crimson);
+    padding:28px 32px; margin-bottom:28px; border-radius:0 12px 12px 0;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  }
+  .cover .label {
+    font-family:'Consolas',monospace; font-size:12px; color:var(--crimson);
+    font-weight:700; letter-spacing:1px; margin-bottom:8px;
+  }
+  .cover h1 { font-size:34px; color:var(--navy); margin:0 0 6px; font-weight:700; letter-spacing:-0.5px; }
+  .cover .en { font-size:16px; color:var(--gray-md); font-style:italic; margin-bottom:18px; }
+  .cover .divider { height:2px; background:var(--navy); width:80px; margin-bottom:18px; }
+  .cover .tagline { font-size:18px; color:var(--navy); font-weight:500; margin-bottom:6px; }
+  .cover .sub { font-size:14px; color:var(--gray-md); }
+
+  .section {
+    background:var(--paper); border:1px solid var(--gray-lt); border-radius:12px;
+    padding:24px 28px; margin-bottom:24px;
+  }
+  .section-header {
+    display:flex; align-items:center; gap:12px; margin-bottom:18px;
+    padding-bottom:12px; border-bottom:1px solid var(--gray-lt);
+  }
+  .section-header .num {
+    font-family:'Consolas',monospace; background:var(--navy); color:white;
+    padding:4px 10px; border-radius:6px; font-size:13px; font-weight:500;
+  }
+  .section-header.review .num { background:var(--gold); }
+  .section-header h2 { font-size:22px; color:var(--navy); margin:0; font-weight:600; }
+  .section-header .desc { font-size:13px; color:var(--gray-md); font-style:italic; margin-left:auto; }
+
+  .goals { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
+  .goal {
+    display:flex; gap:12px; padding:12px 14px;
+    background:#F9FAFB; border-radius:8px; border-left:3px solid var(--navy);
+  }
+  .goal .badge {
+    flex-shrink:0; width:32px; height:32px; background:var(--crimson); color:white;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-family:'Consolas',monospace;
+  }
+  .goal .text { font-size:13px; color:var(--gray-dk); line-height:1.5; }
+  .goal .text b { color:var(--navy); }
+
+  /* 시험문제 */
+  .problem {
+    background:var(--paper); border:1.5px solid var(--gray-lt); border-radius:8px;
+    padding:20px 24px; margin-bottom:20px;
+  }
+  .problem-header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding-bottom:12px; border-bottom:2px solid var(--navy); margin-bottom:14px;
+  }
+  .problem-title { font-size:16px; color:var(--navy); font-weight:600; }
+  .problem-title .num {
+    font-family:'Batang','Times New Roman',serif;
+    color:var(--crimson); font-weight:700; margin-right:6px;
+  }
+  .problem-points {
+    background:#FEF3C7; color:#92400E; padding:4px 10px; border-radius:14px;
+    font-size:12px; font-weight:500; font-family:'Consolas',monospace;
+  }
+  .problem-prompt {
+    font-size:14px; line-height:1.7; color:var(--gray-dk);
+    margin-bottom:14px; padding:12px 14px; background:#F9FAFB; border-radius:6px;
+  }
+  .problem-prompt code {
+    background:rgba(192,57,43,0.08); color:var(--crimson);
+    padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:13px;
+  }
+  .problem-prompt b { color:var(--navy); }
+  .type-tag {
+    display:inline-block; background:var(--navy); color:var(--gold);
+    font-family:'Consolas',monospace; font-size:11px; padding:3px 8px;
+    border-radius:4px; margin-right:8px; font-weight:500;
+  }
+  .code-block {
+    background:#1E293B; color:#E2E8F0; padding:16px 18px; border-radius:6px;
+    font-family:'Consolas','Courier New',monospace; font-size:14px; line-height:1.8;
+    overflow-x:auto; margin:0 0 14px; white-space:pre-wrap;
+  }
+  .code-block .bl {
+    display:inline-block; min-width:24px; height:22px; line-height:22px;
+    text-align:center; background:#FEF3C7; color:#92400E; border-radius:4px;
+    font-weight:700; padding:0 6px; margin:0 1px; border:1px dashed #F59E0B;
+    font-family:'Batang',serif; font-size:13px;
+  }
+  .output-wrap { margin-bottom:14px; }
+  .output-label {
+    font-family:'Consolas',monospace; font-size:11px; color:var(--gray-md);
+    margin-bottom:4px; letter-spacing:1px;
+  }
+  .output-block {
+    background:#F9FAFB; border-left:3px solid var(--green);
+    padding:12px 14px; font-family:'Consolas',monospace; font-size:13px;
+    color:var(--gray-dk); margin:0; border-radius:0 6px 6px 0; white-space:pre-wrap;
+  }
+  .sage-wrap {
+    margin:14px 0; border:1px solid var(--gray-lt); border-radius:6px;
+    padding:12px; background:#FFFBEB;
+  }
+  .sage-label {
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--gold); margin-bottom:8px; font-weight:600;
+  }
+  .sage-label .sub { color:var(--gray-md); font-weight:400; font-style:italic; font-size:11px; }
+  .submit-hint {
+    font-size:12px; color:var(--gray-md); text-align:right; margin-top:10px;
+    font-style:italic; border-top:1px dotted var(--gray-lt); padding-top:8px;
+  }
+
+  /* 본문 카드 */
+  .lesson-card {
+    background:#F9FAFB; border-radius:8px; padding:18px 22px; margin-bottom:16px;
+  }
+  .lesson-card h3 {
+    color:var(--navy); font-size:18px; margin:0 0 12px;
+    padding-bottom:8px; border-bottom:2px solid var(--gold);
+  }
+  .lesson-card h3 .tag {
+    background:var(--gold); color:white; font-family:'Consolas',monospace;
+    font-size:11px; padding:2px 8px; border-radius:4px; margin-right:8px;
+    vertical-align:middle;
+  }
+  .lesson-card p { font-size:14px; margin:8px 0; }
+  .lesson-card code {
+    background:rgba(30,42,74,0.08); color:var(--navy);
+    padding:1px 5px; border-radius:3px; font-family:'Consolas',monospace; font-size:13px;
+  }
+  .lesson-card b { color:var(--navy); }
+
+  pre.snippet {
+    background:#1E293B; color:#E2E8F0; padding:14px 18px; border-radius:6px;
+    font-family:'Consolas',monospace; font-size:13px; line-height:1.7;
+    overflow-x:auto; margin:12px 0;
+  }
+  pre.snippet .kw { color:#f472b6; }
+  pre.snippet .var { color:#60a5fa; }
+  pre.snippet .fn { color:#fbbf24; }
+  pre.snippet .num { color:#34d399; }
+  pre.snippet .com { color:#94a3b8; font-style:italic; }
+  pre.snippet .str { color:#f87171; }
+
+  table.compare { width:100%; border-collapse:collapse; font-size:13px; margin:12px 0; }
+  table.compare th, table.compare td { padding:8px 12px; border:1px solid var(--gray-lt); text-align:left; }
+  table.compare th { background:var(--navy); color:white; font-weight:500; }
+  table.compare tr:nth-child(even) td { background:#F9FAFB; }
+  table.compare td code {
+    background:rgba(192,57,43,0.08); color:var(--crimson);
+    padding:1px 5px; border-radius:3px; font-family:'Consolas',monospace; font-size:12px;
+  }
+
+  .ai-link {
+    background:#1E2A4A; color:white; padding:14px 18px; border-radius:8px;
+    margin:14px 0; font-size:13px; line-height:1.7;
+  }
+  .ai-link .tag {
+    color:var(--gold); font-family:'Consolas',monospace; font-size:11px;
+    font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;
+  }
+  .ai-link .formula {
+    background:rgba(0,0,0,0.25); color:#FFEB3B;
+    padding:8px 10px; border-radius:4px; font-family:'Consolas',monospace; margin:8px 0;
+  }
+  .ai-link b { color:#34D399; }
+
+  .diagram {
+    background:#F9FAFB; border:1px solid var(--gray-lt);
+    padding:14px 16px; border-radius:8px; margin:12px 0; overflow-x:auto;
+  }
+  .diagram pre { font-family:'Consolas',monospace; font-size:12px; color:var(--gray-dk); margin:0; line-height:1.5; }
+  .diagram .title { font-size:13px; color:var(--navy); font-weight:600; margin-bottom:8px; }
+
+  .pingpong {
+    background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px;
+    padding:14px 18px; margin:12px 0;
+  }
+  .pingpong.pong { background:#FDF4FF; border-color:#F0ABFC; }
+  .pingpong .head {
+    font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .pingpong .badge {
+    background:var(--blue); color:white; padding:2px 8px; border-radius:4px;
+    font-family:'Consolas',monospace; font-size:11px;
+  }
+  .pingpong.pong .badge { background:var(--purple); }
+  .pingpong .desc { font-size:13px; margin:4px 0 8px; color:var(--gray-dk); }
+  .pingpong code {
+    background:rgba(30,42,74,0.08); color:var(--navy);
+    padding:1px 5px; border-radius:3px; font-family:'Consolas',monospace;
+  }
+
+  details.answer {
+    margin-top:8px; background:#F0FDF4; border-left:3px solid var(--green);
+    border-radius:0 6px 6px 0; padding:6px 14px;
+  }
+  details.answer summary {
+    cursor:pointer; font-size:13px; color:#065F46; font-weight:600; padding:4px 0;
+  }
+  details.answer summary::marker { color:var(--green); }
+  details.answer pre.snippet { margin:8px 0 4px; }
+
+  .sagecell .CodeMirror {
+    font-size:13px !important; border:1px solid var(--gray-lt); border-radius:4px;
+  }
+  .sagecell_evalButton {
+    background:var(--navy) !important; color:white !important; border:none !important;
+    border-radius:4px !important; padding:6px 14px !important; font-weight:500 !important;
+    cursor:pointer !important;
+  }
+  .sagecell_evalButton:hover { background:#2C3E6B !important; }
+
+  .toc {
+    background:#F9FAFB; border-radius:8px; padding:14px 18px; margin-bottom:20px;
+    font-size:13px; line-height:1.9;
+  }
+  .toc .toc-title { color:var(--navy); font-weight:600; margin-bottom:8px; font-size:14px; }
+  .toc a { color:var(--gray-dk); text-decoration:none; }
+  .toc a:hover { color:var(--crimson); }
+  .toc .toc-num { color:var(--crimson); font-family:'Consolas',monospace; font-weight:700; margin-right:6px; }
+
+  @media print {
+    body { background:white; padding:0; }
+    .sage-wrap { display:none; }
+    .section, .problem { box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- 표지 -->
+<div class="cover">
+  <div class="label">04 WEEK · LECTURE</div>
+  <h1>NumPy 핵심 — 배열 · 벡터화 · 브로드캐스팅</h1>
+  <div class="en"><i>NumPy Fundamentals — Arrays, Vectorization, Broadcasting</i></div>
+  <div class="divider"></div>
+  <div class="tagline">"왜 리스트 대신 ndarray인가? — 현대 AI를 떠받치는 기반"</div>
+  <div class="sub">AI 프로그래밍 · 16주 커리큘럼 · Week 04</div>
+</div>
+
+<!-- 목차 -->
+<div class="toc">
+  <div class="toc-title">목차</div>
+  <a href="#objectives"><span class="toc-num">00</span>학습 목표</a><br>
+  <a href="#review"><span class="toc-num">01</span>지난 시간 복습 — pandas groupby 시험문제</a><br>
+  <a href="#why"><span class="toc-num">02</span>왜 NumPy인가?</a><br>
+  <a href="#ndarray"><span class="toc-num">03</span>ndarray 기본과 텐서 차원</a><br>
+  <a href="#vectorize"><span class="toc-num">04</span>벡터화 연산</a><br>
+  <a href="#broadcast"><span class="toc-num">05</span>브로드캐스팅</a><br>
+  <a href="#index"><span class="toc-num">06</span>인덱싱·슬라이싱·불리언 인덱싱</a><br>
+  <a href="#stats"><span class="toc-num">07</span>통계 함수와 axis</a><br>
+  <a href="#tensor"><span class="toc-num">08</span>AI 연결 — ndarray = Tensor</a><br>
+  <a href="#wrap"><span class="toc-num">09</span>차시 마무리</a>
+</div>
+
+<!-- 학습 목표 -->
+<div class="section" id="objectives">
+  <div class="section-header">
+    <span class="num">OBJECTIVES</span>
+    <h2>학습 목표</h2>
+    <span class="desc">본 차시를 마치면 다음을 수행할 수 있다</span>
+  </div>
+  <div class="goals">
+    <div class="goal"><div class="badge">1</div><div class="text"><b>리스트 vs ndarray</b>의 메모리 구조 차이를 설명하고, 왜 NumPy가 빠른지 안다.</div></div>
+    <div class="goal"><div class="badge">2</div><div class="text"><b>벡터화 연산</b>(Vectorization)으로 for문 없이 배열 전체에 연산을 적용한다.</div></div>
+    <div class="goal"><div class="badge">3</div><div class="text"><b>브로드캐스팅</b>(Broadcasting)의 작동 원리를 이해하고 활용한다.</div></div>
+    <div class="goal"><div class="badge">4</div><div class="text"><b>인덱싱·슬라이싱·불리언 인덱싱</b>으로 배열의 부분을 추출한다.</div></div>
+    <div class="goal"><div class="badge">5</div><div class="text"><b>통계 함수</b>와 <b>axis 매개변수</b>로 행별·열별 집계를 수행한다.</div></div>
+    <div class="goal"><div class="badge">6</div><div class="text"><b>ndarray = Tensor</b>임을 이해하고, PyTorch와의 연결점을 파악한다.</div></div>
+  </div>
+</div>
+
+<!-- ============ 01. 지난 시간 복습 ============ -->
+<div class="section" id="review">
+  <div class="section-header review">
+    <span class="num">REVIEW</span>
+    <h2>지난 시간 복습 — pandas <code style="background:rgba(192,57,43,0.08);color:var(--crimson);padding:1px 5px;border-radius:3px;font-family:'Consolas',monospace;">groupby</code> 시험문제</h2>
+    <span class="desc">아래 세 변형 중 하나가 출제된다</span>
+  </div>
+
+  <div class="ai-link" style="background:#FEF3C7; color:#78350F; border-left:4px solid var(--gold);">
+    <div class="tag" style="color:#92400E;">◆ 응시 안내</div>
+    <p style="margin:6px 0;color:#78350F;"><b style="color:#78350F;">본 문제 12는 변형 출제이다.</b> V1, V2, V3 중 본인이 받은 시험지의 변형을 풀어야 한다.
+    옆자리 학생의 시험지는 다른 변형일 수 있으며, 다른 변형의 답을 옮기면 ②③④ 세 자리가 모두 어긋난다.</p>
+    <p style="margin:6px 0;color:#78350F;">시험 시 아래 SageMath 셀에 본인의 답을 직접 채워 실행하고, 출력이 인쇄된 [출력 결과]와 일치하는지 반드시 확인하라. 검증을 거치지 않은 답안은 본인이 직접 풀지 않았다는 정황 증거가 된다.</p>
+  </div>
+
+  <!-- V1 -->
+  <section class="problem">
+    <div class="problem-header">
+      <div class="problem-title"><span class="num">【 문제 12 】</span>groupby 집계 (변형 V1)</div>
+      <div class="problem-points">배점 10점</div>
+    </div>
+    <div class="problem-prompt">
+      <span class="type-tag">pandas 집계</span>타이타닉 승객 데이터에서 <b>성별(<code>sex</code>)로 묶어 요금(<code>fare</code>)의 평균</b>을 구하는 코드를 완성하라.
+    </div>
+    <pre class="code-block">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.<span class="bl">①</span>(<span class="bl">②</span>)[<span class="bl">③</span>].<span class="bl">④</span>()
+print(result)</pre>
+    <div class="output-wrap">
+      <div class="output-label">[ 출 력 결 과 ]</div>
+      <pre class="output-block">sex
+female    44.479818
+male      25.523893
+Name: fare, dtype: float64</pre>
+    </div>
+    <div class="sage-wrap">
+      <div class="sage-label">
+        <span>◇ 실행 확인용 (SageMath Python)</span>
+        <span class="sub">코드를 채운 뒤 실행하여 결과가 일치하는지 확인하라</span>
+      </div>
+      <div class="compute"><script type="text/x-sage">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.???(???)[???].???()
+print(result)</script></div>
+    </div>
+    <div class="submit-hint">답안은 별지 답안지 문제 12의 ①∼④란에 기입하라.</div>
+  </section>
+
+  <!-- V2 -->
+  <section class="problem">
+    <div class="problem-header">
+      <div class="problem-title"><span class="num">【 문제 12 】</span>groupby 집계 (변형 V2)</div>
+      <div class="problem-points">배점 10점</div>
+    </div>
+    <div class="problem-prompt">
+      <span class="type-tag">pandas 집계</span>타이타닉 승객 데이터에서 <b>객실 등급(<code>pclass</code>)으로 묶어 나이(<code>age</code>)의 최댓값</b>을 구하는 코드를 완성하라.
+    </div>
+    <pre class="code-block">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.<span class="bl">①</span>(<span class="bl">②</span>)[<span class="bl">③</span>].<span class="bl">④</span>()
+print(result)</pre>
+    <div class="output-wrap">
+      <div class="output-label">[ 출 력 결 과 ]</div>
+      <pre class="output-block">pclass
+1    80.0
+2    70.0
+3    74.0
+Name: age, dtype: float64</pre>
+    </div>
+    <div class="sage-wrap">
+      <div class="sage-label">
+        <span>◇ 실행 확인용 (SageMath Python)</span>
+        <span class="sub">코드를 채운 뒤 실행하여 결과가 일치하는지 확인하라</span>
+      </div>
+      <div class="compute"><script type="text/x-sage">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.???(???)[???].???()
+print(result)</script></div>
+    </div>
+    <div class="submit-hint">답안은 별지 답안지 문제 12의 ①∼④란에 기입하라.</div>
+  </section>
+
+  <!-- V3 -->
+  <section class="problem">
+    <div class="problem-header">
+      <div class="problem-title"><span class="num">【 문제 12 】</span>groupby 집계 (변형 V3)</div>
+      <div class="problem-points">배점 10점</div>
+    </div>
+    <div class="problem-prompt">
+      <span class="type-tag">pandas 집계</span>타이타닉 승객 데이터에서 <b>승선 항구(<code>embark_town</code>)로 묶어 생존 여부(<code>survived</code>)의 합</b>(즉 항구별 생존자 수)을 구하는 코드를 완성하라.
+    </div>
+    <pre class="code-block">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.<span class="bl">①</span>(<span class="bl">②</span>)[<span class="bl">③</span>].<span class="bl">④</span>()
+print(result)</pre>
+    <div class="output-wrap">
+      <div class="output-label">[ 출 력 결 과 ]</div>
+      <pre class="output-block">embark_town
+Cherbourg       93
+Queenstown      30
+Southampton    217
+Name: survived, dtype: int64</pre>
+    </div>
+    <div class="sage-wrap">
+      <div class="sage-label">
+        <span>◇ 실행 확인용 (SageMath Python)</span>
+        <span class="sub">코드를 채운 뒤 실행하여 결과가 일치하는지 확인하라</span>
+      </div>
+      <div class="compute"><script type="text/x-sage">import seaborn as sns
+df = sns.load_dataset('titanic')
+
+result = df.???(???)[???].???()
+print(result)</script></div>
+    </div>
+    <div class="submit-hint">답안은 별지 답안지 문제 12의 ①∼④란에 기입하라.</div>
+  </section>
+</div>
+
+<!-- ============ 02. 왜 NumPy인가? ============ -->
+<div class="section" id="why">
+  <div class="section-header">
+    <span class="num">02</span>
+    <h2>왜 NumPy인가? — 속도와 메모리</h2>
+    <span class="desc">for문의 한계, 그리고 NumPy가 해결한 것</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">2.1</span>리스트로는 AI를 만들 수 없는 이유</h3>
+    <p>지금까지는 파이썬 <b>리스트</b>(list)로 모든 데이터를 다뤘다. 그러나 데이터가 수만 ~ 수백만 행이 되면 리스트로는 너무 느리다. 그 이유는 <b>메모리 구조의 차이</b>에 있다.</p>
+
+    <div class="diagram">
+      <div class="title">메모리 구조 비교</div>
+<pre>
+파이썬 리스트(list)                   NumPy 배열(ndarray)
+─────────────────────                 ──────────────────────
+[3.14] → 메모리 주소 A                [3.14, 2.71, 1.41, 0.58]
+[42]   → 메모리 주소 B                ↑ 모두 같은 타입(float64)
+["hi"] → 메모리 주소 C                ↑ 연속된 메모리에 배치
+[True] → 메모리 주소 D                ↑ CPU/GPU가 한 번에 쭉 읽음
+
+▷ "무엇이든 담을 수 있는 가방"        ▷ "같은 크기 상자만 담는 선반"
+▷ 흩어진 메모리 → 느림                ▷ 연속 메모리 → 빠름
+</pre>
+    </div>
+
+    <p>NumPy는 C언어로 최적화된 내부 연산을 사용하므로, 파이썬 for문보다 <b>50~100배 이상 빠르다</b>.</p>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">2.2</span>속도 비교 — 직접 측정</h3>
+    <p>100만 개의 숫자에 각각 2를 곱하는 작업을 두 가지 방식으로 측정한다.</p>
+
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> time
+
+n = <span class="num">1_000_000</span>
+py_list = <span class="fn">list</span>(<span class="fn">range</span>(n))
+np_arr  = np.<span class="fn">arange</span>(n)
+
+<span class="com"># for문 (파이썬 리스트)</span>
+start = time.<span class="fn">perf_counter</span>()
+result_py = [x * <span class="num">2</span> <span class="kw">for</span> x <span class="kw">in</span> py_list]
+t_py = time.<span class="fn">perf_counter</span>() - start
+
+<span class="com"># 벡터화 (NumPy)</span>
+start = time.<span class="fn">perf_counter</span>()
+result_np = np_arr * <span class="num">2</span>
+t_np = time.<span class="fn">perf_counter</span>() - start
+
+<span class="fn">print</span>(<span class="str">f"for문:  {t_py*1000:.1f} ms"</span>)
+<span class="fn">print</span>(<span class="str">f"NumPy:  {t_np*1000:.1f} ms"</span>)
+<span class="fn">print</span>(<span class="str">f"NumPy가 약 {t_py/t_np:.0f}배 빠름"</span>)</pre>
+
+    <div class="sage-wrap">
+      <div class="sage-label">
+        <span>◇ 직접 실행해보기</span>
+        <span class="sub">100만 개 데이터에서 속도 차이를 체감한다</span>
+      </div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+import time
+
+n = 1_000_000
+py_list = list(range(n))
+np_arr = np.arange(n)
+
+start = time.perf_counter()
+result_py = [x * 2 for x in py_list]
+t_py = time.perf_counter() - start
+
+start = time.perf_counter()
+result_np = np_arr * 2
+t_np = time.perf_counter() - start
+
+print(f"for문:  {t_py*1000:.1f} ms")
+print(f"NumPy:  {t_np*1000:.1f} ms")
+print(f"NumPy가 약 {t_py/t_np:.0f}배 빠름")</script></div>
+    </div>
+  </div>
+
+  <div class="ai-link">
+    <div class="tag">AI 연결 — 왜 이 차이가 중요한가</div>
+    <p>이 속도 차이가 100만 개에서 이 정도이면, <b>GPT-4의 1조 8000억 개 파라미터</b>에서는 어떻겠는가?</p>
+    <div class="formula">리스트 학습 시간 = 수년 → 물리적으로 불가능
+NumPy/PyTorch 학습 시간 = 수개월 → 실현 가능</div>
+    <p>NumPy는 단순한 편의 도구가 아니라 <b>현대 AI의 기반 기술</b>이다.</p>
+  </div>
+</div>
+
+<!-- ============ 03. ndarray 기본과 텐서 차원 ============ -->
+<div class="section" id="ndarray">
+  <div class="section-header">
+    <span class="num">03</span>
+    <h2>ndarray 기본과 텐서 차원</h2>
+    <span class="desc">N차원 배열의 모양(shape)을 이해한다</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">3.1</span>ndarray 생성하는 7가지 방법</h3>
+
+    <table class="compare">
+      <thead>
+        <tr><th>함수</th><th>역할</th><th>예시</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>np.array()</code></td><td>리스트 → 배열 변환</td><td><code>np.array([1,2,3])</code></td></tr>
+        <tr><td><code>np.zeros(shape)</code></td><td>0으로 채운 배열</td><td><code>np.zeros((3,4))</code></td></tr>
+        <tr><td><code>np.ones(shape)</code></td><td>1로 채운 배열</td><td><code>np.ones((2,3))</code></td></tr>
+        <tr><td><code>np.arange(start,stop,step)</code></td><td>범위 배열</td><td><code>np.arange(0,10,2)</code></td></tr>
+        <tr><td><code>np.linspace(start,stop,n)</code></td><td>균등 분할</td><td><code>np.linspace(0,1,5)</code></td></tr>
+        <tr><td><code>np.random.rand(shape)</code></td><td>0~1 난수</td><td><code>np.random.rand(3,3)</code></td></tr>
+        <tr><td><code>np.random.randint(low,high,size)</code></td><td>정수 난수</td><td><code>np.random.randint(1,100,10)</code></td></tr>
+      </tbody>
+    </table>
+
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="com"># 1차원 배열</span>
+a = np.<span class="fn">array</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>])
+<span class="fn">print</span>(a.shape)      <span class="com"># (5,)</span>
+<span class="fn">print</span>(a.ndim)       <span class="com"># 1</span>
+<span class="fn">print</span>(a.dtype)      <span class="com"># int64</span>
+
+<span class="com"># 2차원 배열 (행렬)</span>
+b = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>],
+              [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]])
+<span class="fn">print</span>(b.shape)      <span class="com"># (2, 3) — 2행 3열</span>
+<span class="fn">print</span>(b.ndim)       <span class="com"># 2</span></pre>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">3.2</span>텐서(Tensor) = N차원 배열</h3>
+    <p>겁먹을 필요 없다. <b>NumPy의 ndarray가 곧 텐서(Tensor)이다</b>. 차원만 다를 뿐이다.</p>
+
+    <table class="compare">
+      <thead>
+        <tr><th>차원</th><th>이름</th><th>NumPy</th><th>예시</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0D</td><td>스칼라(Scalar)</td><td><code>np.array(42)</code></td><td>하나의 숫자</td></tr>
+        <tr><td>1D</td><td>벡터(Vector)</td><td><code>np.array([1,2,3])</code></td><td>오디오 신호, 토큰 임베딩</td></tr>
+        <tr><td>2D</td><td>행렬(Matrix)</td><td><code>np.array([[1,2],[3,4]])</code></td><td>흑백 이미지, 데이터프레임</td></tr>
+        <tr><td>3D</td><td>3차원 텐서</td><td><code>np.zeros((3,224,224))</code></td><td>컬러 이미지 (RGB × H × W)</td></tr>
+        <tr><td>4D</td><td>4차원 텐서</td><td><code>np.zeros((32,3,224,224))</code></td><td>이미지 배치 (32장)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="diagram">
+      <div class="title">텐서 차원 시각화</div>
+<pre>
+  0D            1D                 2D                3D (RGB 이미지)
+  스칼라        벡터               행렬              컬러 이미지
+  ┌──┐          ┌──┬──┬──┐         ┌──┬──┬──┐        ┌─────────┐
+  │42│          │1 │2 │3 │         │1 │2 │3 │        │ R 채널  │
+  └──┘          └──┴──┴──┘         ├──┼──┼──┤        ├─────────┤
+                                   │4 │5 │6 │        │ G 채널  │
+  shape:        shape:             └──┴──┴──┘        ├─────────┤
+   ()            (3,)              shape: (2,3)      │ B 채널  │
+                                                     └─────────┘
+                                                  shape: (3, 224, 224)
+</pre>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">3.3</span>NumPy ↔ PyTorch — 문법이 거의 같다</h3>
+    <table class="compare">
+      <thead>
+        <tr><th>NumPy</th><th>PyTorch</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>np.array([1,2,3])</code></td><td><code>torch.tensor([1,2,3])</code></td></tr>
+        <tr><td><code>np.zeros((3,3))</code></td><td><code>torch.zeros((3,3))</code></td></tr>
+        <tr><td><code>a @ b</code></td><td><code>a @ b</code> (동일)</td></tr>
+        <tr><td><code>np.max(a)</code></td><td><code>torch.max(a)</code></td></tr>
+        <tr><td><code>a.reshape(2,3)</code></td><td><code>a.view(2,3)</code></td></tr>
+        <tr><td><code>a.T</code></td><td><code>a.T</code> (동일)</td></tr>
+      </tbody>
+    </table>
+    <p><b>NumPy를 배우면 PyTorch의 80%를 이미 아는 것이다.</b></p>
+  </div>
+
+  <div class="pingpong">
+    <div class="head"><span class="badge">Ping</span> 강사 시연 — 배열 생성</div>
+    <div class="desc">다음 코드를 함께 실행하여 <code>shape</code>, <code>ndim</code>, <code>dtype</code>의 의미를 확인한다.</div>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+a = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>],
+              [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]])
+
+<span class="fn">print</span>(<span class="str">"shape:"</span>, a.shape)   <span class="com"># (2, 3)</span>
+<span class="fn">print</span>(<span class="str">"ndim:"</span>,  a.ndim)    <span class="com"># 2</span>
+<span class="fn">print</span>(<span class="str">"dtype:"</span>, a.dtype)   <span class="com"># int64</span>
+<span class="fn">print</span>(<span class="str">"size:"</span>,  a.size)    <span class="com"># 6 (전체 원소 수)</span></pre>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 직접 실행</span><span class="sub">셀에서 결과를 확인한다</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+a = np.array([[1, 2, 3],
+              [4, 5, 6]])
+print("shape:", a.shape)
+print("ndim:",  a.ndim)
+print("dtype:", a.dtype)
+print("size:",  a.size)</script></div>
+    </div>
+  </div>
+
+  <div class="pingpong pong">
+    <div class="head"><span class="badge">Pong</span> 학생 실습 — 0으로 채운 3×4 배열</div>
+    <div class="desc">아래 셀에 직접 코드를 작성한다. <code>np.zeros</code>를 사용하여 3행 4열의 0으로 채운 배열을 만들고, 그 <code>shape</code>와 <code>ndim</code>을 출력한다.</div>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 빈 셀 — 직접 작성</span><span class="sub">힌트: np.zeros((3, 4))</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+# 여기에 직접 코드를 작성한다
+# z = np.zeros(...)
+# print(...)
+</script></div>
+    </div>
+    <details class="answer">
+      <summary>▶ 정답 보기</summary>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+z = np.<span class="fn">zeros</span>((<span class="num">3</span>, <span class="num">4</span>))
+<span class="fn">print</span>(<span class="str">"shape:"</span>, z.shape)  <span class="com"># (3, 4)</span>
+<span class="fn">print</span>(<span class="str">"ndim:"</span>,  z.ndim)   <span class="com"># 2</span>
+<span class="fn">print</span>(z)</pre>
+    </details>
+  </div>
+</div>
+
+<!-- ============ 04. 벡터화 연산 ============ -->
+<div class="section" id="vectorize">
+  <div class="section-header">
+    <span class="num">04</span>
+    <h2>벡터화 연산(Vectorization)</h2>
+    <span class="desc">for문 없이 배열 전체에 연산을 한 번에</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">4.1</span>벡터화의 정의</h3>
+    <p><b>벡터화 연산</b>(Vectorized Operation)이란, for문을 사용하지 않고 <b>배열 전체에 한꺼번에</b> 연산을 적용하는 것이다. 이것이 NumPy의 핵심 철학이다.</p>
+
+    <div class="diagram">
+      <div class="title">처리 방식의 차이</div>
+<pre>
+[ for문 ] — 직렬 처리                  [ NumPy ] — 병렬 처리 (SIMD)
+
+x[0] → ×2 → 결과[0]    (1번째)        [x[0], x[1], x[2], ..., x[n]]
+x[1] → ×2 → 결과[1]    (2번째)                  │ ×2
+x[2] → ×2 → 결과[2]    (3번째)                  ▼
+   ...                                 [2*x[0], 2*x[1], ..., 2*x[n]]
+x[n] → ×2 → 결과[n]    (n+1번째)
+                                       한 번에 전부 완료!
+시간: O(n)                             시간: O(1) (벡터 단위)
+</pre>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">4.2</span>벡터화 연산의 종류</h3>
+<pre class="snippet">a = np.<span class="fn">array</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>])
+
+<span class="com"># 1) 산술 연산 — 스칼라와 배열</span>
+<span class="fn">print</span>(a + <span class="num">10</span>)     <span class="com"># [11, 12, 13, 14, 15]</span>
+<span class="fn">print</span>(a * <span class="num">2</span>)      <span class="com"># [ 2,  4,  6,  8, 10]</span>
+<span class="fn">print</span>(a ** <span class="num">2</span>)     <span class="com"># [ 1,  4,  9, 16, 25]</span>
+
+<span class="com"># 2) 비교 연산 — 불리언 배열 반환</span>
+<span class="fn">print</span>(a &gt; <span class="num">3</span>)      <span class="com"># [False False False True True]</span>
+
+<span class="com"># 3) 배열 간 연산 — 같은 위치끼리</span>
+b = np.<span class="fn">array</span>([<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>])
+<span class="fn">print</span>(a + b)      <span class="com"># [11 22 33 44 55]</span>
+<span class="fn">print</span>(a * b)      <span class="com"># [10 40 90 160 250]</span>
+
+<span class="com"># 4) 유니버설 함수 (ufunc)</span>
+<span class="fn">print</span>(np.<span class="fn">sqrt</span>(a))   <span class="com"># [1.   1.41 1.73 2.   2.24]</span>
+<span class="fn">print</span>(np.<span class="fn">exp</span>(a))    <span class="com"># [2.72  7.39  20.09  54.6  148.4]</span></pre>
+  </div>
+
+  <div class="pingpong">
+    <div class="head"><span class="badge">Ping</span> 강사 시연 — 벡터화로 성적 통계</div>
+    <div class="desc">5명의 학생 점수에 가산점 5점을 부여하고, 평균을 다시 계산한다.</div>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([<span class="num">72</span>, <span class="num">85</span>, <span class="num">90</span>, <span class="num">68</span>, <span class="num">79</span>])
+
+<span class="com"># 가산점 5점 일괄 부여 — for문 없이</span>
+adjusted = scores + <span class="num">5</span>
+<span class="fn">print</span>(<span class="str">"가산 후:"</span>, adjusted)
+
+<span class="fn">print</span>(<span class="str">f"평균: {adjusted.mean():.1f}"</span>)
+<span class="fn">print</span>(<span class="str">"80점 이상:"</span>, adjusted[adjusted &gt;= <span class="num">80</span>])</pre>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 직접 실행</span><span class="sub">결과를 확인한다</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([72, 85, 90, 68, 79])
+adjusted = scores + 5
+print("가산 후:", adjusted)
+print(f"평균: {adjusted.mean():.1f}")
+print("80점 이상:", adjusted[adjusted >= 80])</script></div>
+    </div>
+  </div>
+
+  <div class="pingpong pong">
+    <div class="head"><span class="badge">Pong</span> 학생 실습 — 화씨 → 섭씨 변환</div>
+    <div class="desc">화씨 온도 배열 <code>[32, 68, 100, 50, 86]</code>을 섭씨로 변환하라.<br>변환 공식: <code>C = (F - 32) * 5/9</code></div>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 빈 셀 — 직접 작성</span><span class="sub">힌트: 벡터화로 한 번에</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+fahrenheit = np.array([32, 68, 100, 50, 86])
+
+# 섭씨로 변환하라 (한 줄로!)
+# celsius = ???
+
+# print("섭씨:", celsius)
+</script></div>
+    </div>
+    <details class="answer">
+      <summary>▶ 정답 보기</summary>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+fahrenheit = np.<span class="fn">array</span>([<span class="num">32</span>, <span class="num">68</span>, <span class="num">100</span>, <span class="num">50</span>, <span class="num">86</span>])
+celsius = (fahrenheit - <span class="num">32</span>) * <span class="num">5</span>/<span class="num">9</span>
+<span class="fn">print</span>(<span class="str">"섭씨:"</span>, celsius)
+<span class="com"># [ 0.   20.   37.78  10.   30.  ]</span></pre>
+      <p style="margin:8px 0; font-size:12px; color:var(--gray-md);">
+        for문이 전혀 필요 없다. <code>(fahrenheit - 32) * 5/9</code> 한 줄이 전체 배열에 동시 적용된다.
+      </p>
+    </details>
+  </div>
+</div>
+
+<!-- ============ 05. 브로드캐스팅 ============ -->
+<div class="section" id="broadcast">
+  <div class="section-header">
+    <span class="num">05</span>
+    <h2>브로드캐스팅(Broadcasting)</h2>
+    <span class="desc">크기가 다른 배열도 자동으로 맞춰서 연산</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">5.1</span>브로드캐스팅이란?</h3>
+    <p>크기가 다른 배열 간에도 연산이 가능하도록, <b>작은 배열을 자동으로 확장</b>하여 큰 배열과 같은 모양으로 맞춰 주는 기능이다. 메모리 복사는 일어나지 않으며, NumPy 내부에서 가상으로 확장된다.</p>
+
+    <div class="diagram">
+      <div class="title">브로드캐스팅 작동 원리</div>
+<pre>
+  a (2×3):                  b (1×3):                    결과 (2×3):
+  ┌───┬───┬───┐             ┌────┬────┬────┐           ┌────┬────┬────┐
+  │ 1 │ 2 │ 3 │     +       │ 10 │ 20 │ 30 │    =      │ 11 │ 22 │ 33 │
+  ├───┼───┼───┤             └────┴────┴────┘           ├────┼────┼────┤
+  │ 4 │ 5 │ 6 │              ↑ 자동으로 2번 복제됨     │ 14 │ 25 │ 36 │
+  └───┴───┴───┘                                        └────┴────┴────┘
+
+  shape: (2, 3)              shape: (3,) → (2, 3)       shape: (2, 3)
+</pre>
+    </div>
+
+<pre class="snippet">a = np.<span class="fn">array</span>([[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>],
+              [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]])    <span class="com"># shape: (2, 3)</span>
+
+b = np.<span class="fn">array</span>([<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>])   <span class="com"># shape: (3,)</span>
+
+<span class="fn">print</span>(a + b)
+<span class="com"># [[11 22 33]</span>
+<span class="com">#  [14 25 36]]</span></pre>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">5.2</span>브로드캐스팅 규칙</h3>
+    <p>두 배열의 shape를 <b>오른쪽 끝부터 정렬</b>하여 비교한다. 다음 두 조건 중 하나가 모든 차원에서 성립하면 브로드캐스팅이 가능하다.</p>
+    <ol style="margin:8px 0; padding-left:24px;">
+      <li>두 차원의 크기가 <b>같다</b></li>
+      <li>두 차원 중 하나의 크기가 <b>1이다</b> (해당 차원을 자동 확장)</li>
+    </ol>
+
+    <table class="compare">
+      <thead><tr><th>A.shape</th><th>B.shape</th><th>가능?</th><th>결과 shape</th></tr></thead>
+      <tbody>
+        <tr><td><code>(3, 4)</code></td><td><code>(4,)</code></td><td>○</td><td><code>(3, 4)</code></td></tr>
+        <tr><td><code>(3, 4)</code></td><td><code>(3, 1)</code></td><td>○</td><td><code>(3, 4)</code></td></tr>
+        <tr><td><code>(5, 1, 4)</code></td><td><code>(3, 4)</code></td><td>○</td><td><code>(5, 3, 4)</code></td></tr>
+        <tr><td><code>(3, 4)</code></td><td><code>(2, 4)</code></td><td>✗</td><td>오류 — 3과 2가 호환 안 됨</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ai-link">
+    <div class="tag">AI 연결 — 신경망의 편향(bias) 덧셈</div>
+    <p>신경망에서 <code>z = X @ W + b</code>를 계산할 때, <code>X @ W</code> 결과는 <code>(배치 크기, 출력 차원)</code> 모양이고 <code>b</code>는 <code>(출력 차원,)</code> 모양이다.</p>
+    <div class="formula">X @ W   shape: (32, 10)
+b       shape: (10,)   ← 자동으로 32번 복제됨
+─────────────────────
+결과    shape: (32, 10)</div>
+    <p><b>브로드캐스팅이 자동으로 편향을 모든 샘플에 동시 적용</b>한다. PyTorch의 <b>Batch Normalization</b>, <b>Attention Mask</b>도 모두 이 원리로 작동한다.</p>
+  </div>
+
+  <div class="pingpong">
+    <div class="head"><span class="badge">Ping</span> 강사 시연 — 학생별 과목 점수 정규화</div>
+    <div class="desc">3명의 학생이 4과목 시험을 본 결과에서, 각 과목의 평균을 빼어 <b>편차</b>를 계산한다.</div>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([[<span class="num">85</span>, <span class="num">90</span>, <span class="num">78</span>, <span class="num">92</span>],
+                   [<span class="num">70</span>, <span class="num">85</span>, <span class="num">88</span>, <span class="num">80</span>],
+                   [<span class="num">95</span>, <span class="num">75</span>, <span class="num">82</span>, <span class="num">88</span>]])   <span class="com"># (3 학생, 4 과목)</span>
+
+mean_per_subject = scores.<span class="fn">mean</span>(axis=<span class="num">0</span>)         <span class="com"># 과목별 평균 (4,)</span>
+<span class="fn">print</span>(<span class="str">"과목별 평균:"</span>, mean_per_subject)
+
+deviation = scores - mean_per_subject                <span class="com"># 브로드캐스팅!</span>
+<span class="fn">print</span>(<span class="str">"각 학생의 과목별 편차:"</span>)
+<span class="fn">print</span>(deviation)</pre>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 직접 실행</span><span class="sub">(3,4) - (4,) = (3,4) — 브로드캐스팅</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([[85, 90, 78, 92],
+                   [70, 85, 88, 80],
+                   [95, 75, 82, 88]])
+
+mean_per_subject = scores.mean(axis=0)
+print("과목별 평균:", mean_per_subject)
+
+deviation = scores - mean_per_subject
+print("각 학생의 과목별 편차:")
+print(deviation)</script></div>
+    </div>
+  </div>
+
+  <div class="pingpong pong">
+    <div class="head"><span class="badge">Pong</span> 학생 실습 — 표준화(z-score)</div>
+    <div class="desc">위 <code>scores</code>를 표준화하라. 공식: <code>(x - 평균) / 표준편차</code>. 평균과 표준편차는 각 과목별로(<code>axis=0</code>) 계산한다.</div>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 빈 셀 — 직접 작성</span><span class="sub">힌트: mean(axis=0), std(axis=0)</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([[85, 90, 78, 92],
+                   [70, 85, 88, 80],
+                   [95, 75, 82, 88]])
+
+# 1) 과목별 평균: mu = ???
+# 2) 과목별 표준편차: sigma = ???
+# 3) 표준화: z = ???
+# print(z)
+</script></div>
+    </div>
+    <details class="answer">
+      <summary>▶ 정답 보기</summary>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([[<span class="num">85</span>, <span class="num">90</span>, <span class="num">78</span>, <span class="num">92</span>],
+                   [<span class="num">70</span>, <span class="num">85</span>, <span class="num">88</span>, <span class="num">80</span>],
+                   [<span class="num">95</span>, <span class="num">75</span>, <span class="num">82</span>, <span class="num">88</span>]])
+
+mu = scores.<span class="fn">mean</span>(axis=<span class="num">0</span>)
+sigma = scores.<span class="fn">std</span>(axis=<span class="num">0</span>)
+
+z = (scores - mu) / sigma   <span class="com"># 브로드캐스팅 두 번</span>
+<span class="fn">print</span>(z)</pre>
+      <p style="margin:8px 0; font-size:12px; color:var(--gray-md);">
+        scikit-learn의 <code>StandardScaler</code>와 PyTorch의 <code>LayerNormalization</code>도 본질적으로 같은 연산이다.
+      </p>
+    </details>
+  </div>
+</div>
+
+<!-- ============ 06. 인덱싱·슬라이싱·불리언 ============ -->
+<div class="section" id="index">
+  <div class="section-header">
+    <span class="num">06</span>
+    <h2>인덱싱 · 슬라이싱 · 불리언 인덱싱</h2>
+    <span class="desc">배열의 부분을 추출하는 3가지 방식</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">6.1</span>기본 인덱싱과 슬라이싱</h3>
+<pre class="snippet">a = np.<span class="fn">array</span>([<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>])
+
+<span class="fn">print</span>(a[<span class="num">0</span>])         <span class="com"># 10 (첫 원소)</span>
+<span class="fn">print</span>(a[-<span class="num">1</span>])        <span class="com"># 50 (마지막 원소)</span>
+<span class="fn">print</span>(a[<span class="num">1</span>:<span class="num">4</span>])       <span class="com"># [20 30 40] (1~3번 인덱스)</span>
+<span class="fn">print</span>(a[:<span class="num">3</span>])        <span class="com"># [10 20 30] (처음~2번)</span>
+<span class="fn">print</span>(a[<span class="num">2</span>:])        <span class="com"># [30 40 50] (2번~끝)</span>
+<span class="fn">print</span>(a[::<span class="num">2</span>])       <span class="com"># [10 30 50] (2칸씩)</span>
+<span class="fn">print</span>(a[::-<span class="num">1</span>])      <span class="com"># [50 40 30 20 10] (역순)</span></pre>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">6.2</span>2차원 배열의 인덱싱 — <code>arr[행, 열]</code></h3>
+<pre class="snippet">m = np.<span class="fn">array</span>([[ <span class="num">1</span>,  <span class="num">2</span>,  <span class="num">3</span>,  <span class="num">4</span>],
+              [ <span class="num">5</span>,  <span class="num">6</span>,  <span class="num">7</span>,  <span class="num">8</span>],
+              [ <span class="num">9</span>, <span class="num">10</span>, <span class="num">11</span>, <span class="num">12</span>]])   <span class="com"># shape: (3, 4)</span>
+
+<span class="fn">print</span>(m[<span class="num">1</span>, <span class="num">2</span>])       <span class="com"># 7        (1행 2열의 원소)</span>
+<span class="fn">print</span>(m[<span class="num">0</span>, :])       <span class="com"># [1 2 3 4]  (0행 전체)</span>
+<span class="fn">print</span>(m[:, <span class="num">1</span>])       <span class="com"># [2 6 10]    (1열 전체)</span>
+<span class="fn">print</span>(m[<span class="num">1</span>:, <span class="num">2</span>:])     <span class="com"># [[ 7  8] [11 12]]  (오른쪽 아래 블록)</span></pre>
+
+    <div class="diagram">
+      <div class="title">2차원 슬라이싱 <code>m[1:, 2:]</code></div>
+<pre>
+     열0  열1  열2  열3
+    ┌──┬──┬──┬──┐
+행0 │ 1│ 2│ 3│ 4│
+    ├──┼──┼──┼──┤              ┌──┬──┐
+행1 │ 5│ 6│ 7│ 8│  →  m[1:, 2:] = │ 7│ 8│
+    ├──┼──┼──┼──┤                ├──┼──┤
+행2 │ 9│10│11│12│              │11│12│
+    └──┴──┴──┴──┘              └──┴──┘
+        (행1~끝, 열2~끝)
+</pre>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">6.3</span>불리언 인덱싱 — NumPy의 강력한 기능</h3>
+    <p>비교 연산은 <b>같은 모양의 불리언 배열</b>을 반환한다. 이를 인덱스로 사용하면 조건을 만족하는 원소만 추출한다.</p>
+<pre class="snippet">a = np.<span class="fn">array</span>([<span class="num">15</span>, <span class="num">23</span>, <span class="num">8</span>, <span class="num">42</span>, <span class="num">17</span>, <span class="num">31</span>, <span class="num">6</span>])
+
+<span class="com"># 1) 비교 → 불리언 배열</span>
+mask = a &gt; <span class="num">20</span>
+<span class="fn">print</span>(mask)            <span class="com"># [False True False True False True False]</span>
+
+<span class="com"># 2) 불리언 인덱싱 → 조건 만족 원소만</span>
+<span class="fn">print</span>(a[mask])         <span class="com"># [23 42 31]</span>
+<span class="fn">print</span>(a[a &gt; <span class="num">20</span>])       <span class="com"># 동일 (위와 같음)</span>
+
+<span class="com"># 3) 복합 조건 — &amp;(and), |(or), ~(not)</span>
+<span class="fn">print</span>(a[(a &gt; <span class="num">10</span>) &amp; (a &lt; <span class="num">30</span>)])   <span class="com"># [15 23 17]</span>
+<span class="fn">print</span>(a[(a &lt; <span class="num">10</span>) | (a &gt; <span class="num">30</span>)])   <span class="com"># [ 8 42 31  6]</span></pre>
+
+    <p style="font-size:13px; color:var(--gray-md); font-style:italic;">
+      불리언 인덱싱은 Pandas의 <code>df[df['price'] &gt; 100]</code>과 정확히 같은 원리이다.
+      Pandas는 내부적으로 NumPy를 사용한다.
+    </p>
+  </div>
+
+  <div class="pingpong">
+    <div class="head"><span class="badge">Ping</span> 강사 시연 — 합격자 추출</div>
+    <div class="desc">점수 배열에서 60점 이상인 학생만 추출한다.</div>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([<span class="num">85</span>, <span class="num">42</span>, <span class="num">78</span>, <span class="num">55</span>, <span class="num">90</span>, <span class="num">38</span>, <span class="num">67</span>])
+names  = np.<span class="fn">array</span>([<span class="str">"김"</span>, <span class="str">"이"</span>, <span class="str">"박"</span>, <span class="str">"최"</span>, <span class="str">"정"</span>, <span class="str">"강"</span>, <span class="str">"조"</span>])
+
+passed = scores &gt;= <span class="num">60</span>
+<span class="fn">print</span>(<span class="str">"합격자 이름:"</span>, names[passed])
+<span class="fn">print</span>(<span class="str">"합격자 점수:"</span>, scores[passed])
+<span class="fn">print</span>(<span class="str">f"합격률: {passed.mean()*100:.1f}%"</span>)</pre>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 직접 실행</span><span class="sub">두 배열을 같은 mask로 인덱싱</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([85, 42, 78, 55, 90, 38, 67])
+names  = np.array(["김", "이", "박", "최", "정", "강", "조"])
+
+passed = scores >= 60
+print("합격자 이름:", names[passed])
+print("합격자 점수:", scores[passed])
+print(f"합격률: {passed.mean()*100:.1f}%")</script></div>
+    </div>
+  </div>
+
+  <div class="pingpong pong">
+    <div class="head"><span class="badge">Pong</span> 학생 실습 — 정상 범위 추출</div>
+    <div class="desc">측정값 배열 <code>[36.5, 38.2, 37.1, 35.4, 39.0, 36.8, 40.1, 37.5]</code>에서 <b>정상 체온(36.0~37.5)</b>에 해당하는 값만 추출하고, 그 평균을 출력하라.</div>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 빈 셀 — 직접 작성</span><span class="sub">힌트: (temp &gt;= 36.0) &amp; (temp &lt;= 37.5)</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+temp = np.array([36.5, 38.2, 37.1, 35.4, 39.0, 36.8, 40.1, 37.5])
+
+# 1) 정상 범위 마스크: mask = ???
+# 2) 마스크로 추출: normal = ???
+# 3) 평균 출력: print(...)
+</script></div>
+    </div>
+    <details class="answer">
+      <summary>▶ 정답 보기</summary>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+temp = np.<span class="fn">array</span>([<span class="num">36.5</span>, <span class="num">38.2</span>, <span class="num">37.1</span>, <span class="num">35.4</span>, <span class="num">39.0</span>, <span class="num">36.8</span>, <span class="num">40.1</span>, <span class="num">37.5</span>])
+
+mask = (temp &gt;= <span class="num">36.0</span>) &amp; (temp &lt;= <span class="num">37.5</span>)
+normal = temp[mask]
+
+<span class="fn">print</span>(<span class="str">"정상 범위:"</span>, normal)
+<span class="fn">print</span>(<span class="str">f"평균: {normal.mean():.2f}"</span>)
+<span class="com"># 정상 범위: [36.5 37.1 36.8 37.5]</span>
+<span class="com"># 평균: 36.98</span></pre>
+    </details>
+  </div>
+</div>
+
+<!-- ============ 07. 통계 함수와 axis ============ -->
+<div class="section" id="stats">
+  <div class="section-header">
+    <span class="num">07</span>
+    <h2>통계 함수와 axis 매개변수</h2>
+    <span class="desc">행별·열별 집계의 핵심</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">7.1</span>주요 통계 함수</h3>
+    <table class="compare">
+      <thead><tr><th>함수</th><th>역할</th><th>예</th></tr></thead>
+      <tbody>
+        <tr><td><code>np.mean(a)</code></td><td>평균</td><td><code>arr.mean()</code></td></tr>
+        <tr><td><code>np.median(a)</code></td><td>중앙값</td><td><code>np.median(arr)</code></td></tr>
+        <tr><td><code>np.std(a)</code></td><td>표준편차</td><td><code>arr.std()</code></td></tr>
+        <tr><td><code>np.var(a)</code></td><td>분산</td><td><code>arr.var()</code></td></tr>
+        <tr><td><code>np.min(a) / np.max(a)</code></td><td>최솟값/최댓값</td><td><code>arr.min(), arr.max()</code></td></tr>
+        <tr><td><code>np.sum(a)</code></td><td>합계</td><td><code>arr.sum()</code></td></tr>
+        <tr><td><code>np.argmax(a)</code></td><td>최댓값의 인덱스</td><td><code>arr.argmax()</code></td></tr>
+        <tr><td><code>np.argmin(a)</code></td><td>최솟값의 인덱스</td><td><code>arr.argmin()</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">7.2</span>axis 매개변수 — 어느 방향으로 집계하는가</h3>
+    <p>2차원 배열에서 <code>axis=0</code>은 <b>행을 따라 아래로</b>(= 열별 집계), <code>axis=1</code>은 <b>열을 따라 옆으로</b>(= 행별 집계)이다.</p>
+
+    <div class="diagram">
+      <div class="title">axis의 방향</div>
+<pre>
+arr = [[ 1,  2,  3],
+       [ 4,  5,  6],
+       [ 7,  8,  9]]            shape: (3, 3)
+
+axis=0 (열별 집계, 위→아래)        axis=1 (행별 집계, 좌→우)
+   ↓   ↓   ↓                       ─→  ─→  ─→
+  [12, 15, 18]                       [ 6, 15, 24]
+   ↑ 각 열의 합                      ↑ 각 행의 합
+
+arr.sum(axis=0)                    arr.sum(axis=1)
+→ [12 15 18]                       → [ 6 15 24]
+   shape: (3,)                        shape: (3,)
+</pre>
+    </div>
+
+<pre class="snippet">arr = np.<span class="fn">array</span>([[ <span class="num">1</span>,  <span class="num">2</span>,  <span class="num">3</span>],
+                [ <span class="num">4</span>,  <span class="num">5</span>,  <span class="num">6</span>],
+                [ <span class="num">7</span>,  <span class="num">8</span>,  <span class="num">9</span>]])
+
+<span class="fn">print</span>(arr.<span class="fn">sum</span>())             <span class="com"># 45 (전체 합)</span>
+<span class="fn">print</span>(arr.<span class="fn">sum</span>(axis=<span class="num">0</span>))       <span class="com"># [12 15 18]  열별 합</span>
+<span class="fn">print</span>(arr.<span class="fn">sum</span>(axis=<span class="num">1</span>))       <span class="com"># [ 6 15 24]  행별 합</span>
+
+<span class="fn">print</span>(arr.<span class="fn">mean</span>(axis=<span class="num">0</span>))      <span class="com"># [4. 5. 6.]   열별 평균</span>
+<span class="fn">print</span>(arr.<span class="fn">max</span>(axis=<span class="num">1</span>))       <span class="com"># [3 6 9]      행별 최댓값</span></pre>
+  </div>
+
+  <div class="pingpong">
+    <div class="head"><span class="badge">Ping</span> 강사 시연 — 학생별 · 과목별 성적 분석</div>
+    <div class="desc">3명 × 4과목 성적표에서 학생별 총점과 과목별 평균을 동시에 구한다.</div>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([[<span class="num">85</span>, <span class="num">90</span>, <span class="num">78</span>, <span class="num">92</span>],     <span class="com"># 김</span>
+                   [<span class="num">70</span>, <span class="num">85</span>, <span class="num">88</span>, <span class="num">80</span>],     <span class="com"># 이</span>
+                   [<span class="num">95</span>, <span class="num">75</span>, <span class="num">82</span>, <span class="num">88</span>]])    <span class="com"># 박</span>
+
+<span class="fn">print</span>(<span class="str">"학생별 총점 (행별 합, axis=1):"</span>, scores.<span class="fn">sum</span>(axis=<span class="num">1</span>))
+<span class="fn">print</span>(<span class="str">"과목별 평균 (열별, axis=0):"</span>, scores.<span class="fn">mean</span>(axis=<span class="num">0</span>))
+<span class="fn">print</span>(<span class="str">"최고점 학생 인덱스:"</span>, scores.<span class="fn">sum</span>(axis=<span class="num">1</span>).<span class="fn">argmax</span>())</pre>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 직접 실행</span><span class="sub">axis=0과 axis=1의 차이를 비교</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([[85, 90, 78, 92],
+                   [70, 85, 88, 80],
+                   [95, 75, 82, 88]])
+
+print("학생별 총점 (axis=1):", scores.sum(axis=1))
+print("과목별 평균 (axis=0):", scores.mean(axis=0))
+print("최고점 학생 인덱스:", scores.sum(axis=1).argmax())</script></div>
+    </div>
+  </div>
+
+  <div class="pingpong pong">
+    <div class="head"><span class="badge">Pong</span> 학생 실습 — 과목별 최고점과 그 학생</div>
+    <div class="desc">위 <code>scores</code> 데이터에서:<br>
+    (1) 각 과목별 최고점을 구하라 (<code>axis=0</code>).<br>
+    (2) 각 과목에서 최고점을 받은 학생의 인덱스를 구하라 (<code>argmax(axis=0)</code>).</div>
+    <div class="sage-wrap">
+      <div class="sage-label"><span>◇ 빈 셀 — 직접 작성</span><span class="sub">힌트: axis=0으로 열별 처리</span></div>
+      <div class="compute"><script type="text/x-sage">import numpy as np
+
+scores = np.array([[85, 90, 78, 92],
+                   [70, 85, 88, 80],
+                   [95, 75, 82, 88]])
+
+# 1) 과목별 최고점: top = ???
+# 2) 과목별 최고점 학생의 인덱스: who = ???
+# print("과목별 최고점:", top)
+# print("최고점 학생 인덱스:", who)
+</script></div>
+    </div>
+    <details class="answer">
+      <summary>▶ 정답 보기</summary>
+<pre class="snippet"><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+scores = np.<span class="fn">array</span>([[<span class="num">85</span>, <span class="num">90</span>, <span class="num">78</span>, <span class="num">92</span>],
+                   [<span class="num">70</span>, <span class="num">85</span>, <span class="num">88</span>, <span class="num">80</span>],
+                   [<span class="num">95</span>, <span class="num">75</span>, <span class="num">82</span>, <span class="num">88</span>]])
+
+top = scores.<span class="fn">max</span>(axis=<span class="num">0</span>)
+who = scores.<span class="fn">argmax</span>(axis=<span class="num">0</span>)
+
+<span class="fn">print</span>(<span class="str">"과목별 최고점:"</span>, top)        <span class="com"># [95 90 88 92]</span>
+<span class="fn">print</span>(<span class="str">"최고점 학생 인덱스:"</span>, who)    <span class="com"># [2 0 1 0]</span>
+<span class="com"># 1과목 최고: 인덱스 2 (박), 95점</span>
+<span class="com"># 2과목 최고: 인덱스 0 (김), 90점</span>
+<span class="com"># 3과목 최고: 인덱스 1 (이), 88점</span>
+<span class="com"># 4과목 최고: 인덱스 0 (김), 92점</span></pre>
+    </details>
+  </div>
+</div>
+
+<!-- ============ 08. AI 연결 ============ -->
+<div class="section" id="tensor">
+  <div class="section-header">
+    <span class="num">08</span>
+    <h2>AI 연결 — ndarray = Tensor</h2>
+    <span class="desc">NumPy를 알면 PyTorch의 80%를 안다</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">8.1</span>모든 AI는 숫자 배열을 입력받고 숫자 배열을 출력한다</h3>
+    <p>이미지를 인식하든, 텍스트를 생성하든, 음성을 분석하든, AI 모델의 입력과 출력은 모두 <b>다차원 숫자 배열(텐서)</b>이다.</p>
+
+    <table class="compare">
+      <thead><tr><th>AI 모델</th><th>입력 텐서 shape</th><th>출력 텐서 shape</th></tr></thead>
+      <tbody>
+        <tr><td>이미지 분류 (ResNet)</td><td><code>(배치, 3, 224, 224)</code></td><td><code>(배치, 1000)</code> 클래스 확률</td></tr>
+        <tr><td>텍스트 생성 (GPT)</td><td><code>(배치, 시퀀스 길이, 768)</code></td><td><code>(배치, 시퀀스, 50000)</code> 단어 확률</td></tr>
+        <tr><td>음성 인식 (Whisper)</td><td><code>(배치, 80, 시간)</code></td><td><code>(배치, 시퀀스, 50000)</code></td></tr>
+        <tr><td>객체 탐지 (YOLO)</td><td><code>(배치, 3, 640, 640)</code></td><td><code>(배치, N, 85)</code> 박스+클래스</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ai-link">
+    <div class="tag">핵심 메시지</div>
+    <p>본 차시에서 배운 모든 NumPy 연산은 <b>그대로 PyTorch에서 작동</b>한다. 차이점은 단 하나:</p>
+    <div class="formula">NumPy:    arr = arr + 1                    # CPU에서 실행
+PyTorch:  arr = arr + 1                    # GPU에서 실행 (1000배 빠름)</div>
+    <p><b>NumPy의 벡터화·브로드캐스팅·인덱싱·통계 함수</b> — 이 4가지가 곧 딥러닝의 기본 어휘이다.</p>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">8.2</span>한 줄 요약 — 신경망의 본질</h3>
+<pre class="snippet"><span class="com"># 신경망 한 층의 계산 — NumPy로 표현하면</span>
+z = X @ W + b           <span class="com"># 행렬 곱 + 브로드캐스팅</span>
+h = np.<span class="fn">maximum</span>(<span class="num">0</span>, z)    <span class="com"># ReLU 활성화 (벡터화)</span>
+
+<span class="com"># 이게 전부이다. 다른 모든 것은 이 한 줄의 반복 + 변형.</span></pre>
+    <p>본 차시에서 배운 <b>행렬 곱 · 브로드캐스팅 · 벡터화</b> 이 세 가지를 안다면, 신경망의 한 층을 NumPy로 직접 구현할 수 있다.</p>
+  </div>
+</div>
+
+<!-- ============ 09. 차시 마무리 ============ -->
+<div class="section" id="wrap">
+  <div class="section-header">
+    <span class="num">09</span>
+    <h2>차시 마무리</h2>
+    <span class="desc">오늘 배운 것 · 다음 차시 예고</span>
+  </div>
+
+  <div class="lesson-card">
+    <h3><span class="tag">9.1</span>오늘의 핵심 한 줄 정리</h3>
+    <table class="compare">
+      <thead><tr><th>개념</th><th>한 줄 요약</th></tr></thead>
+      <tbody>
+        <tr><td>리스트 vs ndarray</td><td>연속 메모리 → CPU/GPU가 한 번에 읽음 → 50~100배 빠름</td></tr>
+        <tr><td>벡터화</td><td>for문 없이 <code>arr * 2</code> 한 줄 — SIMD 병렬 처리</td></tr>
+        <tr><td>브로드캐스팅</td><td>크기 다른 배열도 자동 확장 — 신경망 편향 덧셈의 원리</td></tr>
+        <tr><td>불리언 인덱싱</td><td><code>arr[arr &gt; 5]</code> — 조건 만족 원소만 추출</td></tr>
+        <tr><td>axis</td><td><code>axis=0</code>은 열별, <code>axis=1</code>은 행별 집계</td></tr>
+        <tr><td>ndarray = Tensor</td><td>NumPy를 알면 PyTorch의 80%를 아는 것</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lesson-card" style="background:#1E2A4A;color:white;">
+    <h3 style="color:#FFEB3B;border-bottom-color:#B88600;"><span class="tag" style="background:#B88600;">NEXT</span>다음 차시 예고 — EDA 시각화 마스터</h3>
+    <p style="color:#E5E7EB;">5주차에는 NumPy/Pandas로 정제한 데이터를 <b style="color:#34D399;">시각화</b>한다. 분포 시각화(히스토그램, 박스플롯), 관계 시각화(산점도, 상관 히트맵), 비교 시각화(막대그래프)로 데이터의 패턴을 발견한다.</p>
+    <p style="color:#E5E7EB;"><b style="color:#34D399;">핵심 질문</b>: "어떤 상황에서 어떤 그래프가 가장 적합한가?"</p>
+  </div>
+</div>
+
+</div>
+<script>
+sagecell.makeSagecell({
+    inputLocation: '.compute',
+    evalButtonText: '실행하기 ▶',
+    languages: ['python'],
+    autoeval: false
+});
+</script>
+</body>
+</html>
