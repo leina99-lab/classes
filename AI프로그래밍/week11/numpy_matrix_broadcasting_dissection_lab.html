@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumPy 계산 경로 해부기: 행렬곱과 브로드캐스팅</title>
+<style>
+:root{
+  --red:#DC143C; --red-light:#fff1f3; --blue:#2563eb; --blue-light:#eaf1ff;
+  --yellow:#fbbf24; --yellow-light:#fff7d6; --green:#16a34a; --green-light:#e9f8ef;
+  --purple:#7c3aed; --purple-light:#f1eaff; --orange:#f97316; --orange-light:#fff0e6;
+  --ink:#1f2937; --muted:#6b7280; --line:#d1d5db; --soft:#f8fafc; --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f4f7fb;color:var(--ink);line-height:1.55}
+.header{background:linear-gradient(135deg,#111827,#374151);color:#fff;padding:24px 28px}
+.header h1{font-size:25px;font-weight:800;letter-spacing:-0.02em}
+.header p{font-size:14px;color:#d1d5db;margin-top:6px}
+.main{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{padding:12px 18px;border:2px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;font-size:14px;font-weight:800;color:var(--muted);transition:.18s}
+.tab:hover{border-color:var(--red);color:var(--red)}
+.tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.panel{display:none}.panel.active{display:block}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.08);margin-bottom:16px}
+.card h2{font-size:20px;margin-bottom:10px;letter-spacing:-0.02em}
+.card h3{font-size:15px;margin:10px 0 8px;color:#374151}
+.small{font-size:13px;color:var(--muted)}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+button,.select-like{padding:9px 14px;border:0;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;background:var(--red);color:#fff;transition:.15s}
+button:hover{filter:brightness(1.08)}
+button.secondary{background:#4b5563}
+button.blue{background:var(--blue)}
+button.green{background:var(--green)}
+select{padding:9px 12px;border:2px solid #d1d5db;border-radius:8px;font-size:13px;background:#fff;font-weight:700;color:#374151}
+.lab-row{display:flex;align-items:flex-start;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:16px}
+.matrix-box{display:flex;flex-direction:column;align-items:center;gap:8px}
+.matrix-name{font-weight:900;font-size:14px;color:#374151;text-align:center}
+.matrix-sub{font-size:12px;color:var(--muted);font-family:Consolas,monospace;text-align:center}
+.grid{display:grid;gap:4px;padding:8px;background:#fff;border-left:4px solid #111827;border-right:4px solid #111827;border-radius:6px;box-shadow:inset 0 0 0 1px #e5e7eb}
+.cell{width:46px;height:46px;border:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;font-family:Consolas,'Courier New',monospace;font-size:14px;font-weight:800;border-radius:6px;transition:.18s;position:relative;cursor:default}
+.cell.clickable{cursor:pointer}.cell.clickable:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.14)}
+.cell.hl-row{background:var(--yellow-light)!important;border-color:var(--yellow)!important;box-shadow:0 0 0 2px rgba(251,191,36,.25)}
+.cell.hl-col{background:var(--blue-light)!important;border-color:var(--blue)!important;box-shadow:0 0 0 2px rgba(37,99,235,.18)}
+.cell.hl-source-a{background:var(--yellow)!important;border-color:#b45309!important;color:#111827;transform:scale(1.07);z-index:2}
+.cell.hl-source-b{background:var(--blue)!important;border-color:#1d4ed8!important;color:#fff;transform:scale(1.07);z-index:2}
+.cell.hl-result{background:var(--green-light)!important;border:2px solid var(--green)!important;transform:scale(1.08);z-index:3;color:#14532d}
+.cell.hl-repeat{background:var(--purple-light)!important;border-color:var(--purple)!important}
+.cell.hl-term{outline:3px solid var(--red);outline-offset:2px;transform:scale(1.12);z-index:4}
+.operator{font-size:34px;font-weight:900;color:#9ca3af;align-self:center;margin-top:78px}
+.info{background:#111827;color:#fff;border-radius:14px;padding:16px 18px;min-height:90px;font-size:14px;line-height:1.7;margin-top:18px}
+.info .formula{font-family:Consolas,'Courier New',monospace;color:#fde68a;font-size:14px}
+.info .em{color:#93c5fd;font-weight:900}
+.term-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.term-pill{font-family:Consolas,monospace;border:1px solid #4b5563;border-radius:999px;padding:5px 9px;background:#1f2937;color:#f9fafb;font-size:12px}
+.term-pill.active{background:var(--red);border-color:var(--red);color:#fff}
+.grid-note{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;font-size:13px;color:#374151;margin-top:12px}
+.shape-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px;overflow:hidden;border-radius:10px}
+.shape-table th{background:#111827;color:#fff;padding:8px;text-align:center}
+.shape-table td{border:1px solid #e5e7eb;padding:8px;text-align:center;background:#fff;font-family:Consolas,monospace}
+.shape-table td.ok{background:var(--green-light);color:#14532d;font-weight:900}
+.shape-table td.repeat{background:var(--purple-light);color:#581c87;font-weight:900}
+.shape-table td.fail{background:var(--red-light);color:#991b1b;font-weight:900}
+.shape-table td.implicit{background:#f3f4f6;color:#4b5563}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:850px){.two-col{grid-template-columns:1fr}.operator{margin-top:4px}.lab-row{gap:10px}.cell{width:40px;height:40px;font-size:13px}}
+.code{font-family:Consolas,'Courier New',monospace;background:#0f172a;color:#e5e7eb;border-radius:10px;padding:12px 14px;white-space:pre-wrap;font-size:13px;line-height:1.55;margin-top:10px}
+.badge{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:900;margin-left:5px}
+.badge.ok{background:var(--green-light);color:#166534}.badge.fail{background:var(--red-light);color:#991b1b}
+.expanded-wrap{border-top:1px dashed #d1d5db;margin-top:18px;padding-top:14px}
+.caption{font-size:12px;color:#6b7280;text-align:center;margin-top:4px;max-width:260px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>NumPy 계산 경로 해부기: 행렬곱과 브로드캐스팅</h1>
+  <p>결과 칸을 클릭하면 원본 배열의 어느 칸이 계산에 참여했는지, 실제 식이 어떻게 만들어지는지 확인한다.</p>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <div class="tab active" data-tab="matmul">행렬곱 A @ B</div>
+    <div class="tab" data-tab="broadcast">브로드캐스팅 A + B</div>
+    <div class="tab" data-tab="bias">신경망 편향 덧셈</div>
+  </div>
+
+  <section id="panel-matmul" class="panel active">
+    <div class="card">
+      <h2>행렬곱: 결과 한 칸은 “A의 행”과 “B의 열”의 내적이다</h2>
+      <p class="small">C의 칸을 클릭하라. A의 해당 행, B의 해당 열이 강조되고, 각 곱셈 항이 아래 식으로 나타난다.</p>
+      <div class="controls">
+        <select id="mat-example" onchange="loadMatExample()">
+          <option value="normal23">일반 행렬곱: (2,3) @ (3,2)</option>
+          <option value="normal34">일반 행렬곱: (3,4) @ (4,3)</option>
+          <option value="boolean5">부울곱: 5x5 Boolean Product</option>
+        </select>
+        <button onclick="selectMatCell(0,0)">C[0,0] 보기</button>
+        <button class="blue" onclick="nextMatTerm()">다음 곱셈 항</button>
+        <button class="secondary" onclick="clearMatHighlights()">강조 지우기</button>
+      </div>
+      <div class="lab-row">
+        <div class="matrix-box"><div class="matrix-name">A</div><div class="matrix-sub" id="mat-a-shape"></div><div id="matA" class="grid"></div></div>
+        <div class="operator" id="mat-op">@</div>
+        <div class="matrix-box"><div class="matrix-name">B</div><div class="matrix-sub" id="mat-b-shape"></div><div id="matB" class="grid"></div></div>
+        <div class="operator">=</div>
+        <div class="matrix-box"><div class="matrix-name">C</div><div class="matrix-sub" id="mat-c-shape"></div><div id="matC" class="grid"></div></div>
+      </div>
+      <div class="info" id="mat-info">C의 칸을 클릭하면 계산 경로가 표시된다.</div>
+      <div class="grid-note">
+        <strong>A * B와 A @ B는 다르다.</strong> `A * B`는 같은 위치끼리 곱한다. `A @ B`는 A의 한 행과 B의 한 열을 마주 보게 하여 곱하고 모두 더한다. 부울곱 모드에서는 곱셈 대신 AND, 덧셈 대신 OR를 사용한다.
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-broadcast" class="panel">
+    <div class="card">
+      <h2>브로드캐스팅: 결과 한 칸은 원본 배열의 어느 칸에서 왔는가</h2>
+      <p class="small">C의 칸을 클릭하라. A와 B에서 실제로 참조되는 원본 칸이 강조된다. “반복”은 실제 복사가 아니라 같은 칸을 다시 읽는다는 뜻이다.</p>
+      <div class="controls">
+        <select id="bc-case" onchange="loadBroadcastCase()">
+          <option value="row">행 벡터 더하기: (2,3) + (3,)</option>
+          <option value="col">열 벡터 더하기: (2,3) + (2,1)</option>
+          <option value="outer">바깥합: (4,1) + (3,) → (4,3)</option>
+          <option value="scalar">스칼라 더하기: (2,3) + ()</option>
+          <option value="fail">실패 예제: (4,3) + (4,)</option>
+        </select>
+        <button onclick="selectBcCell(0,0)">C[0,0] 보기</button>
+        <button class="blue" onclick="nextBcCell()">다음 칸</button>
+        <button class="green" onclick="fixBroadcastFailure()">실패 예제 수정 보기</button>
+        <button class="secondary" onclick="clearBroadcastHighlights()">강조 지우기</button>
+      </div>
+      <div id="bc-status" class="grid-note"></div>
+      <table class="shape-table" id="shape-table"></table>
+      <div class="lab-row" id="bc-lab-row">
+        <div class="matrix-box"><div class="matrix-name">A 원본</div><div class="matrix-sub" id="bc-a-shape"></div><div id="bcA" class="grid"></div></div>
+        <div class="operator">+</div>
+        <div class="matrix-box"><div class="matrix-name">B 원본</div><div class="matrix-sub" id="bc-b-shape"></div><div id="bcB" class="grid"></div></div>
+        <div class="operator">=</div>
+        <div class="matrix-box"><div class="matrix-name">C 결과</div><div class="matrix-sub" id="bc-c-shape"></div><div id="bcC" class="grid"></div></div>
+      </div>
+      <div class="expanded-wrap" id="expanded-wrap">
+        <h3>개념적으로 같은 모양으로 맞춘 뒤 계산한다</h3>
+        <div class="lab-row">
+          <div class="matrix-box"><div class="matrix-name">A가 결과 모양에서 읽히는 모습</div><div id="bcAexp" class="grid"></div><div class="caption">반복된 칸은 원본의 같은 위치를 다시 읽는다는 뜻이다.</div></div>
+          <div class="operator">+</div>
+          <div class="matrix-box"><div class="matrix-name">B가 결과 모양에서 읽히는 모습</div><div id="bcBexp" class="grid"></div><div class="caption">NumPy는 필요 없는 실제 복사를 피하고 계산 시점에 맞춰 읽는다.</div></div>
+        </div>
+      </div>
+      <div class="info" id="bc-info">C의 칸을 클릭하면 A와 B의 원본 참조 위치가 표시된다.</div>
+    </div>
+  </section>
+
+  <section id="panel-bias" class="panel">
+    <div class="card">
+      <h2>신경망 연결: X @ W + b에서 b는 어떻게 모든 샘플에 더해지는가</h2>
+      <p class="small">이 탭은 브로드캐스팅의 응용이다. `X @ W`의 각 행은 샘플 하나이고, `b`는 뉴런별 편향이다. b의 같은 값이 모든 샘플 행에 반복 적용된다.</p>
+      <div class="controls">
+        <button onclick="runBiasStep('matmul')">1단계: X @ W</button>
+        <button onclick="runBiasStep('bias')">2단계: + b</button>
+        <button onclick="runBiasStep('relu')">3단계: ReLU</button>
+        <button class="blue" onclick="selectBiasCell(0,0)">결과 칸 해부</button>
+        <button class="secondary" onclick="resetBias()">초기화</button>
+      </div>
+      <div class="lab-row">
+        <div class="matrix-box"><div class="matrix-name">X</div><div class="matrix-sub">shape (3,2)</div><div id="biasX" class="grid"></div></div>
+        <div class="operator">@</div>
+        <div class="matrix-box"><div class="matrix-name">W</div><div class="matrix-sub">shape (2,3)</div><div id="biasW" class="grid"></div></div>
+        <div class="operator">+</div>
+        <div class="matrix-box"><div class="matrix-name">b</div><div class="matrix-sub">shape (3,)</div><div id="biasB" class="grid"></div></div>
+        <div class="operator">→</div>
+        <div class="matrix-box"><div class="matrix-name">현재 결과</div><div class="matrix-sub" id="bias-result-shape">shape (3,3)</div><div id="biasR" class="grid"></div></div>
+      </div>
+      <div class="info" id="bias-info">버튼을 눌러 `X @ W`, `+ b`, `ReLU` 순서로 확인하라.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+// 탭
+for(const tab of document.querySelectorAll('.tab')){
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+}
+const $=id=>document.getElementById(id);
+const fmt=x=>Number.isInteger(x)?String(x):(Math.round(x*1000)/1000).toString();
+function shapeOf2D(A){return [A.length,A[0].length];}
+function shapeText(s){return s.length===0?'()':'('+s.join(', ')+(s.length===1?',':'')+')';}
+function flatten2D(data, shape){
+  if(shape.length===0) return [[data]];
+  if(shape.length===1) return [data];
+  return data;
+}
+function getVal(data, shape, idx){
+  if(shape.length===0) return data;
+  let ref=data;
+  for(const k of idx){ref=ref[k];}
+  return ref;
+}
+function renderGrid(id, data2d, opts={}){
+  const g=$(id); g.innerHTML='';
+  const rows=data2d.length, cols=data2d[0].length;
+  g.style.gridTemplateColumns=`repeat(${cols}, 46px)`;
+  g.style.gridTemplateRows=`repeat(${rows}, 46px)`;
+  for(let i=0;i<rows;i++) for(let j=0;j<cols;j++){
+    const d=document.createElement('div');
+    d.className='cell '+(opts.clickable?'clickable':'');
+    d.dataset.r=i; d.dataset.c=j; d.dataset.prefix=id;
+    d.textContent=opts.question?'?':fmt(data2d[i][j]);
+    if(opts.onClick) d.onclick=()=>opts.onClick(i,j,d);
+    g.appendChild(d);
+  }
+}
+function cellsIn(id){return Array.from($(id).querySelectorAll('.cell'));}
+function clearClasses(ids){
+  for(const id of ids){
+    for(const c of cellsIn(id)) c.classList.remove('hl-row','hl-col','hl-source-a','hl-source-b','hl-result','hl-repeat','hl-term');
+  }
+  document.querySelectorAll('.term-pill').forEach(p=>p.classList.remove('active'));
+}
+function cellAt(id,r,c){return cellsIn(id).find(x=>+x.dataset.r===r && +x.dataset.c===c);}
+
+// 행렬곱
+const MAT_EXAMPLES={
+  normal23:{mode:'normal',op:'@',A:[[1,2,3],[4,5,6]],B:[[7,8],[9,10],[11,12]]},
+  normal34:{mode:'normal',op:'@',A:[[2,1,0,3],[1,4,2,0],[0,2,5,1]],B:[[1,0,2],[3,1,0],[0,2,1],[4,1,3]]},
+  boolean5:{mode:'boolean',op:'⊙',A:[[1,0,1,0,1],[0,1,1,0,0],[1,1,0,1,0],[0,0,1,1,1],[1,0,0,1,0]],B:[[0,1,0,1,0],[1,0,1,0,1],[0,1,1,0,0],[1,0,0,1,1],[0,0,1,1,0]]}
+};
+let mat={};
+function matmul(A,B){
+  const m=A.length,k=A[0].length,n=B[0].length;
+  const C=Array.from({length:m},()=>Array(n).fill(0));
+  for(let i=0;i<m;i++)for(let j=0;j<n;j++)for(let t=0;t<k;t++)C[i][j]+=A[i][t]*B[t][j];
+  return C;
+}
+function boolmul(A,B){
+  const m=A.length,k=A[0].length,n=B[0].length;
+  const C=Array.from({length:m},()=>Array(n).fill(0));
+  for(let i=0;i<m;i++)for(let j=0;j<n;j++){
+    let v=0; for(let t=0;t<k;t++) v = v || (A[i][t] && B[t][j]); C[i][j]=v?1:0;
+  }
+  return C;
+}
+function loadMatExample(){
+  const ex=MAT_EXAMPLES[$('mat-example').value];
+  mat={...ex,A:ex.A.map(r=>r.slice()),B:ex.B.map(r=>r.slice()),term:0,selected:null};
+  mat.C=mat.mode==='boolean'?boolmul(mat.A,mat.B):matmul(mat.A,mat.B);
+  $('mat-op').textContent=mat.op;
+  $('mat-a-shape').textContent='shape '+shapeText(shapeOf2D(mat.A));
+  $('mat-b-shape').textContent='shape '+shapeText(shapeOf2D(mat.B));
+  $('mat-c-shape').textContent='shape '+shapeText(shapeOf2D(mat.C));
+  renderGrid('matA',mat.A); renderGrid('matB',mat.B); renderGrid('matC',mat.C,{question:true,clickable:true,onClick:(i,j)=>selectMatCell(i,j)});
+  $('mat-info').innerHTML='C의 칸을 클릭하면 계산 경로가 표시된다.';
+}
+function clearMatHighlights(){clearClasses(['matA','matB','matC']); mat.selected=null; mat.term=0; $('mat-info').innerHTML='강조를 지웠다. C의 칸을 다시 클릭하라.';}
+function selectMatCell(i,j){
+  mat.selected=[i,j]; mat.term=0; clearClasses(['matA','matB','matC']);
+  for(const c of cellsIn('matA')) if(+c.dataset.r===i) c.classList.add('hl-row');
+  for(const c of cellsIn('matB')) if(+c.dataset.c===j) c.classList.add('hl-col');
+  cellAt('matC',i,j).classList.add('hl-result'); cellAt('matC',i,j).textContent=fmt(mat.C[i][j]);
+  const k=mat.A[0].length;
+  let terms=[], numeric=[];
+  for(let t=0;t<k;t++){
+    if(mat.mode==='boolean'){
+      const v=(mat.A[i][t]&mat.B[t][j]);
+      terms.push(`(${mat.A[i][t]}∧${mat.B[t][j]})`); numeric.push(v);
+    }else{
+      const v=mat.A[i][t]*mat.B[t][j];
+      terms.push(`${mat.A[i][t]}×${mat.B[t][j]}`); numeric.push(v);
+    }
+  }
+  const joiner=mat.mode==='boolean'?' ∨ ':' + ';
+  const result=fmt(mat.C[i][j]);
+  $('mat-info').innerHTML=`<div><span class="em">C[${i}, ${j}]</span> 계산</div>
+    <div class="formula">${mat.mode==='boolean'?'C[i,j] = OR_k(A[i,k] AND B[k,j])':'C[i,j] = Σ_k A[i,k] × B[k,j]'}</div>
+    <div class="formula">C[${i},${j}] = ${terms.join(joiner)} = ${numeric.join(joiner)} = ${result}</div>
+    <div class="term-list">${terms.map((x,t)=>`<span class="term-pill" id="term-${t}">k=${t}: ${x}</span>`).join('')}</div>
+    <div style="margin-top:8px">A의 ${i}번 행과 B의 ${j}번 열이 만난다. “다음 곱셈 항”을 누르면 k가 하나씩 이동한다.</div>`;
+  showMatTerm(0);
+}
+function showMatTerm(t){
+  if(!mat.selected) return;
+  const [i,j]=mat.selected; const k=mat.A[0].length; t=((t%k)+k)%k; mat.term=t;
+  clearClasses(['matA','matB','matC']);
+  for(const c of cellsIn('matA')) if(+c.dataset.r===i) c.classList.add('hl-row');
+  for(const c of cellsIn('matB')) if(+c.dataset.c===j) c.classList.add('hl-col');
+  cellAt('matA',i,t).classList.add('hl-source-a','hl-term');
+  cellAt('matB',t,j).classList.add('hl-source-b','hl-term');
+  cellAt('matC',i,j).classList.add('hl-result');
+  const pill=$('term-'+t); if(pill) pill.classList.add('active');
+}
+function nextMatTerm(){ if(!mat.selected) selectMatCell(0,0); else showMatTerm(mat.term+1); }
+
+// Broadcasting
+const BC_CASES={
+  row:{name:'행 벡터 더하기',A:[[1,2,3],[4,5,6]],shapeA:[2,3],B:[10,20,30],shapeB:[3]},
+  col:{name:'열 벡터 더하기',A:[[1,2,3],[4,5,6]],shapeA:[2,3],B:[[100],[200]],shapeB:[2,1]},
+  outer:{name:'바깥합',A:[[0],[10],[20],[30]],shapeA:[4,1],B:[1,2,3],shapeB:[3]},
+  scalar:{name:'스칼라 더하기',A:[[1,2,3],[4,5,6]],shapeA:[2,3],B:10,shapeB:[]},
+  fail:{name:'실패 예제',A:[[1,2,3],[4,5,6],[7,8,9],[10,11,12]],shapeA:[4,3],B:[100,200,300,400],shapeB:[4]}
+};
+let bc={};
+function alignShapes(sa,sb){
+  const L=Math.max(sa.length,sb.length);
+  const aa=Array(L-sa.length).fill(1).concat(sa);
+  const bb=Array(L-sb.length).fill(1).concat(sb);
+  const res=[]; const rows=[]; let ok=true; let failAxis=-1;
+  for(let d=0;d<L;d++){
+    const a=aa[d], b=bb[d]; let r,kind,msg;
+    if(a===b){r=a;kind='ok';msg='같음';}
+    else if(a===1){r=b;kind='repeat';msg='A가 1이므로 A 반복';}
+    else if(b===1){r=a;kind='repeat';msg='B가 1이므로 B 반복';}
+    else{r='?';kind='fail';msg='충돌';ok=false;failAxis=d;}
+    res.push(r); rows.push({axis:d,a,b,r,kind,msg,aImplicit:d<L-sa.length,bImplicit:d<L-sb.length});
+  }
+  return {ok,result:ok?res:null,rows,failAxis,aa,bb};
+}
+function mapIdx(shape,resultIdx,resultShape){
+  const off=resultShape.length-shape.length;
+  const aligned=Array(off).fill(1).concat(shape);
+  const idxAligned=resultIdx.map((v,d)=>aligned[d]===1?0:v);
+  return idxAligned.slice(off);
+}
+function expandedData(data,shape,resultShape){
+  const rows=resultShape.length===1?1:resultShape[0];
+  const cols=resultShape.length===1?resultShape[0]:resultShape[1];
+  const out=[];
+  for(let i=0;i<rows;i++){
+    const row=[];
+    for(let j=0;j<cols;j++){
+      const ridx=resultShape.length===1?[j]:[i,j];
+      row.push(getVal(data,shape,mapIdx(shape,ridx,resultShape)));
+    }
+    out.push(row);
+  }
+  return out;
+}
+function loadBroadcastCase(){
+  const key=$('bc-case').value; const ex=BC_CASES[key];
+  const al=alignShapes(ex.shapeA,ex.shapeB);
+  bc={...ex,key,align:al,selected:null,next:0};
+  $('bc-a-shape').textContent='shape '+shapeText(bc.shapeA);
+  $('bc-b-shape').textContent='shape '+shapeText(bc.shapeB);
+  renderGrid('bcA',flatten2D(bc.A,bc.shapeA)); renderGrid('bcB',flatten2D(bc.B,bc.shapeB));
+  renderShapeTable();
+  if(!al.ok){
+    $('bc-status').innerHTML=`<strong>${bc.name}</strong> <span class="badge fail">실패</span> 오른쪽부터 비교했을 때 어떤 차원은 같지도 않고, 어느 쪽도 1이 아니다.`;
+    $('bc-c-shape').textContent='결과 없음'; $('bcC').innerHTML=''; $('bcAexp').innerHTML=''; $('bcBexp').innerHTML='';
+    $('expanded-wrap').style.display='none';
+    $('bc-info').innerHTML=`<div class="formula">A.shape = ${shapeText(bc.shapeA)}, B.shape = ${shapeText(bc.shapeB)}</div>
+    마지막 차원에서 3과 4가 만난다. 3과 4는 같지 않고, 어느 쪽도 1이 아니므로 NumPy는 어떤 칸끼리 더해야 하는지 정할 수 없다.<br>
+    수정하려면 B를 열 벡터로 바꿔 <span class="formula">B.reshape(4,1)</span>처럼 만들어야 한다.`;
+    return;
+  }
+  $('expanded-wrap').style.display='block';
+  bc.resultShape=al.result;
+  bc.C=expandedData(bc.A,bc.shapeA,bc.resultShape).map((row,i)=>row.map((v,j)=>v+expandedData(bc.B,bc.shapeB,bc.resultShape)[i][j]));
+  $('bc-status').innerHTML=`<strong>${bc.name}</strong> <span class="badge ok">성공</span> 결과 shape는 <strong>${shapeText(bc.resultShape)}</strong>이다.`;
+  $('bc-c-shape').textContent='shape '+shapeText(bc.resultShape);
+  renderGrid('bcC',bc.C,{clickable:true,onClick:(i,j)=>selectBcCell(i,j)});
+  renderGrid('bcAexp',expandedData(bc.A,bc.shapeA,bc.resultShape));
+  renderGrid('bcBexp',expandedData(bc.B,bc.shapeB,bc.resultShape));
+  $('bc-info').innerHTML='C의 칸을 클릭하면 A와 B의 원본 참조 위치가 표시된다.';
+}
+function renderShapeTable(){
+  const rows=bc.align.rows;
+  let html='<tr><th>비교 축</th><th>A 차원</th><th>B 차원</th><th>판정</th><th>결과 차원</th></tr>';
+  rows.forEach((r,idx)=>{
+    const ax=idx===rows.length-1?'마지막 축':`축 ${idx}`;
+    const ac=r.aImplicit?`없음→${r.a}`:r.a;
+    const bcval=r.bImplicit?`없음→${r.b}`:r.b;
+    html+=`<tr><td>${ax}</td><td class="${r.aImplicit?'implicit':''}">${ac}</td><td class="${r.bImplicit?'implicit':''}">${bcval}</td><td class="${r.kind}">${r.msg}</td><td class="${r.kind}">${r.r}</td></tr>`;
+  });
+  $('shape-table').innerHTML=html;
+}
+function clearBroadcastHighlights(){clearClasses(['bcA','bcB','bcC','bcAexp','bcBexp']); bc.selected=null; $('bc-info').innerHTML='강조를 지웠다. C의 칸을 다시 클릭하라.';}
+function selectBcCell(i,j){
+  if(!bc.align.ok) return;
+  bc.selected=[i,j]; clearClasses(['bcA','bcB','bcC','bcAexp','bcBexp']);
+  const ridx=bc.resultShape.length===1?[j]:[i,j];
+  const ia=mapIdx(bc.shapeA,ridx,bc.resultShape);
+  const ib=mapIdx(bc.shapeB,ridx,bc.resultShape);
+  const va=getVal(bc.A,bc.shapeA,ia); const vb=getVal(bc.B,bc.shapeB,ib); const vc=va+vb;
+  // original cells
+  const a2=flatten2D(bc.A,bc.shapeA), b2=flatten2D(bc.B,bc.shapeB);
+  const aCell=bc.shapeA.length===0?cellAt('bcA',0,0):bc.shapeA.length===1?cellAt('bcA',0,ia[0]):cellAt('bcA',ia[0],ia[1]);
+  const bCell=bc.shapeB.length===0?cellAt('bcB',0,0):bc.shapeB.length===1?cellAt('bcB',0,ib[0]):cellAt('bcB',ib[0],ib[1]);
+  if(aCell)aCell.classList.add('hl-source-a'); if(bCell)bCell.classList.add('hl-source-b');
+  cellAt('bcC',i,j).classList.add('hl-result');
+  cellAt('bcAexp',i,j).classList.add('hl-source-a');
+  cellAt('bcBexp',i,j).classList.add('hl-source-b');
+  // mark repeated axes visually in expanded grid
+  for(const c of cellsIn('bcAexp')){ const r=+c.dataset.r, cc=+c.dataset.c; const src=mapIdx(bc.shapeA,[r,cc],bc.resultShape); if(JSON.stringify(src)===JSON.stringify(ia)) c.classList.add('hl-repeat'); }
+  for(const c of cellsIn('bcBexp')){ const r=+c.dataset.r, cc=+c.dataset.c; const src=mapIdx(bc.shapeB,[r,cc],bc.resultShape); if(JSON.stringify(src)===JSON.stringify(ib)) c.classList.add('hl-repeat'); }
+  cellAt('bcAexp',i,j).classList.add('hl-source-a'); cellAt('bcBexp',i,j).classList.add('hl-source-b');
+  const aName=`A${shapeText(ia)}`.replace('(,)', '()');
+  const bName=`B${shapeText(ib)}`.replace('(,)', '()');
+  const cName=`C[${i}, ${j}]`;
+  $('bc-info').innerHTML=`<div><span class="em">${cName}</span> 계산 경로</div>
+    <div class="formula">${cName} = ${aName} + ${bName}</div>
+    <div class="formula">${cName} = ${fmt(va)} + ${fmt(vb)} = ${fmt(vc)}</div>
+    <div style="margin-top:8px">결과 칸의 인덱스는 [${ridx.join(', ')}]이다. 크기가 1인 축에서는 결과 인덱스가 무엇이든 원본의 0번 칸을 다시 읽는다.</div>`;
+}
+function nextBcCell(){
+  if(!bc.align.ok){return;}
+  const rows=bc.resultShape[0], cols=bc.resultShape[1];
+  const idx=bc.next%(rows*cols); const i=Math.floor(idx/cols), j=idx%cols; bc.next++;
+  selectBcCell(i,j);
+}
+function fixBroadcastFailure(){
+  if($('bc-case').value!=='fail'){ $('bc-case').value='fail'; loadBroadcastCase(); return; }
+  const ex={name:'실패 예제 수정: B.reshape(4,1)',A:BC_CASES.fail.A,shapeA:[4,3],B:[[100],[200],[300],[400]],shapeB:[4,1]};
+  bc={...ex,key:'fixed',align:alignShapes(ex.shapeA,ex.shapeB),selected:null,next:0};
+  $('bc-a-shape').textContent='shape '+shapeText(bc.shapeA); $('bc-b-shape').textContent='shape '+shapeText(bc.shapeB);
+  renderGrid('bcA',flatten2D(bc.A,bc.shapeA)); renderGrid('bcB',flatten2D(bc.B,bc.shapeB)); renderShapeTable();
+  bc.resultShape=bc.align.result;
+  bc.C=expandedData(bc.A,bc.shapeA,bc.resultShape).map((row,i)=>row.map((v,j)=>v+expandedData(bc.B,bc.shapeB,bc.resultShape)[i][j]));
+  $('bc-status').innerHTML=`<strong>${bc.name}</strong> <span class="badge ok">성공</span> B의 1개 열이 A의 3개 열에 반복되어 결과 shape는 ${shapeText(bc.resultShape)}이다.`;
+  $('expanded-wrap').style.display='block'; $('bc-c-shape').textContent='shape '+shapeText(bc.resultShape);
+  renderGrid('bcC',bc.C,{clickable:true,onClick:(i,j)=>selectBcCell(i,j)}); renderGrid('bcAexp',expandedData(bc.A,bc.shapeA,bc.resultShape)); renderGrid('bcBexp',expandedData(bc.B,bc.shapeB,bc.resultShape));
+  $('bc-info').innerHTML='이제 C의 칸을 클릭하면 수정된 브로드캐스팅 계산 경로가 표시된다.';
+}
+
+// Bias tab
+let bias={};
+function resetBias(){
+  bias.X=[[1.0,0.5],[0.2,1.0],[1.5,-0.5]];
+  bias.W=[[0.3,-0.4,0.8],[0.5,0.2,-0.1]];
+  bias.b=[0.1,-0.2,0.3];
+  bias.Z=matmul(bias.X,bias.W);
+  bias.Zb=bias.Z.map(row=>row.map((v,j)=>v+bias.b[j]));
+  bias.A=bias.Zb.map(row=>row.map(v=>Math.max(0,v)));
+  renderGrid('biasX',bias.X); renderGrid('biasW',bias.W); renderGrid('biasB',[bias.b]); renderGrid('biasR',Array.from({length:3},()=>Array(3).fill('?')));
+  $('bias-info').innerHTML='버튼을 눌러 `X @ W`, `+ b`, `ReLU` 순서로 확인하라.';
+}
+function runBiasStep(step){
+  clearClasses(['biasX','biasW','biasB','biasR']);
+  if(step==='matmul'){
+    renderGrid('biasR',bias.Z,{clickable:true,onClick:(i,j)=>selectBiasCell(i,j,'matmul')});
+    $('bias-info').innerHTML='<span class="em">1단계</span> 각 샘플 행 X[i,:]와 각 뉴런 열 W[:,j]의 행렬곱을 계산했다. 결과 shape는 (3,3)이다.';
+  }else if(step==='bias'){
+    renderGrid('biasR',bias.Zb,{clickable:true,onClick:(i,j)=>selectBiasCell(i,j,'bias')});
+    $('bias-info').innerHTML='<span class="em">2단계</span> b.shape=(3,)이 각 샘플 행에 반복되어 더해진다. 이것이 브로드캐스팅이다.';
+  }else{
+    renderGrid('biasR',bias.A,{clickable:true,onClick:(i,j)=>selectBiasCell(i,j,'relu')});
+    $('bias-info').innerHTML='<span class="em">3단계</span> ReLU는 음수는 0으로, 양수는 그대로 통과시킨다.';
+  }
+}
+function selectBiasCell(i=0,j=0,stage='bias'){
+  clearClasses(['biasX','biasW','biasB','biasR']);
+  for(const c of cellsIn('biasX')) if(+c.dataset.r===i) c.classList.add('hl-row');
+  for(const c of cellsIn('biasW')) if(+c.dataset.c===j) c.classList.add('hl-col');
+  cellAt('biasX',i,0).classList.add('hl-source-a'); cellAt('biasX',i,1).classList.add('hl-source-a');
+  cellAt('biasW',0,j).classList.add('hl-source-b'); cellAt('biasW',1,j).classList.add('hl-source-b');
+  cellAt('biasB',0,j).classList.add('hl-source-b');
+  const rcell=cellAt('biasR',i,j); if(rcell) rcell.classList.add('hl-result');
+  const x0=bias.X[i][0], x1=bias.X[i][1], w0=bias.W[0][j], w1=bias.W[1][j], z=bias.Z[i][j], zb=bias.Zb[i][j], a=bias.A[i][j];
+  $('bias-info').innerHTML=`<div><span class="em">샘플 ${i}, 뉴런 ${j}</span> 계산 경로</div>
+    <div class="formula">X@W[${i},${j}] = X[${i},0]×W[0,${j}] + X[${i},1]×W[1,${j}]</div>
+    <div class="formula">= ${fmt(x0)}×${fmt(w0)} + ${fmt(x1)}×${fmt(w1)} = ${fmt(z)}</div>
+    <div class="formula">+ b[${j}] = ${fmt(z)} + ${fmt(bias.b[j])} = ${fmt(zb)}</div>
+    <div class="formula">ReLU(${fmt(zb)}) = max(0, ${fmt(zb)}) = ${fmt(a)}</div>
+    <div style="margin-top:8px">b[${j}]는 모든 샘플 행에서 같은 뉴런 ${j}에 더해진다.</div>`;
+}
+
+// init
+loadMatExample(); loadBroadcastCase(); resetBias();
+</script>
+</body>
+</html>
