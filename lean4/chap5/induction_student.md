@@ -125,31 +125,22 @@ def sumTo : Nat → Nat
 theorem sumTo_zero : sumTo 0 = 0 := rfl
 theorem sumTo_succ (n : Nat) : sumTo (n + 1) = (n + 1) + sumTo n := rfl
 
-theorem sumTo_formula (n : Nat) : 2 * sumTo n = n * (n + 1) := by
+theorem sumTo_formula_calc (n : Nat) : 2 * sumTo n = n * (n + 1) := by
   induction n with
-  | zero =>
-    -- 목표: 2 * sumTo 0 = 0 * (0 + 1)
-    rw [sumTo_zero]
-    -- 목표: 2 * 0 = 0 * (0 + 1)
-    rw [Nat.mul_zero]
-    -- 목표: 0 = 0 * (0 + 1)
-    rw [Nat.zero_mul]
-    -- 목표: 0 = 0
+  | zero => 
+    calc 2 * sumTo 0 
+      _ = 2 * 0 := by rw [sumTo_zero]
+      _ = 0     := by rw [Nat.mul_zero]
+      _ = 0 * (0 + 1) := by rw [Nat.zero_mul]
   | succ n ih =>
-    -- ih  : 2 * sumTo n = n * (n + 1)
-    -- 목표: 2 * sumTo (n + 1) = (n + 1) * (n + 1 + 1)
-    rw [sumTo_succ]
-    -- 목표: 2 * ((n + 1) + sumTo n) = (n + 1) * (n + 2)
-    rw [Nat.mul_add]
-    -- 목표: 2 * (n + 1) + 2 * sumTo n = (n + 1) * (n + 2)
-    rw [ih]
-    -- 목표: 2 * (n + 1) + n * (n + 1) = (n + 1) * (n + 2)
-    rw [← Nat.add_mul]
-    -- 목표: (2 + n) * (n + 1) = (n + 1) * (n + 2)
-    rw [Nat.add_comm 2 n]
-    -- 목표: (n + 2) * (n + 1) = (n + 1) * (n + 2)
-    rw [Nat.mul_comm]
-    -- 목표: (n + 1) * (n + 2) = (n + 1) * (n + 2)  →  rfl
+    calc 2 * sumTo (n + 1)
+      _ = 2 * ((n + 1) + sumTo n) := by rw [sumTo_succ]
+      _ = 2 * (n + 1) + 2 * sumTo n := by rw [Nat.mul_add]
+      _ = 2 * (n + 1) + n * (n + 1) := by rw [ih]
+      _ = (2 + n) * (n + 1)         := by rw [Nat.add_mul]
+      _ = (n + 2) * (n + 1)         := by rw [Nat.add_comm]
+      _ = (n + 1) * (n + 2)         := by rw [Nat.mul_comm]
+      _ = (n + 1) * (n + 1 + 1)     := rfl -- n + 2의 정의상 일치
 ```
 
 **InfoView 단계별 추적 (succ 분기):**
