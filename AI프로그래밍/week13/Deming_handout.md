@@ -1,0 +1,152 @@
+# Deming 회귀 — 학생용 설명 글
+
+> 이 글은 노트북 `Deming_notebook.ipynb` 의 흐름을 한국어 학술문어체로 풀어 설명한 자료이다.  
+> 본 부록은 OLS · PCA · Deming 의 세 노트북을 \"한 가족\" 으로 묶는 마지막 글이다.
+
+---
+
+## 1.  세 회귀를 한 줄에 놓는다
+
+OLS 노트북에서 배운 사고방식은 \"손실함수를 편미분해서 0 으로 놓는다\" 이다.  
+PCA 노트북에서는 같은 사고방식에 \"제약 조건을 라그랑주로 추가\" 했다.  
+Deming 회귀도 정확히 같은 자리에 있다.
+
+| | 무엇을 최소/최대 | 제약 | 결과 |
+|---|---|---|---|
+| OLS | 수직 잔차² 합 최소화 | 없음 | $\hat{\boldsymbol\beta} = (X^{\mathsf T}X)^{-1}X^{\mathsf T}y$ |
+| PCA | $\boldsymbol v^{\mathsf T}\Sigma\boldsymbol v$ 최대화 | $\|\boldsymbol v\|=1$ | $\Sigma\boldsymbol v = \lambda\boldsymbol v$ |
+| Deming | 가중 직교 거리² 합 최소화 | 분산비 $\lambda$ 고정 | 닫힌 형태의 해 |
+
+세 방법 모두 \"편미분 = 0\" 한 줄에서 시작하고, 그 결과가 자동으로 따라 나온다.
+
+---
+
+## 2.  Errors-in-Variables 모형
+
+OLS 가 가정하는 \"X 는 정확히 측정되고 오차는 오직 Y 에만 있다\" 라는 가정은 많은 실무 상황에서 깨진다. 그때의 정확한 모형은 다음 errors-in-variables (EIV) 모형이다.
+
+$$
+X_i = \xi_i + \delta_i, \qquad Y_i = \eta_i + \varepsilon_i, \qquad \eta_i = \beta_0 + \beta_1 \xi_i.
+$$
+
+여기서 $(\xi_i, \eta_i)$ 는 관측되지 않는 \"참값\" 이다. $X_i, Y_i$ 는 그 참값에 측정오차 $\delta_i, \varepsilon_i$ 가 더해진 \"관측값\" 이다.
+
+OLS 가 EIV 모형에서 일으키는 문제는 \"감쇠 편향(attenuation bias)\" — 기울기 추정값이 참값보다 0 쪽으로 끌려가는 현상이다. 이는 X 의 측정오차가 \"분산의 분모\" 를 부풀리기 때문이다.
+
+---
+
+## 3.  핵심 모수 — 분산비 $\lambda$
+
+Deming 회귀가 OLS 보다 한 개 더 갖는 모수가 있다.
+
+$$
+\lambda = \frac{\mathrm{Var}(\varepsilon_i)}{\mathrm{Var}(\delta_i)}.
+$$
+
+이는 \"Y 의 오차분산이 X 의 오차분산보다 몇 배 큰가\" 를 가리킨다. $\lambda$ 의 값은 실험자의 사전 지식이나 두 변수의 측정 정밀도로부터 정해야 한다.
+
+| $\lambda$ | 직관 | 결과 |
+|---|---|---|
+| $\lambda \to \infty$ | Y 오차가 X 오차보다 압도적 | **OLS** 와 일치 |
+| $\lambda = 1$ | 두 오차가 동일한 분산 | **직교 회귀 = PCA 첫 주성분** |
+| $\lambda \to 0$ | X 오차가 압도적 | 역방향 OLS (Y → X) |
+
+이 표가 \"OLS, PCA, Deming 은 한 가족이고 $\lambda$ 가 그 가족 안의 좌표축\" 이라는 주장을 한 줄에 담는다.
+
+---
+
+## 4.  무엇을 최소화하는가
+
+Deming 회귀의 목적함수는 다음과 같다.
+
+$$
+S(\beta_0, \beta_1, \{\xi_i\}) = \sum_{i=1}^{n} \left[
+\frac{(X_i - \xi_i)^2}{\mathrm{Var}(\delta_i)}
+\;+\;
+\frac{(Y_i - \beta_0 - \beta_1 \xi_i)^2}{\mathrm{Var}(\varepsilon_i)}
+\right]
+$$
+
+각 항은 \"관측값 - 참값\" 의 제곱을 그 변수의 측정오차 분산으로 나눈 값이다. 분모로 분산을 두는 일은 \"단위가 다른 두 잔차를 같은 척도에서 비교한다\" 는 뜻이다.
+
+이 손실함수는
+
+- $\beta_0$ 에 대해 편미분 = 0,
+- $\beta_1$ 에 대해 편미분 = 0,
+- 모든 $\xi_i$ 에 대해 편미분 = 0,
+
+으로 $(n+2)$ 개의 방정식이 얻어지고, 풀면 다음 닫힌 해가 나온다.
+
+$$
+\hat\beta_1 = \frac{S_{yy} - \lambda S_{xx} + \sqrt{(S_{yy} - \lambda S_{xx})^2 + 4\lambda S_{xy}^2}}{2 S_{xy}},
+\qquad
+\hat\beta_0 = \bar y - \hat\beta_1 \bar x.
+$$
+
+복잡해 보이지만, 결국 \"편미분 = 0\" 이라는 한 줄에서 자동으로 따라 나오는 식이다.
+
+---
+
+## 5.  scipy.odr 로 푸는 법
+
+직접 위 식을 코드로 옮길 수도 있지만, 실무에서는 SciPy 의 `scipy.odr` 모듈을 쓴다. ODR 은 \"Orthogonal Distance Regression\" 의 약자이며, 두 변수에 측정오차 표준편차를 명시하면 자동으로 Deming 회귀가 된다.
+
+```python
+from scipy import odr
+
+def linear_model(B, x):
+    return B[0] + B[1] * x
+
+linear = odr.Model(linear_model)
+data = odr.RealData(X_obs, Y_obs, sx=sigma_X, sy=sigma_Y)
+result = odr.ODR(data, linear, beta0=[init_intercept, init_slope]).run()
+
+beta0_hat, beta1_hat = result.beta
+```
+
+- `sx`, `sy` — 두 변수의 측정오차 표준편차. 이 비율의 제곱이 $\lambda$ 가 된다.
+- `beta0` — 초기값. 보통 OLS 결과를 그대로 쓴다.
+
+---
+
+## 6.  $\lambda = 1$ 의 비밀
+
+$\lambda = 1$ 일 때 Deming 회귀는 **직교 회귀** 가 된다 — 즉 회귀선과 각 점의 \"수직 거리(perpendicular distance)\" 제곱합을 최소화한다. 그리고 이 결과는 정확히 **PCA 의 제 1 주성분 방향과 같다**.
+
+직관적으로 보면
+
+- $\lambda = 1$ → 두 변수의 단위가 \"오차 측면에서\" 같은 척도.
+- 직교 거리 = 유클리드 거리.
+- \"직교 거리² 의 합을 최소화하는 직선\" = \"점들에서 평균적으로 가장 가까운 직선\" = \"자료의 분산이 가장 큰 방향\" = PCA PC1.
+
+이것이 \"같은 미분, 다른 제약, 한 가족\" 이라는 슬로건의 가장 깔끔한 사례이다.
+
+---
+
+## 7.  사용 시점
+
+다음 다섯 상황에서 Deming 회귀가 OLS 보다 적절하다.
+
+1. **임상 검사기기 비교** — 두 분석기기로 측정한 같은 시료의 일치도.
+2. **두 실험법의 정량 비교** — 회복률, 정확도 비교.
+3. **test-retest 신뢰도** — 같은 변수를 두 시점에 측정.
+4. **두 평가자 비교** — 두 사람 모두 평가에 오차를 가진다.
+5. **자기상관/장비 보정** — 동일 표본의 단위 보정.
+
+공통점은 \"X 와 Y 가 인과 비대칭이 없는 두 측정\" 이라는 것이다. OLS 는 \"X 가 원인, Y 가 결과\" 라는 비대칭을 전제로 하지만 위 다섯 상황은 그렇지 않다.
+
+---
+
+## 8.  세 노트북을 정리하며
+
+| 노트북 | 사고방식 | 도구 | 적용 시점 |
+|---|---|---|---|
+| OLS | 편미분 = 0 | 연립방정식 | X 가 정확, Y 에만 오차 |
+| PCA | 라그랑주 + 편미분 = 0 | 고유분해 | 차원 축소 · 시각화 · PCR · 잡음 제거 |
+| Deming | 가중 잔차의 편미분 = 0 | 닫힌 해 또는 scipy.odr | 두 변수 모두 오차 |
+
+세 노트북을 한 흐름으로 읽으면 다음 한 문장이 남는다.
+
+> **회귀는 모두 \"손실함수를 미분해서 0 으로 놓은 결과\"이다. 무엇을 손실로 보는가, 어떤 제약을 두는가가 다를 뿐이다.**
+
+이 문장 하나로 OLS, Ridge, Lasso, PCR, Deming, 직교 회귀, 그리고 더 일반적인 GLS · WLS 까지 같은 뿌리에서 자라난 가족임을 본다.
