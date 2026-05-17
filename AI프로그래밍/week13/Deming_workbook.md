@@ -11,8 +11,8 @@ OLS · PCA · Deming 은 모두 \"손실함수를 (㉠) = 0\" 한 줄에서 시�
 
 | | 무엇을 최소/최대 | 제약 | 결과 |
 |---|---|---|---|
-| OLS | (㉡) 잔차² 합 최소화 | 없음 | $\hat{\boldsymbol\beta} = $ (㉢) |
-| PCA | $\boldsymbol v^{\mathsf T}\Sigma\boldsymbol v$ 최대화 | $\|\boldsymbol v\| = $ (㉣) | (㉤) |
+| OLS | (㉡) 잔차² 합 최소화 | 없음 |  ${\hat{\boldsymbol\beta} = }$ (㉢) |
+| PCA | ${\boldsymbol v^{\mathsf T}\Sigma\boldsymbol v}$ 최대화 | $\|\boldsymbol v\| = $ (㉣) | (㉤) |
 | Deming | (㉥) 직교 거리² 합 최소화 | 분산비 $\lambda$ (㉦) | 닫힌 형태의 해 |
 
 세 방법 모두 \"(㉧) = 0\" 한 줄에서 시작하고 결과가 자동으로 따라 나온다.
