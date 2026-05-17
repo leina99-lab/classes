@@ -1,6 +1,6 @@
-# Deming 회귀 — 학생용 설명 글
+# Deming 회귀 — 
 
-> 이 글은 노트북 `Deming_notebook.ipynb` 의 흐름을 한국어 학술문어체로 풀어 설명한 자료이다.  
+  
 > 본 부록은 OLS · PCA · Deming 의 세 노트북을 \"한 가족\" 으로 묶는 마지막 글이다.
 
 ---
