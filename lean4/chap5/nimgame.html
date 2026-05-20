@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>두 더미 게임: N-위치와 P-위치 시각화</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --paper: #ffffff;
+      --ink: #1b1f2a;
+      --muted: #5d667a;
+      --line: #d7dce8;
+      --p: #243b6b;
+      --pText: #ffffff;
+      --n: #eaf0ff;
+      --nStroke: #9db2e7;
+      --selected: #111827;
+      --legal: #fdecc8;
+      --legalStroke: #d28b00;
+      --win: #d9f3e2;
+      --winStroke: #16803a;
+      --mirror: #ffe0e4;
+      --mirrorStroke: #b42339;
+      --axis: #323846;
+      --shadow: 0 10px 30px rgba(30, 41, 59, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.55;
+    }
+
+    header {
+      padding: 32px 24px 18px;
+      background: linear-gradient(180deg, #ffffff, #f7f8fb);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 3vw, 42px);
+      line-height: 1.18;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    main { padding: 24px 0 42px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.15fr) minmax(320px, 0.85fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .cardHead {
+      padding: 18px 20px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cardHead h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .cardBody { padding: 18px 20px 20px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    label { color: var(--muted); font-size: 14px; }
+    input[type="range"] { width: 100%; }
+
+    .btnRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 4px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #8ea0c9; background: #f8faff; }
+
+    .svgWrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcff;
+    }
+
+    svg {
+      display: block;
+      min-width: 560px;
+      width: 100%;
+      height: auto;
+      user-select: none;
+    }
+
+    .axisText { fill: var(--axis); font-size: 13px; font-weight: 700; }
+    .axisLabel { fill: var(--axis); font-size: 15px; font-weight: 800; }
+    .gridLine { stroke: #e4e8f2; stroke-width: 1; }
+
+    .cell rect {
+      rx: 8;
+      ry: 8;
+      stroke-width: 1.5;
+      transition: all 120ms ease;
+      cursor: pointer;
+    }
+    .cell text {
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 800;
+      dominant-baseline: middle;
+      text-anchor: middle;
+    }
+    .cell.N rect { fill: var(--n); stroke: var(--nStroke); }
+    .cell.N text { fill: #26324c; }
+    .cell.P rect { fill: var(--p); stroke: var(--p); }
+    .cell.P text { fill: var(--pText); }
+    .cell.legal rect { fill: var(--legal); stroke: var(--legalStroke); stroke-width: 2.5; }
+    .cell.legal text { fill: #553500; }
+    .cell.win rect { fill: var(--win); stroke: var(--winStroke); stroke-width: 3; }
+    .cell.win text { fill: #0d4b23; }
+    .cell.mirror rect { fill: var(--mirror); stroke: var(--mirrorStroke); stroke-width: 3; }
+    .cell.mirror text { fill: #6f1021; }
+    .cell.selected rect {
+      fill: #ffffff;
+      stroke: var(--selected);
+      stroke-width: 4;
+      filter: drop-shadow(0 8px 12px rgba(17,24,39,0.20));
+    }
+    .cell.selected text { fill: #111827; }
+
+    .arrow { stroke-width: 3; fill: none; }
+    .arrow.winArrow { stroke: var(--winStroke); }
+    .arrow.mirrorArrow { stroke: var(--mirrorStroke); stroke-dasharray: 7 5; }
+    .arrow.legalArrow { stroke: #c47700; stroke-width: 2; opacity: 0.55; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legendItem { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid var(--line);
+      display: inline-block;
+    }
+    .swatch.p { background: var(--p); border-color: var(--p); }
+    .swatch.n { background: var(--n); border-color: var(--nStroke); }
+    .swatch.legal { background: var(--legal); border-color: var(--legalStroke); }
+    .swatch.win { background: var(--win); border-color: var(--winStroke); }
+    .swatch.mirror { background: var(--mirror); border-color: var(--mirrorStroke); }
+
+    .stateBox {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fbfcff;
+      margin-bottom: 14px;
+    }
+
+    .stateTitle {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .stateTitle h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: 0.02em;
+    }
+    .badge.p { background: var(--p); color: white; }
+    .badge.n { background: var(--n); color: #243b6b; border: 1px solid var(--nStroke); }
+
+    .math {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: #f3f5fa;
+      border: 1px solid #e2e7f1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      overflow-x: auto;
+      white-space: nowrap;
+      margin: 10px 0;
+    }
+
+    .explain p { margin: 8px 0; }
+    .explain strong { color: #111827; }
+
+    .proofGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 620px) {
+      .proofGrid { grid-template-columns: 1fr; }
+    }
+
+    .proofBox {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      padding: 14px;
+    }
+
+    .proofBox h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .proofBox p { margin: 6px 0; color: var(--muted); }
+
+    .callout {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #c9d5ef;
+      background: #f5f8ff;
+    }
+
+    .callout h3 { margin: 0 0 8px; font-size: 18px; }
+    .callout p { margin: 6px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      vertical-align: top;
+    }
+    th { color: #34405a; background: #f6f8fd; }
+
+    .small { font-size: 14px; color: var(--muted); }
+    .footerNote { margin-top: 18px; color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>두 더미 게임의 N-위치와 P-위치 시각화</h1>
+      <p class="subtitle">상태 <strong>(a,b)</strong>에서 한 번에 한 더미만 줄일 수 있다. 대각선 <strong>(a,a)</strong>가 정확히 P-위치임을 격자로 확인한다.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <section class="card">
+        <div class="cardHead">
+          <h2>게임 상태 격자</h2>
+        </div>
+        <div class="cardBody">
+          <div class="controls">
+            <label for="sizeRange">격자 최대값: <strong id="sizeLabel">10</strong></label>
+            <button id="resetBtn" type="button">처음 상태 (n,n)</button>
+            <input id="sizeRange" type="range" min="4" max="15" value="10" step="1" />
+          </div>
+
+          <div class="btnRow">
+            <button type="button" data-pick="diag">대칭 위치 보기</button>
+            <button type="button" data-pick="off">비대칭 위치 보기</button>
+            <button type="button" data-pick="zero">끝 위치 보기</button>
+          </div>
+
+          <div class="svgWrap">
+            <svg id="board" role="img" aria-label="두 더미 게임 상태 격자"></svg>
+          </div>
+
+          <div class="legend">
+            <span class="legendItem"><span class="swatch p"></span>P-위치: 받은 사람이 불리</span>
+            <span class="legendItem"><span class="swatch n"></span>N-위치: 차례인 사람이 유리</span>
+            <span class="legendItem"><span class="swatch legal"></span>가능한 이동</span>
+            <span class="legendItem"><span class="swatch win"></span>이기는 이동</span>
+            <span class="legendItem"><span class="swatch mirror"></span>대칭 응수</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="cardHead">
+          <h2>선택한 위치 해석</h2>
+        </div>
+        <div class="cardBody">
+          <div class="stateBox">
+            <div class="stateTitle">
+              <h3 id="stateName">(10,10)</h3>
+              <span id="stateBadge" class="badge p">P-위치</span>
+            </div>
+            <div id="stateExplanation" class="explain"></div>
+          </div>
+
+          <div class="callout">
+            <h3>판정 규칙</h3>
+            <div class="math">P-위치 = {(a,a) : a ≥ 0}</div>
+            <div class="math">N-위치 = {(a,b) : a ≠ b}</div>
+            <p>비대칭 위치에서는 큰 더미를 작은 더미와 같게 줄이면 곧바로 대칭 위치로 보낼 수 있다.</p>
+          </div>
+
+          <div class="proofGrid">
+            <div class="proofBox">
+              <h3>왜 (a,a)는 P인가</h3>
+              <p>한쪽 더미를 줄이면 반드시 <strong>(a′,a)</strong> 또는 <strong>(a,a′)</strong> 꼴이 된다.</p>
+              <p>그러면 상대는 다른 더미를 같은 값으로 줄여 <strong>(a′,a′)</strong>를 만든다.</p>
+            </div>
+            <div class="proofBox">
+              <h3>왜 a ≠ b는 N인가</h3>
+              <p>예를 들어 <strong>a &gt; b</strong>라면 첫 더미를 <strong>b</strong>로 줄인다.</p>
+              <p>즉 <strong>(a,b) → (b,b)</strong>로 이동하여 상대에게 P-위치를 넘긴다.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card" style="margin-top:22px;">
+      <div class="cardHead">
+        <h2>게임 트리 관점에서 읽는 법</h2>
+      </div>
+      <div class="cardBody">
+        <table>
+          <thead>
+            <tr>
+              <th>상태</th>
+              <th>분류</th>
+              <th>이유</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>(0,0)</strong></td>
+              <td>P-위치</td>
+              <td>움직일 수 없으므로 차례인 사람이 진다.</td>
+            </tr>
+            <tr>
+              <td><strong>(0,b), b &gt; 0</strong> 또는 <strong>(a,0), a &gt; 0</strong></td>
+              <td>N-위치</td>
+              <td>남은 더미를 모두 제거해 바로 (0,0)으로 갈 수 있다.</td>
+            </tr>
+            <tr>
+              <td><strong>(a,a), a &gt; 0</strong></td>
+              <td>P-위치</td>
+              <td>어떤 이동을 해도 비대칭 위치가 되고, 상대가 거울 전략으로 다시 대칭 위치를 만든다.</td>
+            </tr>
+            <tr>
+              <td><strong>(a,b), a ≠ b</strong></td>
+              <td>N-위치</td>
+              <td>큰 더미를 작은 더미와 같게 줄여 <strong>(min(a,b), min(a,b))</strong>로 갈 수 있다.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="footerNote">스프라그-그런디 관점에서는 두 더미 Nim의 P-위치가 비트별 XOR가 0인 위치이다. 두 더미에서는 이것이 정확히 <strong>a = b</strong>와 같다. 따라서 이 게임의 대칭 전략은 XOR 규칙의 가장 단순한 모습이다.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const board = document.getElementById('board');
+    const sizeRange = document.getElementById('sizeRange');
+    const sizeLabel = document.getElementById('sizeLabel');
+    const stateName = document.getElementById('stateName');
+    const stateBadge = document.getElementById('stateBadge');
+    const stateExplanation = document.getElementById('stateExplanation');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let maxN = Number(sizeRange.value);
+    let selected = { a: maxN, b: maxN };
+
+    function isP(a, b) { return a === b; }
+    function isTerminal(a, b) { return a === 0 && b === 0; }
+
+    function legalMoves(a, b) {
+      const moves = [];
+      for (let ap = 0; ap < a; ap++) moves.push({ a: ap, b });
+      for (let bp = 0; bp < b; bp++) moves.push({ a, b: bp });
+      return moves;
+    }
+
+    function key(a, b) { return `${a},${b}`; }
+
+    function winningMove(a, b) {
+      if (a === b) return null;
+      const m = Math.min(a, b);
+      return { a: m, b: m };
+    }
+
+    function mirrorDemo(a, b) {
+      if (a !== b || a === 0) return null;
+      const t = a - 1;
+      return {
+        first: { a: t, b: a },
+        response: { a: t, b: t }
+      };
+    }
+
+    function cellCenter(a, b, cell, margin, n) {
+      return {
+        x: margin.left + a * cell + cell / 2,
+        y: margin.top + (n - b) * cell + cell / 2
+      };
+    }
+
+    function addArrow(svg, from, to, cls, marker) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', from.x);
+      line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);
+      line.setAttribute('y2', to.y);
+      line.setAttribute('class', `arrow ${cls}`);
+      line.setAttribute('marker-end', `url(#${marker})`);
+      svg.appendChild(line);
+    }
+
+    function render() {
+      maxN = Number(sizeRange.value);
+      sizeLabel.textContent = String(maxN);
+      selected.a = Math.min(selected.a, maxN);
+      selected.b = Math.min(selected.b, maxN);
+
+      const cell = Math.max(34, Math.floor(520 / (maxN + 1)));
+      const margin = { left: 58, top: 28, right: 24, bottom: 58 };
+      const width = margin.left + (maxN + 1) * cell + margin.right;
+      const height = margin.top + (maxN + 1) * cell + margin.bottom;
+
+      board.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      board.innerHTML = '';
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <marker id="arrowWin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#16803a"></path>
+        </marker>
+        <marker id="arrowMirror" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#b42339"></path>
+        </marker>
+        <marker id="arrowLegal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#c47700"></path>
+        </marker>
+      `;
+      board.appendChild(defs);
+
+      for (let i = 0; i <= maxN; i++) {
+        const x = margin.left + i * cell + cell / 2;
+        const y = margin.top + i * cell + cell / 2;
+
+        const vline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        vline.setAttribute('x1', x);
+        vline.setAttribute('x2', x);
+        vline.setAttribute('y1', margin.top);
+        vline.setAttribute('y2', margin.top + (maxN + 1) * cell);
+        vline.setAttribute('class', 'gridLine');
+        board.appendChild(vline);
+
+        const hline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        hline.setAttribute('x1', margin.left);
+        hline.setAttribute('x2', margin.left + (maxN + 1) * cell);
+        hline.setAttribute('y1', y);
+        hline.setAttribute('y2', y);
+        hline.setAttribute('class', 'gridLine');
+        board.appendChild(hline);
+      }
+
+      const legal = new Set(legalMoves(selected.a, selected.b).map(m => key(m.a, m.b)));
+      const win = winningMove(selected.a, selected.b);
+      const demo = mirrorDemo(selected.a, selected.b);
+
+      for (let b = maxN; b >= 0; b--) {
+        for (let a = 0; a <= maxN; a++) {
+          const c = cellCenter(a, b, cell, margin, maxN);
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          let classes = ['cell', isP(a,b) ? 'P' : 'N'];
+          if (legal.has(key(a,b))) classes.push('legal');
+          if (win && win.a === a && win.b === b) classes.push('win');
+          if (demo && demo.first.a === a && demo.first.b === b) classes.push('legal');
+          if (demo && demo.response.a === a && demo.response.b === b) classes.push('mirror');
+          if (selected.a === a && selected.b === b) classes.push('selected');
+          g.setAttribute('class', classes.join(' '));
+          g.setAttribute('tabindex', '0');
+          g.setAttribute('role', 'button');
+          g.setAttribute('aria-label', `상태 (${a},${b})`);
+          g.dataset.a = String(a);
+          g.dataset.b = String(b);
+
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', c.x - cell * 0.43);
+          rect.setAttribute('y', c.y - cell * 0.43);
+          rect.setAttribute('width', cell * 0.86);
+          rect.setAttribute('height', cell * 0.86);
+          g.appendChild(rect);
+
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', c.x);
+          text.setAttribute('y', c.y + 1);
+          text.textContent = isP(a,b) ? 'P' : 'N';
+          g.appendChild(text);
+
+          g.addEventListener('click', () => {
+            selected = { a, b };
+            render();
+          });
+          g.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              selected = { a, b };
+              render();
+            }
+          });
+
+          board.appendChild(g);
+        }
+      }
+
+      const sCenter = cellCenter(selected.a, selected.b, cell, margin, maxN);
+
+      if (win) {
+        const tCenter = cellCenter(win.a, win.b, cell, margin, maxN);
+        addArrow(board, sCenter, tCenter, 'winArrow', 'arrowWin');
+      }
+
+      if (demo) {
+        const firstCenter = cellCenter(demo.first.a, demo.first.b, cell, margin, maxN);
+        const responseCenter = cellCenter(demo.response.a, demo.response.b, cell, margin, maxN);
+        addArrow(board, sCenter, firstCenter, 'legalArrow', 'arrowLegal');
+        addArrow(board, firstCenter, responseCenter, 'mirrorArrow', 'arrowMirror');
+      }
+
+      // Axis labels and tick labels are drawn last so they stay visible.
+      for (let i = 0; i <= maxN; i++) {
+        const x = margin.left + i * cell + cell / 2;
+        const yBottom = margin.top + (maxN + 1) * cell + 22;
+        const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tx.setAttribute('x', x);
+        tx.setAttribute('y', yBottom);
+        tx.setAttribute('class', 'axisText');
+        tx.setAttribute('text-anchor', 'middle');
+        tx.textContent = String(i);
+        board.appendChild(tx);
+
+        const y = margin.top + (maxN - i) * cell + cell / 2 + 4;
+        const ty = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        ty.setAttribute('x', margin.left - 18);
+        ty.setAttribute('y', y);
+        ty.setAttribute('class', 'axisText');
+        ty.setAttribute('text-anchor', 'middle');
+        ty.textContent = String(i);
+        board.appendChild(ty);
+      }
+
+      const xlabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      xlabel.setAttribute('x', margin.left + ((maxN + 1) * cell) / 2);
+      xlabel.setAttribute('y', height - 14);
+      xlabel.setAttribute('class', 'axisLabel');
+      xlabel.setAttribute('text-anchor', 'middle');
+      xlabel.textContent = '첫 번째 더미 a';
+      board.appendChild(xlabel);
+
+      const ylabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      ylabel.setAttribute('x', 18);
+      ylabel.setAttribute('y', margin.top + ((maxN + 1) * cell) / 2);
+      ylabel.setAttribute('class', 'axisLabel');
+      ylabel.setAttribute('text-anchor', 'middle');
+      ylabel.setAttribute('transform', `rotate(-90 18 ${margin.top + ((maxN + 1) * cell) / 2})`);
+      ylabel.textContent = '두 번째 더미 b';
+      board.appendChild(ylabel);
+
+      updateExplanation();
+    }
+
+    function updateExplanation() {
+      const { a, b } = selected;
+      const p = isP(a,b);
+      stateName.textContent = `(${a}, ${b})`;
+      stateBadge.textContent = p ? 'P-위치' : 'N-위치';
+      stateBadge.className = `badge ${p ? 'p' : 'n'}`;
+
+      if (isTerminal(a,b)) {
+        stateExplanation.innerHTML = `
+          <p><strong>(0,0)</strong>은 끝 위치이다. 더 이상 이동할 수 없으므로 차례인 사람이 진다.</p>
+          <div class="math">(0,0)은 P-위치</div>
+        `;
+        return;
+      }
+
+      if (p) {
+        const t = Math.max(0, a - 1);
+        stateExplanation.innerHTML = `
+          <p>두 더미가 같으므로 대칭 위치이다.</p>
+          <div class="math">a = b 이므로 (${a},${b})는 P-위치</div>
+          <p>차례인 사람이 한쪽 더미를 줄이면 반드시 비대칭 위치가 된다. 예를 들어</p>
+          <div class="math">(${a},${a}) → (${t},${a})</div>
+          <p>상대는 다른 더미를 같은 값으로 줄여 다시 대칭 위치를 만든다.</p>
+          <div class="math">(${t},${a}) → (${t},${t})</div>
+          <p>그래서 대칭 위치를 받은 사람은 계속 불리하다.</p>
+        `;
+      } else {
+        const m = Math.min(a,b);
+        const reduced = a > b ? '첫 번째 더미' : '두 번째 더미';
+        stateExplanation.innerHTML = `
+          <p>두 더미가 다르므로 비대칭 위치이다.</p>
+          <div class="math">a ≠ b 이므로 (${a},${b})는 N-위치</div>
+          <p>이기는 이동은 큰 더미를 작은 더미와 같게 줄이는 것이다.</p>
+          <div class="math">(${a},${b}) → (${m},${m})</div>
+          <p>여기서는 <strong>${reduced}</strong>를 ${m}까지 줄인다. 그러면 상대에게 P-위치를 넘긴다.</p>
+        `;
+      }
+    }
+
+    sizeRange.addEventListener('input', () => {
+      maxN = Number(sizeRange.value);
+      selected = { a: maxN, b: maxN };
+      render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      selected = { a: maxN, b: maxN };
+      render();
+    });
+
+    document.querySelectorAll('button[data-pick]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.pick;
+        if (mode === 'diag') selected = { a: Math.max(2, Math.floor(maxN * 0.7)), b: Math.max(2, Math.floor(maxN * 0.7)) };
+        if (mode === 'off') selected = { a: Math.max(1, maxN), b: Math.max(0, Math.floor(maxN * 0.45)) };
+        if (mode === 'zero') selected = { a: 0, b: 0 };
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
