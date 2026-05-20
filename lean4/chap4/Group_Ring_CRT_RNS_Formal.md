@@ -33,7 +33,9 @@
 | 공리 | 내용 |
 |---|---|
 | (G1) 결합법칙 | $\forall a, b, c \in G,\; (a * b) * c = a * (b * c)$ |
+
 | (G2) 항등원 | $\exists e \in G,\; \forall a \in G,\; e * a = a * e = a$ |
+
 | (G3) 역원 | $\forall a \in G,\; \exists a^{-1} \in G,\; a * a^{-1} = a^{-1} * a = e$ |
 
 추가로 $\forall a, b \in G,\; a * b = b * a$가 성립하면 $(G, *)$를 **가환군**(commutative group) 또는 **아벨군**(abelian group)이라 부른다.
