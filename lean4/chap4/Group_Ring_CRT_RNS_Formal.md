@@ -649,7 +649,7 @@ $\phi$가 전단사이므로 끝. ■
 
 **정리 3.3** ([RNS 산술 정리](#)).
 
-$x, y \in \{0, 1, \ldots, M-1\}$이고 그 RNS 표현이 각각 $$\mathrm{RNS}\_{\mathcal{B}}(x) = (x_1, \ldots, x_k)$, $\mathrm{RNS}_{\mathcal{B}}(y) = (y_1, \ldots, y_k)$$라 하자. 그러면 다음이 성립한다.
+$x, y \in \{0, 1, \ldots, M-1\}$이고 그 RNS 표현이 각각 $$\mathrm{RNS}\_{\mathcal{B}}(x) = (x_1, \ldots, x_k)$$, $$\mathrm{RNS}_{\mathcal{B}}(y) = (y_1, \ldots, y_k)$$라 하자. 그러면 다음이 성립한다.
 
 **(A) 덧셈**:
 
