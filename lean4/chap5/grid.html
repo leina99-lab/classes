@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>두 더미 게임을 처음부터 이해하기: 규칙, N/P 위치, 거울 전략</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #5e697f;
+      --line: #d9deea;
+      --soft: #f2f5fb;
+      --p: #243b6b;
+      --pText: #ffffff;
+      --n: #eaf0ff;
+      --nStroke: #9db2e7;
+      --selected: #111827;
+      --legal: #fdecc8;
+      --legalStroke: #c78300;
+      --win: #d9f3e2;
+      --winStroke: #16803a;
+      --mirror: #ffe0e4;
+      --mirrorStroke: #b42339;
+      --axis: #323846;
+      --shadow: 0 12px 34px rgba(30, 41, 59, 0.10);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.62;
+      word-break: keep-all;
+    }
+
+    header {
+      background: linear-gradient(180deg, #ffffff, #f6f7fb);
+      border-bottom: 1px solid var(--line);
+      padding: 34px 20px 24px;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 46px);
+      letter-spacing: -0.045em;
+      line-height: 1.16;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    main { padding: 24px 0 48px; }
+
+    .stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .twoCols {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.05fr) minmax(340px, 0.95fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .twoCols { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .cardHead {
+      padding: 18px 22px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .cardHead h2, .cardHead h3 {
+      margin: 0;
+      letter-spacing: -0.035em;
+      line-height: 1.25;
+    }
+
+    .cardHead h2 { font-size: 25px; }
+    .cardHead h3 { font-size: 21px; }
+
+    .cardBody { padding: 20px 22px 22px; }
+
+    .lead {
+      font-size: 18px;
+      color: #26324c;
+      margin-top: 0;
+    }
+
+    .ruleList {
+      counter-reset: rule;
+      display: grid;
+      gap: 12px;
+      margin: 16px 0 0;
+    }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcff;
+    }
+
+    .rule::before {
+      counter-increment: rule;
+      content: counter(rule);
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--p);
+      color: white;
+      font-weight: 800;
+    }
+
+    .rule strong { display: block; margin-bottom: 3px; }
+
+    .math {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: #f5f7fc;
+      border: 1px solid var(--line);
+      padding: 1px 6px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .exampleLine {
+      padding: 13px 15px;
+      border-radius: 14px;
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      margin: 10px 0;
+    }
+
+    .pillRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #f4f6fb;
+      border: 1px solid var(--line);
+      color: #354057;
+      font-weight: 650;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    label { color: var(--muted); font-size: 14px; }
+    input[type="range"] { width: 100%; }
+
+    .btnRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 4px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #8ea0c9; background: #f8faff; }
+    button.primary { background: var(--p); color: white; border-color: var(--p); }
+    button.primary:hover { background: #1d3159; }
+
+    .svgWrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcff;
+    }
+
+    svg {
+      display: block;
+      min-width: 560px;
+      width: 100%;
+      height: auto;
+      user-select: none;
+    }
+
+    .axisText { fill: var(--axis); font-size: 13px; font-weight: 700; }
+    .axisLabel { fill: var(--axis); font-size: 15px; font-weight: 800; }
+    .gridLine { stroke: #e4e8f2; stroke-width: 1; }
+
+    .cell rect {
+      rx: 8;
+      ry: 8;
+      stroke-width: 1.5;
+      transition: all 120ms ease;
+      cursor: pointer;
+    }
+
+    .cell text {
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 850;
+      dominant-baseline: middle;
+      text-anchor: middle;
+    }
+
+    .cell.N rect { fill: var(--n); stroke: var(--nStroke); }
+    .cell.N text { fill: #26324c; }
+    .cell.P rect { fill: var(--p); stroke: var(--p); }
+    .cell.P text { fill: var(--pText); }
+    .cell.legal rect { fill: var(--legal); stroke: var(--legalStroke); stroke-width: 2.5; }
+    .cell.legal text { fill: #553500; }
+    .cell.win rect { fill: var(--win); stroke: var(--winStroke); stroke-width: 3; }
+    .cell.win text { fill: #0d4b23; }
+    .cell.mirror rect { fill: var(--mirror); stroke: var(--mirrorStroke); stroke-width: 3; }
+    .cell.mirror text { fill: #6f1021; }
+    .cell.selected rect {
+      fill: #ffffff;
+      stroke: var(--selected);
+      stroke-width: 4;
+      filter: drop-shadow(0 8px 12px rgba(17,24,39,0.20));
+    }
+    .cell.selected text { fill: #111827; }
+
+    .arrow { stroke-width: 3; fill: none; }
+    .arrow.winArrow { stroke: var(--winStroke); }
+    .arrow.mirrorArrow { stroke: var(--mirrorStroke); stroke-dasharray: 7 5; }
+    .arrow.legalArrow { stroke: #c47700; stroke-width: 2; opacity: 0.55; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legendItem { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid var(--line);
+      display: inline-block;
+    }
+    .swatch.p { background: var(--p); border-color: var(--p); }
+    .swatch.n { background: var(--n); border-color: var(--nStroke); }
+    .swatch.legal { background: var(--legal); border-color: var(--legalStroke); }
+    .swatch.win { background: var(--win); border-color: var(--winStroke); }
+    .swatch.mirror { background: var(--mirror); border-color: var(--mirrorStroke); }
+
+    .stateBox {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fbfcff;
+      margin-bottom: 14px;
+    }
+
+    .stateTitle {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .stateTitle strong {
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .badge.P { background: var(--p); color: white; }
+    .badge.N { background: var(--n); color: #26324c; border: 1px solid var(--nStroke); }
+
+    .explain {
+      margin: 0;
+      color: #26324c;
+    }
+
+    .moveList {
+      max-height: 170px;
+      overflow: auto;
+      display: grid;
+      gap: 7px;
+      padding-right: 3px;
+    }
+
+    .moveItem {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #f4f6fb;
+      border: 1px solid var(--line);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+    }
+
+    .moveItem.win { background: var(--win); border-color: var(--winStroke); }
+    .moveItem.mirror { background: var(--mirror); border-color: var(--mirrorStroke); }
+
+    .formulaBox {
+      background: #f8faff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .formulaBox .big {
+      font-size: 20px;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      margin: 0 0 8px;
+    }
+
+    .miniGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .miniGrid { grid-template-columns: 1fr; }
+    }
+
+    .miniCard {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px;
+      background: #fbfcff;
+    }
+
+    .miniCard strong { display: block; margin-bottom: 4px; }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcff;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    details + details { margin-top: 10px; }
+
+    summary {
+      cursor: pointer;
+      font-weight: 800;
+      padding: 13px 15px;
+      background: #f8faff;
+      border-bottom: 1px solid transparent;
+    }
+
+    details[open] summary { border-bottom-color: var(--line); }
+    details .detailBody { padding: 14px 15px; }
+
+    .footerNote {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 18px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>두 더미 게임을 처음부터 이해하기</h1>
+      <p class="subtitle">상태 <span class="math">(a,b)</span>, 가능한 이동, N-위치와 P-위치, 그리고 왜 대칭 위치 <span class="math">(a,a)</span>가 지는 위치인지 시각화한다.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap stack">
+      <section class="card">
+        <div class="cardHead">
+          <h2>1. 이 게임은 무엇인가</h2>
+        </div>
+        <div class="cardBody">
+          <p class="lead">
+            이 게임은 탁자 위에 물건 더미가 두 개 놓여 있는 게임이다. 왼쪽 더미에 <span class="math">a</span>개, 오른쪽 더미에 <span class="math">b</span>개가 있으면 현재 상태를 <span class="math">(a,b)</span>라고 쓴다.
+          </p>
+
+          <div class="ruleList">
+            <div class="rule">
+              <div>
+                <strong>상태</strong>
+                예를 들어 <span class="math">(5,3)</span>은 왼쪽 더미에 5개, 오른쪽 더미에 3개가 있다는 뜻이다.
+              </div>
+            </div>
+            <div class="rule">
+              <div>
+                <strong>한 번의 이동</strong>
+                자기 차례에는 더미 하나만 고른다. 그리고 그 더미에서 1개 이상을 제거한다. 즉 <span class="math">(a,b) → (a',b)</span> 또는 <span class="math">(a,b) → (a,b')</span>로 이동한다. 여기서 <span class="math">0 ≤ a' &lt; a</span>, <span class="math">0 ≤ b' &lt; b</span>이다.
+              </div>
+            </div>
+            <div class="rule">
+              <div>
+                <strong>불가능한 이동</strong>
+                두 더미를 동시에 줄일 수 없다. 더미를 늘릴 수도 없다. 아무것도 제거하지 않는 것도 이동이 아니다.
+              </div>
+            </div>
+            <div class="rule">
+              <div>
+                <strong>끝 상태</strong>
+                <span class="math">(0,0)</span>에서는 더 이상 움직일 수 없다. 자기 차례에 <span class="math">(0,0)</span>을 받은 사람은 진다. 그래서 상대에게 <span class="math">(0,0)</span>을 넘기면 이긴다.
+              </div>
+            </div>
+          </div>
+
+          <div class="miniGrid">
+            <div class="miniCard">
+              <strong>가능한 이동 예</strong>
+              <span class="math">(5,3) → (2,3)</span><br />왼쪽 더미만 줄였다.
+            </div>
+            <div class="miniCard">
+              <strong>가능한 이동 예</strong>
+              <span class="math">(5,3) → (5,0)</span><br />오른쪽 더미를 모두 제거했다.
+            </div>
+            <div class="miniCard">
+              <strong>불가능한 이동 예</strong>
+              <span class="math">(5,3) → (2,1)</span><br />두 더미를 동시에 줄였으므로 안 된다.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="twoCols">
+        <div class="card">
+          <div class="cardHead">
+            <h2>2. 격자판으로 보는 게임 상태</h2>
+          </div>
+          <div class="cardBody">
+            <div class="controls">
+              <label for="sizeRange">최대 더미 크기: <strong id="sizeLabel">8</strong></label>
+              <button id="resetBtn" type="button">초기화</button>
+              <input id="sizeRange" type="range" min="3" max="12" step="1" value="8" />
+              <button id="sampleBtn" type="button" class="primary">예시: (7,3)</button>
+            </div>
+
+            <div class="svgWrap">
+              <svg id="board" viewBox="0 0 720 720" role="img" aria-label="두 더미 게임 상태 격자"></svg>
+            </div>
+
+            <div class="legend">
+              <span class="legendItem"><span class="swatch p"></span>P-위치: 받은 사람이 불리한 위치</span>
+              <span class="legendItem"><span class="swatch n"></span>N-위치: 차례인 사람이 이길 수 있는 위치</span>
+              <span class="legendItem"><span class="swatch legal"></span>선택한 상태에서 갈 수 있는 위치</span>
+              <span class="legendItem"><span class="swatch win"></span>이기는 이동</span>
+              <span class="legendItem"><span class="swatch mirror"></span>거울 응수</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardHead">
+            <h2>3. 선택한 상태 설명</h2>
+          </div>
+          <div class="cardBody">
+            <div id="stateBox" class="stateBox"></div>
+            <div class="formulaBox">
+              <p class="big">결론</p>
+              <p class="explain">
+                이 게임에서는 대각선 위치 <span class="math">(a,a)</span>가 전부 P-위치이다. 대각선 밖의 위치 <span class="math">(a,b)</span>, <span class="math">a ≠ b</span>는 전부 N-위치이다.
+              </p>
+              <p class="explain" style="margin-top:10px;">
+                비대칭이면 큰 더미를 작은 더미 크기까지 줄여서 바로 대칭 위치를 만들 수 있다. 대칭이면 어떤 이동을 해도 비대칭이 되고, 상대가 다시 대칭을 만들 수 있다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHead">
+          <h2>4. N-위치와 P-위치는 무슨 뜻인가</h2>
+        </div>
+        <div class="cardBody">
+          <div class="miniGrid">
+            <div class="miniCard">
+              <strong>N-위치</strong>
+              Next player winning position이다. 즉 지금 차례인 사람이 잘 두면 이기는 위치이다.
+            </div>
+            <div class="miniCard">
+              <strong>P-위치</strong>
+              Previous player winning position이다. 즉 이전 사람이 좋은 위치를 넘겨준 상태이다. 지금 차례인 사람은 상대가 실수하지 않으면 진다.
+            </div>
+            <div class="miniCard">
+              <strong>끝 상태</strong>
+              <span class="math">(0,0)</span>에서는 움직일 수 없으므로 P-위치이다. 받은 사람이 진다.
+            </div>
+          </div>
+
+          <div class="exampleLine">
+            <strong><span class="math">(0,b)</span>, <span class="math">b &gt; 0</span>은 N-위치이다.</strong><br />
+            오른쪽 더미를 전부 제거해서 <span class="math">(0,0)</span>을 상대에게 넘길 수 있기 때문이다.
+          </div>
+          <div class="exampleLine">
+            <strong><span class="math">(a,b)</span>, <span class="math">a ≠ b</span>는 N-위치이다.</strong><br />
+            큰 더미를 작은 더미와 같게 만들 수 있다. 예를 들어 <span class="math">(7,3) → (3,3)</span>이다. 이렇게 상대에게 P-위치를 넘긴다.
+          </div>
+          <div class="exampleLine">
+            <strong><span class="math">(a,a)</span>는 P-위치이다.</strong><br />
+            한쪽을 줄이면 대칭이 깨진다. 그러면 상대가 다른 쪽을 똑같이 줄여 대칭을 복구한다. 이것이 거울 전략이다.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHead">
+          <h2>5. 실제 게임 흐름 예시</h2>
+        </div>
+        <div class="cardBody">
+          <details open>
+            <summary>예시 A: 시작이 <span class="math">(5,2)</span>이면 첫 사람이 이긴다</summary>
+            <div class="detailBody">
+              <p>왜냐하면 첫 사람이 바로 큰 더미를 줄여 대칭 위치를 만들 수 있기 때문이다.</p>
+              <p class="math">(5,2) → (2,2)</p>
+              <p>이제 상대가 어떤 한쪽을 줄여도, 첫 사람은 다른 쪽을 똑같이 줄여 다시 대칭을 만든다.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>예시 B: 시작이 <span class="math">(3,3)</span>이면 첫 사람이 진다</summary>
+            <div class="detailBody">
+              <p>첫 사람이 한쪽을 줄일 수밖에 없다. 예를 들어 다음처럼 두었다고 하자.</p>
+              <p class="math">(3,3) → (1,3)</p>
+              <p>그러면 두 번째 사람은 다른 쪽도 1로 줄인다.</p>
+              <p class="math">(1,3) → (1,1)</p>
+              <p>이제 다시 대칭이다. 첫 사람이 다시 한쪽을 줄이면 두 번째 사람이 또 거울처럼 따라 한다. 결국 첫 사람이 <span class="math">(0,0)</span>을 받게 된다.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>예시 C: 시작이 <span class="math">(n,n)</span>이면 왜 두 번째 사람이 이기는가</summary>
+            <div class="detailBody">
+              <p><span class="math">(n,n)</span>은 대칭 위치이다. 첫 번째 사람은 반드시 한쪽 더미만 줄여야 하므로 대칭을 깨뜨릴 수밖에 없다.</p>
+              <p>예를 들어 첫 번째 사람이 <span class="math">(n,n) → (c,n)</span>으로 두면, 두 번째 사람은 <span class="math">(c,n) → (c,c)</span>로 둔다.</p>
+              <p>즉 두 번째 사람은 매번 대칭을 복구한다. 이 전략을 계속 쓰면 마지막에는 두 번째 사람이 <span class="math">(0,0)</span>을 첫 번째 사람에게 넘긴다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHead">
+          <h2>6. 한 줄 정리</h2>
+        </div>
+        <div class="cardBody">
+          <p class="lead">
+            이 게임은 두 더미 중 하나만 줄이는 게임이다. 대칭 위치 <span class="math">(a,a)</span>를 받은 사람은 상대의 거울 전략 때문에 불리하다. 그래서 P-위치는 정확히 <span class="math">(a,a)</span>이고, 비대칭 위치는 큰 더미를 줄여 대칭으로 만들 수 있으므로 N-위치이다.
+          </p>
+          <div class="formulaBox">
+            <p class="big"><span class="math">P = {(a,a) : a ≥ 0}</span></p>
+            <p class="big"><span class="math">N = {(a,b) : a ≠ b}</span></p>
+          </div>
+          <p class="footerNote">격자판에서 칸을 클릭하면 가능한 이동과 이기는 이동 또는 거울 응수를 확인할 수 있다.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const board = document.getElementById('board');
+    const sizeRange = document.getElementById('sizeRange');
+    const sizeLabel = document.getElementById('sizeLabel');
+    const stateBox = document.getElementById('stateBox');
+    const resetBtn = document.getElementById('resetBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+
+    let maxN = Number(sizeRange.value);
+    let selected = { a: 3, b: 3 };
+
+    function isP(a, b) { return a === b; }
+
+    function legalMoves(a, b) {
+      const moves = [];
+      for (let x = 0; x < a; x++) moves.push({ a: x, b, type: 'left' });
+      for (let y = 0; y < b; y++) moves.push({ a, b: y, type: 'right' });
+      return moves;
+    }
+
+    function winningMove(a, b) {
+      if (a === b) return null;
+      const m = Math.min(a, b);
+      return { a: m, b: m };
+    }
+
+    function mirrorExample(a, b) {
+      if (a !== b || a === 0) return null;
+      const reduced = Math.max(0, a - 1);
+      return {
+        opponent: { a: reduced, b },
+        mirror: { a: reduced, b: reduced }
+      };
+    }
+
+    function key(a, b) { return `${a},${b}`; }
+
+    function cellCenter(a, b, pad, cell, gap, n) {
+      const x = pad + a * (cell + gap) + cell / 2;
+      const y = pad + (n - b) * (cell + gap) + cell / 2;
+      return { x, y };
+    }
+
+    function drawArrow(from, to, cls, pad, cell, gap, n) {
+      const s = cellCenter(from.a, from.b, pad, cell, gap, n);
+      const t = cellCenter(to.a, to.b, pad, cell, gap, n);
+      const dx = t.x - s.x;
+      const dy = t.y - s.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len;
+      const uy = dy / len;
+      const startX = s.x + ux * (cell * 0.42);
+      const startY = s.y + uy * (cell * 0.42);
+      const endX = t.x - ux * (cell * 0.42);
+      const endY = t.y - uy * (cell * 0.42);
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      arrow.setAttribute('class', `arrow ${cls}`);
+      arrow.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
+      arrow.setAttribute('marker-end', `url(#arrow-${cls})`);
+      board.appendChild(arrow);
+    }
+
+    function renderBoard() {
+      maxN = Number(sizeRange.value);
+      sizeLabel.textContent = maxN;
+      if (selected.a > maxN || selected.b > maxN) selected = { a: maxN, b: maxN };
+
+      board.innerHTML = '';
+      const view = 720;
+      const pad = 70;
+      const usable = view - pad * 2;
+      const gap = 6;
+      const cell = (usable - gap * maxN) / (maxN + 1);
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      ['winArrow', 'mirrorArrow', 'legalArrow'].forEach(id => {
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', `arrow-${id}`);
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '10');
+        marker.setAttribute('refX', '7');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        marker.setAttribute('markerUnits', 'strokeWidth');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M0,0 L0,6 L8,3 z');
+        path.setAttribute('fill', id === 'winArrow' ? '#16803a' : id === 'mirrorArrow' ? '#b42339' : '#c47700');
+        marker.appendChild(path);
+        defs.appendChild(marker);
+      });
+      board.appendChild(defs);
+
+      for (let i = 0; i <= maxN; i++) {
+        const x = pad + i * (cell + gap) + cell / 2;
+        const y = pad + (maxN - i) * (cell + gap) + cell / 2;
+
+        const xt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xt.setAttribute('class', 'axisText');
+        xt.setAttribute('x', x);
+        xt.setAttribute('y', view - 22);
+        xt.setAttribute('text-anchor', 'middle');
+        xt.textContent = i;
+        board.appendChild(xt);
+
+        const yt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        yt.setAttribute('class', 'axisText');
+        yt.setAttribute('x', 38);
+        yt.setAttribute('y', y + 4);
+        yt.setAttribute('text-anchor', 'middle');
+        yt.textContent = i;
+        board.appendChild(yt);
+      }
+
+      const xlabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      xlabel.setAttribute('class', 'axisLabel');
+      xlabel.setAttribute('x', view / 2);
+      xlabel.setAttribute('y', view - 4);
+      xlabel.setAttribute('text-anchor', 'middle');
+      xlabel.textContent = '왼쪽 더미 a';
+      board.appendChild(xlabel);
+
+      const ylabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      ylabel.setAttribute('class', 'axisLabel');
+      ylabel.setAttribute('x', 14);
+      ylabel.setAttribute('y', view / 2);
+      ylabel.setAttribute('text-anchor', 'middle');
+      ylabel.setAttribute('transform', `rotate(-90 14 ${view / 2})`);
+      ylabel.textContent = '오른쪽 더미 b';
+      board.appendChild(ylabel);
+
+      const moves = legalMoves(selected.a, selected.b);
+      const legalSet = new Set(moves.map(m => key(m.a, m.b)));
+      const win = winningMove(selected.a, selected.b);
+      const mirror = mirrorExample(selected.a, selected.b);
+
+      for (let b = maxN; b >= 0; b--) {
+        for (let a = 0; a <= maxN; a++) {
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          const baseClass = isP(a, b) ? 'P' : 'N';
+          let cls = `cell ${baseClass}`;
+          if (legalSet.has(key(a, b))) cls += ' legal';
+          if (win && a === win.a && b === win.b) cls += ' win';
+          if (mirror && a === mirror.mirror.a && b === mirror.mirror.b) cls += ' mirror';
+          if (a === selected.a && b === selected.b) cls += ' selected';
+          g.setAttribute('class', cls);
+          g.setAttribute('data-a', a);
+          g.setAttribute('data-b', b);
+
+          const x = pad + a * (cell + gap);
+          const y = pad + (maxN - b) * (cell + gap);
+
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', x);
+          rect.setAttribute('y', y);
+          rect.setAttribute('width', cell);
+          rect.setAttribute('height', cell);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', x + cell / 2);
+          txt.setAttribute('y', y + cell / 2 + 1);
+          txt.textContent = baseClass;
+
+          g.appendChild(rect);
+          g.appendChild(txt);
+          g.addEventListener('click', () => {
+            selected = { a, b };
+            renderBoard();
+            renderState();
+          });
+          board.appendChild(g);
+        }
+      }
+
+      if (win) drawArrow(selected, win, 'winArrow', pad, cell, gap, maxN);
+      if (mirror) {
+        drawArrow(selected, mirror.opponent, 'legalArrow', pad, cell, gap, maxN);
+        drawArrow(mirror.opponent, mirror.mirror, 'mirrorArrow', pad, cell, gap, maxN);
+      }
+    }
+
+    function renderState() {
+      const { a, b } = selected;
+      const kind = isP(a, b) ? 'P' : 'N';
+      const moves = legalMoves(a, b);
+      const win = winningMove(a, b);
+      const mirror = mirrorExample(a, b);
+
+      let html = `
+        <div class="stateTitle">
+          <strong>상태 (${a}, ${b})</strong>
+          <span class="badge ${kind}">${kind}-위치</span>
+        </div>
+      `;
+
+      if (a === 0 && b === 0) {
+        html += `<p class="explain">끝 상태이다. 지금 차례인 사람은 움직일 수 없으므로 진다. 그래서 (0,0)은 P-위치이다.</p>`;
+      } else if (a === b) {
+        html += `<p class="explain">두 더미가 같다. 지금 차례인 사람이 한쪽을 줄이면 대칭이 깨진다. 그러면 상대가 다른 쪽을 똑같은 크기로 줄여 다시 대칭을 만든다. 그래서 이 위치는 P-위치이다.</p>`;
+        if (mirror) {
+          html += `<div class="exampleLine"><strong>거울 응수 예</strong><br />상대가 (${a}, ${b}) → (${mirror.opponent.a}, ${mirror.opponent.b})로 움직이면, 나는 (${mirror.opponent.a}, ${mirror.opponent.b}) → (${mirror.mirror.a}, ${mirror.mirror.b})로 응수한다.</div>`;
+        }
+      } else {
+        html += `<p class="explain">두 더미가 다르다. 큰 더미를 작은 더미와 같게 줄일 수 있으므로 지금 차례인 사람이 이길 수 있다.</p>`;
+        html += `<div class="exampleLine"><strong>이기는 이동</strong><br /><span class="math">(${a}, ${b}) → (${win.a}, ${win.b})</span><br />상대에게 대칭 위치를 넘긴다.</div>`;
+      }
+
+      html += `<p class="explain" style="margin-top:12px;"><strong>이 상태에서 가능한 이동 수:</strong> ${moves.length}개</p>`;
+      html += `<div class="moveList">`;
+      moves.slice(0, 40).forEach(m => {
+        const cls = win && m.a === win.a && m.b === win.b ? 'moveItem win' : 'moveItem';
+        html += `<div class="${cls}">(${a}, ${b}) → (${m.a}, ${m.b})</div>`;
+      });
+      if (moves.length > 40) html += `<div class="moveItem">나머지 ${moves.length - 40}개 이동 생략</div>`;
+      html += `</div>`;
+
+      stateBox.innerHTML = html;
+    }
+
+    sizeRange.addEventListener('input', () => {
+      renderBoard();
+      renderState();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      selected = { a: 3, b: 3 };
+      renderBoard();
+      renderState();
+    });
+
+    sampleBtn.addEventListener('click', () => {
+      if (Number(sizeRange.value) < 7) sizeRange.value = 7;
+      selected = { a: 7, b: 3 };
+      renderBoard();
+      renderState();
+    });
+
+    renderBoard();
+    renderState();
+  </script>
+</body>
+</html>
