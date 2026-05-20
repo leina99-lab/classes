@@ -267,9 +267,4 @@ example (p : ℕ) [Fact p.Prime] (a : ZMod p) : a ^ p = a := by
 
 
 
--- 'r 이 mod p 의 원시근' 의 형식 정의
-def isPrimitiveRoot (p : ℕ) [Fact p.Prime] (r : ZMod p) : Prop :=
-  orderOf r = p - 1
 
--- 2 가 mod 11 의 원시근임 (구체 검증)
-example : orderOf (2 : ZMod 11) = 10 := by native_decide
