@@ -238,7 +238,7 @@ x \equiv a_i \pmod{m_i}
 - (H2) 곱셈 보존: 동일한 방식으로 ${\phi([x] \cdot [y]) = \phi([x]) \cdot \phi([y])}$.
 - (H3) 단위원 보존: ${\phi([1]_M) = ([1]_{m_1}, [1]_{m_2}, \ldots, [1]_{m_k}) = 1_{R_1 \times \cdots \times R_k}}$.
 
-**(3) 단사**. ${\phi([x]_M) = \phi([y]_M)}$이면 모든 $i$에 대해 ${[x]_{m_i} = [y]_{m_i}}$, 즉 ${m_i \mid (x - y)}$. 보조정리 2.5에 의해 ${M \mid (x - y)}$, 즉 $P[x]_M = [y]_M}$.
+**(3) 단사**. ${\phi([x]_M) = \phi([y]_M)}$이면 모든 $i$에 대해 ${[x]_{m_i} = [y]_{m_i}}$, 즉 ${m_i \mid (x - y)}$. 보조정리 2.5에 의해 ${M \mid (x - y)}$, 즉 ${P[x]_M = [y]_M}$.
 
 **(4) 전사**. 임의의 튜플 ${([a_1], [a_2], \ldots, [a_k])}$가 주어지면, 정리 2.4 (c)에 의해 ${x = \sum_i a_i M_i y_i}$가 ${x \equiv a_i \pmod{m_i}}$를 만족. 따라서 ${\phi([x]_M) = ([a_1], [a_2], \ldots, [a_k])}$.
 
