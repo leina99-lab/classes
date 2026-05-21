@@ -1,14 +1,8 @@
-# 로젠 5장 학생 참고용 완전판: 귀납과 재귀
+# 로젠 5장 : 귀납과 재귀
 
-이 파일은 로젠 이산수학 5장에 맞춘 학생 참고용 완전판이다. 중심 주제는 **수학적 귀납법**(mathematical induction), **강귀납법**(strong induction), **순서화 원리**(well-ordering principle), **재귀 정의**(recursive definition), **구조적 귀납법**(structural induction), **재귀 알고리즘**(recursive algorithm)이다.
+ **수학적 귀납법**(mathematical induction), **강귀납법**(strong induction), **순서화 원리**(well-ordering principle), **재귀 정의**(recursive definition), **구조적 귀납법**(structural induction), **재귀 알고리즘**(recursive algorithm)이다.
 
 이 파일은 논리 단원 정리가 아니다. 논리 기호 `→`, `↔`, `∀`, `∃`는 증명을 쓰기 위한 언어로만 사용한다.
-
-## 0. 읽는 법
-
-PPTX는 수업 진행용이다. 특별한 아이디어가 필요한 증명은 PPTX에도 자세히 들어가지만, 반복형 계산은 뼈대로 제시된다. 이 학생 참고용 파일에는 핵심 손증명을 모두 적는다.
-
-Lean 4 코드는 자연어 증명과 대응되도록 작성했다. 이때 산술 계산은 자동화 전술로 덮기보다, 필요한 작은 정리 또는 공리를 이름으로 부르고 `rw`로 치환하는 방식으로 설명한다.
 
 ## 1. 수학적 귀납법
 
