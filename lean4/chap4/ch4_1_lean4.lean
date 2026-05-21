@@ -127,22 +127,41 @@ example : 17 / 5 = 3 := by decide
 example : 17 % 5 = 2 := by decide
 
 
--- §4.1 정리: a ∣ b ↔ b % a = 0  (a > 0일 때)
+-- §4.1 정리: a ∣ b ↔ b % a = 0
 -- 즉, "나누어떨어진다"는 "나머지가 0이다"와 같다.
--- Mathlib에는 단방향 정리들이 직접 있다:
---   Nat.dvd_of_mod_eq_zero  : b % a = 0 → a ∣ b
---   Nat.mod_eq_zero_of_dvd  : a ∣ b → b % a = 0   (※ 정확한 이름은 확인 필요)
--- 두 방향을 묶은 정리도 있다:
---   Nat.dvd_iff_mod_eq_zero : 0 < n → (n ∣ m ↔ m % n = 0)
+--
+-- 핵심: Mathlib의 Nat.dvd_iff_mod_eq_zero는 가정 0 < a를 요구하지 않는다.
+-- a = 0인 경우에도 잘 정의되어 양방향 동치가 성립한다.
+--   Nat.dvd_iff_mod_eq_zero : m ∣ n ↔ n % m = 0
+--   Nat.mod_eq_zero_of_dvd  : m ∣ n → n % m = 0
+--   Nat.dvd_of_mod_eq_zero  : n % m = 0 → m ∣ n
 
--- 단방향 1: 나머지가 0이면 가분성.
+-- 양방향 동치 (가장 짧은 형태):
+theorem dvd_iff_mod_eq_zero (a b : Nat) :
+    a ∣ b ↔ b % a = 0 :=
+  Nat.dvd_iff_mod_eq_zero
+
+-- 양방향 동치 (constructor로 미시 전개):
+example (a b : Nat) : a ∣ b ↔ b % a = 0 := by
+  constructor
+  · intro h
+    exact Nat.mod_eq_zero_of_dvd h
+  · intro h
+    exact Nat.dvd_of_mod_eq_zero h
+
+-- forward 방향 (가분성 → 나머지 0):
+theorem dvd_to_mod_zero (a b : Nat) (h : a ∣ b) :
+    b % a = 0 :=
+  Nat.mod_eq_zero_of_dvd h
+
+-- backward 방향 (나머지 0 → 가분성):
 example (a b : Nat) (h : b % a = 0) : a ∣ b :=
   Nat.dvd_of_mod_eq_zero h
 
--- 단방향 2: 가분성이면 나머지가 0.
--- Mathlib의 정확한 정리 이름은 환경에 따라 다를 수 있다.
--- 가장 안전한 형태는 Nat.mod_eq_zero_iff_dvd를 쓰는 것.
--- 본 자료 학생 자료에서는 단방향 정리만 사용한다.
+-- rw 중심의 대안 (forward 방향):
+example (a b : Nat) (h : a ∣ b) : b % a = 0 := by
+  rw [← Nat.dvd_iff_mod_eq_zero]
+  exact h
 
 
 -- =========================================================
@@ -200,8 +219,10 @@ example (m a b c : Int)
   ▷ 나눗셈
     Nat.div_add_mod : k * (m / k) + m % k = m
     Nat.mod_lt      : 0 < y → x % y < y
-    Nat.dvd_of_mod_eq_zero : m % a = 0 → a ∣ m
-    Nat.mod_eq_zero_of_dvd : a ∣ m → m % a = 0   (이름 확인 필요)
+    Nat.dvd_of_mod_eq_zero : n % m = 0 → m ∣ n
+    Nat.mod_eq_zero_of_dvd : m ∣ n → n % m = 0
+    Nat.dvd_iff_mod_eq_zero : m ∣ n ↔ n % m = 0
+    (세 정리 모두 m의 양수성을 요구하지 않는다)
 
   ▷ 합동 (§4.4 본격)
     Int.ModEq m a b := m ∣ (a - b)
