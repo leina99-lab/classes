@@ -37,7 +37,7 @@ $$
 수식으로 쓰면 다음과 같다.
 
 $$
-P(0)\text{이 참이고,}\quad P(k) \Rightarrow P(k+1)\text{이면, 모든 }n\text{에 대해 }P(n)\text{이 참이다.}
+P(1)\text{이 참이고,}\quad P(k) \Rightarrow P(k+1)\text{이면, 모든 }n\text{에 대해 }P(n)\text{이 참이다.}
 $$
 
 이 방법은 도미노와 비슷하다. 첫 번째 도미노가 넘어지고, 하나의 도미노가 바로 다음 도미노를 넘어뜨리면 전체 도미노가 넘어진다.
