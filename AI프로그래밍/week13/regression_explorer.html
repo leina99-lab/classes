@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회귀와 PCA — 계수가 정답을 찾아가는 과정</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --paper:#F4F0E6; --paper2:#EBE5D6; --card:#FBF9F3;
+    --ink:#21283B; --sub:#5C6276; --faint:#8C8E99;
+    --line:#D8D1BF; --line2:#C9C1AB;
+    --navy:#274472;   /* OLS */
+    --mint:#2F7D63;   /* Ridge */
+    --crimson:#A52E2A;/* Lasso */
+    --amber:#C6841B;  /* PCA  */
+    --plum:#6B3A6E;   /* Deming */
+    --gold:#D9A441;
+    --shadow:0 6px 22px rgba(40,35,20,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--paper);color:var(--ink);
+    font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  body{
+    background-image:
+      radial-gradient(circle at 14% 12%, rgba(217,164,65,.07), transparent 42%),
+      radial-gradient(circle at 88% 86%, rgba(39,68,114,.06), transparent 46%);
+    min-height:100vh; padding:0 0 70px;
+  }
+  .serif{font-family:Georgia,'Times New Roman',serif;}
+
+  /* ── 헤더 ── */
+  header{
+    max-width:1180px; margin:0 auto; padding:38px 30px 22px;
+  }
+  .kicker{
+    font-size:12px; letter-spacing:.32em; text-transform:uppercase;
+    color:var(--amber); font-weight:700; margin-bottom:12px;
+  }
+  header h1{
+    font-family:Georgia,serif; font-weight:700; line-height:1.16;
+    font-size:clamp(27px,3.6vw,42px); letter-spacing:-.01em;
+  }
+  header h1 em{font-style:italic; color:var(--navy);}
+  header p.lead{
+    margin-top:14px; max-width:680px; color:var(--sub);
+    font-size:15px; line-height:1.7;
+  }
+  .rule{
+    max-width:1180px; margin:20px auto 0; padding:0 30px;
+  }
+  .rule div{height:1px; background:var(--line2);}
+
+  /* ── 탭 바 ── */
+  nav.tabs{
+    max-width:1180px; margin:24px auto 0; padding:0 30px;
+    display:flex; flex-wrap:wrap; gap:9px;
+  }
+  .tab{
+    border:1px solid var(--line2); background:var(--card);
+    padding:11px 17px; border-radius:11px; cursor:pointer;
+    font-size:13.5px; font-weight:600; color:var(--sub);
+    display:flex; align-items:center; gap:9px;
+    transition:all .18s ease;
+  }
+  .tab .dot{width:9px;height:9px;border-radius:50%;background:var(--faint);transition:.18s;}
+  .tab .num{font-family:Georgia,serif;font-style:italic;opacity:.6;font-size:13px;}
+  .tab:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+  .tab.active{color:var(--ink);background:#fff;border-color:var(--ink);box-shadow:var(--shadow);}
+  .tab[data-t="ols"].active .dot{background:var(--navy);}
+  .tab[data-t="reg"].active .dot{background:var(--mint);}
+  .tab[data-t="pca"].active .dot{background:var(--amber);}
+  .tab[data-t="dem"].active .dot{background:var(--plum);}
+
+  /* ── 패널 ── */
+  main{max-width:1180px; margin:0 auto; padding:0 30px;}
+  .panel{display:none; margin-top:26px;}
+  .panel.active{display:block; animation:fade .4s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .panel-head{margin-bottom:16px;}
+  .panel-head .ptag{
+    font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
+  }
+  .panel-head h2{font-family:Georgia,serif;font-size:25px;margin-top:6px;font-weight:700;}
+  .panel-head p{margin-top:7px;color:var(--sub);font-size:14px;line-height:1.65;max-width:760px;}
+
+  /* ── 스테이지 (캔버스 2열) ── */
+  .stage{
+    display:grid; grid-template-columns:1.32fr 1fr; gap:16px;
+  }
+  @media(max-width:880px){.stage{grid-template-columns:1fr;}}
+  .canvas-card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:14px 14px 10px; box-shadow:var(--shadow);
+  }
+  .canvas-card .cap{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:8px;
+  }
+  .canvas-card .cap b{font-size:13px;font-weight:700;}
+  .canvas-card .cap span{font-size:11.5px;color:var(--faint);}
+  canvas{width:100%;display:block;border-radius:8px;}
+
+  /* ── 계수 리드아웃 ── */
+  .readout{
+    margin-top:16px; display:flex; flex-wrap:wrap; gap:10px;
+  }
+  .chip{
+    background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:11px 15px; min-width:118px; flex:1;
+  }
+  .chip .lab{font-size:11px;color:var(--faint);letter-spacing:.04em;margin-bottom:4px;}
+  .chip .val{font-family:Georgia,serif;font-size:21px;font-weight:700;}
+  .chip .val.mono{font-family:'SF Mono',Consolas,monospace;font-size:18px;}
+  .chip.hl{background:#fff;border-color:var(--ink);}
+
+  /* ── 진행 게이지 ── */
+  .gauge{
+    margin-top:6px;height:7px;border-radius:4px;background:var(--paper2);
+    overflow:hidden;
+  }
+  .gauge i{display:block;height:100%;width:0;border-radius:4px;transition:width .3s ease;}
+
+  /* ── 컨트롤 ── */
+  .controls{
+    margin-top:16px; background:var(--card); border:1px solid var(--line);
+    border-radius:13px; padding:15px 17px;
+    display:flex; flex-wrap:wrap; gap:14px; align-items:center;
+  }
+  .btn{
+    border:1px solid var(--ink); background:var(--ink); color:#fff;
+    padding:10px 16px; border-radius:9px; cursor:pointer;
+    font-size:13px; font-weight:600; font-family:inherit;
+    transition:.15s; display:flex;align-items:center;gap:7px;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:translateY(0);}
+  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn.ghost:hover{background:var(--paper2);}
+  .btn:disabled{opacity:.34;cursor:not-allowed;transform:none;}
+  .btn.big{font-size:13.5px;padding:11px 20px;}
+
+  .slider-wrap{display:flex;flex-direction:column;gap:5px;min-width:210px;flex:1;}
+  .slider-wrap .row{display:flex;justify-content:space-between;font-size:12px;}
+  .slider-wrap .row b{font-weight:700;}
+  .slider-wrap .row span{color:var(--faint);font-family:'SF Mono',Consolas,monospace;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:5px;
+    border-radius:3px;background:var(--line2);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--ink);cursor:pointer;border:3px solid var(--card);
+    box-shadow:0 1px 4px rgba(0,0,0,.3);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:18px;height:18px;border-radius:50%;background:var(--ink);
+    cursor:pointer;border:3px solid var(--card);
+  }
+  .seg{display:flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden;}
+  .seg button{
+    border:none;background:var(--card);padding:9px 14px;cursor:pointer;
+    font-size:12.5px;font-weight:600;color:var(--sub);font-family:inherit;
+    transition:.15s;
+  }
+  .seg button.on{background:var(--ink);color:#fff;}
+
+  /* ── 내레이션 ── */
+  .narr{
+    margin-top:16px; display:grid; grid-template-columns:1.4fr 1fr; gap:14px;
+  }
+  @media(max-width:880px){.narr{grid-template-columns:1fr;}}
+  .narr-box{
+    background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:16px 18px;
+  }
+  .narr-box .h{
+    font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:7px;
+  }
+  .narr-box .h::before{content:"";width:14px;height:2px;background:currentColor;}
+  .narr-box p{font-size:13.5px;line-height:1.72;color:var(--ink);}
+  .narr-box.now .h{color:var(--navy);}
+  .narr-box.watch{background:#FBF3E6;border-color:#E6CF9E;}
+  .narr-box.watch .h{color:var(--crimson);}
+  .narr-box.watch p{color:#5b4326;}
+  .step-no{
+    font-family:Georgia,serif;font-style:italic;color:var(--faint);
+    font-size:12.5px;margin-bottom:4px;
+  }
+
+  footer{
+    max-width:1180px;margin:40px auto 0;padding:20px 30px 0;
+    border-top:1px solid var(--line2);color:var(--faint);font-size:12px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  }
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);}
+  .legend i{display:inline-block;width:20px;height:3px;border-radius:2px;
+    vertical-align:middle;margin-right:5px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">Interactive Learning Lab · 회귀와 차원축소</div>
+  <h1 class="serif">계수는 어떻게 <em>정답</em>을 찾아가는가</h1>
+  <p class="lead">선형회귀(OLS), 정규화(Ridge·Lasso), 주성분분석(PCA), Deming 회귀를 한곳에서 다룬다.
+  버튼을 눌러 <b>한 스텝씩</b> 진행하며, 숫자가 어떻게 움직이고 그 과정에서 어떤 현상이 일어나는지를 눈으로 확인한다.</p>
+</header>
+<div class="rule"><div></div></div>
+
+<nav class="tabs">
+  <div class="tab active" data-t="ols"><span class="dot"></span><span class="num">01</span> OLS · 경사하강</div>
+  <div class="tab" data-t="reg"><span class="dot"></span><span class="num">02</span> 정규화 · Ridge & Lasso</div>
+  <div class="tab" data-t="pca"><span class="dot"></span><span class="num">03</span> PCA · 주성분 찾기</div>
+  <div class="tab" data-t="dem"><span class="dot"></span><span class="num">04</span> Deming · 두 변수의 오차</div>
+</nav>
+
+<main>
+
+<!-- ════════ PANEL 1 : OLS ════════ -->
+<section class="panel active" data-p="ols">
+  <div class="panel-head">
+    <div class="ptag" style="color:var(--navy)">Ordinary Least Squares</div>
+    <h2 class="serif">직선이 데이터에 맞춰지는 과정</h2>
+    <p>회귀선 <b>ŷ = β₀ + β₁x</b> 의 두 계수를 0에서 출발시킨다. 경사하강법은 손실(잔차 제곱합)을 줄이는 방향으로
+    계수를 한 걸음씩 옮긴다. 왼쪽은 데이터와 직선, 오른쪽은 <b>손실 지형</b> 위를 굴러 내려가는 공이다.</p>
+  </div>
+  <div class="stage">
+    <div class="canvas-card">
+      <div class="cap"><b>데이터와 회귀선</b><span>주황 선분 = 수직 잔차</span></div>
+      <canvas id="ols-main"></canvas>
+    </div>
+    <div class="canvas-card">
+      <div class="cap"><b>손실 지형 (β₀, β₁)</b><span>등고선 · 골짜기 = 최적해</span></div>
+      <canvas id="ols-side"></canvas>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="chip"><div class="lab">절편 β₀</div><div class="val" id="ols-b0">0.000</div></div>
+    <div class="chip"><div class="lab">기울기 β₁</div><div class="val" id="ols-b1">0.000</div></div>
+    <div class="chip"><div class="lab">손실 (MSE)</div><div class="val mono" id="ols-loss">—</div></div>
+    <div class="chip hl"><div class="lab">정답까지 거리</div><div class="val mono" id="ols-dist">—</div>
+      <div class="gauge"><i id="ols-gauge" style="background:var(--navy)"></i></div></div>
+  </div>
+  <div class="controls">
+    <button class="btn big" id="ols-step">▶ 한 스텝</button>
+    <button class="btn ghost" id="ols-auto">▶▶ 자동 재생</button>
+    <button class="btn ghost" id="ols-reset">↺ 리셋</button>
+    <div class="slider-wrap">
+      <div class="row"><b>학습률 (보폭)</b><span id="ols-lr-v">0.030</span></div>
+      <input type="range" id="ols-lr" min="2" max="115" value="30">
+    </div>
+  </div>
+  <div class="narr">
+    <div class="narr-box now">
+      <div class="h">지금 일어나는 일</div>
+      <div class="step-no" id="ols-stepno">스텝 0</div>
+      <p id="ols-now">계수가 모두 0이다. 직선은 수평선이며 데이터를 전혀 설명하지 못한다. ‘한 스텝’을 눌러 경사하강을 시작하라.</p>
+    </div>
+    <div class="narr-box watch">
+      <div class="h">주목할 현상</div>
+      <p id="ols-watch">학습률을 아주 크게(0.10 이상) 올린 뒤 진행해 보라. 보폭이 너무 커서 공이 골짜기를 건너뛰고 손실이 오히려 폭발하는 ‘발산’을 볼 수 있다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PANEL 2 : Regularization ════════ -->
+<section class="panel" data-p="reg">
+  <div class="panel-head">
+    <div class="ptag" style="color:var(--mint)">Regularization · Ridge / Lasso / ElasticNet</div>
+    <h2 class="serif">패널티가 계수를 길들이는 과정</h2>
+    <p>점 12개에 9차 다항식을 적합한다. 정규화 강도 <b>α</b> 가 0이면 곡선은 잡음까지 외워 <b>과적합</b>된다.
+    α를 올리면 손실함수에 더해진 ‘패널티’가 계수를 0쪽으로 끌어당겨 곡선이 부드러워진다.</p>
+  </div>
+  <div class="stage">
+    <div class="canvas-card">
+      <div class="cap"><b>9차 다항 적합 곡선</b><span>점선 = 참 함수</span></div>
+      <canvas id="reg-main"></canvas>
+    </div>
+    <div class="canvas-card">
+      <div class="cap"><b>9개 계수의 크기</b><span>막대가 0으로 = 변수 제거</span></div>
+      <canvas id="reg-side"></canvas>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="chip"><div class="lab">방법</div><div class="val" id="reg-method" style="font-size:17px">Ridge</div></div>
+    <div class="chip"><div class="lab">정규화 강도 α</div><div class="val mono" id="reg-alpha">0.0100</div></div>
+    <div class="chip"><div class="lab">0이 된 계수</div><div class="val" id="reg-zeros">0 / 9</div></div>
+    <div class="chip hl"><div class="lab">계수 크기 총합 Σ|β|</div><div class="val mono" id="reg-norm">—</div>
+      <div class="gauge"><i id="reg-gauge" style="background:var(--mint)"></i></div></div>
+  </div>
+  <div class="controls">
+    <div class="seg" id="reg-seg">
+      <button class="on" data-m="ridge">Ridge (L2)</button>
+      <button data-m="lasso">Lasso (L1)</button>
+      <button data-m="enet">ElasticNet</button>
+    </div>
+    <div class="slider-wrap">
+      <div class="row"><b>정규화 강도 α</b><span id="reg-alpha-v">0.0100</span></div>
+      <input type="range" id="reg-slider" min="0" max="100" value="20">
+    </div>
+    <button class="btn ghost" id="reg-sweep">▶▶ α 천천히 키우기</button>
+  </div>
+  <div class="narr">
+    <div class="narr-box now">
+      <div class="h">지금 일어나는 일</div>
+      <div class="step-no" id="reg-stepno">Ridge · α = 0.0100</div>
+      <p id="reg-now">α가 거의 0이라 9차 곡선이 점 하나하나를 억지로 통과한다. 점과 점 사이에서 곡선이 크게 출렁이는 것이 과적합의 신호다.</p>
+    </div>
+    <div class="narr-box watch">
+      <div class="h">주목할 현상</div>
+      <p id="reg-watch">Lasso로 바꾼 뒤 α를 키워 보라. Ridge는 모든 막대가 ‘부드럽게’ 줄지만, Lasso는 일부 막대가 ‘정확히 0’으로 떨어진다 — 변수를 자동으로 골라 버리는 것이다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PANEL 3 : PCA ════════ -->
+<section class="panel" data-p="pca">
+  <div class="panel-head">
+    <div class="ptag" style="color:var(--amber)">Principal Component Analysis</div>
+    <h2 class="serif">분산이 가장 큰 방향을 찾는 과정</h2>
+    <p>주성분 축은 데이터를 사영했을 때 <b>퍼짐(분산)</b>이 최대가 되는 방향이다. 화살표가 임의 방향에서
+    출발해, 한 스텝마다 데이터가 끌어당기는 쪽으로 회전한다(거듭제곱 반복법). 분산이 최대가 되면 멈춘다.</p>
+  </div>
+  <div class="stage">
+    <div class="canvas-card">
+      <div class="cap"><b>데이터 구름과 주성분 축</b><span>회색 선 = 사영</span></div>
+      <canvas id="pca-main"></canvas>
+    </div>
+    <div class="canvas-card">
+      <div class="cap"><b>방향별 사영 분산</b><span>봉우리 = 제1 주성분</span></div>
+      <canvas id="pca-side"></canvas>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="chip"><div class="lab">축의 각도</div><div class="val mono" id="pca-angle">0.0°</div></div>
+    <div class="chip"><div class="lab">사영 분산</div><div class="val mono" id="pca-var">—</div></div>
+    <div class="chip"><div class="lab">설명력</div><div class="val" id="pca-ratio">—</div></div>
+    <div class="chip hl"><div class="lab">최대까지 거리</div><div class="val mono" id="pca-dist">—</div>
+      <div class="gauge"><i id="pca-gauge" style="background:var(--amber)"></i></div></div>
+  </div>
+  <div class="controls">
+    <button class="btn big" id="pca-step">▶ 한 스텝</button>
+    <button class="btn ghost" id="pca-auto">▶▶ 자동 재생</button>
+    <button class="btn ghost" id="pca-reset">↺ 리셋</button>
+    <div class="seg" id="pca-scale">
+      <button class="on" data-s="std">표준화함</button>
+      <button data-s="raw">표준화 안 함</button>
+    </div>
+  </div>
+  <div class="narr">
+    <div class="narr-box now">
+      <div class="h">지금 일어나는 일</div>
+      <div class="step-no" id="pca-stepno">스텝 0</div>
+      <p id="pca-now">축이 가로 방향(0°)에서 출발한다. ‘한 스텝’을 누르면 공분산행렬이 축을 데이터가 가장 길게 퍼진 쪽으로 회전시킨다.</p>
+    </div>
+    <div class="narr-box watch">
+      <div class="h">주목할 현상</div>
+      <p id="pca-watch">‘표준화 안 함’으로 바꿔 보라. 한 변수의 단위(분산)가 크면 주성분이 그 변수 쪽으로 거의 끌려가, 두 변수의 관계를 제대로 못 본다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PANEL 4 : Deming ════════ -->
+<section class="panel" data-p="dem">
+  <div class="panel-head">
+    <div class="ptag" style="color:var(--plum)">Deming Regression</div>
+    <h2 class="serif">두 변수 모두에 오차가 있을 때</h2>
+    <p>OLS는 <b>수직(Y) 잔차</b>만 줄이므로 X에도 오차가 있으면 기울기가 0쪽으로 눕는다(감쇠 편향).
+    Deming은 분산비 <b>λ</b>로 두 방향 오차를 함께 본다. λ를 움직이며 회귀선이 어떻게 회전하는지 보라.</p>
+  </div>
+  <div class="stage">
+    <div class="canvas-card">
+      <div class="cap"><b>OLS 선과 Deming 선</b><span>잔차 방향에 주목</span></div>
+      <canvas id="dem-main"></canvas>
+    </div>
+    <div class="canvas-card">
+      <div class="cap"><b>λ에 따른 기울기 곡선</b><span>현재 위치 = 점</span></div>
+      <canvas id="dem-side"></canvas>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="chip"><div class="lab">분산비 λ</div><div class="val mono" id="dem-lam">1.00</div></div>
+    <div class="chip"><div class="lab">Deming 기울기</div><div class="val" id="dem-slope">—</div></div>
+    <div class="chip"><div class="lab">OLS 기울기</div><div class="val" id="dem-ols">—</div></div>
+    <div class="chip hl"><div class="lab">참값(1.00)과의 오차</div><div class="val mono" id="dem-err">—</div>
+      <div class="gauge"><i id="dem-gauge" style="background:var(--plum)"></i></div></div>
+  </div>
+  <div class="controls">
+    <div class="slider-wrap" style="min-width:280px">
+      <div class="row"><b>분산비 λ = Var(εy) / Var(εx)</b><span id="dem-lam-v">1.00</span></div>
+      <input type="range" id="dem-slider" min="0" max="100" value="50">
+    </div>
+    <button class="btn ghost" id="dem-ols-btn">λ→∞ (OLS 위치)</button>
+    <button class="btn ghost" id="dem-ortho-btn">λ=1 (직교 = PCA)</button>
+  </div>
+  <div class="narr">
+    <div class="narr-box now">
+      <div class="h">지금 일어나는 일</div>
+      <div class="step-no" id="dem-stepno">λ = 1.00 · 직교 회귀</div>
+      <p id="dem-now">λ=1은 두 변수의 오차 크기가 같다고 보는 경우다. 이때 Deming 회귀는 각 점에서 직선까지 ‘수직(직교) 거리’를 최소화하며, 결과는 PCA의 제1 주성분과 정확히 같다.</p>
+    </div>
+    <div class="narr-box watch">
+      <div class="h">주목할 현상</div>
+      <p id="dem-watch">‘λ→∞’ 버튼을 누르면 OLS 위치로 간다. OLS 기울기가 참값 1.00보다 눈에 띄게 작다 — X의 측정오차가 만든 감쇠 편향이다.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div>회귀와 PCA 인터랙티브 학습 도구 · 강의 보조자료</div>
+  <div class="legend">
+    <span><i style="background:var(--navy)"></i>OLS</span>
+    <span><i style="background:var(--mint)"></i>Ridge</span>
+    <span><i style="background:var(--crimson)"></i>Lasso</span>
+    <span><i style="background:var(--amber)"></i>PCA</span>
+    <span><i style="background:var(--plum)"></i>Deming</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* ═══════════ 공통 유틸 ═══════════ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(rng){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const COL={paper:'#FBF9F3',ink:'#21283B',sub:'#5C6276',faint:'#9A9686',line:'#D8D1BF',
+  navy:'#274472',mint:'#2F7D63',crimson:'#A52E2A',amber:'#C6841B',plum:'#6B3A6E',gold:'#D9A441'};
+
+/* 캔버스 셋업 — 고해상도 */
+function setupCanvas(cv,h){
+  const ratio=window.devicePixelRatio||1;
+  const w=cv.clientWidth;
+  cv.width=w*ratio; cv.height=h*ratio;
+  cv.style.height=h+'px';
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  return {ctx,w,h};
+}
+/* 좌표 매퍼 */
+function mapper(w,h,pad,xmin,xmax,ymin,ymax){
+  return {
+    X:x=>pad.l+(x-xmin)/(xmax-xmin)*(w-pad.l-pad.r),
+    Y:y=>h-pad.b-(y-ymin)/(ymax-ymin)*(h-pad.t-pad.b),
+    w,h,pad
+  };
+}
+function axes(ctx,m,xlab,ylab){
+  ctx.strokeStyle=COL.line; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(m.pad.l,m.h-m.pad.b); ctx.lineTo(m.w-m.pad.r,m.h-m.pad.b);
+  ctx.moveTo(m.pad.l,m.pad.t); ctx.lineTo(m.pad.l,m.h-m.pad.b);
+  ctx.stroke();
+  ctx.fillStyle=COL.faint; ctx.font='11px Georgia';
+  if(xlab){ctx.textAlign='right';ctx.fillText(xlab,m.w-m.pad.r,m.h-m.pad.b+15);}
+  if(ylab){ctx.textAlign='left';ctx.fillText(ylab,m.pad.l-2,m.pad.t-7);}
+}
+function clearC(ctx,w,h){ctx.clearRect(0,0,w,h);}
+
+/* 2x2 작은 행렬 가우스 소거 */
+function solveLin(A,b){
+  const n=A.length;
+  const M=A.map((r,i)=>r.slice().concat([b[i]]));
+  for(let c=0;c<n;c++){
+    let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+    [M[c],M[p]]=[M[p],M[c]];
+    if(Math.abs(M[c][c])<1e-12)M[c][c]=1e-12;
+    for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/M[c][c];for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k];}
+  }
+  return M.map((r,i)=>r[n]/r[i]);
+}
+
+/* ═══════════ 모듈 1 : OLS ═══════════ */
+const OLS=(()=>{
+  const rng=mulberry32(42);
+  const xs=[],ys=[];
+  for(let i=0;i<25;i++){const x=rng()*8-4;xs.push(x);ys.push(2.0+1.3*x+gauss(rng)*1.6);}
+  const n=xs.length;
+  const xm=xs.reduce((a,b)=>a+b)/n, ym=ys.reduce((a,b)=>a+b)/n;
+  let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(xs[i]-xm)*(ys[i]-ym);sxx+=(xs[i]-xm)**2;}
+  const b1s=sxy/sxx, b0s=ym-b1s*xm;            // 정답(닫힌 해)
+  const d0=Math.hypot(b0s,b1s);                // 시작점에서 정답까지 거리
+  let b0=0,b1=0,step=0,lr=0.03,timer=null,diverged=false;
+
+  function mse(B0,B1){let s=0;for(let i=0;i<n;i++){const e=ys[i]-(B0+B1*xs[i]);s+=e*e;}return s/n;}
+
+  function doStep(){
+    if(diverged)return;
+    let g0=0,g1=0;
+    for(let i=0;i<n;i++){const e=ys[i]-(b0+b1*xs[i]);g0+=-2*e/n;g1+=-2*xs[i]*e/n;}
+    b0-=lr*g0;b1-=lr*g1;step++;
+    if(!isFinite(b0)||!isFinite(b1)||Math.abs(b0)>1e4||mse(b0,b1)>mse(0,0)*8){diverged=true;}
+    render();
+  }
+  function reset(){b0=0;b1=0;step=0;diverged=false;stopAuto();render();}
+  function stopAuto(){if(timer){clearInterval(timer);timer=null;document.getElementById('ols-auto').textContent='▶▶ 자동 재생';}}
+
+  function render(){
+    /* 메인 캔버스 */
+    let cv=document.getElementById('ols-main');
+    let {ctx,w,h}=setupCanvas(cv,330);
+    clearC(ctx,w,h);
+    const m=mapper(w,h,{l:42,r:18,t:18,b:32},-5,5,
+      Math.min(...ys)-2,Math.max(...ys)+2);
+    axes(ctx,m,'x','y');
+    /* 잔차 */
+    if(!diverged){
+      ctx.strokeStyle='rgba(198,132,27,.55)';ctx.lineWidth=1.4;
+      for(let i=0;i<n;i++){
+        const yh=b0+b1*xs[i];
+        ctx.beginPath();ctx.moveTo(m.X(xs[i]),m.Y(ys[i]));ctx.lineTo(m.X(xs[i]),m.Y(yh));ctx.stroke();
+      }
+    }
+    /* 정답선(옅게) */
+    ctx.strokeStyle='rgba(39,68,114,.22)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(m.X(-5),m.Y(b0s+b1s*-5));ctx.lineTo(m.X(5),m.Y(b0s+b1s*5));ctx.stroke();
+    ctx.setLineDash([]);
+    /* 현재 회귀선 */
+    if(!diverged){
+      ctx.strokeStyle=COL.navy;ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(m.X(-5),m.Y(b0+b1*-5));ctx.lineTo(m.X(5),m.Y(b0+b1*5));ctx.stroke();
+    }
+    /* 점 */
+    for(let i=0;i<n;i++){
+      ctx.fillStyle=COL.ink;ctx.beginPath();
+      ctx.arc(m.X(xs[i]),m.Y(ys[i]),3.6,0,7);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+    }
+    if(diverged){
+      ctx.fillStyle=COL.crimson;ctx.font='bold 14px Pretendard';ctx.textAlign='center';
+      ctx.fillText('발산 — 학습률이 너무 큽니다',w/2,h/2);
+    }
+
+    /* 사이드 : 손실 지형 */
+    cv=document.getElementById('ols-side');
+    ({ctx,w,h}=setupCanvas(cv,330));
+    clearC(ctx,w,h);
+    const B0R=[b0s-5,b0s+5], B1R=[b1s-3.2,b1s+3.2];
+    const sm=mapper(w,h,{l:40,r:16,t:18,b:30},B0R[0],B0R[1],B1R[0],B1R[1]);
+    /* 등고선 — 격자 색칠 */
+    const GX=46,GY=46;
+    let lmin=1e9,lmax=-1e9,grid=[];
+    for(let i=0;i<GX;i++){grid.push([]);for(let j=0;j<GY;j++){
+      const B0=B0R[0]+(i+.5)/GX*(B0R[1]-B0R[0]);
+      const B1=B1R[0]+(j+.5)/GY*(B1R[1]-B1R[0]);
+      const L=mse(B0,B1);grid[i].push(L);
+      if(L<lmin)lmin=L;if(L>lmax)lmax=L;
+    }}
+    const cw=(sm.w-sm.pad.l-sm.pad.r)/GX, ch=(sm.h-sm.pad.t-sm.pad.b)/GY;
+    for(let i=0;i<GX;i++)for(let j=0;j<GY;j++){
+      const t=Math.sqrt((grid[i][j]-lmin)/(lmax-lmin+1e-9));
+      const r=Math.round(39+t*(244-39)),g=Math.round(68+t*(240-68)),b=Math.round(114+t*(230-114));
+      ctx.fillStyle=`rgb(${r},${g},${b})`;
+      ctx.fillRect(sm.pad.l+i*cw, sm.h-sm.pad.b-(j+1)*ch, cw+.6, ch+.6);
+    }
+    axes(ctx,sm,'β₀','β₁');
+    /* 정답 별 */
+    ctx.fillStyle=COL.gold;ctx.strokeStyle=COL.ink;ctx.lineWidth=1.4;
+    star(ctx,sm.X(b0s),sm.Y(b1s),7);
+    /* 현재 위치 */
+    if(!diverged&&b0>=B0R[0]&&b0<=B0R[1]&&b1>=B1R[0]&&b1<=B1R[1]){
+      ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(sm.X(b0),sm.Y(b1),6,0,7);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    }
+
+    /* 리드아웃 */
+    document.getElementById('ols-b0').textContent=diverged?'∞':b0.toFixed(3);
+    document.getElementById('ols-b1').textContent=diverged?'∞':b1.toFixed(3);
+    document.getElementById('ols-loss').textContent=diverged?'∞':mse(b0,b1).toFixed(3);
+    const dist=Math.hypot(b0-b0s,b1-b1s);
+    document.getElementById('ols-dist').textContent=diverged?'∞':dist.toFixed(3);
+    document.getElementById('ols-gauge').style.width=
+      diverged?'100%':Math.max(0,Math.min(100,(1-dist/d0)*100))+'%';
+    document.getElementById('ols-stepno').textContent='스텝 '+step;
+    /* 내레이션 */
+    const now=document.getElementById('ols-now');
+    if(diverged){
+      now.textContent='손실이 폭발했다. 학습률(보폭)이 너무 커서 공이 골짜기를 건너뛰며 점점 위로 튕겨 나갔다. 학습률을 낮추고 리셋하라.';
+    }else if(step===0){
+      now.textContent='계수가 모두 0이다. 직선은 수평선이며 데이터를 전혀 설명하지 못한다. ‘한 스텝’을 눌러 경사하강을 시작하라.';
+    }else if(dist<0.05){
+      now.textContent='계수가 골짜기 바닥(별)에 도달했다. 손실이 더는 줄지 않는다 — 이 (β₀, β₁)이 최소제곱 해이며, 직선이 데이터에 가장 잘 맞는 상태다.';
+    }else if(dist<d0*0.35){
+      now.textContent='직선이 데이터의 추세를 거의 잡았다. 손실 지형 위의 공이 골짜기 근처로 내려왔고, 기울기가 완만해져 한 걸음의 변화가 작아지고 있다.';
+    }else{
+      now.textContent='경사하강이 손실이 줄어드는 방향으로 계수를 옮기는 중이다. 잔차(주황 선분)의 전체 길이가 짧아지고, 공이 골짜기 쪽으로 내려간다.';
+    }
+  }
+  function star(ctx,cx,cy,r){
+    ctx.beginPath();
+    for(let i=0;i<10;i++){const ang=Math.PI/5*i-Math.PI/2;const rr=i%2?r*.45:r;
+      ctx[i?'lineTo':'moveTo'](cx+Math.cos(ang)*rr,cy+Math.sin(ang)*rr);}
+    ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function init(){
+    document.getElementById('ols-step').onclick=()=>{stopAuto();doStep();};
+    document.getElementById('ols-reset').onclick=reset;
+    document.getElementById('ols-auto').onclick=function(){
+      if(timer){stopAuto();}
+      else{this.textContent='⏸ 멈춤';timer=setInterval(()=>{doStep();if(diverged||Math.hypot(b0-b0s,b1-b1s)<0.01)stopAuto();},90);}
+    };
+    document.getElementById('ols-lr').oninput=function(){
+      lr=this.value/1000;
+      document.getElementById('ols-lr-v').textContent=lr.toFixed(3);
+    };
+    render();
+  }
+  return {init,render};
+})();
+
+/* ═══════════ 모듈 2 : Regularization ═══════════ */
+const REG=(()=>{
+  const rng=mulberry32(7);
+  const px=[],py=[];
+  for(let i=0;i<12;i++){const x=i/11*2-1;px.push(x);py.push(Math.sin(x*2.2)*0.8+gauss(rng)*0.17);}
+  const deg=9;
+  /* 다항 특징 + 표준화 */
+  const featRaw=px.map(x=>{const r=[];for(let d=1;d<=deg;d++)r.push(Math.pow(x,d));return r;});
+  const mean=[],std=[];
+  for(let d=0;d<deg;d++){
+    const col=featRaw.map(r=>r[d]);
+    const mm=col.reduce((a,b)=>a+b)/col.length;
+    const ss=Math.sqrt(col.reduce((a,b)=>a+(b-mm)**2,0)/col.length)||1;
+    mean.push(mm);std.push(ss);
+  }
+  const Z=featRaw.map(r=>r.map((v,d)=>(v-mean[d])/std[d]));
+  const ymean=py.reduce((a,b)=>a+b)/py.length;
+  const yc=py.map(v=>v-ymean);
+
+  let method='ridge', alpha=0.01, sweepTimer=null;
+
+  function ridgeFit(al){
+    const A=[],bb=[];
+    for(let i=0;i<deg;i++){
+      const row=[];
+      for(let j=0;j<deg;j++){let s=0;for(let k=0;k<Z.length;k++)s+=Z[k][i]*Z[k][j];row.push(s+(i===j?al:0));}
+      A.push(row);
+      let s=0;for(let k=0;k<Z.length;k++)s+=Z[k][i]*yc[k];bb.push(s);
+    }
+    return solveLin(A,bb);
+  }
+  function lassoFit(al,l1ratio){
+    const nn=Z.length;
+    let b=new Array(deg).fill(0);
+    const l1=al*l1ratio, l2=al*(1-l1ratio);
+    for(let it=0;it<260;it++){
+      for(let j=0;j<deg;j++){
+        let rho=0,zz=0;
+        for(let k=0;k<nn;k++){
+          let pred=0;for(let d=0;d<deg;d++)if(d!==j)pred+=Z[k][d]*b[d];
+          rho+=Z[k][j]*(yc[k]-pred);zz+=Z[k][j]*Z[k][j];
+        }
+        const s=Math.sign(rho)*Math.max(Math.abs(rho)-l1*nn/2,0);
+        b[j]=s/(zz+l2*nn);
+      }
+    }
+    return b;
+  }
+  function fit(){
+    if(method==='ridge')return ridgeFit(alpha);
+    if(method==='lasso')return lassoFit(alpha,1.0);
+    return lassoFit(alpha,0.5);
+  }
+  function predict(b,x){
+    let s=ymean;
+    for(let d=1;d<=deg;d++) s+=b[d-1]*((Math.pow(x,d)-mean[d-1])/std[d-1]);
+    return s;
+  }
+
+  function render(){
+    const b=fit();
+    /* 메인 : 곡선 */
+    let cv=document.getElementById('reg-main');
+    let {ctx,w,h}=setupCanvas(cv,330);
+    clearC(ctx,w,h);
+    const m=mapper(w,h,{l:38,r:16,t:18,b:30},-1.15,1.15,-1.7,1.7);
+    axes(ctx,m,'x','y');
+    /* 참 함수 */
+    ctx.strokeStyle='rgba(33,40,59,.30)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    for(let i=0;i<=120;i++){const x=-1.1+i/120*2.2;const y=Math.sin(x*2.2)*0.8;
+      ctx[i?'lineTo':'moveTo'](m.X(x),m.Y(y));}
+    ctx.stroke();ctx.setLineDash([]);
+    /* 적합 곡선 */
+    const c=method==='ridge'?COL.mint:(method==='lasso'?COL.crimson:COL.plum);
+    ctx.strokeStyle=c;ctx.lineWidth=3;
+    ctx.beginPath();let first=true;
+    for(let i=0;i<=240;i++){
+      const x=-1.12+i/240*2.24;let y=predict(b,x);
+      y=Math.max(-3,Math.min(3,y));
+      if(first){ctx.moveTo(m.X(x),m.Y(y));first=false;}else ctx.lineTo(m.X(x),m.Y(y));
+    }
+    ctx.stroke();
+    /* 점 */
+    for(let i=0;i<px.length;i++){
+      ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(m.X(px[i]),m.Y(py[i]),4,0,7);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.stroke();
+    }
+
+    /* 사이드 : 계수 막대 */
+    cv=document.getElementById('reg-side');
+    ({ctx,w,h}=setupCanvas(cv,330));
+    clearC(ctx,w,h);
+    const pad={l:30,r:14,t:20,b:34};
+    const maxAbs=Math.max(1.2,...b.map(v=>Math.abs(v)));
+    const zeroY=h-pad.b-(h-pad.t-pad.b)/2;
+    ctx.strokeStyle=COL.line;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,zeroY);ctx.lineTo(w-pad.r,zeroY);ctx.stroke();
+    ctx.fillStyle=COL.faint;ctx.font='10px Georgia';ctx.textAlign='right';
+    ctx.fillText('0',pad.l-4,zeroY+3);
+    const bw=(w-pad.l-pad.r)/deg;
+    let zeros=0;
+    for(let d=0;d<deg;d++){
+      const v=b[d];
+      if(Math.abs(v)<1e-4)zeros++;
+      const bh=(v/maxAbs)*((h-pad.t-pad.b)/2);
+      const x=pad.l+d*bw+bw*0.16, ww=bw*0.68;
+      ctx.fillStyle=Math.abs(v)<1e-4?'rgba(154,150,134,.4)':c;
+      if(v>=0)ctx.fillRect(x,zeroY-bh,ww,bh);
+      else ctx.fillRect(x,zeroY,ww,-bh);
+      ctx.fillStyle=COL.faint;ctx.font='9.5px Georgia';ctx.textAlign='center';
+      ctx.fillText('β'+(d+1),x+ww/2,h-pad.b+13);
+    }
+    ctx.fillStyle=COL.sub;ctx.font='10.5px Pretendard';ctx.textAlign='left';
+    ctx.fillText('각 다항 계수의 크기',pad.l,pad.t-6);
+
+    /* 리드아웃 */
+    const norm=b.reduce((a,v)=>a+Math.abs(v),0);
+    document.getElementById('reg-method').textContent=
+      method==='ridge'?'Ridge':(method==='lasso'?'Lasso':'ElasticNet');
+    document.getElementById('reg-alpha').textContent=alpha.toFixed(4);
+    document.getElementById('reg-zeros').textContent=zeros+' / '+deg;
+    document.getElementById('reg-norm').textContent=norm.toFixed(2);
+    document.getElementById('reg-gauge').style.width=
+      Math.max(3,Math.min(100,norm/26*100))+'%';
+    document.getElementById('reg-gauge').style.background=c;
+    document.getElementById('reg-stepno').textContent=
+      (method==='ridge'?'Ridge':method==='lasso'?'Lasso':'ElasticNet')+' · α = '+alpha.toFixed(4);
+    /* 내레이션 */
+    const now=document.getElementById('reg-now');
+    if(alpha<0.05){
+      now.textContent='α가 거의 0이라 9차 곡선이 점 하나하나를 억지로 통과한다. 점과 점 사이에서 곡선이 크게 출렁이는 것이 과적합의 신호다. 계수의 크기도 매우 크다.';
+    }else if(norm<1.2){
+      now.textContent='α가 너무 커서 계수 대부분이 0 근처로 눌렸다. 곡선이 거의 평평해져 데이터의 곡률조차 설명하지 못한다 — 이번에는 과소적합이다.';
+    }else if(method==='lasso'&&zeros>=3){
+      now.textContent='Lasso가 영향이 작은 고차항들을 정확히 0으로 만들었다. 살아남은 몇 개의 계수만으로 곡선이 부드럽게 참 함수를 따라간다 — 자동 변수 선택이다.';
+    }else{
+      now.textContent='패널티가 계수의 크기를 적당히 눌러 곡선이 부드러워졌다. 참 함수(점선)에 가깝게 따라가면서도 점들의 잡음에는 덜 휘둘린다.';
+    }
+  }
+  function setAlphaFromSlider(v){
+    /* 로그 스케일: 0.001 ~ 30 */
+    alpha=Math.pow(10,-3+v/100*(Math.log10(30)+3));
+    document.getElementById('reg-alpha-v').textContent=alpha.toFixed(4);
+  }
+  function init(){
+    setAlphaFromSlider(20);
+    document.getElementById('reg-slider').oninput=function(){setAlphaFromSlider(+this.value);render();};
+    document.querySelectorAll('#reg-seg button').forEach(btn=>{
+      btn.onclick=function(){
+        document.querySelectorAll('#reg-seg button').forEach(b=>b.classList.remove('on'));
+        this.classList.add('on');method=this.dataset.m;render();
+      };
+    });
+    document.getElementById('reg-sweep').onclick=function(){
+      if(sweepTimer){clearInterval(sweepTimer);sweepTimer=null;this.textContent='▶▶ α 천천히 키우기';return;}
+      const sl=document.getElementById('reg-slider');sl.value=0;setAlphaFromSlider(0);render();
+      this.textContent='⏸ 멈춤';
+      sweepTimer=setInterval(()=>{
+        let v=+sl.value+1.5;
+        if(v>=100){v=100;clearInterval(sweepTimer);sweepTimer=null;this.textContent='▶▶ α 천천히 키우기';}
+        sl.value=v;setAlphaFromSlider(v);render();
+      },70);
+    };
+    render();
+  }
+  return {init,render};
+})();
+
+/* ═══════════ 모듈 3 : PCA ═══════════ */
+const PCA=(()=>{
+  const rng=mulberry32(11);
+  const base=[];
+  for(let i=0;i<80;i++){const t=gauss(rng);base.push([2.0*t+gauss(rng)*0.5, 1.0*t+gauss(rng)*0.5]);}
+  let scaleMode='std', step=0, angle=0, timer=null;
+  let vx=1,vy=0;   // 현재 방향벡터
+
+  function getData(){
+    /* 표준화 여부에 따라 데이터 가공 */
+    let D=base.map(p=>[p[0],p[1]]);
+    const mx=D.reduce((a,b)=>a+b[0],0)/D.length;
+    const my=D.reduce((a,b)=>a+b[1],0)/D.length;
+    D=D.map(p=>[p[0]-mx,p[1]-my]);
+    if(scaleMode==='std'){
+      const sx=Math.sqrt(D.reduce((a,b)=>a+b[0]*b[0],0)/D.length);
+      const sy=Math.sqrt(D.reduce((a,b)=>a+b[1]*b[1],0)/D.length);
+      D=D.map(p=>[p[0]/sx,p[1]/sy]);
+    }else{
+      /* 표준화 안 함: x축 단위를 크게 (분산 지배 연출) */
+      D=D.map(p=>[p[0]*2.6,p[1]]);
+    }
+    return D;
+  }
+  function cov(D){
+    let cxx=0,cyy=0,cxy=0;
+    for(const[x,y]of D){cxx+=x*x;cyy+=y*y;cxy+=x*y;}
+    const nn=D.length-1;return [cxx/nn,cyy/nn,cxy/nn];
+  }
+  function projVar(D,ax,ay){
+    /* 방향(ax,ay) 사영 분산 */
+    let s=0;for(const[x,y]of D){const p=x*ax+y*ay;s+=p*p;}
+    return s/(D.length-1);
+  }
+  function reset(){step=0;vx=1;vy=0;angle=0;stopAuto();render();}
+  function stopAuto(){if(timer){clearInterval(timer);timer=null;document.getElementById('pca-auto').textContent='▶▶ 자동 재생';}}
+
+  function doStep(){
+    const D=getData();const[cxx,cyy,cxy]=cov(D);
+    /* power iteration 한 스텝 */
+    const nx=cxx*vx+cxy*vy, ny=cxy*vx+cyy*vy;
+    const nrm=Math.hypot(nx,ny)||1;
+    vx=nx/nrm;vy=ny/nrm;step++;
+    angle=Math.atan2(vy,vx);
+    render();
+  }
+  function render(){
+    const D=getData();const[cxx,cyy,cxy]=cov(D);
+    /* 정답(고유분해) */
+    const tr=cxx+cyy, dt=cxx*cyy-cxy*cxy;
+    const l1=tr/2+Math.sqrt(Math.max(0,tr*tr/4-dt));
+    const l2=tr/2-Math.sqrt(Math.max(0,tr*tr/4-dt));
+    let starAng=Math.atan2(l1-cxx,cxy);
+    const totVar=cxx+cyy;
+
+    /* 메인 캔버스 */
+    let cv=document.getElementById('pca-main');
+    let {ctx,w,h}=setupCanvas(cv,330);
+    clearC(ctx,w,h);
+    let R=0;for(const[x,y]of D)R=Math.max(R,Math.abs(x),Math.abs(y));
+    R*=1.15;
+    const m=mapper(w,h,{l:34,r:16,t:16,b:28},-R,R,-R*h/w*1.0,R*h/w*1.0);
+    /* 중심 십자 */
+    ctx.strokeStyle=COL.line;ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(m.X(-R),m.Y(0));ctx.lineTo(m.X(R),m.Y(0));
+    ctx.moveTo(m.X(0),m.Y(-R));ctx.lineTo(m.X(0),m.Y(R));
+    ctx.stroke();
+    /* 사영선 */
+    ctx.strokeStyle='rgba(154,150,134,.40)';ctx.lineWidth=0.8;
+    for(const[x,y]of D){
+      const t=x*vx+y*vy;const px2=t*vx,py2=t*vy;
+      ctx.beginPath();ctx.moveTo(m.X(x),m.Y(y));ctx.lineTo(m.X(px2),m.Y(py2));ctx.stroke();
+    }
+    /* 점 */
+    for(const[x,y]of D){
+      ctx.fillStyle='rgba(33,40,59,.78)';ctx.beginPath();
+      ctx.arc(m.X(x),m.Y(y),3,0,7);ctx.fill();
+    }
+    /* 정답 축(옅게) */
+    drawAxis(ctx,m,Math.cos(starAng),Math.sin(starAng),R,'rgba(198,132,27,.28)',2,true);
+    /* 현재 축 */
+    drawAxis(ctx,m,vx,vy,R,COL.amber,3.4,false);
+
+    /* 사이드 : 방향별 분산 곡선 */
+    cv=document.getElementById('pca-side');
+    ({ctx,w,h}=setupCanvas(cv,330));
+    clearC(ctx,w,h);
+    const sm=mapper(w,h,{l:40,r:16,t:20,b:32},0,180,0,Math.max(l1,1)*1.12);
+    axes(ctx,sm,'각도(°)','분산');
+    ctx.strokeStyle=COL.amber;ctx.lineWidth=2.4;
+    ctx.beginPath();
+    for(let a=0;a<=180;a+=2){
+      const rad=a*Math.PI/180;
+      const v=projVar(D,Math.cos(rad),Math.sin(rad));
+      ctx[a?'lineTo':'moveTo'](sm.X(a),sm.Y(v));
+    }
+    ctx.stroke();
+    /* 최대 봉우리 */
+    let starDeg=((starAng*180/Math.PI)%180+180)%180;
+    ctx.fillStyle=COL.gold;ctx.strokeStyle=COL.ink;ctx.lineWidth=1.2;
+    const peakX=sm.X(starDeg),peakY=sm.Y(l1);
+    ctx.beginPath();ctx.arc(peakX,peakY,5,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COL.sub;ctx.font='10px Pretendard';ctx.textAlign='center';
+    ctx.fillText('최대 (PC1)',peakX,peakY-10);
+    /* 현재 위치 */
+    let curDeg=((angle*180/Math.PI)%180+180)%180;
+    const curVar=projVar(D,vx,vy);
+    ctx.fillStyle=COL.ink;ctx.beginPath();
+    ctx.arc(sm.X(curDeg),sm.Y(curVar),5.5,0,7);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+
+    /* 리드아웃 */
+    document.getElementById('pca-angle').textContent=curDeg.toFixed(1)+'°';
+    document.getElementById('pca-var').textContent=curVar.toFixed(3);
+    document.getElementById('pca-ratio').textContent=(curVar/totVar*100).toFixed(1)+'%';
+    let angErr=Math.abs(curDeg-starDeg);angErr=Math.min(angErr,180-angErr);
+    document.getElementById('pca-dist').textContent=angErr.toFixed(1)+'°';
+    document.getElementById('pca-gauge').style.width=
+      Math.max(0,Math.min(100,(1-angErr/90)*100))+'%';
+    document.getElementById('pca-stepno').textContent='스텝 '+step;
+    /* 내레이션 */
+    const now=document.getElementById('pca-now');
+    if(step===0){
+      now.textContent='축이 가로 방향(0°)에서 출발한다. ‘한 스텝’을 누르면 공분산행렬이 축을 데이터가 가장 길게 퍼진 쪽으로 회전시킨다.';
+    }else if(angErr<0.6){
+      now.textContent='축이 더는 움직이지 않는다 — 분산 곡선의 봉우리에 도달했다. 이 방향이 제1 주성분이며, 데이터를 사영했을 때 퍼짐이 최대가 된다.';
+    }else if(angErr<12){
+      now.textContent='축이 봉우리에 거의 다 왔다. 회전 폭이 점점 작아지는 것은, 데이터가 끌어당기는 힘과 현재 방향이 거의 나란해졌기 때문이다.';
+    }else{
+      now.textContent='거듭제곱 반복법이 축을 회전시키는 중이다. 사영선(회색)들의 길이 합이 짧아질수록, 축 방향의 분산은 커진다.';
+    }
+    const watch=document.getElementById('pca-watch');
+    if(scaleMode==='raw'){
+      watch.textContent='지금은 표준화하지 않은 상태다. x축 단위가 크기 때문에 분산 곡선의 봉우리가 0° 근처(가로축)로 쏠려, 주성분이 두 변수의 관계가 아니라 큰 단위 변수만 따라간다.';
+    }else{
+      watch.textContent='‘표준화 안 함’으로 바꿔 보라. 한 변수의 단위(분산)가 크면 주성분이 그 변수 쪽으로 거의 끌려가, 두 변수의 관계를 제대로 못 본다.';
+    }
+  }
+  function drawAxis(ctx,m,ax,ay,R,col,lw,dash){
+    ctx.strokeStyle=col;ctx.lineWidth=lw;
+    if(dash)ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(m.X(-ax*R),m.Y(-ay*R));ctx.lineTo(m.X(ax*R),m.Y(ay*R));
+    ctx.stroke();ctx.setLineDash([]);
+    if(!dash){
+      /* 화살촉 */
+      const hx=m.X(ax*R),hy=m.Y(ay*R);
+      const ang=Math.atan2(hy-m.Y(0),hx-m.X(0));
+      ctx.fillStyle=col;ctx.beginPath();
+      ctx.moveTo(hx,hy);
+      ctx.lineTo(hx-12*Math.cos(ang-.4),hy-12*Math.sin(ang-.4));
+      ctx.lineTo(hx-12*Math.cos(ang+.4),hy-12*Math.sin(ang+.4));
+      ctx.closePath();ctx.fill();
+    }
+  }
+  function init(){
+    document.getElementById('pca-step').onclick=()=>{stopAuto();doStep();};
+    document.getElementById('pca-reset').onclick=reset;
+    document.getElementById('pca-auto').onclick=function(){
+      if(timer){stopAuto();}
+      else{this.textContent='⏸ 멈춤';
+        timer=setInterval(()=>{
+          const before=angle;doStep();
+          if(Math.abs(angle-before)<0.002)stopAuto();
+        },120);}
+    };
+    document.querySelectorAll('#pca-scale button').forEach(btn=>{
+      btn.onclick=function(){
+        document.querySelectorAll('#pca-scale button').forEach(b=>b.classList.remove('on'));
+        this.classList.add('on');scaleMode=this.dataset.s;reset();
+      };
+    });
+    render();
+  }
+  return {init,render};
+})();
+
+/* ═══════════ 모듈 4 : Deming ═══════════ */
+const DEM=(()=>{
+  const rng=mulberry32(99);
+  const dx=[],dy=[];
+  const slopeTrue=1.0;
+  for(let i=0;i<55;i++){
+    const xi=rng()*36+7;
+    dx.push(xi+gauss(rng)*2.4);
+    dy.push(slopeTrue*xi+gauss(rng)*2.4);
+  }
+  const n=dx.length;
+  const xm=dx.reduce((a,b)=>a+b)/n, ym=dy.reduce((a,b)=>a+b)/n;
+  let Sxx=0,Syy=0,Sxy=0;
+  for(let i=0;i<n;i++){Sxx+=(dx[i]-xm)**2;Syy+=(dy[i]-ym)**2;Sxy+=(dx[i]-xm)*(dy[i]-ym);}
+  let lambda=1.0;
+
+  function demingSlope(lam){
+    return (Syy-lam*Sxx+Math.sqrt((Syy-lam*Sxx)**2+4*lam*Sxy*Sxy))/(2*Sxy);
+  }
+  const olsSlope=Sxy/Sxx;
+  const olsB0=ym-olsSlope*xm;
+
+  function lamFromSlider(v){
+    /* 로그스케일 0.02 ~ 50 */
+    return Math.pow(10,-1.7+v/100*(Math.log10(50)+1.7));
+  }
+  function render(){
+    const b1=demingSlope(lambda);
+    const b0=ym-b1*xm;
+    /* 메인 */
+    let cv=document.getElementById('dem-main');
+    let {ctx,w,h}=setupCanvas(cv,330);
+    clearC(ctx,w,h);
+    const xmin=Math.min(...dx)-3,xmax=Math.max(...dx)+3;
+    const ymin=Math.min(...dy)-3,ymax=Math.max(...dy)+3;
+    const m=mapper(w,h,{l:40,r:16,t:16,b:30},xmin,xmax,ymin,ymax);
+    axes(ctx,m,'X (측정값)','Y (측정값)');
+    /* 참 기울기 선 */
+    ctx.strokeStyle='rgba(33,40,59,.26)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+    {const bb0=ym-slopeTrue*xm;
+     ctx.beginPath();ctx.moveTo(m.X(xmin),m.Y(slopeTrue*xmin+bb0));
+     ctx.lineTo(m.X(xmax),m.Y(slopeTrue*xmax+bb0));ctx.stroke();}
+    ctx.setLineDash([]);
+    /* OLS 선 */
+    ctx.strokeStyle='rgba(39,68,114,.55)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(m.X(xmin),m.Y(olsSlope*xmin+olsB0));
+    ctx.lineTo(m.X(xmax),m.Y(olsSlope*xmax+olsB0));ctx.stroke();
+    /* Deming 잔차 (직교에 가까운 가중 방향) */
+    ctx.strokeStyle='rgba(107,58,110,.40)';ctx.lineWidth=1;
+    for(let i=0;i<n;i++){
+      /* 점에서 Deming 직선으로의 (가중) 투영 */
+      const x0=dx[i],y0=dy[i];
+      const t=( (x0)+ (b1)*(y0-b0) )/(1+b1*b1);
+      const fx=t, fy=b0+b1*t;
+      ctx.beginPath();ctx.moveTo(m.X(x0),m.Y(y0));ctx.lineTo(m.X(fx),m.Y(fy));ctx.stroke();
+    }
+    /* Deming 선 */
+    ctx.strokeStyle=COL.plum;ctx.lineWidth=3.2;
+    ctx.beginPath();ctx.moveTo(m.X(xmin),m.Y(b1*xmin+b0));
+    ctx.lineTo(m.X(xmax),m.Y(b1*xmax+b0));ctx.stroke();
+    /* 점 */
+    for(let i=0;i<n;i++){
+      ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(m.X(dx[i]),m.Y(dy[i]),3.4,0,7);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+    }
+    /* 범례 */
+    ctx.font='10.5px Pretendard';ctx.textAlign='left';
+    ctx.fillStyle=COL.plum;ctx.fillText('— Deming',m.pad.l+6,m.pad.t+12);
+    ctx.fillStyle='rgba(39,68,114,.8)';ctx.fillText('— OLS',m.pad.l+6,m.pad.t+26);
+    ctx.fillStyle=COL.faint;ctx.fillText('-- 참 기울기',m.pad.l+6,m.pad.t+40);
+
+    /* 사이드 : λ-기울기 곡선 */
+    cv=document.getElementById('dem-side');
+    ({ctx,w,h}=setupCanvas(cv,330));
+    clearC(ctx,w,h);
+    const lampts=[];
+    for(let k=0;k<=120;k++){
+      const lv=Math.pow(10,-1.7+k/120*(Math.log10(50)+1.7));
+      lampts.push([k/120, demingSlope(lv)]);
+    }
+    let smin=Math.min(...lampts.map(p=>p[1])),smax=Math.max(...lampts.map(p=>p[1]));
+    smin=Math.min(smin,slopeTrue)-0.05;smax=Math.max(smax,slopeTrue)+0.05;
+    const sm=mapper(w,h,{l:44,r:16,t:22,b:32},0,1,smin,smax);
+    axes(ctx,sm,'λ (작다 → 크다)','기울기');
+    /* 참값 가로선 */
+    ctx.strokeStyle='rgba(33,40,59,.3)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(sm.X(0),sm.Y(slopeTrue));ctx.lineTo(sm.X(1),sm.Y(slopeTrue));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=COL.faint;ctx.font='10px Pretendard';ctx.textAlign='left';
+    ctx.fillText('참값 1.00',sm.X(0)+4,sm.Y(slopeTrue)-5);
+    /* 곡선 */
+    ctx.strokeStyle=COL.plum;ctx.lineWidth=2.6;
+    ctx.beginPath();
+    lampts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](sm.X(p[0]),sm.Y(p[1])));
+    ctx.stroke();
+    /* 현재 위치 */
+    const sliderFrac=(Math.log10(lambda)+1.7)/(Math.log10(50)+1.7);
+    ctx.fillStyle=COL.ink;ctx.beginPath();
+    ctx.arc(sm.X(sliderFrac),sm.Y(b1),6,0,7);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    /* λ=1 표시 */
+    const oneFrac=(Math.log10(1)+1.7)/(Math.log10(50)+1.7);
+    ctx.strokeStyle='rgba(107,58,110,.35)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(sm.X(oneFrac),sm.pad.t);ctx.lineTo(sm.X(oneFrac),sm.h-sm.pad.b);ctx.stroke();
+    ctx.fillStyle=COL.plum;ctx.font='9.5px Pretendard';ctx.textAlign='center';
+    ctx.fillText('λ=1',sm.X(oneFrac),sm.pad.t-4);
+
+    /* 리드아웃 */
+    document.getElementById('dem-lam').textContent=lambda.toFixed(2);
+    document.getElementById('dem-slope').textContent=b1.toFixed(3);
+    document.getElementById('dem-ols').textContent=olsSlope.toFixed(3);
+    const err=Math.abs(b1-slopeTrue);
+    document.getElementById('dem-err').textContent=err.toFixed(3);
+    document.getElementById('dem-gauge').style.width=
+      Math.max(2,Math.min(100,(1-err/0.25)*100))+'%';
+    /* 내레이션 */
+    const sn=document.getElementById('dem-stepno');
+    const now=document.getElementById('dem-now');
+    if(lambda>12){
+      sn.textContent='λ = '+lambda.toFixed(2)+' · OLS에 가까움';
+      now.textContent='λ가 매우 크다 — Y의 오차만 크다고 보는 경우다. Deming 선이 OLS 선과 거의 겹치고, 잔차도 수직(Y) 방향에 가까워진다.';
+    }else if(lambda<0.09){
+      sn.textContent='λ = '+lambda.toFixed(2)+' · 역방향 OLS에 가까움';
+      now.textContent='λ가 매우 작다 — X의 오차만 크다고 보는 경우다. 회귀선이 가팔라지고, 잔차가 수평(X) 방향에 가까워진다.';
+    }else if(Math.abs(lambda-1)<0.18){
+      sn.textContent='λ = '+lambda.toFixed(2)+' · 직교 회귀';
+      now.textContent='λ=1은 두 변수의 오차 크기가 같다고 보는 경우다. 이때 Deming 회귀는 각 점에서 직선까지 ‘수직(직교) 거리’를 최소화하며, 결과는 PCA의 제1 주성분과 정확히 같다.';
+    }else{
+      sn.textContent='λ = '+lambda.toFixed(2)+' · 일반 Deming';
+      now.textContent='두 방향의 오차를 λ의 비율로 함께 고려한다. λ가 1에서 멀어질수록 한쪽 변수의 오차를 더 신뢰하며, 기울기가 그쪽으로 회전한다.';
+    }
+  }
+  function init(){
+    document.getElementById('dem-slider').oninput=function(){
+      lambda=lamFromSlider(+this.value);
+      document.getElementById('dem-lam-v').textContent=lambda.toFixed(2);
+      render();
+    };
+    document.getElementById('dem-ols-btn').onclick=function(){
+      const sl=document.getElementById('dem-slider');sl.value=100;
+      lambda=lamFromSlider(100);
+      document.getElementById('dem-lam-v').textContent=lambda.toFixed(2);
+      render();
+    };
+    document.getElementById('dem-ortho-btn').onclick=function(){
+      const sl=document.getElementById('dem-slider');
+      const frac=(Math.log10(1)+1.7)/(Math.log10(50)+1.7)*100;
+      sl.value=frac;lambda=1.0;
+      document.getElementById('dem-lam-v').textContent='1.00';
+      render();
+    };
+    render();
+  }
+  return {init,render};
+})();
+
+/* ═══════════ 탭 전환 ═══════════ */
+const modules={ols:OLS,reg:REG,pca:PCA,dem:DEM};
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick=function(){
+    const t=this.dataset.t;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelector('.panel[data-p="'+t+'"]').classList.add('active');
+    /* 보이게 된 뒤 캔버스 크기가 잡히므로 다시 렌더 */
+    requestAnimationFrame(()=>modules[t].render());
+  };
+});
+
+/* 초기화 */
+window.addEventListener('load',()=>{
+  OLS.init();REG.init();PCA.init();DEM.init();
+});
+let rt;
+window.addEventListener('resize',()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{
+    const active=document.querySelector('.tab.active').dataset.t;
+    modules[active].render();
+  },180);
+});
+</script>
+</body>
+</html>
