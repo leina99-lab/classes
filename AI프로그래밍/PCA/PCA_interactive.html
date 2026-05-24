@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PCA 한 걸음씩 — 인터랙티브 학습</title>
+<style>
+  :root {
+    --paper:#FAF7EE; --ink:#21283B; --sub:#5C6276; --navy:#274472;
+    --gold:#C6841B; --mint:#2F7D63; --crimson:#A52E2A; --plum:#6B3A6E;
+    --rule:#D6D0C2;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--paper); color: var(--ink);
+    font-family: "Noto Sans CJK KR", "Noto Sans KR", "맑은 고딕",
+                 "Apple SD Gothic Neo", sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  header {
+    padding: 22px 28px 16px;
+    border-bottom: 1px solid var(--rule);
+    background: linear-gradient(180deg, #FBF8EF 0%, #F5F0E2 100%);
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; color: var(--navy); }
+  header .sub { color: var(--sub); font-size: 13.5px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 0;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* ── 좌: 단계 목록 ── */
+  .steps {
+    border-right: 1px solid var(--rule);
+    padding: 18px 14px;
+    background: #FBF8EF;
+    overflow-y: auto;
+  }
+  .step-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 12px; margin-bottom: 6px;
+    border-radius: 7px; cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .step-item:hover { background: rgba(198, 132, 27, 0.08); }
+  .step-item.active {
+    background: rgba(39, 68, 114, 0.10);
+    border-color: var(--navy);
+  }
+  .step-item.done .step-num { background: var(--mint); color: white; }
+  .step-num {
+    flex: 0 0 28px; height: 28px; border-radius: 50%;
+    background: white; border: 1.5px solid var(--sub);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 13px; color: var(--sub);
+  }
+  .step-item.active .step-num { background: var(--navy); color: white; border-color: var(--navy); }
+  .step-title { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+  .step-sub { font-size: 11.5px; color: var(--sub); margin-top: 2px; }
+
+  /* ── 중앙: 시각화 ── */
+  .canvas-wrap {
+    padding: 22px 26px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: var(--paper);
+    overflow-y: auto;
+  }
+  .stage-title {
+    font-size: 19px; font-weight: 700; color: var(--navy);
+    border-bottom: 1px solid var(--rule); padding-bottom: 8px;
+  }
+  .plot-box {
+    background: white; border: 1px solid var(--rule); border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .plot-box svg { display: block; width: 100%; height: auto; }
+
+  /* ── 우: 설명 + 컨트롤 ── */
+  .panel {
+    border-left: 1px solid var(--rule);
+    padding: 22px 22px;
+    background: #FBF8EF;
+    overflow-y: auto;
+  }
+  .panel h3 {
+    margin: 0 0 8px;
+    font-size: 15.5px; color: var(--navy);
+    border-bottom: 1.5px solid var(--gold);
+    padding-bottom: 5px;
+  }
+  .panel p { margin: 8px 0; font-size: 13.5px; line-height: 1.6; }
+  .panel .math {
+    font-family: "Cambria Math", "Latin Modern Math", serif;
+    background: white; border: 1px solid var(--rule); border-radius: 5px;
+    padding: 9px 11px; margin: 8px 0;
+    text-align: center; font-size: 14.5px;
+  }
+  .panel .note {
+    font-size: 12px; color: var(--sub); font-style: italic;
+    border-left: 2px solid var(--gold); padding-left: 8px; margin: 8px 0;
+  }
+  .ctrl { margin: 10px 0 6px; }
+  .ctrl label { font-size: 13px; color: var(--sub); display:block; margin-bottom: 3px; }
+  .ctrl .val { color: var(--ink); font-weight: 600; }
+  .ctrl input[type=range] {
+    width: 100%; accent-color: var(--navy);
+  }
+  .btn {
+    background: var(--navy); color: white; border: none;
+    padding: 8px 14px; border-radius: 5px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    margin: 4px 4px 4px 0; font-family: inherit;
+  }
+  .btn:hover { background: #1F3559; }
+  .btn.alt { background: var(--gold); }
+  .btn.alt:hover { background: #A06E15; }
+  .btn:disabled { background: #BBB; cursor: not-allowed; }
+
+  .nav-buttons {
+    position: sticky; bottom: 0;
+    background: #FBF8EF;
+    padding-top: 14px; border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between; gap: 8px;
+    margin-top: 16px;
+  }
+  .nav-buttons .btn { flex: 1; }
+
+  .matrix {
+    display: inline-grid;
+    grid-template-columns: repeat(var(--cols, 2), auto);
+    gap: 4px 14px;
+    background: white; padding: 8px 14px;
+    border-left: 2px solid var(--navy);
+    border-right: 2px solid var(--navy);
+    font-family: "Cambria Math", serif; font-size: 14px;
+    margin: 6px auto;
+  }
+  .matrix .cell { text-align: right; padding: 2px 4px; }
+
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--sub);
+    margin: 4px 0 0;
+  }
+  .legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw {
+    display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  }
+
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11.5px; font-weight: 600;
+    background: var(--gold); color: white;
+    margin-left: 6px;
+  }
+  .kbd {
+    display: inline-block; padding: 1px 5px;
+    background: white; border: 1px solid var(--rule); border-radius: 3px;
+    font-family: monospace; font-size: 11.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PCA 한 걸음씩 — 인터랙티브 학습</h1>
+  <div class="sub">왼쪽의 9 단계를 차례로 따라가며, 자료가 어떻게 새 좌표로 옮겨가는지 직접 본다. <span class="kbd">←</span> <span class="kbd">→</span> 키로도 이동.</div>
+</header>
+
+<div class="layout">
+
+  <!-- ─── 좌측: 단계 목록 ─── -->
+  <aside class="steps" id="steps"></aside>
+
+  <!-- ─── 중앙: 시각화 ─── -->
+  <main class="canvas-wrap">
+    <div class="stage-title" id="stageTitle">1. 원 자료 — 두 변수의 산점도</div>
+    <div class="plot-box">
+      <svg id="mainSvg" viewBox="0 0 720 540" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="plot-box" id="auxBox" style="display:none">
+      <svg id="auxSvg" viewBox="0 0 720 240" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </main>
+
+  <!-- ─── 우측: 설명 + 컨트롤 ─── -->
+  <aside class="panel">
+    <h3 id="panelTitle">이 단계에서</h3>
+    <div id="panelBody"></div>
+    <div class="nav-buttons">
+      <button class="btn" id="prevBtn">◀ 이전</button>
+      <button class="btn" id="nextBtn">다음 ▶</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  자료 생성 & 선형대수 유틸 (순수 JS)
+// ════════════════════════════════════════════════════════════════
+
+// 시드 가능 난수 (mulberry32)
+function rng(seed) {
+  let a = seed >>> 0;
+  return function() {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// 표준정규
+function randn(rfn) {
+  let u1 = 0, u2 = 0;
+  while (u1 === 0) u1 = rfn();
+  while (u2 === 0) u2 = rfn();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+function genData(n, rho, seed) {
+  const r = rng(seed);
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const t = randn(r);
+    const noise = randn(r);
+    // 키 = 170 + 8t + ε
+    // 몸무게 = 65 + (rho*9*t + sqrt(1-rho^2)*9*noise)
+    const height = 170 + 8 * t + 1.5 * randn(r);
+    const weight = 65 + rho * 9 * t
+                      + Math.sqrt(Math.max(0, 1 - rho*rho)) * 9 * noise
+                      + 1.5 * randn(r);
+    pts.push([height, weight]);
+  }
+  return pts;
+}
+
+function colMean(X) {
+  const p = X[0].length;
+  const m = new Array(p).fill(0);
+  for (const row of X) for (let j = 0; j < p; j++) m[j] += row[j];
+  for (let j = 0; j < p; j++) m[j] /= X.length;
+  return m;
+}
+function colStd(X, mu) {
+  const p = X[0].length;
+  const s = new Array(p).fill(0);
+  for (const row of X) for (let j = 0; j < p; j++) s[j] += (row[j]-mu[j])**2;
+  for (let j = 0; j < p; j++) s[j] = Math.sqrt(s[j] / (X.length - 1));
+  return s;
+}
+function center(X, mu) {
+  return X.map(r => r.map((v, j) => v - mu[j]));
+}
+function standardize(X, mu, sd) {
+  return X.map(r => r.map((v, j) => (v - mu[j]) / sd[j]));
+}
+function cov2(X) {
+  // 2-변수 공분산행렬
+  const n = X.length;
+  let s11 = 0, s12 = 0, s22 = 0;
+  for (const r of X) { s11 += r[0]*r[0]; s12 += r[0]*r[1]; s22 += r[1]*r[1]; }
+  const d = n - 1;
+  return [[s11/d, s12/d], [s12/d, s22/d]];
+}
+// 2×2 대칭 행렬의 고유분해 (해석적)
+function eig2sym(M) {
+  const a = M[0][0], b = M[0][1], c = M[1][1];
+  const tr = a + c, det = a*c - b*b;
+  const disc = Math.sqrt(Math.max(0, tr*tr/4 - det));
+  const l1 = tr/2 + disc;   // 큰 고유값
+  const l2 = tr/2 - disc;
+  // 고유벡터 — (a-λ, b; b, c-λ) 의 영공간
+  function evec(l) {
+    // (a-l)*x + b*y = 0  →  (x, y) = (b, l-a) 또는 (l-c, b)
+    let x, y;
+    if (Math.abs(b) > 1e-9) { x = b; y = l - a; }
+    else { x = 1; y = 0; }   // 이미 대각
+    const n = Math.sqrt(x*x + y*y);
+    return [x/n, y/n];
+  }
+  const v1 = evec(l1);
+  // PC1 의 첫 성분이 양수가 되게 부호 정렬
+  if (v1[0] < 0) { v1[0] = -v1[0]; v1[1] = -v1[1]; }
+  const v2 = [-v1[1], v1[0]];  // 직교 단위벡터
+  return { l1, l2, v1, v2 };
+}
+function project(X, v) {
+  // X @ v
+  return X.map(r => r[0]*v[0] + r[1]*v[1]);
+}
+function variance(a) {
+  const n = a.length;
+  let mu = 0;
+  for (const x of a) mu += x; mu /= n;
+  let s = 0;
+  for (const x of a) s += (x - mu)*(x - mu);
+  return s / (n - 1);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  상태 (모든 단계가 공유)
+// ════════════════════════════════════════════════════════════════
+const state = {
+  n: 80,
+  rho: 0.85,
+  seed: 20260524,
+  std: false,           // 표준화 ON/OFF
+  angle: 35,            // 사용자 사영 각도 (도, 0~180)
+  stepIndex: 0,
+  raw: null,            // 원자료
+  mu: null,
+  sd: null,
+  centered: null,
+  workData: null,       // 표준화 여부에 따른 X (centered 또는 standardized)
+  Sigma: null,
+  eig: null,            // {l1, l2, v1, v2}
+};
+
+function recompute() {
+  state.raw = genData(state.n, state.rho, state.seed);
+  state.mu = colMean(state.raw);
+  state.sd = colStd(state.raw, state.mu);
+  state.centered = center(state.raw, state.mu);
+  state.workData = state.std
+      ? standardize(state.raw, state.mu, state.sd)
+      : state.centered;
+  state.Sigma = cov2(state.workData);
+  state.eig = eig2sym(state.Sigma);
+}
+recompute();
+
+// ════════════════════════════════════════════════════════════════
+//  단계 정의
+// ════════════════════════════════════════════════════════════════
+const STEPS = [
+  { id: 1, title: '원 자료', sub: '두 변수의 산점도', stageTitle: '1. 원 자료 — 두 변수의 산점도' },
+  { id: 2, title: '평균', sub: '자료의 중심점',       stageTitle: '2. 평균 — 자료의 중심점' },
+  { id: 3, title: '중심화',  sub: '평균을 원점으로',  stageTitle: '3. 중심화 — 평균을 원점으로' },
+  { id: 4, title: '표준화', sub: '단위 통일 (선택)', stageTitle: '4. 표준화 — 단위 통일 (선택)' },
+  { id: 5, title: '사영',   sub: '방향 v 로 그림자', stageTitle: '5. 사영 — 임의의 방향으로 자료의 그림자' },
+  { id: 6, title: '분산 곡선',sub:'각도별 사영 분산',stageTitle: '6. 분산 곡선 — 어느 방향이 가장 큰가' },
+  { id: 7, title: '공분산행렬', sub: '고유분해 실행', stageTitle: '7. 공분산행렬과 고유분해' },
+  { id: 8, title: 'PC 축',   sub: 'PC1, PC2 가 나타난다', stageTitle: '8. PC1, PC2 가 자료 위에 나타난다' },
+  { id: 9, title: '새 좌표', sub: '점수 계산 + 회전',  stageTitle: '9. 새 좌표계 — 점수 계산 + 차원 축소' },
+];
+
+// ════════════════════════════════════════════════════════════════
+//  SVG 헬퍼 — 좌표계 변환 등
+// ════════════════════════════════════════════════════════════════
+function makeScale(domain, range) {
+  const [d0, d1] = domain, [r0, r1] = range;
+  return v => r0 + (v - d0) * (r1 - r0) / (d1 - d0);
+}
+function clear(svg) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+}
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+// 자료 영역의 도메인을 자동으로 잡는 함수 (대칭 마진 포함)
+function getDomain(pts, idx, pad=0.10) {
+  let lo = Infinity, hi = -Infinity;
+  for (const p of pts) { lo = Math.min(lo, p[idx]); hi = Math.max(hi, p[idx]); }
+  const span = hi - lo;
+  return [lo - span*pad, hi + span*pad];
+}
+// 두 도메인을 같은 폭으로 (정사각형)
+function squareDomain(dx, dy) {
+  const wx = dx[1] - dx[0], wy = dy[1] - dy[0];
+  const w = Math.max(wx, wy);
+  const cx = (dx[0]+dx[1])/2, cy = (dy[0]+dy[1])/2;
+  return [[cx - w/2, cx + w/2], [cy - w/2, cy + w/2]];
+}
+
+// ════════════════════════════════════════════════════════════════
+//  렌더링 — 각 단계
+// ════════════════════════════════════════════════════════════════
+const mainSvg = document.getElementById('mainSvg');
+const auxBox  = document.getElementById('auxBox');
+const auxSvg  = document.getElementById('auxSvg');
+
+// 축, 격자 그리기 (산점도용)
+function drawAxes(svg, sx, sy, dx, dy, plotBox, opts = {}) {
+  const { xLab='', yLab='', showZero=true, showGrid=true } = opts;
+  const [x0, x1] = plotBox.x;
+  const [y0, y1] = plotBox.y;
+
+  // 외곽 박스
+  el('rect', { x: x0, y: y0, width: x1-x0, height: y1-y0,
+               fill: 'white', stroke: '#D6D0C2', 'stroke-width': 1 }, svg);
+
+  // 격자
+  if (showGrid) {
+    // 5등분
+    for (let k = 0; k <= 5; k++) {
+      const f = k/5;
+      const yy = y0 + f*(y1-y0);
+      const xx = x0 + f*(x1-x0);
+      el('line', { x1: x0, x2: x1, y1: yy, y2: yy,
+                   stroke: '#EEE', 'stroke-width': 0.7 }, svg);
+      el('line', { x1: xx, x2: xx, y1: y0, y2: y1,
+                   stroke: '#EEE', 'stroke-width': 0.7 }, svg);
+    }
+  }
+
+  // 0 축
+  if (showZero) {
+    if (dx[0] < 0 && dx[1] > 0) {
+      const x0z = sx(0);
+      el('line', { x1: x0z, x2: x0z, y1: y0, y2: y1,
+                   stroke: '#9B96A0', 'stroke-width': 1, 'stroke-dasharray':'3,3' }, svg);
+    }
+    if (dy[0] < 0 && dy[1] > 0) {
+      const y0z = sy(0);
+      el('line', { x1: x0, x2: x1, y1: y0z, y2: y0z,
+                   stroke: '#9B96A0', 'stroke-width': 1, 'stroke-dasharray':'3,3' }, svg);
+    }
+  }
+
+  // 눈금 (4개)
+  for (let k = 0; k <= 4; k++) {
+    const xv = dx[0] + (dx[1]-dx[0]) * k/4;
+    const yv = dy[0] + (dy[1]-dy[0]) * k/4;
+    const xx = sx(xv);
+    const yy = sy(yv);
+    el('text', { x: xx, y: y1+18, 'text-anchor':'middle',
+                 'font-size': 11, fill: '#5C6276' }, svg).textContent
+      = xv.toFixed(1);
+    el('text', { x: x0-8, y: yy+4, 'text-anchor':'end',
+                 'font-size': 11, fill: '#5C6276' }, svg).textContent
+      = yv.toFixed(1);
+  }
+
+  // 라벨
+  if (xLab) {
+    el('text', { x: (x0+x1)/2, y: y1+38,
+                 'text-anchor':'middle', 'font-size': 13.5,
+                 fill: '#21283B', 'font-weight': 600 }, svg).textContent = xLab;
+  }
+  if (yLab) {
+    const t = el('text', { x: x0-44, y: (y0+y1)/2,
+                 'text-anchor':'middle', 'font-size': 13.5,
+                 fill: '#21283B', 'font-weight': 600,
+                 transform: `rotate(-90, ${x0-44}, ${(y0+y1)/2})` }, svg);
+    t.textContent = yLab;
+  }
+}
+
+function plotPoints(svg, X, sx, sy, opts = {}) {
+  const { r=4, color='#21283B', alpha=0.65, highlight=null } = opts;
+  for (let i = 0; i < X.length; i++) {
+    el('circle', { cx: sx(X[i][0]), cy: sy(X[i][1]), r,
+                   fill: color, opacity: alpha,
+                   stroke: 'white', 'stroke-width': 0.8 }, svg);
+  }
+  if (highlight !== null) {
+    el('circle', { cx: sx(X[highlight][0]), cy: sy(X[highlight][1]), r: 8,
+                   fill: '#A52E2A',
+                   stroke: 'white', 'stroke-width': 1.5 }, svg);
+  }
+}
+
+function drawArrow(svg, x1, y1, x2, y2, color='#274472', width=3) {
+  // 화살촉 마커 (재사용 가능)
+  const id = 'arr_' + color.replace('#','');
+  let defs = svg.querySelector('defs');
+  if (!defs) defs = el('defs', {}, svg);
+  if (!defs.querySelector('#'+id)) {
+    const m = el('marker', { id, viewBox:'0 0 10 10',
+                             refX: 8, refY: 5, markerWidth: 7, markerHeight: 7,
+                             orient: 'auto' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+  }
+  el('line', { x1, y1, x2, y2, stroke: color, 'stroke-width': width,
+               'marker-end': `url(#${id})` }, svg);
+}
+
+// ─── 단계 1 ─── 원 자료
+function renderStep1() {
+  clear(mainSvg); auxBox.style.display = 'none';
+  const pb = { x:[80, 680], y:[40, 460] };
+  const dx = getDomain(state.raw, 0);
+  const dy = getDomain(state.raw, 1);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab:'키 (cm)', yLab:'몸무게 (kg)', showZero:false });
+  plotPoints(mainSvg, state.raw, sx, sy, { r:4.5, color:'#274472', alpha:0.7 });
+  el('text', { x: pb.x[0]+12, y: pb.y[0]+22, 'font-size': 12, fill: '#5C6276' }, mainSvg)
+    .textContent = `n = ${state.n}, 표본 상관 = ${state.rho.toFixed(2)}`;
+}
+
+// ─── 단계 2 ─── 평균
+function renderStep2() {
+  renderStep1();
+  const pb = { x:[80, 680], y:[40, 460] };
+  const dx = getDomain(state.raw, 0);
+  const dy = getDomain(state.raw, 1);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+
+  // 평균 별
+  const mx = sx(state.mu[0]), my = sy(state.mu[1]);
+  // 십자선
+  el('line', { x1: pb.x[0], x2: pb.x[1], y1: my, y2: my,
+               stroke: '#C6841B', 'stroke-width': 1.2, 'stroke-dasharray':'5,3' }, mainSvg);
+  el('line', { x1: mx, x2: mx, y1: pb.y[0], y2: pb.y[1],
+               stroke: '#C6841B', 'stroke-width': 1.2, 'stroke-dasharray':'5,3' }, mainSvg);
+  // 별
+  drawStar(mainSvg, mx, my, 12, '#C6841B');
+  el('text', { x: mx+16, y: my-12, 'font-size': 13, fill:'#C6841B', 'font-weight': 700 }, mainSvg)
+    .textContent = `평균 (${state.mu[0].toFixed(1)}, ${state.mu[1].toFixed(1)})`;
+}
+
+function drawStar(svg, cx, cy, r, color='#C6841B') {
+  // 5각 별
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI/2 + i * Math.PI/5;
+    const rr = (i % 2 === 0) ? r : r*0.45;
+    pts.push((cx + rr*Math.cos(a)).toFixed(2) + ',' + (cy + rr*Math.sin(a)).toFixed(2));
+  }
+  el('polygon', { points: pts.join(' '),
+                   fill: color, stroke: '#21283B', 'stroke-width': 1.2 }, svg);
+}
+
+// ─── 단계 3 ─── 중심화
+function renderStep3() {
+  clear(mainSvg); auxBox.style.display = 'none';
+  const pb = { x:[80, 680], y:[40, 460] };
+  const dxc = getDomain(state.centered, 0);
+  const dyc = getDomain(state.centered, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb,
+           { xLab:'키 − 평균 (cm)', yLab:'몸무게 − 평균 (kg)' });
+  plotPoints(mainSvg, state.centered, sx, sy, { r:4.5, color:'#274472', alpha:0.7 });
+
+  // 새 원점 별
+  drawStar(mainSvg, sx(0), sy(0), 11, '#C6841B');
+  el('text', { x: sx(0)+14, y: sy(0)-12, 'font-size': 12.5,
+               fill:'#C6841B', 'font-weight': 700 }, mainSvg)
+    .textContent = '새 평균 = (0, 0)';
+}
+
+// ─── 단계 4 ─── 표준화
+function renderStep4() {
+  clear(mainSvg); auxBox.style.display = 'none';
+  const pb = { x:[80, 680], y:[40, 460] };
+  const data = state.std ? standardize(state.raw, state.mu, state.sd) : state.centered;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  const xLab = state.std ? '표준화된 키' : '키 − 평균 (cm)';
+  const yLab = state.std ? '표준화된 몸무게' : '몸무게 − 평균 (kg)';
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab, yLab });
+  plotPoints(mainSvg, data, sx, sy, { r:4.5, color:'#274472', alpha:0.7 });
+  drawStar(mainSvg, sx(0), sy(0), 11, '#C6841B');
+
+  // 분산 정보
+  const v1 = variance(data.map(r => r[0]));
+  const v2 = variance(data.map(r => r[1]));
+  el('text', { x: pb.x[0]+12, y: pb.y[0]+22,
+               'font-size': 12.5, fill: '#5C6276' }, mainSvg)
+    .textContent = `Var(x1) = ${v1.toFixed(2)},  Var(x2) = ${v2.toFixed(2)}` +
+                   (state.std ? '  (두 분산이 모두 1 에 가깝다)' : '  (단위 영향이 남아 있다)');
+}
+
+// ─── 단계 5 ─── 사영 (사용자가 각도 조절)
+function renderStep5() {
+  clear(mainSvg); auxBox.style.display = 'none';
+  const pb = { x:[80, 680], y:[40, 460] };
+  const data = state.workData;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab:'x1', yLab:'x2' });
+
+  // 방향 벡터 v
+  const ang = state.angle * Math.PI / 180;
+  const v = [Math.cos(ang), Math.sin(ang)];
+
+  // 사영선
+  const proj = project(data, v);
+  for (let i = 0; i < data.length; i++) {
+    const p = data[i];
+    const t = proj[i];
+    const px = t * v[0], py = t * v[1];
+    el('line', { x1: sx(p[0]), y1: sy(p[1]),
+                 x2: sx(px), y2: sy(py),
+                 stroke: '#C0C0C0', 'stroke-width': 0.7, opacity: 0.7 }, mainSvg);
+  }
+
+  // 점들
+  plotPoints(mainSvg, data, sx, sy, { r:4, color:'#274472', alpha:0.5 });
+
+  // 사영점들
+  for (let i = 0; i < data.length; i++) {
+    const t = proj[i];
+    el('circle', { cx: sx(t*v[0]), cy: sy(t*v[1]), r: 4,
+                   fill: '#2F7D63', stroke:'white', 'stroke-width': 0.8 }, mainSvg);
+  }
+
+  // 방향 직선
+  const L = (dx[1] - dx[0]);
+  drawArrow(mainSvg, sx(-L*v[0]/2), sy(-L*v[1]/2),
+                     sx( L*v[0]/2), sy( L*v[1]/2), '#A52E2A', 3.5);
+
+  // 분산 표시
+  const projVar = variance(proj);
+  el('text', { x: pb.x[0]+12, y: pb.y[0]+22,
+               'font-size': 14, fill: '#21283B', 'font-weight': 600 }, mainSvg)
+    .textContent = `방향 v = (${v[0].toFixed(2)}, ${v[1].toFixed(2)})    →    Var(사영) = ${projVar.toFixed(3)}`;
+  // 최대 가능 분산 (참값)
+  el('text', { x: pb.x[0]+12, y: pb.y[0]+42,
+               'font-size': 12, fill: '#5C6276' }, mainSvg)
+    .textContent = `가능한 최댓값 = ${state.eig.l1.toFixed(3)} (λ₁)`;
+}
+
+// ─── 단계 6 ─── 분산 곡선
+function renderStep6() {
+  clear(mainSvg); auxBox.style.display = 'block';
+  clear(auxSvg);
+
+  // 위쪽: 자료 + 현재 화살표 (5번과 동일하지만 작게)
+  const pb = { x:[80, 480], y:[20, 380] };
+  const data = state.workData;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab:'x1', yLab:'x2' });
+  plotPoints(mainSvg, data, sx, sy, { r:3.5, color:'#274472', alpha:0.5 });
+
+  const ang = state.angle * Math.PI / 180;
+  const v = [Math.cos(ang), Math.sin(ang)];
+  const L = dx[1] - dx[0];
+  drawArrow(mainSvg, sx(-L*v[0]/2), sy(-L*v[1]/2),
+                     sx( L*v[0]/2), sy( L*v[1]/2), '#A52E2A', 3.5);
+
+  // 우측: 분산 vs 각도 곡선
+  const pb2x = { x: 520, w: 180, y: 40, h: 320 };
+  // 0~180 도 스캔
+  const angles = [];
+  const variances = [];
+  for (let d = 0; d <= 180; d += 2) {
+    const a = d * Math.PI / 180;
+    const vv = [Math.cos(a), Math.sin(a)];
+    variances.push(variance(project(data, vv)));
+    angles.push(d);
+  }
+  const vmax = Math.max(...variances);
+  const vmin = Math.min(...variances);
+  // 박스
+  el('rect', { x: pb2x.x, y: pb2x.y, width: pb2x.w, height: pb2x.h,
+               fill: 'white', stroke: '#D6D0C2' }, mainSvg);
+  // 곡선
+  const ax = makeScale([0, 180], [pb2x.x, pb2x.x + pb2x.w]);
+  const ay = makeScale([vmin*0.95, vmax*1.05], [pb2x.y + pb2x.h, pb2x.y]);
+  let path = '';
+  for (let i = 0; i < angles.length; i++) {
+    path += (i === 0 ? 'M' : 'L') + ax(angles[i]) + ',' + ay(variances[i]);
+  }
+  el('path', { d: path, fill: 'none', stroke: '#274472', 'stroke-width': 2.5 }, mainSvg);
+
+  // 현재 위치 점
+  el('circle', { cx: ax(state.angle), cy: ay(variance(project(data, v))),
+                 r: 5, fill: '#A52E2A', stroke:'white' }, mainSvg);
+
+  // 최댓값 위치 — λ1 의 각도
+  const maxAng = Math.atan2(state.eig.v1[1], state.eig.v1[0]) * 180 / Math.PI;
+  const mAng = ((maxAng + 180) % 180);
+  el('line', { x1: ax(mAng), x2: ax(mAng), y1: pb2x.y, y2: pb2x.y+pb2x.h,
+               stroke: '#C6841B', 'stroke-width': 1.5, 'stroke-dasharray':'4,3' }, mainSvg);
+  el('text', { x: ax(mAng), y: pb2x.y - 6, 'text-anchor':'middle',
+               'font-size': 11, fill: '#C6841B' }, mainSvg)
+    .textContent = `λ₁ 방향 = ${mAng.toFixed(0)}°`;
+
+  // 축 라벨
+  el('text', { x: pb2x.x + pb2x.w/2, y: pb2x.y + pb2x.h + 22,
+               'text-anchor':'middle', 'font-size': 12, fill:'#21283B' }, mainSvg)
+    .textContent = '방향 각도 (도)';
+  el('text', { x: pb2x.x - 28, y: pb2x.y + pb2x.h/2,
+               'text-anchor':'middle', 'font-size': 12, fill:'#21283B',
+               transform: `rotate(-90, ${pb2x.x - 28}, ${pb2x.y + pb2x.h/2})` }, mainSvg)
+    .textContent = '사영 분산';
+
+  // 눈금 0/90/180
+  for (const d of [0, 45, 90, 135, 180]) {
+    el('line', { x1: ax(d), x2: ax(d), y1: pb2x.y+pb2x.h, y2: pb2x.y+pb2x.h+5,
+                 stroke: '#5C6276' }, mainSvg);
+    el('text', { x: ax(d), y: pb2x.y+pb2x.h+18, 'text-anchor':'middle',
+                 'font-size': 10, fill:'#5C6276' }, mainSvg).textContent = d;
+  }
+  // 분산 눈금
+  for (let k = 0; k <= 3; k++) {
+    const f = k/3;
+    const yv = vmin*0.95 + (vmax*1.05 - vmin*0.95)*f;
+    el('text', { x: pb2x.x - 4, y: ay(yv)+4, 'text-anchor':'end',
+                 'font-size': 10, fill:'#5C6276' }, mainSvg).textContent = yv.toFixed(2);
+  }
+
+  // 보조 패널은 안쓰지만 숨기지 않고 그냥 비움
+  auxBox.style.display = 'none';
+}
+
+// ─── 단계 7 ─── 공분산행렬 + 고유분해
+function renderStep7() {
+  clear(mainSvg); auxBox.style.display = 'none';
+  const pb = { x:[80, 680], y:[40, 460] };
+  const data = state.workData;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab:'x1', yLab:'x2' });
+  plotPoints(mainSvg, data, sx, sy, { r:4, color:'#274472', alpha:0.55 });
+
+  // 공분산행렬 박스
+  const cx = pb.x[0] + 18, cy = pb.y[0] + 22;
+  el('rect', { x: cx, y: cy, width: 220, height: 110,
+               fill: 'rgba(255,255,255,0.97)', stroke: '#274472',
+               'stroke-width': 1.5, rx: 4 }, mainSvg);
+  el('text', { x: cx + 10, y: cy + 22, 'font-size': 13.5,
+               fill: '#274472', 'font-weight': 700 }, mainSvg)
+    .textContent = 'Σ (공분산행렬)';
+  el('text', { x: cx + 10, y: cy + 50, 'font-family': 'monospace',
+               'font-size': 13, fill: '#21283B' }, mainSvg)
+    .textContent = `[ ${state.Sigma[0][0].toFixed(2).padStart(7)}   ${state.Sigma[0][1].toFixed(2).padStart(7)} ]`;
+  el('text', { x: cx + 10, y: cy + 72, 'font-family': 'monospace',
+               'font-size': 13, fill: '#21283B' }, mainSvg)
+    .textContent = `[ ${state.Sigma[1][0].toFixed(2).padStart(7)}   ${state.Sigma[1][1].toFixed(2).padStart(7)} ]`;
+  el('text', { x: cx + 10, y: cy + 96, 'font-size': 11.5, fill:'#5C6276' }, mainSvg)
+    .textContent = `대각합 = ${(state.Sigma[0][0]+state.Sigma[1][1]).toFixed(2)},  det = ${
+      (state.Sigma[0][0]*state.Sigma[1][1] - state.Sigma[0][1]*state.Sigma[1][0]).toFixed(3)}`;
+
+  // 결과 박스
+  const rx = pb.x[1] - 240, ry = pb.y[0] + 22;
+  el('rect', { x: rx, y: ry, width: 220, height: 130,
+               fill: 'rgba(255,255,255,0.97)', stroke: '#A52E2A',
+               'stroke-width': 1.5, rx: 4 }, mainSvg);
+  el('text', { x: rx + 10, y: ry + 22, 'font-size': 13.5,
+               fill: '#A52E2A', 'font-weight': 700 }, mainSvg)
+    .textContent = '고유분해 결과';
+  el('text', { x: rx + 10, y: ry + 46, 'font-family':'monospace',
+               'font-size': 12.5, fill: '#21283B' }, mainSvg)
+    .textContent = `λ₁ = ${state.eig.l1.toFixed(3)}`;
+  el('text', { x: rx + 10, y: ry + 64, 'font-family':'monospace',
+               'font-size': 12.5, fill: '#21283B' }, mainSvg)
+    .textContent = `v₁ = (${state.eig.v1[0].toFixed(3)}, ${state.eig.v1[1].toFixed(3)})`;
+  el('text', { x: rx + 10, y: ry + 88, 'font-family':'monospace',
+               'font-size': 12.5, fill: '#21283B' }, mainSvg)
+    .textContent = `λ₂ = ${state.eig.l2.toFixed(3)}`;
+  el('text', { x: rx + 10, y: ry + 106, 'font-family':'monospace',
+               'font-size': 12.5, fill: '#21283B' }, mainSvg)
+    .textContent = `v₂ = (${state.eig.v2[0].toFixed(3)}, ${state.eig.v2[1].toFixed(3)})`;
+}
+
+// ─── 단계 8 ─── PC 축이 자료 위에 나타남 + scree
+function renderStep8() {
+  clear(mainSvg); auxBox.style.display = 'block'; clear(auxSvg);
+  const pb = { x:[80, 480], y:[20, 380] };
+  const data = state.workData;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sx = makeScale(dx, pb.x);
+  const sy = makeScale(dy, [pb.y[1], pb.y[0]]);
+  drawAxes(mainSvg, sx, sy, dx, dy, pb, { xLab:'x1', yLab:'x2' });
+  plotPoints(mainSvg, data, sx, sy, { r:4, color:'#274472', alpha:0.55 });
+
+  // PC 화살표 (평균에서 시작)
+  const v1 = state.eig.v1, v2 = state.eig.v2;
+  const L1 = Math.sqrt(state.eig.l1) * 2.5;
+  const L2 = Math.sqrt(state.eig.l2) * 2.5;
+  drawArrow(mainSvg, sx(0), sy(0), sx(L1*v1[0]), sy(L1*v1[1]), '#274472', 4);
+  drawArrow(mainSvg, sx(0), sy(0), sx(L2*v2[0]), sy(L2*v2[1]), '#A52E2A', 3.5);
+  el('text', { x: sx(L1*v1[0])+8, y: sy(L1*v1[1])-6, 'font-size':12.5,
+               fill:'#274472', 'font-weight':700 }, mainSvg)
+    .textContent = `PC1 (λ₁=${state.eig.l1.toFixed(2)})`;
+  el('text', { x: sx(L2*v2[0])+8, y: sy(L2*v2[1])-6, 'font-size':12.5,
+               fill:'#A52E2A', 'font-weight':700 }, mainSvg)
+    .textContent = `PC2 (λ₂=${state.eig.l2.toFixed(2)})`;
+
+  // 옆쪽: scree
+  const sbox = { x: 520, w: 180, y: 50, h: 280 };
+  el('rect', { x: sbox.x, y: sbox.y, width: sbox.w, height: sbox.h,
+               fill: 'white', stroke: '#D6D0C2' }, mainSvg);
+  const total = state.eig.l1 + state.eig.l2;
+  const r1 = state.eig.l1 / total, r2 = state.eig.l2 / total;
+  const ax = makeScale([0, 2], [sbox.x, sbox.x + sbox.w]);
+  const ay = makeScale([0, Math.max(state.eig.l1, 1)*1.15], [sbox.y + sbox.h - 30, sbox.y + 10]);
+  // 막대
+  const bw = (sbox.w / 2) * 0.6;
+  el('rect', { x: ax(0.5) - bw/2, y: ay(state.eig.l1),
+               width: bw, height: ay(0) - ay(state.eig.l1),
+               fill: '#274472' }, mainSvg);
+  el('rect', { x: ax(1.5) - bw/2, y: ay(state.eig.l2),
+               width: bw, height: ay(0) - ay(state.eig.l2),
+               fill: '#A52E2A' }, mainSvg);
+  // 라벨
+  el('text', { x: ax(0.5), y: sbox.y + sbox.h - 14, 'text-anchor':'middle',
+               'font-size': 11.5, fill: '#21283B' }, mainSvg).textContent = 'PC1';
+  el('text', { x: ax(1.5), y: sbox.y + sbox.h - 14, 'text-anchor':'middle',
+               'font-size': 11.5, fill: '#21283B' }, mainSvg).textContent = 'PC2';
+  // 값
+  el('text', { x: ax(0.5), y: ay(state.eig.l1) - 6, 'text-anchor':'middle',
+               'font-size': 11.5, fill: '#274472', 'font-weight': 700 }, mainSvg)
+    .textContent = `${(r1*100).toFixed(1)}%`;
+  el('text', { x: ax(1.5), y: ay(state.eig.l2) - 6, 'text-anchor':'middle',
+               'font-size': 11.5, fill: '#A52E2A', 'font-weight': 700 }, mainSvg)
+    .textContent = `${(r2*100).toFixed(1)}%`;
+  // 제목
+  el('text', { x: sbox.x + sbox.w/2, y: sbox.y - 8, 'text-anchor':'middle',
+               'font-size': 12.5, fill:'#21283B', 'font-weight': 600 }, mainSvg)
+    .textContent = 'Scree plot — 설명 비율';
+
+  auxBox.style.display = 'none';
+}
+
+// ─── 단계 9 ─── 새 좌표 + 점 클릭
+function renderStep9() {
+  clear(mainSvg); auxBox.style.display = 'block'; clear(auxSvg);
+
+  // 왼쪽: 원 좌표 (PC 축 표시)
+  const pbL = { x:[60, 350], y:[20, 380] };
+  const data = state.workData;
+  const dxc = getDomain(data, 0);
+  const dyc = getDomain(data, 1);
+  const [dx, dy] = squareDomain(dxc, dyc);
+  const sxL = makeScale(dx, pbL.x);
+  const syL = makeScale(dy, [pbL.y[1], pbL.y[0]]);
+  drawAxes(mainSvg, sxL, syL, dx, dy, pbL, { xLab:'x1', yLab:'x2' });
+  // PC 축 무한선
+  const v1 = state.eig.v1, v2 = state.eig.v2;
+  const L = dx[1] - dx[0];
+  el('line', { x1: sxL(-L*v1[0]/2), y1: syL(-L*v1[1]/2),
+               x2: sxL( L*v1[0]/2), y2: syL( L*v1[1]/2),
+               stroke: '#274472', 'stroke-width': 2 }, mainSvg);
+  el('line', { x1: sxL(-L*v2[0]/2), y1: syL(-L*v2[1]/2),
+               x2: sxL( L*v2[0]/2), y2: syL( L*v2[1]/2),
+               stroke: '#A52E2A', 'stroke-width': 2 }, mainSvg);
+
+  // 우측: PC 좌표
+  const pbR = { x:[420, 700], y:[20, 380] };
+  const Z = data.map(r => [
+    r[0]*v1[0] + r[1]*v1[1],
+    r[0]*v2[0] + r[1]*v2[1],
+  ]);
+  const dzx = getDomain(Z, 0);
+  const dzy = getDomain(Z, 1);
+  const [dx2, dy2] = squareDomain(dzx, dzy);
+  const sxR = makeScale(dx2, pbR.x);
+  const syR = makeScale(dy2, [pbR.y[1], pbR.y[0]]);
+  drawAxes(mainSvg, sxR, syR, dx2, dy2, pbR, { xLab:'PC1 점수', yLab:'PC2 점수' });
+
+  // 점 — 클릭 가능
+  for (let i = 0; i < data.length; i++) {
+    const isSel = (i === state.selected);
+    const r = isSel ? 7 : 4;
+    const fill = isSel ? '#A52E2A' : '#274472';
+    const op = isSel ? 1.0 : 0.5;
+    // 왼쪽
+    const cL = el('circle', { cx: sxL(data[i][0]), cy: syL(data[i][1]), r,
+                              fill, opacity: op, stroke:'white', 'stroke-width':1,
+                              style: 'cursor:pointer' }, mainSvg);
+    cL.addEventListener('click', () => { state.selected = i; renderStep9(); updatePanel(); });
+    // 오른쪽
+    const cR = el('circle', { cx: sxR(Z[i][0]), cy: syR(Z[i][1]), r,
+                              fill, opacity: op, stroke:'white', 'stroke-width':1,
+                              style: 'cursor:pointer' }, mainSvg);
+    cR.addEventListener('click', () => { state.selected = i; renderStep9(); updatePanel(); });
+  }
+
+  if (state.selected !== null && state.selected !== undefined) {
+    const i = state.selected;
+    const px = data[i], pz = Z[i];
+    // 사영선 (왼쪽)
+    el('line', { x1: sxL(px[0]), y1: syL(px[1]),
+                 x2: sxL(pz[0]*v1[0]), y2: syL(pz[0]*v1[1]),
+                 stroke: '#C6841B', 'stroke-width': 1.5,
+                 'stroke-dasharray': '4,3' }, mainSvg);
+    // 점수 안내
+    el('text', { x: pbL.x[0] + 8, y: pbL.y[0] + 16,
+                 'font-size': 12, fill:'#21283B', 'font-weight':600 }, mainSvg)
+      .textContent = `학생 #${i}: (x1, x2) = (${px[0].toFixed(2)}, ${px[1].toFixed(2)})`;
+    el('text', { x: pbR.x[0] + 8, y: pbR.y[0] + 16,
+                 'font-size': 12, fill:'#21283B', 'font-weight':600 }, mainSvg)
+      .textContent = `학생 #${i}: (z1, z2) = (${pz[0].toFixed(2)}, ${pz[1].toFixed(2)})`;
+  } else {
+    el('text', { x: pbL.x[0] + 8, y: pbL.y[0] + 16,
+                 'font-size': 12, fill:'#5C6276' }, mainSvg)
+      .textContent = '점을 클릭해 보세요 — 그 학생의 새 좌표가 표시됩니다.';
+  }
+
+  auxBox.style.display = 'none';
+}
+
+const RENDERERS = [
+  renderStep1, renderStep2, renderStep3, renderStep4,
+  renderStep5, renderStep6, renderStep7, renderStep8, renderStep9
+];
+
+// ════════════════════════════════════════════════════════════════
+//  우측 패널 (단계별 설명 + 컨트롤)
+// ════════════════════════════════════════════════════════════════
+function updatePanel() {
+  const i = state.stepIndex;
+  const step = STEPS[i];
+  document.getElementById('stageTitle').textContent = step.stageTitle;
+  document.getElementById('panelTitle').textContent = step.title + ' — ' + step.sub;
+
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '';
+
+  function add(html) {
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    body.appendChild(d);
+  }
+  function ctrl(html) {
+    const d = document.createElement('div');
+    d.className = 'ctrl';
+    d.innerHTML = html;
+    body.appendChild(d);
+    return d;
+  }
+
+  switch (i) {
+    case 0:
+      add(`<p><b>두 변수</b>(키, 몸무게) 로 측정된 학생 자료다. 점들이 \"오른쪽 위로 향하는 띠\" 처럼 모인다 — 두 변수가 서로 강한 양의 상관을 가진다는 뜻이다.</p>`);
+      add(`<p>이 \"띠 모양\" 안에서 <b>가장 길게 늘어진 방향</b>이 곧 자료의 핵심 정보다. PCA 는 그 방향을 자동으로 찾아주는 도구다.</p>`);
+      add(`<p>아래에서 표본 크기와 상관 강도를 바꿔 보면, 띠의 길이와 모양이 어떻게 달라지는지 볼 수 있다.</p>`);
+      ctrl(`<label>표본 크기 n = <span class="val" id="nVal">${state.n}</span></label>
+            <input type="range" id="nSlider" min="20" max="300" value="${state.n}" step="10">`);
+      ctrl(`<label>상관 ρ = <span class="val" id="rVal">${state.rho.toFixed(2)}</span></label>
+            <input type="range" id="rSlider" min="0" max="99" value="${Math.round(state.rho*100)}">`);
+      document.getElementById('nSlider').oninput = e => {
+        state.n = +e.target.value;
+        document.getElementById('nVal').textContent = state.n;
+        recompute(); render();
+      };
+      document.getElementById('rSlider').oninput = e => {
+        state.rho = +e.target.value / 100;
+        document.getElementById('rVal').textContent = state.rho.toFixed(2);
+        recompute(); render();
+      };
+      break;
+
+    case 1:
+      add(`<p>자료의 <b>평균점</b> 을 노란 별로 표시했다. 좌표는 (${state.mu[0].toFixed(1)}, ${state.mu[1].toFixed(1)}) — 모든 점의 무게중심이다.</p>`);
+      add(`<p>평균은 자료가 \"어디에 있는가\" 의 정보이지, \"어떻게 흩어졌는가\" 의 정보는 아니다. PCA 는 후자에 관심이 있으므로, 다음 단계에서 이 평균을 원점으로 옮긴다.</p>`);
+      add(`<div class="math">μ = (${state.mu[0].toFixed(2)}, ${state.mu[1].toFixed(2)})</div>`);
+      break;
+
+    case 2:
+      add(`<p><b>중심화</b> — 모든 점에서 평균을 뺀다. 그러면 새 평균이 원점 (0, 0) 이 된다.</p>`);
+      add(`<div class="math">x̃<sub>ij</sub> = x<sub>ij</sub> − μ<sub>j</sub></div>`);
+      add(`<p>점들의 \"모양\" 은 그대로 유지되고, 위치만 옮겨갔다. 분산·공분산을 다룰 때는 평균을 빼고 시작해야 식이 깔끔해진다.</p>`);
+      break;
+
+    case 3:
+      add(`<p>변수마다 단위가 다르면 한 변수의 분산이 다른 변수를 압도할 수 있다. <b>표준화</b> 는 각 변수를 표준편차로 나눠 분산을 1 로 맞춘다.</p>`);
+      add(`<div class="math">z<sub>ij</sub> = (x<sub>ij</sub> − μ<sub>j</sub>) / σ<sub>j</sub></div>`);
+      ctrl(`<label>
+              <input type="checkbox" id="stdToggle" ${state.std ? 'checked' : ''}>
+              표준화 적용
+            </label>`);
+      document.getElementById('stdToggle').onchange = e => {
+        state.std = e.target.checked;
+        recompute(); render();
+      };
+      add(`<p class="note">표준화 ON/OFF 토글로 자료의 모양이 어떻게 달라지는지 직접 봐 보자. 두 변수의 단위 크기가 비슷한 본 예제에서는 차이가 작지만, 단위가 다른 변수(예: 키 vs 몸무게)에서는 표준화가 중요하다.</p>`);
+      break;
+
+    case 4:
+      add(`<p><b>사영(projection)</b> — 자료의 각 점을 어떤 직선 위로 \"내려뜨려\" 본다. 그 직선의 방향이 단위벡터 v 다.</p>`);
+      add(`<div class="math">사영 = X · v &nbsp;&nbsp; (각 점이 직선 위의 한 수)</div>`);
+      add(`<p>방향 v 를 슬라이더로 돌려 보자. 사영점들의 <b>분산</b> 이 화면 위에 표시된다. 어느 방향에서 가장 큰가?</p>`);
+      ctrl(`<label>방향 각도 = <span class="val" id="aVal">${state.angle}°</span></label>
+            <input type="range" id="aSlider" min="0" max="180" value="${state.angle}">`);
+      document.getElementById('aSlider').oninput = e => {
+        state.angle = +e.target.value;
+        document.getElementById('aVal').textContent = state.angle + '°';
+        render();
+      };
+      const projVar = variance(project(state.workData,
+                       [Math.cos(state.angle*Math.PI/180),
+                        Math.sin(state.angle*Math.PI/180)]));
+      add(`<p class="note">현재 분산 ${projVar.toFixed(3)} · 가능한 최댓값 ${state.eig.l1.toFixed(3)} (= λ₁)</p>`);
+      break;
+
+    case 5:
+      add(`<p>이번엔 <b>모든 방향</b> 에서 분산을 한꺼번에 본다. 오른쪽 곡선은 각도가 0° 에서 180° 까지 돌아가는 동안 분산이 어떻게 변하는지를 보여준다.</p>`);
+      add(`<p>곡선의 <b>최댓값</b> 자리가 곧 자료가 가장 길게 늘어진 방향 — 제1 주성분 방향이다. 슬라이더로 빨간 점을 그 자리에 맞춰 보자.</p>`);
+      ctrl(`<label>방향 각도 = <span class="val" id="aVal2">${state.angle}°</span></label>
+            <input type="range" id="aSlider2" min="0" max="180" value="${state.angle}">`);
+      document.getElementById('aSlider2').oninput = e => {
+        state.angle = +e.target.value;
+        document.getElementById('aVal2').textContent = state.angle + '°';
+        render();
+      };
+      const maxAng = Math.atan2(state.eig.v1[1], state.eig.v1[0]) * 180 / Math.PI;
+      const mAng = ((maxAng + 180) % 180);
+      add(`<p class="note">참 최댓값 = λ₁ = ${state.eig.l1.toFixed(3)}, 그 자리의 각도 ≈ ${mAng.toFixed(1)}°</p>`);
+      break;
+
+    case 6:
+      add(`<p><b>공분산행렬</b> Σ 가 자료의 모든 변동을 한 행렬에 담는다. 그 행렬의 <b>고유분해</b> 를 하면 PC 방향과 분산이 한꺼번에 나온다.</p>`);
+      add(`<div class="math">Σ v = λ v</div>`);
+      add(`<p>왼쪽 박스에 행렬 Σ 가 있고, 오른쪽 박스에 그것의 고유값과 고유벡터가 계산되어 있다.</p>`);
+      add(`<p class="note">2×2 의 경우 특성방정식 det(Σ − λI) = 0 이 이차방정식이므로 손으로 풀 수 있다. 본 화면의 결과는 그 이차방정식의 해다.</p>`);
+      add(`<p>λ₁ > λ₂ — 큰 고유값이 PC1 의 분산, 작은 고유값이 PC2 의 분산이다. 두 고유벡터가 서로 직교한다.</p>`);
+      break;
+
+    case 7:
+      add(`<p>PC1 과 PC2 가 자료 위에 화살표로 나타났다. 화살표의 <b>방향</b> 이 고유벡터이고, <b>길이</b> 가 √λ 에 비례한다 — 즉 분산을 표현한다.</p>`);
+      add(`<p>오른쪽 막대그래프는 <b>scree plot</b> — 각 PC 가 전체 분산의 몇 % 를 설명하는지 보여준다.</p>`);
+      const total = state.eig.l1 + state.eig.l2;
+      add(`<div class="math">PC1: ${(state.eig.l1/total*100).toFixed(1)}% &nbsp;|&nbsp; PC2: ${(state.eig.l2/total*100).toFixed(1)}%</div>`);
+      add(`<p>실제 분석에서는 PC1, PC2 가 합쳐서 80~90% 이상을 설명하면, PC3 이후를 버리고 차원을 줄인다. 본 2D 예제에서는 PC1 하나로도 대부분의 정보가 담긴다.</p>`);
+      break;
+
+    case 8:
+      add(`<p>마지막 단계 — 자료를 <b>PC 좌표계</b> 로 옮긴다. 각 점이 새 좌표 (z₁, z₂) 를 갖게 된다.</p>`);
+      add(`<div class="math">z<sub>ik</sub> = v<sub>k</sub><sup>T</sup>(x<sub>i</sub> − μ)</div>`);
+      add(`<p><b>점을 클릭해 보세요</b> — 그 학생의 원좌표 (x1, x2) 와 새 좌표 (z1, z2) 가 표시된다. 같은 학생, 다른 \"이름표\".</p>`);
+      add(`<p class="note">PC 좌표계에서는 두 축이 직교하고, 두 점수 사이의 상관이 0 이다. 다중공선성 없이 회귀나 군집 분석을 할 수 있는 이유다.</p>`);
+      add(`<p>여기서 PC2 를 버리면 — 즉 z₁ 만 남기면 — 자료가 1 차원으로 줄어든다. 보존되는 분산이 ${(state.eig.l1/(state.eig.l1+state.eig.l2)*100).toFixed(1)}%, 버려지는 분산이 ${(state.eig.l2/(state.eig.l1+state.eig.l2)*100).toFixed(1)}% 이다.</p>`);
+      break;
+  }
+
+  // 단계 진행 상태
+  document.querySelectorAll('.step-item').forEach((el, idx) => {
+    el.classList.toggle('active', idx === state.stepIndex);
+    el.classList.toggle('done', idx < state.stepIndex);
+  });
+
+  document.getElementById('prevBtn').disabled = (state.stepIndex === 0);
+  document.getElementById('nextBtn').disabled = (state.stepIndex === STEPS.length - 1);
+}
+
+function render() {
+  RENDERERS[state.stepIndex]();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  좌측 단계 목록 만들기
+// ════════════════════════════════════════════════════════════════
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => {
+  const it = document.createElement('div');
+  it.className = 'step-item';
+  it.innerHTML = `
+    <div class="step-num">${s.id}</div>
+    <div>
+      <div class="step-title">${s.title}</div>
+      <div class="step-sub">${s.sub}</div>
+    </div>
+  `;
+  it.onclick = () => { state.stepIndex = i; render(); updatePanel(); };
+  stepsEl.appendChild(it);
+});
+
+document.getElementById('prevBtn').onclick = () => {
+  if (state.stepIndex > 0) { state.stepIndex--; render(); updatePanel(); }
+};
+document.getElementById('nextBtn').onclick = () => {
+  if (state.stepIndex < STEPS.length - 1) { state.stepIndex++; render(); updatePanel(); }
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') document.getElementById('nextBtn').click();
+  if (e.key === 'ArrowLeft')  document.getElementById('prevBtn').click();
+});
+
+// 초기 렌더
+render();
+updatePanel();
+</script>
+</body>
+</html>
