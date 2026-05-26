@@ -1,4 +1,4 @@
-# relation — 학생 안내노트
+# relation 
 
 본 안내노트는 로젠 이산수학 8 판 relation(relations) 의 모든 개념, 정의, 예제, 그리고 Lean 4 형식 증명을 빠짐없이 담은 참고 자료다.
 
