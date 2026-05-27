@@ -1,4 +1,4 @@
-# relation — 학생 워크북
+# 5장 관계 — 학생 워크북
 
 본 워크북은 학생 안내노트 (`relation_student.md`) 의 내용을 익혔다는 전제 아래 출제된 종합 문제집이다.
 
@@ -123,13 +123,13 @@ $A \times B$ 의 한 순서쌍 $(a, b)$ 를 만들기 위해 두 단계를 차�
 
 ```lean
 -- 곱타입의 원소
-def p : Nat × String := (7, "world")
+def myPair : Nat × String := (7, "world")
 
 -- 첫째 성분이 7 임을 증명
-example : p.1 = 7 := ____
+example : myPair.1 = 7 := ____
 
 -- 둘째 성분이 "world" 임을 증명
-example : p.2 = "world" := ____
+example : myPair.2 = "world" := ____
 ```
 
 <details>
@@ -137,11 +137,11 @@ example : p.2 = "world" := ____
 
 두 빈칸 모두 `rfl`.
 
-`p.1` 은 정의에 의해 직접 `7` 로 풀리고, `p.2` 도 정의에 의해 직접 `"world"` 로 풀리므로 양변이 글자 그대로 같다.
+`myPair.1` 은 정의에 의해 직접 `7` 로 풀리고, `myPair.2` 도 정의에 의해 직접 `"world"` 로 풀리므로 양변이 글자 그대로 같다.
 
 ```lean
-example : p.1 = 7 := rfl
-example : p.2 = "world" := rfl
+example : myPair.1 = 7 := rfl
+example : myPair.2 = "world" := rfl
 ```
 
 </details>
@@ -165,8 +165,9 @@ example (x y : Nat) (h : (x, 7) = (3, y)) : x = 3 ∧ y = 7 := by
   rw [Prod.mk.injEq] at h
   -- 이 시점에서 h : x = 3 ∧ 7 = y.
   -- WHY: 결론도 그리고이므로 두 조각을 따로 제출.
-  -- h.1 이 x = 3, h.2 가 7 = y. 후자는 좌우 바꿔 y = 7.
-  exact ⟨h.1, h.2.symm⟩
+  refine ⟨h.1, ?_⟩
+  -- 남은 목표 y = 7. h.2 는 7 = y 이므로 좌우 바꿔야 함.
+  exact h.2.symm
 ```
 
 </details>
@@ -266,7 +267,7 @@ M_R = \begin{pmatrix} 0 & 1 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 0 \end{pmatrix}.
 <details>
 <summary>정답</summary>
 
-$(a, b) \in R$ 이 " $a$ 에서 $b$ 로 가는 관계" 를 뜻하므로, 행렬 $M_R$ 에서 자리 $(i, j)$ 의 $1$ 도 같은 방향성을 유지하려면 $i$ 가 출발, $j$ 가 도착이어야 한다. 한자 "행(行)" 이 "간다" 라는 뜻을 가져 자연스러운 연상도 된다.
+$(a, b) \in R$ 이 "$a$ 에서 $b$ 로 가는 관계" 를 뜻하므로, 행렬 $M_R$ 에서 자리 $(i, j)$ 의 $1$ 도 같은 방향성을 유지하려면 $i$ 가 출발, $j$ 가 도착이어야 한다. 한자 "행(行)" 이 "간다" 라는 뜻을 가져 자연스러운 연상도 된다.
 
 이 약속이 깨지면 같은 관계행렬이 정반대 방향의 관계로 해석되어 5.5 절의 합성과 5.6 절의 와샬 알고리즘에서 모든 계산이 거꾸로 진행된다.
 
@@ -320,10 +321,10 @@ example {A : Type} (a : A) : IdRel A a a := by
 다음 정리를 처음부터 증명하라.
 
 ```lean
-def Le1 : Nat → Nat → Prop := fun a b => a ≤ b
+def LeRel : Nat → Nat → Prop := fun a b => a ≤ b
 
--- Le1 은 (자기 자신과의 관계가 모두 성립한다는 의미에서) 반사적이다
-example : ∀ a : Nat, Le1 a a := by
+-- LeRel 은 (자기 자신과의 관계가 모두 성립한다는 의미에서) 반사적이다
+example : ∀ a : Nat, LeRel a a := by
   ____
 ```
 
@@ -331,11 +332,11 @@ example : ∀ a : Nat, Le1 a a := by
 <summary>모범 답안</summary>
 
 ```lean
-example : ∀ a : Nat, Le1 a a := by
+example : ∀ a : Nat, LeRel a a := by
   -- WHY: 임의의 a 를 도입.
   intro a
   -- WHY: 정의를 펼치면 목표가 a ≤ a 로 바뀐다.
-  unfold Le1
+  unfold LeRel
   -- WHY: 자연수에서 a ≤ a 는 omega 가 자동으로 닫는다.
   omega
 ```
@@ -438,7 +439,7 @@ $R = \{(1, 2), (2, 3), (3, 1)\}$ 에 대해 다음을 구하라.
 
 ### 문제 3-5 (유형 3) — 정리 5-2 의 자기 말 증명
 
-정리 5-2 " $M_{R^n} = M_R^{[n]}$" 을 수학적 귀납법으로 처음부터 증명하라. (합성관계의 관계행렬이 부울곱임은 5.5 절에서 다시 다루므로 자유롭게 사용해도 좋다.)
+정리 5-2 "$M_{R^n} = M_R^{[n]}$" 을 수학적 귀납법으로 처음부터 증명하라. (합성관계의 관계행렬이 부울곱임은 5.5 절에서 다시 다루므로 자유롭게 사용해도 좋다.)
 
 <details>
 <summary>모범 답안</summary>
@@ -493,12 +494,17 @@ example : Comp Redge Redge 1 3 := by
 
 ```lean
 example : Comp Redge Redge 1 3 := by
-  -- 존재 명제의 증인으로 중간 정점 2 를 제시.
-  -- 두 부 증명을 꺽쇠에 차례로 넣어 한 번에 닫는다.
-  exact ⟨2, Or.inl ⟨rfl, rfl⟩, Or.inr (Or.inl ⟨rfl, rfl⟩)⟩
+  refine ⟨2, ?_, ?_⟩
+  · -- Redge 1 2: 첫째 선택지 (a = 1 ∧ b = 2)
+    left
+    exact ⟨rfl, rfl⟩
+  · -- Redge 2 3: 둘째 선택지 (a = 2 ∧ b = 3)
+    right
+    left
+    exact ⟨rfl, rfl⟩
 ```
 
-`Redge` 는 세 선택지의 논리합으로 정의되어 있다. 첫째 자리는 왼쪽 선택지 (`Or.inl`), 둘째 자리는 가운데 선택지 (`Or.inr` 로 첫째를 제거한 뒤 다시 `Or.inl` 로 셋째를 제거) 를 택한다.
+`Redge` 는 세 선택지의 논리합으로 정의되어 있다. 첫째 부 목표는 왼쪽 선택지 (`left`), 둘째 부 목표는 가운데 선택지 (`right` 로 첫째를 제거한 뒤 다시 `left` 로 셋째를 제거) 를 택한다.
 
 </details>
 
@@ -529,8 +535,10 @@ example (R S T : A → A → Prop) (a d : A) :
   rintro ⟨c, ⟨b, hRab, hSbc⟩, hTcd⟩
   -- 이제 결론 Comp R (Comp S T) a d 를 만든다.
   -- WHY: 결론의 ∃ 자리에 같은 b 를 증인으로 제시.
-  -- 남은 합성 Comp S T b d 의 중간 증인은 c.
-  exact ⟨b, hRab, c, hSbc, hTcd⟩
+  refine ⟨b, hRab, ?_⟩
+  -- 남은 목표: Comp S T b d.
+  -- WHY: 이 합성의 중간 증인으로 c 를 제시.
+  exact ⟨c, hSbc, hTcd⟩
 ```
 
 </details>
@@ -651,12 +659,12 @@ $[a]$ 와 $[b]$ 가 공통 원소 $c$ 를 가진다고 하자. 곧 $(a, c) \in R
 
 ### 문제 4-6 (유형 3) — 합동관계는 동치관계
 
-정수 위의 관계 " $a \equiv b \pmod{m}$" ($m \geq 1$) 이 동치관계임을 직접 증명하라.
+정수 위의 관계 "$a \equiv b \pmod{m}$" ($m \geq 1$) 이 동치관계임을 직접 증명하라.
 
 <details>
 <summary>모범 답안</summary>
 
-$a \equiv b \pmod{m}$ 의 정의는 " $m \mid (a - b)$", 곧 "어떤 정수 $k$ 가 존재하여 $a - b = m k$" 다.
+$a \equiv b \pmod{m}$ 의 정의는 "$m \mid (a - b)$", 곧 "어떤 정수 $k$ 가 존재하여 $a - b = m k$" 다.
 
 **반사성.** 임의의 정수 $a$ 에 대해 $a - a = 0 = m \cdot 0$. 따라서 $a \equiv a \pmod{m}$.
 
@@ -706,15 +714,15 @@ example : Refl DivRel := by
 ```lean
 variable {A : Type}
 
-def Trans1 (R : A → A → Prop) : Prop :=
+def Trans (R : A → A → Prop) : Prop :=
   ∀ a b c, R a b → R b c → R a c
 
-def Le1 : Nat → Nat → Prop := fun a b => a ≤ b
+def LeR : Nat → Nat → Prop := fun a b => a ≤ b
 
-example : Trans1 Le1 := by
+example : Trans LeR := by
   intro a b c hab hbc
-  -- hab : Le1 a b,  hbc : Le1 b c
-  unfold Le1 at hab hbc ⊢
+  -- hab : LeR a b,  hbc : LeR b c
+  unfold LeR at hab hbc ⊢
   ?_
 ```
 
@@ -722,11 +730,10 @@ example : Trans1 Le1 := by
 <summary>정답</summary>
 
 ```lean
-example : Trans1 Le1 := by
+example : Trans LeR := by
   intro a b c hab hbc
-  unfold Le1 at hab hbc
+  unfold LeR at hab hbc ⊢
   -- hab : a ≤ b,  hbc : b ≤ c,  목표: a ≤ c
-  show a ≤ c
   omega
 ```
 
@@ -744,15 +751,15 @@ variable {A : Type}
 
 def Refl  (R : A → A → Prop) : Prop := ∀ a, R a a
 def Symm  (R : A → A → Prop) : Prop := ∀ a b, R a b → R b a
-def Trans1 (R : A → A → Prop) : Prop :=
+def Trans (R : A → A → Prop) : Prop :=
   ∀ a b c, R a b → R b c → R a c
-def Equiv1 (R : A → A → Prop) : Prop :=
-  Refl R ∧ Symm R ∧ Trans1 R
+def EquivRel (R : A → A → Prop) : Prop :=
+  Refl R ∧ Symm R ∧ Trans R
 
-def EqR (A : Type) : A → A → Prop := fun x y => x = y
+def EqRel (A : Type) : A → A → Prop := fun x y => x = y
 
 -- 등호 관계는 동치관계이다
-example {A : Type} : Equiv1 (EqR A) := by
+example {A : Type} : EquivRel (EqRel A) := by
   ____
 ```
 
@@ -760,25 +767,27 @@ example {A : Type} : Equiv1 (EqR A) := by
 <summary>모범 답안</summary>
 
 ```lean
-example {A : Type} : Equiv1 (EqR A) := by
-  -- WHY: Equiv1 은 그리고(∧)의 묶음이므로 constructor 로 쪼갠다.
-  -- 목표: Refl (EqR A) ∧ Symm (EqR A) ∧ Trans1 (EqR A)
+example {A : Type} : EquivRel (EqRel A) := by
+  -- WHY: EquivRel 은 그리고(∧)의 묶음이므로 constructor 로 쪼갠다.
   constructor
-  · -- 반사성: 임의의 a 도입 후 a = a 가 자명.
+  · -- 반사성
+    -- WHY: 임의의 a 도입 후 정의를 펼친다.
     intro a
-    show a = a
+    unfold EqRel
     rfl
   · constructor
-    · -- 대칭성: a = b 가정에서 b = a 도출.
+    · -- 대칭성
       intro a b h
-      show b = a
-      -- WHY: 등호의 대칭성 Eq.symm 의 점 표기.
-      exact h.symm
-    · -- 추이성: a = b, b = c 에서 a = c.
+      unfold EqRel at h ⊢
+      -- h : a = b, 목표: b = a
+      -- WHY: 가정 h 로 a 자리를 b 로 치환하면 목표가 b = b.
+      rw [h]
+    · -- 추이성
       intro a b c hab hbc
-      show a = c
-      -- WHY: 등호의 추이성 Eq.trans 를 두 가정에 적용.
-      exact Eq.trans hab hbc
+      unfold EqRel at hab hbc ⊢
+      -- hab : a = b, hbc : b = c, 목표: a = c
+      -- WHY: 두 번 연속 rw 로 양변을 모두 c 로 가져간다.
+      rw [hab, hbc]
 ```
 
 </details>
@@ -880,13 +889,13 @@ $R \circ S$ — $S$ 의 $(2, 3)$ 의 둘째 성분이 $3$ 이고, $R$ 에서 첫
 ```lean
 variable {A : Type}
 
-def Inv1 (R : A → A → Prop) : A → A → Prop :=
+def Inv (R : A → A → Prop) : A → A → Prop :=
   fun a b => R b a
 
 -- 역의 역은 자기 자신
 example (R : A → A → Prop) (a b : A) :
-    Inv1 (Inv1 R) a b ↔ R a b := by
-  -- WHY: Inv1 를 두 번 펼치면 양변이 글자 그대로 같아진다.
+    Inv (Inv R) a b ↔ R a b := by
+  -- WHY: Inv 를 두 번 펼치면 양변이 글자 그대로 같아진다.
   ____
 ```
 
@@ -895,11 +904,11 @@ example (R : A → A → Prop) (a b : A) :
 
 ```lean
 example (R : A → A → Prop) (a b : A) :
-    Inv1 (Inv1 R) a b ↔ R a b := by
+    Inv (Inv R) a b ↔ R a b := by
   rfl
 ```
 
-`Inv1 (Inv1 R) a b` 는 정의에 의해 `Inv1 R b a` 이고, 이는 다시 `R a b` 이므로 양변이 글자 그대로 같다. `rfl` 한 단어로 닫힌다.
+`Inv (Inv R) a b` 는 정의에 의해 `Inv R b a` 이고, 이는 다시 `R a b` 이므로 양변이 글자 그대로 같다. `rfl` 한 단어로 닫힌다.
 
 </details>
 
@@ -933,13 +942,16 @@ example : ¬ Comp S1 R1 1 3 := by
 -- (1, 3) 은 S1 ∘ R1 에 있다
 example : Comp R1 S1 1 3 := by
   -- WHY: 중간 정점 b = 2 를 증인으로 제시.
-  -- R1 1 2 = (1 = 1 ∧ 2 = 2), S1 2 3 = (2 = 2 ∧ 3 = 3) 모두 rfl 두 개.
-  exact ⟨2, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩⟩
+  refine ⟨2, ?_, ?_⟩
+  · -- R1 1 2: (1 = 1 ∧ 2 = 2)
+    exact ⟨rfl, rfl⟩
+  · -- S1 2 3: (2 = 2 ∧ 3 = 3)
+    exact ⟨rfl, rfl⟩
 
 -- (1, 3) 은 R1 ∘ S1 에는 없다
 example : ¬ Comp S1 R1 1 3 := by
   -- WHY: 합성이 성립한다면 중간 정점 b 와 두 조각의 등식이 나온다.
-  rintro ⟨b, ⟨h1, h2⟩, h3⟩
+  rintro ⟨b, ⟨h1, h2⟩, h3, h4⟩
   -- h1 : (1 : Nat) = 2 인데 이는 거짓이므로 모순.
   -- WHY: omega 가 자연수의 1 = 2 모순을 자동 처리.
   omega
@@ -1152,17 +1164,18 @@ example (R : A → A → Prop) : Symm (SymmClosure R) := by
 example (R : A → A → Prop) : Symm (SymmClosure R) := by
   -- WHY: 임의의 a, b 와 가정 h : SymmClosure R a b 를 도입.
   intro a b h
+  unfold SymmClosure at h ⊢
   -- h : R a b ∨ R b a, 목표: R b a ∨ R a b
   -- WHY: 가정의 두 선택지를 cases 로 나눠 각각 처리.
   cases h with
   | inl hab =>
-      -- 왼쪽 선택지: R a b. 목표의 오른쪽 R a b 와 일치.
-      right
-      exact hab
+    -- 왼쪽 선택지: R a b. 목표의 오른쪽 R a b 와 일치.
+    right
+    exact hab
   | inr hba =>
-      -- 오른쪽 선택지: R b a. 목표의 왼쪽 R b a 와 일치.
-      left
-      exact hba
+    -- 오른쪽 선택지: R b a. 목표의 왼쪽 R b a 와 일치.
+    left
+    exact hba
 ```
 
 핵심 관찰 — 가정의 두 선택지가 결론의 두 선택지의 자리를 서로 바꾼 모양이다. 그래서 한쪽 선택지가 들어오면 반대 쪽 결론을 택해 닫는다.
@@ -1250,7 +1263,7 @@ example (R : A → A → Prop) : Symm (SymmClosure R) := by
 
 이 $3$ 항관계 자체는 이 세 집합의 $3$ 항 곱집합의 부분집합이다.
 
-**(3) 제약.** 관계의 정의가 " $3$ 항 곱집합의 부분집합" 이므로 같은 순서쌍은 본래 한 번만 들어 있다 (집합이므로 중복 불가). 곧 관계 자체가 자연스럽게 "동일 (학번, 과목, 학기) 순서쌍은 한 번만 존재" 를 보장한다.
+**(3) 제약.** 관계의 정의가 "$3$ 항 곱집합의 부분집합" 이므로 같은 순서쌍은 본래 한 번만 들어 있다 (집합이므로 중복 불가). 곧 관계 자체가 자연스럽게 "동일 (학번, 과목, 학기) 순서쌍은 한 번만 존재" 를 보장한다.
 
 다만 데이터베이스 구현에서는 같은 (학번, 과목, 학기) 의 행이 중복되지 않도록 (학번, 과목, 학기) 의 묶음을 기본 키 (primary key) 로 설정해야 한다. 이는 관계의 정의를 데이터베이스 제약으로 구현한 것이다.
 
@@ -1259,7 +1272,7 @@ example (R : A → A → Prop) : Symm (SymmClosure R) := by
 
 ### 문제 7-4 (유형 2) — 추이폐포와 멀티홉 추론
 
-지식 그래프에서 " $A$ 가 $B$ 의 상위 개념이다" 라는 관계가 깔려 있을 때, 챗봇이 "동물의 상위 개념의 상위 개념은?" 같은 멀티홉 질문에 답하기 위해 어떻게 추이폐포를 활용할 수 있는지 두 문장으로 설명하라.
+지식 그래프에서 "$A$ 가 $B$ 의 상위 개념이다" 라는 관계가 깔려 있을 때, 챗봇이 "동물의 상위 개념의 상위 개념은?" 같은 멀티홉 질문에 답하기 위해 어떻게 추이폐포를 활용할 수 있는지 두 문장으로 설명하라.
 
 <details>
 <summary>정답</summary>
@@ -1412,7 +1425,7 @@ $S \circ R$ 에서 먼저 적용되는 관계는 왼쪽 $S$ 인가 오른쪽 $R$
 
 ### 8-12
 
-라운드 로빈 토너먼트 (relation에는 직접 나오지 않지만 관계 위 사이클의 개념) 와 관계 위의 사이클이 어떻게 같은 언어를 쓰는지 한 줄로 답하라.
+라운드 로빈 토너먼트 (5 장에는 직접 나오지 않지만 관계 위 사이클의 개념) 와 관계 위의 사이클이 어떻게 같은 언어를 쓰는지 한 줄로 답하라.
 
 <details>
 <summary>정답</summary>
