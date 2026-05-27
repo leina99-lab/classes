@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그래프 알고리즘 스튜디오 — 이산수학 강의 도구</title>
+<style>
+  :root {
+    --bg: #FFFFFF; --bg2: #F5F5F2; --bg3: #ECECE8; --bgInfo: #E0F0ED;
+    --fg: #1A1A1A; --fg2: #555555; --fg3: #888888; --fgInfo: #2C5F7C;
+    --border: #D5D5D5; --border2: #B5B5B5;
+    --teal: #7BA7AD; --coral: #D4726A; --green: #3F7A4F; --amber: #BA7517;
+    --blue: #378ADD; --purple: #7F77DD; --red: #E24B4A; --pink: #D4537E;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "맑은 고딕", "Malgun Gothic", sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--fg); line-height: 1.5; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px 0; }
+  .subtitle { font-size: 13px; color: var(--fg3); margin-bottom: 16px; }
+  button { padding: 6px 12px; font-size: 13px; border: 0.5px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
+  button:hover:not(:disabled) { background: var(--bg2); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary { background: var(--teal); color: white; border-color: var(--teal); }
+  button.primary:hover:not(:disabled) { background: #6A9298; }
+  select, input[type=text], input[type=number] { padding: 5px 8px; font-size: 13px; border: 0.5px solid var(--border); background: var(--bg); border-radius: 6px; font-family: inherit; color: var(--fg); }
+  .tab { padding: 7px 14px; font-size: 13px; border: 0.5px solid var(--border); background: transparent; cursor: pointer; border-radius: 6px; }
+  .tab.active { background: var(--bgInfo); color: var(--fgInfo); border-color: var(--teal); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 4px; }
+  .col label { font-size: 11px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .canvas-wrap { background: var(--bg2); border-radius: 8px; position: relative; user-select: none; padding: 8px; }
+  .panel { background: var(--bg2); border-radius: 6px; padding: 10px 12px; min-height: 70px; }
+  .panel-title { font-size: 11px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  optgroup { font-style: normal; }
+  
+  .qbtn { padding: 10px 18px; font-size: 14px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border); background: var(--bg); border-radius: 6px; transition: all 0.15s; font-family: inherit; color: var(--fg); }
+  .qbtn:hover { background: var(--bg2); }
+  .qbtn.yes { color: var(--green); border-color: var(--green); }
+  .qbtn.no { color: var(--red); border-color: var(--red); }
+  
+  .scoreboard { display: flex; gap: 12px; flex-wrap: wrap; padding: 10px 14px; background: var(--bgInfo); border-radius: 6px; margin-top: 10px; }
+  .stat { text-align: center; min-width: 80px; }
+  .stat-label { font-size: 10px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--fgInfo); }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500; background: var(--bg); color: var(--fg2); }
+  
+  .overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none; }
+  
+  @keyframes pop { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+  @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,114,106,0); } 50% { box-shadow: 0 0 0 6px rgba(212,114,106,0.25); } }
+  .pop { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .shake { animation: shake 0.5s; }
+  .on-fire { animation: glow 1.2s infinite; }
+  
+  .lib-item { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 4px; font-size: 13px; margin-bottom: 4px; }
+  .lib-item button { padding: 2px 8px; font-size: 11px; }
+  .icon { font-size: 14px; vertical-align: -2px; display: inline-block; width: 16px; text-align: center; }
+  
+  .footer-note { margin-top: 24px; padding: 12px 16px; background: var(--bg2); border-radius: 6px; font-size: 12px; color: var(--fg3); line-height: 1.6; }
+  .footer-note b { color: var(--fg2); }
+  
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-content { background: var(--bg); padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .modal h3 { margin-top: 0; }
+  .modal .close { float: right; background: none; border: none; font-size: 22px; cursor: pointer; padding: 0; width: 30px; }
+  
+  @media (max-width: 700px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .scoreboard { gap: 6px; padding: 6px; }
+    .stat { min-width: 60px; }
+    .stat-value { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>그래프 알고리즘 스튜디오</h1>
+<div class="subtitle">이산수학 강의 도구 · 12개 알고리즘 · 편집·실행·퀴즈 · 자동 저장</div>
+
+<div class="row" style="margin-bottom: 12px;">
+  <button class="tab active" id="tab-edit">편집 모드</button>
+  <button class="tab" id="tab-run">실행 모드</button>
+  <button class="tab" id="tab-quiz">퀴즈 모드</button>
+  <button class="tab" id="tab-save">저장·불러오기</button>
+  <span style="margin-left: auto; font-size: 12px; color: var(--fg3);" id="help-text">꼭지점: 빈 공간 클릭 · 모서리: 두 꼭지점 차례 클릭 · 우클릭: 삭제</span>
+</div>
+
+<!-- 편집 패널 -->
+<div id="edit-panel" style="margin-bottom: 12px;">
+  <div class="row" style="margin-bottom: 10px;">
+    <div class="col">
+      <label>예제 불러오기</label>
+      <select id="preset" style="min-width: 220px;">
+        <option value="empty">빈 그래프</option>
+        <option value="lecture" selected>강의 예제 (Rosen, 6 꼭지점)</option>
+        <option value="bipartite">이분 그래프 예제</option>
+        <option value="dag">DAG (위상정렬용)</option>
+        <option value="euler">오일러 회로 가능</option>
+        <option value="kruskal">연결성분 3개</option>
+        <option value="konigsberg">쾨니히스베르크</option>
+        <option value="mst">MST 예제 (7 꼭지점)</option>
+        <option value="negative">음의 가중치 그래프</option>
+        <option value="cutvertex">절단 꼭지점 포함</option>
+        <option value="petersen">Petersen (3-색칠)</option>
+      </select>
+    </div>
+    <div class="col">
+      <label>모서리 유형</label>
+      <div style="display: flex; gap: 4px;">
+        <button id="toggle-directed">비방향성</button>
+        <button id="toggle-weighted">가중치 ON</button>
+      </div>
+    </div>
+    <div class="col">
+      <label>동작</label>
+      <div style="display: flex; gap: 4px;">
+        <button id="clear-graph">비우기</button>
+        <button id="undo-graph">실행 취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 실행 패널 -->
+<div id="run-panel" style="display: none; margin-bottom: 12px;">
+  <div class="row" style="margin-bottom: 10px;">
+    <div class="col">
+      <label>알고리즘</label>
+      <select id="algo" style="min-width: 260px;">
+        <optgroup label="탐색">
+          <option value="bfs">BFS</option>
+          <option value="dfs">DFS</option>
+        </optgroup>
+        <optgroup label="최단경로">
+          <option value="dijkstra">다익스트라</option>
+          <option value="bellmanford">Bellman-Ford</option>
+        </optgroup>
+        <optgroup label="연결성">
+          <option value="cc">연결성분</option>
+          <option value="cutvertex">절단 꼭지점·모서리</option>
+        </optgroup>
+        <optgroup label="순회·구조">
+          <option value="topo">위상정렬 (DAG)</option>
+          <option value="bipartite">이분 판별</option>
+          <option value="euler">오일러 회로</option>
+          <option value="hamilton">해밀턴 회로</option>
+        </optgroup>
+        <optgroup label="트리·색칠">
+          <option value="prim">MST — Prim</option>
+          <option value="kruskal">MST — Kruskal</option>
+          <option value="coloring">Greedy 색칠</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="col">
+      <label>시작점</label>
+      <select id="start" style="min-width: 100px;"></select>
+    </div>
+    <div class="col">
+      <label>속도</label>
+      <input type="range" id="speed" min="200" max="2500" value="700" step="100" style="width: 120px;" />
+    </div>
+  </div>
+</div>
+
+<!-- 퀴즈 패널 -->
+<div id="quiz-panel" style="display: none; margin-bottom: 12px;">
+  <div class="row" style="margin-bottom: 8px; align-items: flex-end;">
+    <div class="col">
+      <label>퀴즈 알고리즘</label>
+      <select id="quiz-algo" style="min-width: 260px;">
+        <optgroup label="탐색">
+          <option value="bfs">BFS — 다음 방문 꼭지점?</option>
+          <option value="dfs">DFS — 다음 방문 꼭지점?</option>
+        </optgroup>
+        <optgroup label="최단경로">
+          <option value="dijkstra">다익스트라 — 다음 확정?</option>
+          <option value="bellmanford">Bellman-Ford — 최단거리?</option>
+        </optgroup>
+        <optgroup label="연결성">
+          <option value="cc">연결성분 — 몇 개?</option>
+          <option value="cutvertex">절단 꼭지점 모두 찾기</option>
+        </optgroup>
+        <optgroup label="순회·구조">
+          <option value="topo">위상정렬 — 다음 처리?</option>
+          <option value="bipartite">이분 — 예/아니오</option>
+          <option value="euler">오일러 회로 존재? — 예/아니오</option>
+          <option value="hamilton">해밀턴 회로 존재? — 예/아니오</option>
+        </optgroup>
+        <optgroup label="트리·색칠">
+          <option value="prim">Prim — 다음 모서리?</option>
+          <option value="kruskal">Kruskal — 추가/스킵?</option>
+          <option value="coloring">사용한 색 수?</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="col">
+      <label>시작점</label>
+      <select id="quiz-start" style="min-width: 100px;"></select>
+    </div>
+    <button id="quiz-start-btn" class="qbtn" style="padding: 8px 16px;">▶ 퀴즈 시작</button>
+    <button id="quiz-reset" style="margin-left: 8px;">↻ 점수 초기화</button>
+  </div>
+
+  <div class="scoreboard">
+    <div class="stat"><div class="stat-label">점수</div><div class="stat-value" id="score">0</div></div>
+    <div class="stat"><div class="stat-label">콤보</div><div class="stat-value" id="combo-display">×0</div></div>
+    <div class="stat"><div class="stat-label">최고 콤보</div><div class="stat-value" id="max-combo">0</div></div>
+    <div class="stat"><div class="stat-label">정답률</div><div class="stat-value" id="accuracy">—</div></div>
+    <div class="stat"><div class="stat-label">정답/시도</div><div class="stat-value" id="attempts">0/0</div></div>
+    <div style="flex: 1; min-width: 120px; text-align: right; align-self: center;">
+      <span class="badge" id="rank-badge">시작 전</span>
+    </div>
+  </div>
+
+  <div id="quiz-area" style="display: none; margin-top: 12px; padding: 14px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;">
+    <div id="quiz-progress" style="font-size: 11px; color: var(--fg3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;"></div>
+    <div id="quiz-question" style="font-size: 16px; font-weight: 500; margin-bottom: 12px; line-height: 1.5;"></div>
+    <div id="quiz-input"></div>
+    <div id="quiz-feedback" style="margin-top: 12px; min-height: 28px; font-size: 14px;"></div>
+  </div>
+</div>
+
+<!-- 저장·불러오기 패널 -->
+<div id="save-panel" style="display: none; margin-bottom: 12px;">
+  <div class="grid2" style="gap: 16px;">
+    <div>
+      <h3 style="margin: 0 0 8px 0; font-size: 15px;">현재 그래프</h3>
+      <div class="row" style="margin-bottom: 8px;">
+        <input type="text" id="save-name" placeholder="그래프 이름 입력" style="flex: 1; min-width: 150px;" />
+        <button id="save-named" class="primary">💾 라이브러리에 저장</button>
+      </div>
+      <div class="row" style="margin-bottom: 8px;">
+        <button id="export-json">⬇ JSON 파일로 내보내기</button>
+        <button id="import-json">⬆ JSON 파일 불러오기</button>
+        <input type="file" id="import-input" accept=".json" style="display: none;" />
+      </div>
+      <div style="font-size: 12px; color: var(--fg3); line-height: 1.6; padding: 8px 0;">
+        <b>자동 저장</b>: 그래프 변경 시 브라우저(localStorage)에 자동 저장. 다음 방문 시 자동 복원.<br>
+        <b>라이브러리</b>: 이름을 붙여 여러 그래프를 영구 보관.<br>
+        <b>내보내기</b>: JSON 파일로 다운로드, 다른 컴퓨터·학생과 공유 가능.
+      </div>
+    </div>
+    <div>
+      <h3 style="margin: 0 0 8px 0; font-size: 15px;">저장된 그래프 라이브러리</h3>
+      <div id="library-list" style="max-height: 280px; overflow-y: auto;">
+        <div style="color: var(--fg3); font-size: 13px; padding: 8px;">아직 저장된 그래프가 없다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 캔버스 -->
+<div class="canvas-wrap" id="canvas-wrap" style="position: relative;">
+  <svg id="svg" viewBox="0 0 660 380" style="width: 100%; height: 380px; display: block; cursor: crosshair;"></svg>
+  <div id="overlay" class="overlay"></div>
+</div>
+
+<!-- 상태 패널 -->
+<div class="grid2" style="margin-top: 12px;">
+  <div class="panel">
+    <div class="panel-title">단계 설명</div>
+    <div id="desc" style="font-size: 13px;">편집 모드 — 빈 공간을 클릭해 꼭지점을 추가하고, 꼭지점 두 개를 차례로 클릭해 모서리를 만든다.</div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">상태</div>
+    <div id="state" style="font-size: 13px;"></div>
+  </div>
+</div>
+
+<!-- 실행 모드 컨트롤 -->
+<div id="controls" style="display: none; margin-top: 12px;" class="row">
+  <button id="prev-btn">← 이전</button>
+  <button id="next-btn">다음 →</button>
+  <button id="play-btn">▶ 재생</button>
+  <button id="reset-btn">↻ 처음으로</button>
+  <span id="progress" style="font-size: 13px; color: var(--fg2); margin-left: 8px;"></span>
+</div>
+
+<div class="footer-note">
+  <b>사용법 요약</b><br>
+  ① <b>편집 모드</b>: 그래프를 그린다. 예제를 불러올 수도 있다.<br>
+  ② <b>실행 모드</b>: 12개 알고리즘 중 하나를 골라 단계별로 시연한다.<br>
+  ③ <b>퀴즈 모드</b>: 알고리즘별 자동 출제. 정답·콤보·정답률 집계.<br>
+  ④ <b>저장·불러오기</b>: 그래프를 영구 보관·공유. 변경은 자동 저장.<br>
+  <br>
+  본 파일은 단독 HTML로 동작한다. 인터넷 연결 없이도 모든 기능 사용 가능.
+</div>
+
+</div>
+
+<!-- 모달 -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <button class="close" onclick="document.getElementById('modal').style.display='none'">×</button>
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+"use strict";
+
+const TEAL = "#7BA7AD", CORAL = "#D4726A", GREEN = "#3F7A4F", AMBER = "#BA7517", BLUE = "#378ADD", PURPLE = "#7F77DD", RED = "#E24B4A", PINK = "#D4537E";
+const COLOR_PALETTE = [TEAL, CORAL, GREEN, BLUE, PURPLE, AMBER, PINK, "#6B5B95", "#88B04B"];
+
+const STORAGE_KEY = "graph_studio_current";
+const LIBRARY_KEY = "graph_studio_library";
+
+let vertices = [], edges = [];
+let directed = false, weighted = true;
+let pendingEdgeStart = null, mode = "edit", history = [];
+let steps = [], stepIdx = 0, autoTimer = null;
+
+let quiz = { active: false, algo: null, questions: [], currentIdx: 0, score: 0, correct: 0, attempts: 0, combo: 0, maxCombo: 0, selectedVertices: new Set() };
+
+const PRESETS = {
+  empty: { v: [], e: [], directed: false },
+  lecture: { v: [["a",80,110],["b",230,60],["c",410,110],["d",320,260],["e",150,280],["z",540,250]], e: [["a","b",4],["a","e",2],["b","c",3],["b","e",3],["b","d",2],["c","d",2],["c","z",1],["d","z",3],["e","d",3]], directed: false },
+  bipartite: { v: [["A",120,80],["B",120,180],["C",120,280],["1",480,80],["2",480,180],["3",480,280]], e: [["A","1",1],["A","2",1],["B","1",1],["B","3",1],["C","2",1],["C","3",1]], directed: false },
+  dag: { v: [["s",80,200],["a",220,100],["b",220,300],["c",380,200],["d",520,100],["e",520,300]], e: [["s","a",1],["s","b",1],["a","c",1],["b","c",1],["c","d",1],["c","e",1],["a","d",1]], directed: true },
+  euler: { v: [["1",150,80],["2",420,80],["3",550,220],["4",420,360],["5",150,360],["6",30,220]], e: [["1","2",1],["2","3",1],["3","4",1],["4","5",1],["5","6",1],["6","1",1],["1","4",1],["2","5",1],["3","6",1]], directed: false },
+  kruskal: { v: [["a",100,100],["b",200,200],["c",100,300],["d",350,100],["e",450,200],["f",350,300],["g",560,180],["h",560,320]], e: [["a","b",1],["b","c",1],["a","c",1],["d","e",1],["e","f",1],["d","f",1],["g","h",1]], directed: false },
+  konigsberg: { v: [["A",330,80],["B",330,310],["C",170,195],["D",490,195]], e: [["A","C",1],["A","C",1],["A","D",1],["B","C",1],["B","C",1],["B","D",1],["C","D",1]], directed: false },
+  mst: { v: [["a",80,140],["b",230,60],["c",380,140],["d",530,80],["e",530,260],["f",380,320],["g",230,260]], e: [["a","b",7],["a","g",5],["b","c",8],["b","g",9],["c","g",7],["c","d",5],["c","e",5],["c","f",6],["d","e",15],["e","f",8],["f","g",11]], directed: false },
+  negative: { v: [["s",80,180],["a",230,80],["b",230,280],["c",430,180],["t",580,180]], e: [["s","a",4],["s","b",5],["a","c",-3],["b","c",2],["a","b",1],["c","t",4]], directed: true },
+  cutvertex: { v: [["a",80,120],["b",180,80],["c",180,200],["d",300,140],["e",420,80],["f",420,200],["g",520,140]], e: [["a","b",1],["a","c",1],["b","c",1],["c","d",1],["d","e",1],["d","f",1],["e","f",1],["f","g",1]], directed: false },
+  petersen: {
+    v: (function() { const v = []; const cx = 330, cy = 190;
+      for (let i = 0; i < 5; i++) { const ang = -Math.PI/2 + i*2*Math.PI/5; v.push([`o${i}`, cx + 130*Math.cos(ang), cy + 130*Math.sin(ang)]); }
+      for (let i = 0; i < 5; i++) { const ang = -Math.PI/2 + i*2*Math.PI/5; v.push([`i${i}`, cx + 60*Math.cos(ang), cy + 60*Math.sin(ang)]); }
+      return v; })(),
+    e: (function() { const e = [];
+      for (let i = 0; i < 5; i++) e.push([`o${i}`, `o${(i+1)%5}`, 1]);
+      for (let i = 0; i < 5; i++) e.push([`i${i}`, `i${(i+2)%5}`, 1]);
+      for (let i = 0; i < 5; i++) e.push([`o${i}`, `i${i}`, 1]);
+      return e; })(),
+    directed: false,
+  },
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key]; if (!p) return;
+  vertices = p.v.map(x => ({ id: x[0], x: x[1], y: x[2] }));
+  edges = p.e.map(x => ({ u: x[0], v: x[1], w: x[2] }));
+  directed = p.directed;
+  updateDirectedBtn();
+  pendingEdgeStart = null;
+  saveHistory(); autoSave(); render();
+}
+
+function updateDirectedBtn() { document.getElementById("toggle-directed").textContent = directed ? "방향성" : "비방향성"; }
+function saveHistory() { history.push({ v: JSON.parse(JSON.stringify(vertices)), e: JSON.parse(JSON.stringify(edges)), d: directed }); if (history.length > 40) history.shift(); }
+
+function findVertexAt(x, y) { for (const v of vertices) { const dx = v.x-x, dy = v.y-y; if (dx*dx + dy*dy < 22*22) return v; } return null; }
+function vToId(id) { return vertices.find(v => v.id === id); }
+function newVertexId() { const used = new Set(vertices.map(v => v.id)); for (const c of "abcdefghijklmnopqrstuvwxyz") if (!used.has(c)) return c; let i = 1; while (used.has(String(i))) i++; return String(i); }
+function getSvgCoords(evt) { const svg = document.getElementById("svg"); const r = svg.getBoundingClientRect(); return { x: (evt.clientX - r.left) * 660/r.width, y: (evt.clientY - r.top) * 380/r.height }; }
+function distToSegment(px, py, x1, y1, x2, y2) { const dx = x2-x1, dy = y2-y1, len2 = dx*dx+dy*dy; if (len2 === 0) return Math.hypot(px-x1, py-y1); let t = ((px-x1)*dx + (py-y1)*dy)/len2; t = Math.max(0, Math.min(1, t)); return Math.hypot(px-(x1+t*dx), py-(y1+t*dy)); }
+function findEdgeAt(x, y) { for (let i = edges.length-1; i >= 0; i--) { const e = edges[i]; const vu = vToId(e.u), vv = vToId(e.v); if (!vu || !vv) continue; if (distToSegment(x, y, vu.x, vu.y, vv.x, vv.y) < 8) return { index: i, edge: e }; } return null; }
+
+function handleSvgClick(evt) {
+  const { x, y } = getSvgCoords(evt);
+  if (mode === "edit") {
+    const v = findVertexAt(x, y);
+    if (v) {
+      if (pendingEdgeStart === null) { pendingEdgeStart = v.id; render(); }
+      else if (pendingEdgeStart === v.id) { pendingEdgeStart = null; render(); }
+      else {
+        let w = 1;
+        if (weighted) { const ans = prompt(`모서리 ${pendingEdgeStart} → ${v.id} 의 가중치`, "1"); if (ans === null) { pendingEdgeStart = null; render(); return; } const p = parseFloat(ans); if (isNaN(p)) { pendingEdgeStart = null; render(); return; } w = p; }
+        edges.push({ u: pendingEdgeStart, v: v.id, w });
+        pendingEdgeStart = null; saveHistory(); autoSave(); render();
+      }
+    } else {
+      if (x < 30 || x > 630 || y < 30 || y > 350) return;
+      vertices.push({ id: newVertexId(), x, y });
+      pendingEdgeStart = null; saveHistory(); autoSave(); render();
+    }
+  } else if (mode === "quiz" && quiz.active) {
+    const q = quiz.questions[quiz.currentIdx]; if (!q || q.answered) return;
+    if (q.inputType === "vertex" || q.inputType === "vertexMulti") { const v = findVertexAt(x, y); if (v) handleQuizVertex(v.id); }
+    else if (q.inputType === "edge") { const ev = findEdgeAt(x, y); if (ev) handleQuizEdge(ev.index); }
+  }
+}
+
+function handleSvgRightClick(evt) {
+  if (mode !== "edit") return; evt.preventDefault();
+  const { x, y } = getSvgCoords(evt);
+  const v = findVertexAt(x, y);
+  if (v) { vertices = vertices.filter(vv => vv.id !== v.id); edges = edges.filter(e => e.u !== v.id && e.v !== v.id); saveHistory(); autoSave(); render(); return; }
+  const ev = findEdgeAt(x, y);
+  if (ev) { edges.splice(ev.index, 1); saveHistory(); autoSave(); render(); }
+}
+
+function buildAdj() { const adj = {}; vertices.forEach(v => adj[v.id] = []); edges.forEach((e, i) => { adj[e.u].push({ to: e.v, w: e.w, ei: i }); if (!directed) adj[e.v].push({ to: e.u, w: e.w, ei: i }); }); return adj; }
+
+// =========== 알고리즘 12종 ============
+
+function algoBFS(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  const adj = buildAdj(); const visited = new Set([startId]); const dist = { [startId]: 0 }; const queue = [startId];
+  const s = [{desc: `BFS 시작 — 큐: [${startId}]`, visited: new Set(visited), queue: [...queue], dist: {...dist}, highlight: startId}];
+  while (queue.length) {
+    const u = queue.shift();
+    s.push({desc: `${u} 방문 (거리 ${dist[u]})`, visited: new Set(visited), queue: [...queue], dist: {...dist}, current: u, highlight: u, justDequeued: u});
+    const ns = (adj[u] || []).slice().sort((a,b) => String(a.to).localeCompare(String(b.to)));
+    for (const { to } of ns) {
+      if (!visited.has(to)) {
+        visited.add(to); dist[to] = dist[u] + 1; queue.push(to);
+        s.push({desc: `이웃 ${to} 발견 → 큐 추가`, visited: new Set(visited), queue: [...queue], dist: {...dist}, current: u, highlight: to, edge: {u, v: to}});
+      }
+    }
+  }
+  s.push({desc: `완료 — 방문 ${visited.size}/${vertices.length}`, visited: new Set(visited), queue: [], dist: {...dist}, done: true});
+  return s;
+}
+
+function algoDFS(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  const adj = buildAdj(); const visited = new Set(); const stack = [startId]; const order = [];
+  const s = [{desc: `DFS 시작`, visited: new Set(), stack: [...stack], order: [...order], highlight: startId}];
+  while (stack.length) {
+    const u = stack.pop(); if (visited.has(u)) continue;
+    visited.add(u); order.push(u);
+    s.push({desc: `${u} 방문`, visited: new Set(visited), stack: [...stack], order: [...order], current: u, highlight: u, justVisited: u});
+    const ns = (adj[u] || []).slice().sort((a,b) => String(b.to).localeCompare(String(a.to)));
+    for (const { to } of ns) if (!visited.has(to)) stack.push(to);
+  }
+  s.push({desc: `완료 — ${order.join(" → ")}`, visited: new Set(visited), stack: [], order: [...order], done: true});
+  return s;
+}
+
+function algoDijkstra(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  if (edges.some(e => e.w < 0)) return [{desc: "음의 가중치 — Bellman-Ford 사용", error: true, done: true}];
+  const adj = buildAdj(); const L = {}, prev = {};
+  vertices.forEach(v => L[v.id] = Infinity); L[startId] = 0;
+  const S = new Set();
+  const s = [{desc: `초기화 — L[${startId}]=0`, L: {...L}, S: new Set(), prev: {...prev}}];
+  while (S.size < vertices.length) {
+    let minId = null, minVal = Infinity;
+    for (const v of vertices) if (!S.has(v.id) && L[v.id] < minVal) { minVal = L[v.id]; minId = v.id; }
+    if (minId === null) break;
+    S.add(minId);
+    const relaxed = [];
+    for (const { to, w } of adj[minId] || []) if (!S.has(to) && L[minId] + w < L[to]) { L[to] = L[minId] + w; prev[to] = minId; relaxed.push(to); }
+    const desc = relaxed.length ? `${minId} 확정 (L=${minVal}) · 완화: ${relaxed.map(x=>`L[${x}]→${L[x]}`).join(", ")}` : `${minId} 확정 (L=${minVal})`;
+    s.push({desc, L: {...L}, S: new Set(S), selected: minId, prev: {...prev}, relaxed: [...relaxed], justConfirmed: minId});
+  }
+  s.push({desc: `완료`, L: {...L}, S: new Set(S), prev: {...prev}, done: true});
+  return s;
+}
+
+function algoBellmanFord(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  const L = {}, prev = {};
+  vertices.forEach(v => L[v.id] = Infinity); L[startId] = 0;
+  const s = [{desc: `초기화 — L[${startId}]=0`, L: {...L}, prev: {...prev}, round: 0}];
+  const n = vertices.length;
+  for (let i = 1; i <= n - 1; i++) {
+    let any = false; const relaxed = [];
+    for (const e of edges) {
+      const tries = directed ? [[e.u, e.v]] : [[e.u, e.v], [e.v, e.u]];
+      for (const [u, v] of tries) {
+        if (L[u] !== Infinity && L[u] + e.w < L[v]) { L[v] = L[u] + e.w; prev[v] = u; any = true; relaxed.push({u, v}); }
+      }
+    }
+    const desc = relaxed.length ? `라운드 ${i} — 완화: ${relaxed.map(x=>`L[${x.v}]→${L[x.v]}`).join(", ")}` : `라운드 ${i} — 변화 없음`;
+    s.push({desc, L: {...L}, prev: {...prev}, round: i});
+    if (!any) break;
+  }
+  let neg = false;
+  for (const e of edges) { const tries = directed ? [[e.u, e.v]] : [[e.u, e.v], [e.v, e.u]]; for (const [u, v] of tries) if (L[u] !== Infinity && L[u] + e.w < L[v]) { neg = true; break; } if (neg) break; }
+  if (neg) s.push({desc: `음의 사이클!`, L: {...L}, prev: {...prev}, error: true, done: true, negCycle: true});
+  else s.push({desc: `완료`, L: {...L}, prev: {...prev}, done: true});
+  return s;
+}
+
+function algoTopological() {
+  if (!directed) return [{desc: "방향그래프 필요", error: true, done: true}];
+  const adj = {}, inDeg = {};
+  vertices.forEach(v => { adj[v.id] = []; inDeg[v.id] = 0; });
+  edges.forEach(e => { adj[e.u].push(e.v); inDeg[e.v]++; });
+  const queue = vertices.filter(v => inDeg[v.id] === 0).map(v => v.id).sort();
+  const order = []; const visited = new Set();
+  const s = [{desc: `초기 — 입력차수 0: [${queue.join(", ")}]`, visited: new Set(), queue: [...queue], order: [...order], inDeg: {...inDeg}}];
+  const localIn = {...inDeg};
+  while (queue.length) {
+    const u = queue.shift();
+    visited.add(u); order.push(u);
+    s.push({desc: `${u}를 순서에 추가`, visited: new Set(visited), queue: [...queue], order: [...order], current: u, inDeg: {...localIn}, highlight: u, justAdded: u});
+    const newZero = [];
+    for (const v of adj[u] || []) { localIn[v]--; if (localIn[v] === 0 && !visited.has(v)) { queue.push(v); newZero.push(v); } }
+    queue.sort();
+    if (newZero.length) s.push({desc: `새 입력차수 0: ${newZero.join(", ")}`, visited: new Set(visited), queue: [...queue], order: [...order], inDeg: {...localIn}});
+  }
+  if (visited.size < vertices.length) s.push({desc: `사이클 존재`, visited: new Set(visited), order: [...order], error: true, done: true});
+  else s.push({desc: `완료 — ${order.join(" → ")}`, visited: new Set(visited), order: [...order], done: true});
+  return s;
+}
+
+function algoBipartite() {
+  const adj = buildAdj(); const color = {};
+  const s = [{desc: "이분 판별 시작", color: {}}];
+  for (const start of vertices) {
+    if (color[start.id] !== undefined) continue;
+    color[start.id] = 0; const queue = [start.id];
+    s.push({desc: `${start.id}를 빨강으로 시작`, color: {...color}, highlight: start.id});
+    while (queue.length) {
+      const u = queue.shift();
+      for (const { to } of adj[u] || []) {
+        if (color[to] === undefined) { color[to] = 1 - color[u]; queue.push(to); s.push({desc: `${to}를 ${color[to]===0?"빨강":"파랑"}으로`, color: {...color}, current: u, highlight: to, edge: {u, v: to}}); }
+        else if (color[to] === color[u]) { s.push({desc: `충돌! ${u}와 ${to} 같은 색`, color: {...color}, current: u, highlight: to, edge: {u, v: to}, error: true, done: true, isBipartite: false}); return s; }
+      }
+    }
+  }
+  s.push({desc: "완료 — 이분 그래프", color: {...color}, done: true, isBipartite: true});
+  return s;
+}
+
+function algoConnectedComponents() {
+  const adj = buildAdj(); const compId = {}; let comp = 0;
+  const s = [{desc: "연결성분 찾기", compId: {}}];
+  for (const start of vertices) {
+    if (compId[start.id] !== undefined) continue;
+    comp++; compId[start.id] = comp;
+    const queue = [start.id];
+    s.push({desc: `새 성분 ${comp} — ${start.id}에서`, compId: {...compId}, highlight: start.id});
+    while (queue.length) {
+      const u = queue.shift();
+      for (const { to } of adj[u] || []) {
+        if (compId[to] === undefined) { compId[to] = comp; queue.push(to); s.push({desc: `${to}를 성분 ${comp}에`, compId: {...compId}, current: u, highlight: to, edge: {u, v: to}}); }
+      }
+    }
+  }
+  s.push({desc: `완료 — ${comp}개 성분`, compId: {...compId}, done: true, totalComponents: comp});
+  return s;
+}
+
+function algoCutVertex() {
+  const adj = buildAdj();
+  function countCC(adjL, exclude) {
+    const visited = new Set(); if (exclude) visited.add(exclude); let cc = 0;
+    for (const v of vertices) { if (visited.has(v.id)) continue; cc++; const q = [v.id]; visited.add(v.id);
+      while (q.length) { const u = q.shift(); for (const { to } of adjL[u] || []) if (!visited.has(to)) { visited.add(to); q.push(to); } } }
+    return cc - (exclude ? 1 : 0);
+  }
+  function countCCExcludeEdge(eIdx) {
+    const la = {}; vertices.forEach(v => la[v.id] = []);
+    edges.forEach((e, i) => { if (i === eIdx) return; la[e.u].push({to: e.v}); if (!directed) la[e.v].push({to: e.u}); });
+    return countCC(la, null);
+  }
+  const baseCC = countCC(adj, null); const cutV = [];
+  const s = [{desc: `원래 성분 ${baseCC}개`, baseCC, cutVertices: [], cutEdges: []}];
+  for (const v of vertices) {
+    const newCC = countCC(adj, v.id); const isCut = newCC > baseCC;
+    if (isCut) cutV.push(v.id);
+    s.push({desc: isCut ? `${v.id} 제거 → ${baseCC}→${newCC} · 절단!` : `${v.id} 제거 → 변화 없음`, cutVertices: [...cutV], cutEdges: [], highlight: v.id});
+  }
+  const cutE = [];
+  for (let i = 0; i < edges.length; i++) if (countCCExcludeEdge(i) > baseCC) cutE.push(i);
+  s.push({desc: `완료 — 절단 꼭지점 {${cutV.join(",")||"없음"}}, 절단 모서리 ${cutE.length}개`, cutVertices: [...cutV], cutEdges: [...cutE], done: true, allCutVertices: cutV, allCutEdges: cutE});
+  return s;
+}
+
+function algoEuler(startId) {
+  if (!vertices.length) return [{desc: "비어 있다", error: true, done: true}];
+  const deg = {};
+  vertices.forEach(v => deg[v.id] = 0);
+  edges.forEach(e => { deg[e.u]++; if (e.u !== e.v) deg[e.v]++; });
+  const oddCount = vertices.filter(v => deg[v.id] % 2 === 1).length;
+  if (oddCount !== 0) return [{desc: `홀수 차수 ${oddCount}개 — 회로 없음`, error: true, done: true, hasEulerCircuit: false}];
+  const adj = buildAdj(); const visited = new Set();
+  const vwe = vertices.filter(v => deg[v.id] > 0);
+  if (vwe.length > 0) { const q = [vwe[0].id]; visited.add(vwe[0].id);
+    while (q.length) { const u = q.shift(); for (const { to } of adj[u] || []) if (!visited.has(to)) { visited.add(to); q.push(to); } }
+    if (vwe.some(v => !visited.has(v.id))) return [{desc: "비연결 — 회로 없음", error: true, done: true, hasEulerCircuit: false}]; }
+  const adjE = {}; vertices.forEach(v => adjE[v.id] = []);
+  edges.forEach((e, i) => { adjE[e.u].push(i); if (e.u !== e.v) adjE[e.v].push(i); });
+  const used = new Set(); const start = startId || vertices[0].id;
+  const stack = [start]; const circuit = [];
+  const s = [{desc: `Hierholzer 시작 — ${start}`, used: new Set(), circuit: [], stack: [...stack], highlight: start}];
+  while (stack.length) {
+    const u = stack[stack.length - 1]; let nextE = -1;
+    for (const ei of adjE[u]) if (!used.has(ei)) { nextE = ei; break; }
+    if (nextE === -1) { circuit.push(stack.pop()); s.push({desc: `${u} 막힘 → 회로 추가`, used: new Set(used), circuit: [...circuit], stack: [...stack]}); }
+    else { const e = edges[nextE]; used.add(nextE); const other = e.u === u ? e.v : e.u; stack.push(other);
+      s.push({desc: `${u} → ${other} 사용`, used: new Set(used), circuit: [...circuit], stack: [...stack], highlight: other, edge: {u, v: other}}); }
+  }
+  circuit.reverse();
+  s.push({desc: `완료 — ${circuit.join(" → ")}`, used: new Set(used), circuit: [...circuit], done: true, hasEulerCircuit: true});
+  return s;
+}
+
+function algoHamilton(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  if (vertices.length > 12) return [{desc: "꼭지점이 너무 많다 (최대 12)", error: true, done: true}];
+  const adj = buildAdj(); const n = vertices.length;
+  const s = [{desc: `해밀턴 백트래킹 — ${startId}에서`, path: [startId], visited: new Set([startId])}];
+  let found = null;
+  function bt(path, visited) {
+    if (found) return;
+    if (path.length === n) {
+      const last = path[path.length - 1];
+      if ((adj[last] || []).some(x => x.to === startId)) { found = [...path, startId]; s.push({desc: `회로 발견! ${found.join(" → ")}`, path: [...found], visited: new Set(found), done: true, hasHamilton: true}); }
+      else { s.push({desc: `${last}에서 ${startId} 못 돌아감 — 백트랙`, path: [...path], visited: new Set(visited), backtrack: true}); }
+      return;
+    }
+    const last = path[path.length - 1];
+    const cands = (adj[last] || []).map(x => x.to).filter(x => !visited.has(x)).sort();
+    if (!cands.length) { s.push({desc: `${last} 막힘 — 백트랙`, path: [...path], visited: new Set(visited), backtrack: true}); return; }
+    for (const next of cands) {
+      if (found) return;
+      path.push(next); visited.add(next);
+      s.push({desc: `${last} → ${next} 시도`, path: [...path], visited: new Set(visited), edge: {u: last, v: next}});
+      bt(path, visited);
+      if (!found) { path.pop(); visited.delete(next); }
+    }
+  }
+  bt([startId], new Set([startId]));
+  if (!found) s.push({desc: `해밀턴 회로 없음`, path: [], visited: new Set(), error: true, done: true, hasHamilton: false});
+  return s;
+}
+
+function algoPrim(startId) {
+  if (!vertices.length || !startId) return [{desc: "시작점이 없다."}];
+  if (directed) return [{desc: "MST는 무향에서", error: true, done: true}];
+  const adj = buildAdj(); const inTree = new Set([startId]); const mstEdges = [];
+  const s = [{desc: `Prim — ${startId}부터`, inTree: new Set(inTree), mstEdges: []}];
+  while (inTree.size < vertices.length) {
+    let best = null;
+    for (const u of inTree) for (const { to, w, ei } of adj[u] || []) if (!inTree.has(to) && (best === null || w < best.w)) best = { u, v: to, w, ei };
+    if (!best) break;
+    inTree.add(best.v); mstEdges.push(best.ei);
+    s.push({desc: `${best.u}—${best.v} (${best.w}) 추가`, inTree: new Set(inTree), mstEdges: [...mstEdges], highlight: best.v, edge: {u: best.u, v: best.v}, justAddedEdge: best.ei});
+  }
+  const totalW = mstEdges.reduce((sum, i) => sum + edges[i].w, 0);
+  s.push({desc: `완료 — 가중치 ${totalW}`, inTree: new Set(inTree), mstEdges: [...mstEdges], done: true, totalWeight: totalW});
+  return s;
+}
+
+function algoKruskal() {
+  if (directed) return [{desc: "MST는 무향에서", error: true, done: true}];
+  const parent = {}; vertices.forEach(v => parent[v.id] = v.id);
+  function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+  function union(a, b) { const ra = find(a), rb = find(b); if (ra !== rb) { parent[ra] = rb; return true; } return false; }
+  const sortedE = edges.map((e, i) => ({...e, i})).sort((a, b) => a.w - b.w);
+  const mstEdges = [];
+  const s = [{desc: `Kruskal — 가중치 정렬`, mstEdges: [], parent: {...parent}}];
+  for (const e of sortedE) {
+    const a = find(e.u), b = find(e.v);
+    if (a !== b) { union(e.u, e.v); mstEdges.push(e.i); s.push({desc: `${e.u}—${e.v} (${e.w}) 추가`, mstEdges: [...mstEdges], parent: {...parent}, edge: {u: e.u, v: e.v}, justAddedEdge: e.i, wasAdded: true}); }
+    else { s.push({desc: `${e.u}—${e.v} (${e.w}) 건너뛰기 — 사이클`, mstEdges: [...mstEdges], parent: {...parent}, skipEdge: {u: e.u, v: e.v}, justSkippedEdge: e.i, wasAdded: false}); }
+    if (mstEdges.length === vertices.length - 1) break;
+  }
+  const totalW = mstEdges.reduce((sum, i) => sum + edges[i].w, 0);
+  s.push({desc: `완료`, mstEdges: [...mstEdges], done: true, totalWeight: totalW});
+  return s;
+}
+
+function algoColoring() {
+  const adj = buildAdj();
+  const sorted = vertices.slice().sort((a, b) => (adj[b.id]?.length || 0) - (adj[a.id]?.length || 0));
+  const color = {};
+  const s = [{desc: `Welsh-Powell — 차수 큰 순`, color: {}}];
+  let maxColor = 0;
+  for (const v of sorted) {
+    const usedC = new Set();
+    for (const { to } of adj[v.id] || []) if (color[to] !== undefined) usedC.add(color[to]);
+    let c = 0; while (usedC.has(c)) c++;
+    color[v.id] = c; maxColor = Math.max(maxColor, c);
+    s.push({desc: `${v.id}에 색 ${c}`, color: {...color}, highlight: v.id});
+  }
+  s.push({desc: `완료 — ${maxColor + 1}색 사용`, color: {...color}, done: true, colorsUsed: maxColor + 1});
+  return s;
+}
+
+const ALGO_MAP = { bfs: algoBFS, dfs: algoDFS, dijkstra: algoDijkstra, bellmanford: algoBellmanFord, topo: algoTopological, bipartite: algoBipartite, cc: algoConnectedComponents, cutvertex: algoCutVertex, euler: algoEuler, hamilton: algoHamilton, prim: algoPrim, kruskal: algoKruskal, coloring: algoColoring };
+
+// =========== 퀴즈 생성기 ============
+function generateQuiz(algoKey, startId) {
+  const questions = [];
+  if (algoKey === "bfs") {
+    const s = algoBFS(startId);
+    for (let i = 0; i < s.length - 1; i++) { const cur = s[i], nxt = s[i + 1];
+      if (nxt.justDequeued && cur.queue && cur.queue.length > 0) questions.push({type: "bfs", inputType: "vertex", prompt: `현재 큐: [${cur.queue.join(", ")}]. BFS에서 다음에 방문(dequeue)할 꼭지점은?`, answer: nxt.justDequeued, stateBefore: cur, stateAfter: nxt, hint: "BFS는 큐(FIFO) — 가장 앞의 꼭지점"});
+    }
+  } else if (algoKey === "dfs") {
+    const s = algoDFS(startId);
+    for (let i = 0; i < s.length - 1; i++) { const cur = s[i], nxt = s[i + 1];
+      if (nxt.justVisited && cur.stack && cur.stack.length > 0) questions.push({type: "dfs", inputType: "vertex", prompt: `현재 스택: [${cur.stack.join(", ")}], 방문: {${[...(cur.visited || [])].join(", ")}}. 다음 방문은?`, answer: nxt.justVisited, stateBefore: cur, stateAfter: nxt, hint: "스택 맨 위의 미방문 꼭지점"});
+    }
+  } else if (algoKey === "dijkstra") {
+    const s = algoDijkstra(startId); if (s[0]?.error) return [];
+    for (let i = 0; i < s.length - 1; i++) { const cur = s[i], nxt = s[i + 1];
+      if (nxt.justConfirmed) questions.push({type: "dijkstra", inputType: "vertex", prompt: `현재 확정 S = {${[...cur.S].join(", ")}}. 다음에 확정할 꼭지점은? (S 바깥 L 최소)`, answer: nxt.justConfirmed, stateBefore: cur, stateAfter: nxt, hint: `S 바깥의 L 값 중 가장 작은 것.`});
+    }
+  } else if (algoKey === "bellmanford") {
+    const s = algoBellmanFord(startId); const done = s[s.length - 1];
+    if (done.L) { const cands = vertices.filter(v => done.L[v.id] !== Infinity && v.id !== startId);
+      for (const v of cands.slice(0, 3)) questions.push({type: "bellmanford", inputType: "number", prompt: `Bellman-Ford 완료 시 ${startId}→${v.id} 최단거리 L[${v.id}]는?`, answer: done.L[v.id], stateBefore: done, stateAfter: done, hint: "음의 가중치도 처리"});
+    }
+  } else if (algoKey === "topo") {
+    const s = algoTopological(); if (s[0]?.error) return [];
+    for (let i = 0; i < s.length - 1; i++) { const cur = s[i], nxt = s[i + 1];
+      if (nxt.justAdded && cur.queue && cur.queue.length > 0) questions.push({type: "topo", inputType: "vertex", prompt: `현재 입력차수 0 큐: [${cur.queue.join(", ")}]. 다음에 처리할 꼭지점은?`, answer: nxt.justAdded, stateBefore: cur, stateAfter: nxt, hint: "큐의 앞에서 꺼낸다 (사전순)"});
+    }
+  } else if (algoKey === "bipartite") {
+    const done = algoBipartite().slice(-1)[0];
+    questions.push({type: "bipartite", inputType: "yesno", prompt: `이 그래프는 이분 그래프인가? (홀수 사이클이 없는가?)`, answer: done.isBipartite ? "yes" : "no", stateAfter: done, hint: "두 색으로 인접 꼭지점을 다른 색으로 칠할 수 있다면 이분"});
+  } else if (algoKey === "cc") {
+    const done = algoConnectedComponents().slice(-1)[0];
+    questions.push({type: "cc", inputType: "number", prompt: `이 그래프의 연결성분은 총 몇 개인가?`, answer: done.totalComponents, stateAfter: done, hint: "BFS·DFS로 각 성분 발견하며 카운트"});
+  } else if (algoKey === "cutvertex") {
+    const done = algoCutVertex().slice(-1)[0];
+    questions.push({type: "cutvertex", inputType: "vertexMulti", prompt: `이 그래프의 절단 꼭지점을 모두 클릭하라.`, answer: new Set(done.allCutVertices || []), stateAfter: done, hint: "제거 시 연결성분이 늘어나는 꼭지점"});
+  } else if (algoKey === "euler") {
+    const done = algoEuler(startId).slice(-1)[0];
+    questions.push({type: "euler", inputType: "yesno", prompt: `이 그래프에 오일러 회로가 존재하는가?`, answer: done.hasEulerCircuit ? "yes" : "no", stateAfter: done, hint: "연결 + 모든 차수 짝수 ⟺ 존재"});
+  } else if (algoKey === "hamilton") {
+    const done = algoHamilton(startId).slice(-1)[0];
+    if (done.hasHamilton !== undefined) questions.push({type: "hamilton", inputType: "yesno", prompt: `이 그래프(시작 ${startId})에 해밀턴 회로가 존재하는가?`, answer: done.hasHamilton ? "yes" : "no", stateAfter: done, hint: "모든 꼭지점 한 번씩 — Dirac/Ore 정리"});
+  } else if (algoKey === "prim") {
+    const s = algoPrim(startId); if (s[0]?.error) return [];
+    for (let i = 0; i < s.length - 1; i++) { const cur = s[i], nxt = s[i + 1];
+      if (nxt.justAddedEdge !== undefined) questions.push({type: "prim", inputType: "edge", prompt: `현재 트리: {${[...cur.inTree].join(", ")}}. Prim에서 다음에 추가할 모서리를 클릭하라.`, answer: nxt.justAddedEdge, stateBefore: cur, stateAfter: nxt, hint: `트리 → 트리 바깥 모서리 중 최소 가중치`});
+    }
+  } else if (algoKey === "kruskal") {
+    const s = algoKruskal(); if (s[0]?.error) return [];
+    for (let i = 1; i < s.length; i++) { const cur = s[i];
+      if (cur.justAddedEdge !== undefined || cur.justSkippedEdge !== undefined) {
+        const eIdx = cur.justAddedEdge !== undefined ? cur.justAddedEdge : cur.justSkippedEdge;
+        const e = edges[eIdx];
+        questions.push({type: "kruskal", inputType: "yesno", prompt: `Kruskal에서 ${e.u}—${e.v} (가중치 ${e.w}) — 추가할까, 건너뛸까?`, yesLabel: "추가", noLabel: "건너뛰기", answer: cur.wasAdded ? "yes" : "no", stateAfter: cur, hint: "두 끝점이 같은 컴포넌트면 사이클 → 건너뛰기"});
+      }
+    }
+  } else if (algoKey === "coloring") {
+    const done = algoColoring().slice(-1)[0];
+    questions.push({type: "coloring", inputType: "number", prompt: `Welsh-Powell Greedy 색칠에서 사용한 색의 수는?`, answer: done.colorsUsed, stateAfter: done, hint: "각 꼭지점에 이웃이 안 쓴 가장 작은 색"});
+  }
+  return questions;
+}
+
+function startQuiz() {
+  const algo = document.getElementById("quiz-algo").value;
+  const startId = document.getElementById("quiz-start").value;
+  const qs = generateQuiz(algo, startId);
+  if (qs.length === 0) {
+    document.getElementById("quiz-area").style.display = "block";
+    document.getElementById("quiz-question").innerHTML = `<span style="color:${RED};">⚠ 이 알고리즘은 이 그래프에 적용 불가하다.</span>`;
+    document.getElementById("quiz-input").innerHTML = "";
+    document.getElementById("quiz-progress").textContent = "";
+    document.getElementById("quiz-feedback").innerHTML = "다른 알고리즘이나 그래프를 시도하라.";
+    return;
+  }
+  quiz.active = true; quiz.algo = algo; quiz.questions = qs; quiz.currentIdx = 0; quiz.selectedVertices = new Set();
+  document.getElementById("quiz-area").style.display = "block";
+  renderQuiz(); render();
+}
+
+function renderQuiz() {
+  if (!quiz.active) return;
+  const q = quiz.questions[quiz.currentIdx];
+  if (!q) { finishQuiz(); return; }
+  document.getElementById("quiz-progress").textContent = `문제 ${quiz.currentIdx + 1} / ${quiz.questions.length}`;
+  document.getElementById("quiz-question").textContent = q.prompt;
+  const inputDiv = document.getElementById("quiz-input");
+  if (q.inputType === "vertex") inputDiv.innerHTML = `<div style="padding: 8px 12px; background: var(--bg2); border-radius: 4px; font-size: 13px; color: var(--fg2);">👆 그래프에서 꼭지점을 클릭하라</div>`;
+  else if (q.inputType === "edge") inputDiv.innerHTML = `<div style="padding: 8px 12px; background: var(--bg2); border-radius: 4px; font-size: 13px; color: var(--fg2);">👆 그래프에서 모서리를 클릭하라</div>`;
+  else if (q.inputType === "vertexMulti") {
+    inputDiv.innerHTML = `<div style="padding: 8px 12px; background: var(--bg2); border-radius: 4px; font-size: 13px; color: var(--fg2); margin-bottom: 6px;">👆 절단 꼭지점을 모두 클릭하고 ‘제출'. 선택: <span id="multi-sel" style="font-weight: 500; color: ${CORAL};">없음</span></div>
+      <div style="display: flex; gap: 8px;"><button id="multi-submit" class="qbtn">제출</button><button id="multi-none" class="qbtn">절단 꼭지점 없음</button></div>`;
+    document.getElementById("multi-submit").onclick = () => handleQuizSubmitMulti();
+    document.getElementById("multi-none").onclick = () => { quiz.selectedVertices = new Set(); handleQuizSubmitMulti(); };
+  } else if (q.inputType === "yesno") {
+    const yL = q.yesLabel || "예", nL = q.noLabel || "아니오";
+    inputDiv.innerHTML = `<div style="display: flex; gap: 10px;"><button id="ans-yes" class="qbtn yes">✓ ${yL}</button><button id="ans-no" class="qbtn no">✗ ${nL}</button></div>`;
+    document.getElementById("ans-yes").onclick = () => handleQuizAnswer("yes");
+    document.getElementById("ans-no").onclick = () => handleQuizAnswer("no");
+  } else if (q.inputType === "number") {
+    inputDiv.innerHTML = `<div style="display: flex; gap: 8px;"><input id="num-input" type="number" style="width: 120px;" placeholder="숫자" /><button id="num-submit" class="qbtn">제출</button></div>`;
+    const inp = document.getElementById("num-input"); inp.focus();
+    inp.addEventListener("keypress", (e) => { if (e.key === "Enter") handleQuizAnswer(parseFloat(inp.value)); });
+    document.getElementById("num-submit").onclick = () => handleQuizAnswer(parseFloat(inp.value));
+  }
+  document.getElementById("quiz-feedback").innerHTML = "";
+}
+
+function handleQuizVertex(vid) {
+  const q = quiz.questions[quiz.currentIdx]; if (!q || q.answered) return;
+  if (q.inputType === "vertex") handleQuizAnswer(vid);
+  else if (q.inputType === "vertexMulti") {
+    if (quiz.selectedVertices.has(vid)) quiz.selectedVertices.delete(vid); else quiz.selectedVertices.add(vid);
+    const el = document.getElementById("multi-sel"); if (el) el.textContent = quiz.selectedVertices.size === 0 ? "없음" : [...quiz.selectedVertices].join(", ");
+    render();
+  }
+}
+function handleQuizEdge(eIdx) { const q = quiz.questions[quiz.currentIdx]; if (!q || q.answered || q.inputType !== "edge") return; handleQuizAnswer(eIdx); }
+function handleQuizSubmitMulti() {
+  const q = quiz.questions[quiz.currentIdx]; if (!q || q.answered) return;
+  const correct = q.answer, user = quiz.selectedVertices;
+  const isC = correct.size === user.size && [...correct].every(x => user.has(x));
+  finishQuestion(isC, q, [...user].join(", ") || "없음", [...correct].join(", ") || "없음");
+}
+function handleQuizAnswer(ua) {
+  const q = quiz.questions[quiz.currentIdx]; if (!q || q.answered) return;
+  let isC = false;
+  if (q.inputType === "number") isC = Number(ua) === Number(q.answer);
+  else isC = ua === q.answer;
+  let du = ua, dc = q.answer;
+  if (q.inputType === "edge" && typeof ua === "number") { const e = edges[ua]; du = e ? `${e.u}—${e.v}` : ua; }
+  if (q.inputType === "edge") { const e = edges[q.answer]; dc = e ? `${e.u}—${e.v} (${e.w})` : q.answer; }
+  if (q.inputType === "yesno") { const yL = q.yesLabel || "예", nL = q.noLabel || "아니오"; du = ua === "yes" ? yL : nL; dc = q.answer === "yes" ? yL : nL; }
+  finishQuestion(isC, q, du, dc);
+}
+
+function finishQuestion(isC, q, du, dc) {
+  q.answered = true; quiz.attempts++;
+  if (isC) {
+    quiz.correct++; quiz.combo++;
+    if (quiz.combo > quiz.maxCombo) quiz.maxCombo = quiz.combo;
+    const base = 10, cb = quiz.combo >= 3 ? quiz.combo * 2 : 0;
+    quiz.score += base + cb;
+    showOverlay(true);
+    let html = `<span style="color:${GREEN}; font-weight:500;">✓ 정답!</span> +${base}점`;
+    if (cb > 0) html += ` <span style="color:${CORAL};">+ 콤보 ${cb}</span>`;
+    if (quiz.combo >= 3) html += ` <span style="background: ${CORAL}; color: white; padding: 1px 8px; border-radius: 10px; font-size: 12px;">⚡ 콤보 ${quiz.combo}</span>`;
+    document.getElementById("quiz-feedback").innerHTML = html;
+  } else {
+    quiz.combo = 0; showOverlay(false);
+    document.getElementById("quiz-feedback").innerHTML = `
+      <div style="color:${RED}; font-weight: 500;">✗ 오답</div>
+      <div style="font-size: 13px; color: var(--fg2); margin-top: 4px;">당신의 답: <b>${du}</b> · 정답: <b style="color:${GREEN};">${dc}</b></div>
+      <div style="font-size: 12px; color: var(--fg3); margin-top: 4px;">힌트: ${q.hint || ""}</div>`;
+  }
+  updateScoreboard();
+  setTimeout(() => { quiz.currentIdx++; quiz.selectedVertices = new Set(); if (quiz.currentIdx >= quiz.questions.length) finishQuiz(); else { renderQuiz(); render(); } }, isC ? 1200 : 2200);
+}
+
+function finishQuiz() {
+  quiz.active = false;
+  const acc = quiz.attempts ? Math.round(quiz.correct / quiz.attempts * 100) : 0;
+  let rank = "분발하라", rc = AMBER;
+  if (acc === 100 && quiz.attempts >= 3) { rank = "완벽함! 👑"; rc = CORAL; }
+  else if (acc >= 90) { rank = "탁월함 ★★★"; rc = GREEN; }
+  else if (acc >= 75) { rank = "잘함 ★★"; rc = TEAL; }
+  else if (acc >= 60) { rank = "괜찮음 ★"; rc = BLUE; }
+  document.getElementById("quiz-area").innerHTML = `<div style="text-align: center; padding: 16px 0;">
+    <div style="font-size: 14px; color: var(--fg3); margin-bottom: 8px;">퀴즈 종료</div>
+    <div style="font-size: 32px; font-weight: 600; color: ${rc}; margin-bottom: 12px;">${rank}</div>
+    <div style="font-size: 14px; color: var(--fg2);">최종 점수: <b style="color: var(--fg);">${quiz.score}</b></div>
+    <div style="font-size: 13px; color: var(--fg3);">정답률 ${acc}% · 최고 콤보 ${quiz.maxCombo}</div>
+    <button class="qbtn" style="margin-top: 14px;" onclick="document.getElementById('quiz-start-btn').click();">다시 도전</button></div>`;
+}
+
+function showOverlay(isC) {
+  const o = document.getElementById("overlay"); o.style.display = "block";
+  o.className = isC ? "overlay pop" : "overlay shake";
+  o.innerHTML = `<div style="width: 120px; height: 120px; border-radius: 50%; background: ${isC?GREEN:RED}; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); font-size: 64px; color: white;">${isC?"✓":"✗"}</div>`;
+  setTimeout(() => { o.style.display = "none"; o.className = "overlay"; }, isC ? 900 : 1500);
+}
+
+function updateScoreboard() {
+  document.getElementById("score").textContent = quiz.score;
+  document.getElementById("combo-display").textContent = `×${quiz.combo}`;
+  document.getElementById("combo-display").className = "stat-value" + (quiz.combo >= 3 ? " on-fire" : "");
+  document.getElementById("max-combo").textContent = quiz.maxCombo;
+  const acc = quiz.attempts ? Math.round(quiz.correct / quiz.attempts * 100) : null;
+  document.getElementById("accuracy").textContent = acc === null ? "—" : `${acc}%`;
+  document.getElementById("attempts").textContent = `${quiz.correct}/${quiz.attempts}`;
+  const b = document.getElementById("rank-badge");
+  if (quiz.attempts === 0) { b.textContent = "시작 전"; b.style.background = "var(--bg)"; b.style.color = "var(--fg2)"; }
+  else if (acc === 100) { b.textContent = "👑 무결점"; b.style.background = CORAL; b.style.color = "white"; }
+  else if (acc >= 90) { b.textContent = "★★★ 탁월"; b.style.background = GREEN; b.style.color = "white"; }
+  else if (acc >= 75) { b.textContent = "★★ 잘함"; b.style.background = TEAL; b.style.color = "white"; }
+  else if (acc >= 60) { b.textContent = "★ 괜찮음"; b.style.background = BLUE; b.style.color = "white"; }
+  else { b.textContent = "분발하라"; b.style.background = AMBER; b.style.color = "white"; }
+}
+
+function resetScore() {
+  quiz.score = 0; quiz.correct = 0; quiz.attempts = 0; quiz.combo = 0; quiz.maxCombo = 0;
+  quiz.active = false; quiz.questions = []; quiz.currentIdx = 0;
+  document.getElementById("quiz-area").style.display = "none";
+  updateScoreboard(); render();
+}
+
+// =========== 저장·불러오기 ============
+
+function autoSave() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ vertices, edges, directed, weighted }));
+  } catch (e) { /* localStorage 차단 시 무시 */ }
+}
+
+function autoLoad() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.vertices && data.edges) {
+      vertices = data.vertices; edges = data.edges;
+      directed = !!data.directed; weighted = data.weighted !== false;
+      updateDirectedBtn();
+      document.getElementById("toggle-weighted").textContent = weighted ? "가중치 ON" : "가중치 OFF";
+      return true;
+    }
+  } catch (e) { /* 무시 */ }
+  return false;
+}
+
+function exportJSON() {
+  const data = { vertices, edges, directed, weighted, exportedAt: new Date().toISOString(), version: 1 };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `graph_${Date.now()}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.vertices && data.edges) {
+        vertices = data.vertices; edges = data.edges;
+        directed = !!data.directed; weighted = data.weighted !== false;
+        updateDirectedBtn();
+        document.getElementById("toggle-weighted").textContent = weighted ? "가중치 ON" : "가중치 OFF";
+        saveHistory(); autoSave(); render();
+        alert("그래프를 성공적으로 불러왔다.");
+      } else { alert("유효한 그래프 파일이 아니다."); }
+    } catch (err) { alert("파일 파싱 실패: " + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+function getLibrary() {
+  try { return JSON.parse(localStorage.getItem(LIBRARY_KEY) || "{}"); } catch (e) { return {}; }
+}
+function setLibrary(lib) { try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(lib)); } catch (e) { /* 무시 */ } }
+
+function saveNamed() {
+  const name = document.getElementById("save-name").value.trim();
+  if (!name) { alert("이름을 입력하라."); return; }
+  const lib = getLibrary();
+  lib[name] = { vertices, edges, directed, weighted, savedAt: new Date().toISOString() };
+  setLibrary(lib);
+  document.getElementById("save-name").value = "";
+  renderLibrary();
+}
+
+function renderLibrary() {
+  const lib = getLibrary();
+  const names = Object.keys(lib);
+  const list = document.getElementById("library-list");
+  if (names.length === 0) { list.innerHTML = `<div style="color: var(--fg3); font-size: 13px; padding: 8px;">아직 저장된 그래프가 없다.</div>`; return; }
+  list.innerHTML = names.map(n => {
+    const item = lib[n];
+    const vc = item.vertices ? item.vertices.length : 0;
+    const ec = item.edges ? item.edges.length : 0;
+    const date = item.savedAt ? new Date(item.savedAt).toLocaleString("ko-KR") : "";
+    return `<div class="lib-item">
+      <div style="flex: 1;"><b>${n}</b><br><span style="font-size: 11px; color: var(--fg3);">꼭지점 ${vc} · 모서리 ${ec} · ${date}</span></div>
+      <button onclick="loadFromLib('${n.replace(/'/g, "\\'")}')">불러오기</button>
+      <button onclick="deleteFromLib('${n.replace(/'/g, "\\'")}')">삭제</button>
+    </div>`;
+  }).join("");
+}
+
+window.loadFromLib = function(name) {
+  const lib = getLibrary();
+  const item = lib[name]; if (!item) return;
+  vertices = item.vertices; edges = item.edges;
+  directed = !!item.directed; weighted = item.weighted !== false;
+  updateDirectedBtn();
+  document.getElementById("toggle-weighted").textContent = weighted ? "가중치 ON" : "가중치 OFF";
+  saveHistory(); autoSave(); render();
+};
+window.deleteFromLib = function(name) {
+  if (!confirm(`‘${name}'을 삭제하시겠는가?`)) return;
+  const lib = getLibrary(); delete lib[name]; setLibrary(lib); renderLibrary();
+};
+
+// =========== 렌더링 ============
+function render() { renderSvg(); renderState(); updateStartOptions(); }
+
+function renderSvg() {
+  const svg = document.getElementById("svg");
+  let html = "";
+  if (directed) html += `<defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="${TEAL}"/></marker>
+    <marker id="arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="${CORAL}"/></marker>
+    <marker id="arrow-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="${GREEN}"/></marker>
+  </defs>`;
+
+  const st = mode === "run" && steps.length > 0 ? steps[stepIdx] : null;
+  const algoKey = document.getElementById("algo")?.value;
+  const quizQ = (mode === "quiz" && quiz.active && quiz.questions[quiz.currentIdx]) ? quiz.questions[quiz.currentIdx] : null;
+  const quizState = quizQ ? quizQ.stateBefore : null;
+
+  const pairCount = {}; edges.forEach(e => { const k = e.u < e.v ? `${e.u}|${e.v}` : `${e.v}|${e.u}`; pairCount[k] = (pairCount[k] || 0) + 1; });
+  const pairIdx = {};
+
+  edges.forEach((e, i) => {
+    const vu = vToId(e.u), vv = vToId(e.v); if (!vu || !vv) return;
+    const k = e.u < e.v ? `${e.u}|${e.v}` : `${e.v}|${e.u}`;
+    pairIdx[k] = (pairIdx[k] || 0) + 1;
+    const total = pairCount[k];
+    let curve = total > 1 ? (pairIdx[k] - (total + 1) / 2) * 0.22 : 0;
+    const dx = vv.x - vu.x, dy = vv.y - vu.y, dist = Math.hypot(dx, dy);
+    const mx = (vu.x + vv.x) / 2, my = (vu.y + vv.y) / 2;
+    const cx = mx + (-dy/dist) * dist * curve, cy = my + (dx/dist) * dist * curve;
+
+    let stroke = "#B5B5B5", sw = 1.5, opacity = 0.7;
+
+    if (st) {
+      if ((algoKey === "dijkstra" || algoKey === "bellmanford") && st.done && st.prev) { if (st.prev[e.v] === e.u || (!directed && st.prev[e.u] === e.v)) { stroke = CORAL; sw = 3; opacity = 1; } }
+      if ((algoKey === "bfs" || algoKey === "dfs" || algoKey === "cc") && st.edge) { if ((st.edge.u === e.u && st.edge.v === e.v) || (!directed && st.edge.u === e.v && st.edge.v === e.u)) { stroke = AMBER; sw = 3; opacity = 1; } }
+      if (algoKey === "bipartite" && st.edge) { if ((st.edge.u === e.u && st.edge.v === e.v) || (st.edge.u === e.v && st.edge.v === e.u)) { stroke = st.error ? RED : AMBER; sw = 3; opacity = 1; } }
+      if (algoKey === "euler" && st.used && st.used.has(i)) { stroke = GREEN; sw = 2.5; opacity = 0.9; }
+      if (algoKey === "euler" && st.edge && st.edge.u === e.u && st.edge.v === e.v) { stroke = CORAL; sw = 3; opacity = 1; }
+      if (algoKey === "hamilton" && st.path && st.path.length > 1) { for (let pi = 0; pi < st.path.length - 1; pi++) { const pu = st.path[pi], pv = st.path[pi+1]; if ((pu === e.u && pv === e.v) || (!directed && pu === e.v && pv === e.u)) { stroke = CORAL; sw = 3; opacity = 1; } } }
+      if ((algoKey === "prim" || algoKey === "kruskal") && st.mstEdges && st.mstEdges.includes(i)) { stroke = GREEN; sw = 3.2; opacity = 1; }
+      if (algoKey === "kruskal" && st.skipEdge && ((st.skipEdge.u === e.u && st.skipEdge.v === e.v) || (st.skipEdge.u === e.v && st.skipEdge.v === e.u))) { stroke = RED; sw = 2; opacity = 0.6; }
+      if (algoKey === "cutvertex" && st.cutEdges && st.cutEdges.includes(i)) { stroke = CORAL; sw = 3; opacity = 1; }
+    }
+    if (quizState && quizQ) {
+      if (quizQ.type === "dijkstra" && quizState.prev && (quizState.prev[e.v] === e.u || (!directed && quizState.prev[e.u] === e.v))) { stroke = CORAL; sw = 2.5; opacity = 0.85; }
+      if (quizQ.type === "prim" && quizState.mstEdges && quizState.mstEdges.includes(i)) { stroke = GREEN; sw = 3; opacity = 1; }
+    }
+
+    const path = curve === 0 ? `M ${vu.x} ${vu.y} L ${vv.x} ${vv.y}` : `M ${vu.x} ${vu.y} Q ${cx} ${cy} ${vv.x} ${vv.y}`;
+    let mid = "arrow"; if (stroke === CORAL) mid = "arrow-c"; else if (stroke === GREEN) mid = "arrow-g";
+    const marker = directed ? `marker-end="url(#${mid})"` : "";
+    html += `<path d="${path}" stroke="${stroke}" stroke-width="${sw}" fill="none" opacity="${opacity}" ${marker} />`;
+
+    if (weighted && (e.w !== 1 || total > 1)) {
+      const lx = curve === 0 ? mx : (mx + cx)/2, ly = curve === 0 ? my : (my + cy)/2;
+      const wstr = String(e.w), lw = Math.max(22, wstr.length * 8 + 8);
+      html += `<rect x="${lx-lw/2}" y="${ly-9}" width="${lw}" height="18" rx="3" fill="white" opacity="0.92" />`;
+      const tc = stroke === CORAL || stroke === AMBER || stroke === GREEN || stroke === RED ? stroke : "#555";
+      html += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="11" font-weight="500" fill="${tc}">${wstr}</text>`;
+    }
+  });
+
+  if (pendingEdgeStart && mode === "edit") { const v = vToId(pendingEdgeStart); if (v) html += `<circle cx="${v.x}" cy="${v.y}" r="24" fill="none" stroke="${CORAL}" stroke-width="2" stroke-dasharray="4 4" />`; }
+
+  for (const v of vertices) {
+    let fill = "#FFFFFF", stroke = "#888888", labelColor = "#1A1A1A", sw = 1.5;
+
+    if (st) {
+      if (st.visited && st.visited.has(v.id)) { fill = TEAL; stroke = TEAL; labelColor = "white"; }
+      if ((algoKey === "dijkstra" || algoKey === "bellmanford") && st.L && st.L[v.id] !== Infinity) {
+        if (algoKey === "dijkstra" && st.S && st.S.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+        else if (algoKey === "bellmanford") { fill = TEAL; stroke = TEAL; labelColor = "white"; }
+      }
+      if (algoKey === "topo" && st.visited && st.visited.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+      if (algoKey === "bipartite" && st.color && st.color[v.id] !== undefined) {
+        if (st.color[v.id] === 0) { fill = CORAL; stroke = CORAL; labelColor = "white"; }
+        else { fill = BLUE; stroke = BLUE; labelColor = "white"; }
+      }
+      if (algoKey === "cc" && st.compId && st.compId[v.id]) { const c = COLOR_PALETTE[(st.compId[v.id]-1) % COLOR_PALETTE.length]; fill = c; stroke = c; labelColor = "white"; }
+      if (algoKey === "euler" && st.stack && st.stack.includes(v.id)) { fill = TEAL; stroke = TEAL; labelColor = "white"; }
+      if (algoKey === "hamilton" && st.visited && st.visited.has(v.id)) { fill = CORAL; stroke = CORAL; labelColor = "white"; }
+      if (algoKey === "prim" && st.inTree && st.inTree.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+      if (algoKey === "cutvertex" && st.cutVertices && st.cutVertices.includes(v.id)) { fill = CORAL; stroke = CORAL; labelColor = "white"; }
+      if (algoKey === "coloring" && st.color && st.color[v.id] !== undefined) { const c = COLOR_PALETTE[st.color[v.id] % COLOR_PALETTE.length]; fill = c; stroke = c; labelColor = "white"; }
+      if (st.highlight === v.id || st.current === v.id) { stroke = AMBER; sw = 3.5; }
+    }
+    if (quizState && quizQ) {
+      if (quizQ.type === "dijkstra" && quizState.S && quizState.S.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+      if ((quizQ.type === "bfs" || quizQ.type === "dfs") && quizState.visited && quizState.visited.has(v.id)) { fill = TEAL; stroke = TEAL; labelColor = "white"; }
+      if (quizQ.type === "topo" && quizState.visited && quizState.visited.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+      if (quizQ.type === "prim" && quizState.inTree && quizState.inTree.has(v.id)) { fill = GREEN; stroke = GREEN; labelColor = "white"; }
+    }
+    if (mode === "quiz" && quiz.active && quizQ && quizQ.inputType === "vertexMulti" && quiz.selectedVertices.has(v.id)) { stroke = CORAL; sw = 3.5; fill = CORAL; labelColor = "white"; }
+
+    const r = 18;
+    html += `<circle cx="${v.x}" cy="${v.y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+    const dispId = v.id.length > 3 ? v.id.slice(0, 3) : v.id;
+    html += `<text x="${v.x}" y="${v.y + 4}" text-anchor="middle" font-size="12" font-weight="500" fill="${labelColor}" pointer-events="none">${dispId}</text>`;
+
+    if (st) {
+      let label = "";
+      if ((algoKey === "dijkstra" || algoKey === "bellmanford") && st.L) label = st.L[v.id] === Infinity ? "∞" : st.L[v.id];
+      else if (algoKey === "bfs" && st.dist && st.dist[v.id] !== undefined) label = `d=${st.dist[v.id]}`;
+      else if (algoKey === "topo" && st.inDeg && st.inDeg[v.id] !== undefined) label = `in=${st.inDeg[v.id]}`;
+      else if (algoKey === "coloring" && st.color && st.color[v.id] !== undefined) label = `c${st.color[v.id]}`;
+      if (label !== "") { const ly = v.y < 200 ? v.y - 26 : v.y + 36; html += `<text x="${v.x}" y="${ly}" text-anchor="middle" font-size="11" font-weight="500" fill="#555" pointer-events="none">${label}</text>`; }
+    }
+    if (quizState && quizQ) {
+      let label = "";
+      if (quizQ.type === "dijkstra" && quizState.L) label = quizState.L[v.id] === Infinity ? "∞" : quizState.L[v.id];
+      if (quizQ.type === "topo" && quizState.inDeg) label = `in=${quizState.inDeg[v.id]}`;
+      if (label !== "") { const ly = v.y < 200 ? v.y - 26 : v.y + 36; html += `<text x="${v.x}" y="${ly}" text-anchor="middle" font-size="11" font-weight="500" fill="#555" pointer-events="none">${label}</text>`; }
+    }
+  }
+  svg.innerHTML = html;
+}
+
+function renderState() {
+  const el = document.getElementById("state");
+  if (mode === "edit") {
+    el.innerHTML = `<div>꼭지점: ${vertices.length}개</div><div>모서리: ${edges.length}개</div><div>유형: ${directed ? "방향성" : "비방향성"} · ${weighted ? "가중" : "비가중"}</div>${pendingEdgeStart ? `<div style="color:${CORAL};">${pendingEdgeStart}에서 모서리 시작</div>` : ""}`;
+    document.getElementById("desc").textContent = pendingEdgeStart ? `${pendingEdgeStart}에서 모서리 시작 — 다른 꼭지점 클릭` : "빈 공간 클릭 → 꼭지점 · 두 꼭지점 차례 클릭 → 모서리 · 우클릭 → 삭제";
+  } else if (mode === "run") {
+    if (steps.length === 0) { el.textContent = "..."; return; }
+    const st = steps[stepIdx]; let h = "";
+    const ak = document.getElementById("algo").value;
+    if (ak === "bfs" && st.queue !== undefined) h += `<div>큐: [${st.queue.join(", ")}]</div>`;
+    else if (ak === "dfs") h += `<div>스택: [${(st.stack||[]).join(", ")}]</div><div>순서: ${(st.order||[]).join(" → ")}</div>`;
+    else if (ak === "dijkstra" && st.S) h += `<div>S: {${[...st.S].join(", ")}}</div>`;
+    else if (ak === "bellmanford") h += `<div>라운드: ${st.round || 0}/${vertices.length - 1}</div>`;
+    else if (ak === "topo") h += `<div>큐: [${(st.queue||[]).join(", ")}]</div><div>순서: ${(st.order||[]).join(" → ")}</div>`;
+    else if (ak === "bipartite" && st.color) { const r = Object.keys(st.color).filter(k => st.color[k] === 0); const b = Object.keys(st.color).filter(k => st.color[k] === 1); h += `<div>빨강: {${r.join(", ")}}</div><div>파랑: {${b.join(", ")}}</div>`; }
+    else if (ak === "cc" && st.compId) { const g = {}; Object.entries(st.compId).forEach(([k, v]) => { (g[v] = g[v] || []).push(k); }); Object.entries(g).forEach(([cId, m]) => { h += `<div>성분 ${cId}: {${m.join(", ")}}</div>`; }); }
+    else if (ak === "euler" && st.circuit) h += `<div>회로: ${st.circuit.slice().reverse().join(" → ")}</div>`;
+    else if (ak === "hamilton") h += `<div>경로: ${(st.path||[]).join(" → ")}</div>`;
+    else if ((ak === "prim" || ak === "kruskal") && st.mstEdges) { const t = st.mstEdges.reduce((s,i) => s + (edges[i]?.w || 0), 0); h += `<div>MST: ${st.mstEdges.length}개 · 가중치 ${t}</div>`; }
+    else if (ak === "cutvertex") h += `<div>절단 꼭지점: {${(st.cutVertices||[]).join(", ") || "없음"}}</div>`;
+    else if (ak === "coloring" && st.color) h += `<div>사용 색: ${new Set(Object.values(st.color)).size}가지</div>`;
+    el.innerHTML = h;
+    document.getElementById("desc").innerHTML = (st.error ? `<span style="color:${RED};">⚠ </span>` : "") + (st.desc || "");
+    document.getElementById("progress").textContent = `${stepIdx} / ${steps.length - 1}`;
+    document.getElementById("prev-btn").disabled = stepIdx === 0;
+    document.getElementById("next-btn").disabled = stepIdx === steps.length - 1;
+  } else if (mode === "quiz") {
+    el.innerHTML = quiz.active ? `<div>퀴즈 진행 · ${quiz.algo}</div><div>문제 ${quiz.currentIdx + 1} / ${quiz.questions.length}</div>` : `<div>퀴즈 모드 — 알고리즘 선택 후 ‘퀴즈 시작'</div>`;
+    document.getElementById("desc").textContent = quiz.active ? "답하라. 정답·오답에 따라 점수·콤보 갱신." : "12개 알고리즘 모두에 단계별 출제. 정답·콤보·정답률 집계.";
+  } else if (mode === "save") {
+    el.innerHTML = `<div>꼭지점: ${vertices.length}개 · 모서리: ${edges.length}개</div><div>자동 저장: 활성</div><div>라이브러리: ${Object.keys(getLibrary()).length}개</div>`;
+    document.getElementById("desc").textContent = "자동 저장 + 수동 내보내기. 라이브러리에 이름 붙여 영구 보관 가능.";
+  }
+}
+
+function updateStartOptions() {
+  const upd = (id) => { const sel = document.getElementById(id); if (!sel) return; const cur = sel.value; sel.innerHTML = ""; vertices.forEach(v => { const o = document.createElement("option"); o.value = v.id; o.textContent = v.id; sel.appendChild(o); }); if (cur && vertices.find(v => v.id === cur)) sel.value = cur; };
+  upd("start"); upd("quiz-start");
+}
+
+function runAlgorithm() {
+  const algo = document.getElementById("algo").value;
+  const startId = document.getElementById("start").value;
+  steps = ALGO_MAP[algo] ? ALGO_MAP[algo](startId) : [{desc: "미구현"}];
+  stepIdx = 0; stopAuto(); render();
+}
+
+function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } const b = document.getElementById("play-btn"); if (b) b.textContent = "▶ 재생"; }
+function startAuto() { if (stepIdx >= steps.length - 1) stepIdx = 0; const sp = parseInt(document.getElementById("speed").value); autoTimer = setInterval(() => { if (stepIdx >= steps.length - 1) { stopAuto(); return; } stepIdx++; render(); }, sp); document.getElementById("play-btn").textContent = "⏸ 일시정지"; }
+
+function switchMode(nm) {
+  mode = nm;
+  ["edit", "run", "quiz", "save"].forEach(m => document.getElementById(`tab-${m}`).classList.toggle("active", m === nm));
+  ["edit", "run", "quiz", "save"].forEach(m => document.getElementById(`${m}-panel`).style.display = m === nm ? "block" : "none");
+  document.getElementById("controls").style.display = nm === "run" ? "flex" : "none";
+  document.getElementById("svg").style.cursor = nm === "edit" ? "crosshair" : (nm === "quiz" && quiz.active) ? "pointer" : "default";
+  document.getElementById("help-text").textContent = nm === "edit" ? "꼭지점: 빈 공간 클릭 · 모서리: 두 꼭지점 클릭 · 우클릭: 삭제" : nm === "run" ? "‘다음' 또는 ‘재생'" : nm === "quiz" ? "퀴즈 시작 후 답하라" : "그래프 저장·불러오기·내보내기·라이브러리";
+  pendingEdgeStart = null; stopAuto();
+  if (nm === "run") { updateStartOptions(); runAlgorithm(); }
+  else if (nm === "quiz") { updateStartOptions(); render(); }
+  else if (nm === "save") { renderLibrary(); render(); }
+  else { steps = []; render(); }
+}
+
+// 이벤트 바인딩
+document.getElementById("svg").addEventListener("click", handleSvgClick);
+document.getElementById("svg").addEventListener("contextmenu", handleSvgRightClick);
+document.getElementById("tab-edit").addEventListener("click", () => switchMode("edit"));
+document.getElementById("tab-run").addEventListener("click", () => switchMode("run"));
+document.getElementById("tab-quiz").addEventListener("click", () => switchMode("quiz"));
+document.getElementById("tab-save").addEventListener("click", () => switchMode("save"));
+document.getElementById("preset").addEventListener("change", (e) => loadPreset(e.target.value));
+document.getElementById("toggle-directed").addEventListener("click", () => { directed = !directed; updateDirectedBtn(); saveHistory(); autoSave(); render(); });
+document.getElementById("toggle-weighted").addEventListener("click", (e) => { weighted = !weighted; e.target.textContent = weighted ? "가중치 ON" : "가중치 OFF"; autoSave(); render(); });
+document.getElementById("clear-graph").addEventListener("click", () => { if (confirm("그래프를 모두 비우시겠는가?")) { vertices = []; edges = []; pendingEdgeStart = null; saveHistory(); autoSave(); render(); } });
+document.getElementById("undo-graph").addEventListener("click", () => { if (history.length > 1) { history.pop(); const l = history[history.length - 1]; vertices = JSON.parse(JSON.stringify(l.v)); edges = JSON.parse(JSON.stringify(l.e)); directed = l.d; updateDirectedBtn(); pendingEdgeStart = null; autoSave(); render(); } });
+document.getElementById("algo").addEventListener("change", runAlgorithm);
+document.getElementById("start").addEventListener("change", runAlgorithm);
+document.getElementById("prev-btn").addEventListener("click", () => { if (stepIdx > 0) { stepIdx--; render(); } });
+document.getElementById("next-btn").addEventListener("click", () => { if (stepIdx < steps.length - 1) { stepIdx++; render(); } });
+document.getElementById("reset-btn").addEventListener("click", () => { stepIdx = 0; stopAuto(); render(); });
+document.getElementById("play-btn").addEventListener("click", () => { if (autoTimer) stopAuto(); else startAuto(); });
+document.getElementById("quiz-start-btn").addEventListener("click", startQuiz);
+document.getElementById("quiz-reset").addEventListener("click", resetScore);
+document.getElementById("save-named").addEventListener("click", saveNamed);
+document.getElementById("export-json").addEventListener("click", exportJSON);
+document.getElementById("import-json").addEventListener("click", () => document.getElementById("import-input").click());
+document.getElementById("import-input").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) importJSON(f); e.target.value = ""; });
+
+// 초기화
+if (!autoLoad()) loadPreset("lecture");
+updateScoreboard();
+render();
+
+})();
+</script>
+
+</body>
+</html>
