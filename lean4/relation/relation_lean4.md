@@ -1,5 +1,4 @@
-# relation lean # relation lean
-
+# relation lean
 ---
 
 ## 블록 1 — `import Mathlib`
