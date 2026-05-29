@@ -167,7 +167,7 @@ PCA가 만들어 내는 주성분들이 서로 직교한다는 것은 결국 그
 직각삼각형의 한 변을 길이로 옮긴 것이 $\lVert a\rVert\cos\theta$이고, 내적의 기하적 정의에서 그 값이 다음과 같음이 따라온다.
 
 $$
-\operatorname{scal}_{b}(a)=\frac{a^{\top}b}{\lVert b\rVert}
+\mathrm{scal}_{b}(a)=\frac{a^{\top}b}{\lVert b\rVert}
 $$
 
 스칼라 사영은 부호를 가진다. $a$가 $b$와 같은 쪽이면 양수, 반대쪽이면 음수, 직교하면 0이다.
@@ -199,7 +199,7 @@ $$
 분모의 $\lVert b\rVert^{2}$는 $b^{\top}b$와 같고, 분자의 $a\cdot b$는 $a^{\top}b$와 같다. 따라서 사영벡터는 다음과 같이 쓸 수 있다.
 
 $$
-\operatorname{proj}_{b}(a)=\frac{a^{\top}b}{b^{\top}b}\,b
+\mathrm{proj}_{b}(a)=\frac{a^{\top}b}{b^{\top}b}\,b
 $$
 
 ![사영벡터 — 행렬 표기](fig/eq_proj_vec_matrix.png)
@@ -225,7 +225,7 @@ $v$가 단위벡터이면 6.4의 사영벡터 공식이 매우 깔끔해진다. 
 자료의 한 점 $x$를 단위벡터 $v$ 방향으로 사영했을 때 **사영 좌표**는 두 벡터의 내적 $v^{\top}x$ 단 하나의 수다. 사영벡터 자체는 다음과 같다.
 
 $$
-\operatorname{proj}_{v}(x)=(v^{\top}x)v
+\mathrm{proj}_{v}(x)=(v^{\top}x)v
 $$
 
 사영 좌표가 양수이면 $v$가 가리키는 쪽에, 음수이면 그 반대쪽에 $x$의 그림자가 떨어진다.
@@ -288,7 +288,7 @@ $$
 공분산행렬의 대각선 성분 $\Sigma_{jj}$는 $j$번째 변수의 분산이다. 비대각선 성분 $\Sigma_{jk}$는 $j$번째 변수와 $k$번째 변수의 공분산이다. 공분산은 두 변수의 순서에 무관하므로
 
 $$
-\operatorname{Cov}(x_j,x_k)=\operatorname{Cov}(x_k,x_j)
+\mathrm{Cov}(x_j,x_k)=\mathrm{Cov}(x_k,x_j)
 $$
 
 이고, 따라서 공분산행렬은 항상 대칭행렬이다.
@@ -346,7 +346,7 @@ $$
 사영된 자료의 표본분산은 다음과 같다.
 
 $$
-\operatorname{Var}(\tilde{X}v)
+\mathrm{Var}(\tilde{X}v)
 =
 \frac{(\tilde{X}v)^{\top}(\tilde{X}v)}{n-1}
 $$
@@ -368,7 +368,7 @@ $$
 이다. 따라서
 
 $$
-\operatorname{Var}(\tilde{X}v)
+\mathrm{Var}(\tilde{X}v)
 =
 \frac{v^{\top}\tilde{X}^{\top}\tilde{X}v}{n-1}
 $$
@@ -382,7 +382,7 @@ $$
 를 대입하면 다음과 같이 정리된다.
 
 $$
-\operatorname{Var}(\tilde{X}v)
+\mathrm{Var}(\tilde{X}v)
 =
 v^{\top}\Sigma v
 $$
@@ -392,7 +392,7 @@ $$
 $$
 v_{1}
 =
-\operatorname*{arg\,max}_{v\in\mathbb{R}^{p},\;v^{\top}v=1}
+\mathrm*{arg\,max}_{v\in\mathbb{R}^{p},\;v^{\top}v=1}
 v^{\top}\Sigma v
 $$
 
