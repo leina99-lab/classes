@@ -60,8 +60,8 @@ $937 \cdot 13 = 12181$. $12181 \div 2436 = 5.00$... 정확히 $12181 = 5 \cdot 2
 **풀이 과정 빈칸**:
 
 1. 유클리드: $9 =$ ____ $\cdot 4 +$ ____
-2. 다음: $4 = $ ____ $\cdot 1 + $ ____
-3. 베주 계수 뽑기: $1 = 9 - $ ____ $\cdot 4$
+2. 다음: $4 =$ ____ $\cdot 1 +$ ____
+3. 베주 계수 뽑기: $1 = 9 -$ ____ $\cdot 4$
 4. 즉 $-$ ____ $\cdot 4 \equiv 1 \pmod 9$
 5. 양의 표현: ____ 
 
@@ -110,7 +110,7 @@ $x \equiv 5 \cdot 3 = 15 \equiv 3 \pmod{12}$. 검증: $5 \cdot 3 = 15 \equiv 3 \
 
 **증명 골격 빈칸**:
 
-> 합동 $ax \equiv 1 \pmod m$에 두 해 $b, c$가 있다고 가정. 그러면 $ab \equiv $ ____ $\equiv ac \pmod m$. 즉 $ab - ac \equiv $ ____ $\pmod m$, 따라서 $a(b - c) \equiv 0 \pmod m$. 이는 $m \mid a(b - c)$를 의미한다. $\gcd(a, m) = $ ____ 이므로 ____ (정리 이름)에 의해 $m \mid (b - c)$. 따라서 $b \equiv c \pmod m$. $\blacksquare$
+> 합동 $ax \equiv 1 \pmod m$에 두 해 $b, c$가 있다고 가정. 그러면 $ab \equiv$ ____ $\equiv ac \pmod m$. 즉 $ab - ac \equiv$ ____ $\pmod m$, 따라서 $a(b - c) \equiv 0 \pmod m$. 이는 $m \mid a(b - c)$를 의미한다. $\gcd(a, m) =$ ____ 이므로 ____ (정리 이름)에 의해 $m \mid (b - c)$. 따라서 $b \equiv c \pmod m$. $\blacksquare$
 
 <details><summary>정답</summary>
 
@@ -125,13 +125,13 @@ $x \equiv 5 \cdot 3 = 15 \equiv 3 \pmod{12}$. 검증: $5 \cdot 3 = 15 \equiv 3 \
 **C.1** (손자의 퍼즐, 8점) $x \equiv 2 \pmod 3$, $x \equiv 3 \pmod 5$, $x \equiv 2 \pmod 7$을 CRT 공식으로 풀어라.
 
 **절차 빈칸**:
-1. $m = 3 \cdot 5 \cdot 7 = $ ____
-2. $M_1 = m/3 = $ ____ , $M_2 = m/5 = $ ____ , $M_3 = m/7 = $ ____
-3. $y_1$은 ____ $y_1 \equiv 1 \pmod 3$을 만족 → $y_1 = $ ____
-4. $y_2$는 ____ $y_2 \equiv 1 \pmod 5$을 만족 → $y_2 = $ ____
-5. $y_3$는 ____ $y_3 \equiv 1 \pmod 7$을 만족 → $y_3 = $ ____
-6. $x = 2 M_1 y_1 + 3 M_2 y_2 + 2 M_3 y_3 = $ ____
-7. 모듈로 ____ 로 줄이면 $x = $ ____
+1. $m = 3 \cdot 5 \cdot 7 =$ ____
+2. $M_1 = m/3 =$ ____ , $M_2 = m/5 =$ ____ , $M_3 = m/7 =$ ____
+3. $y_1$은 ____ $y_1 \equiv 1 \pmod 3$을 만족 → $y_1 =$ ____
+4. $y_2$는 ____ $y_2 \equiv 1 \pmod 5$을 만족 → $y_2 =$ ____
+5. $y_3$는 ____ $y_3 \equiv 1 \pmod 7$을 만족 → $y_3 =$ ____
+6. $x = 2 M_1 y_1 + 3 M_2 y_2 + 2 M_3 y_3 =$ ____
+7. 모듈로 ____ 로 줄이면 $x =$ ____
 
 <details><summary>정답</summary>
 
