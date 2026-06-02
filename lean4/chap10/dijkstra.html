@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다익스트라 최단경로 실습</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;}
+body{font-family:"Noto Sans KR",sans-serif;color:#333;background:#fcfcfc;max-width:1040px;margin:0 auto;padding:1.5em 1.5em 4em;line-height:1.7;}
+h1{font-size:1.6em;color:#2D5E5E;border-bottom:3px solid #7BA7AD;padding-bottom:.3em;}
+.intro{background:#E0F0ED;border-left:4px solid #7BA7AD;padding:.8em 1.2em;border-radius:0 4px 4px 0;font-size:.95em;}
+.controls{margin:.9em 0;display:flex;gap:.55em;flex-wrap:wrap;align-items:center;}
+button{background:#7BA7AD;color:#fff;border:none;border-radius:5px;padding:.5em 1.05em;font-family:inherit;font-size:.9em;cursor:pointer;}
+button:hover{background:#5e8d93;}
+button.alt{background:#D4726A;}button.alt:hover{background:#bb5f57;}
+button.on{background:#2D5E5E;}
+button:disabled{background:#bbb;cursor:default;}
+.row{display:flex;gap:1.2em;flex-wrap:wrap;}
+svg{flex:1;min-width:460px;height:440px;border:1px dashed #cdd6dd;border-radius:6px;background:#fff;touch-action:none;}
+.side{width:320px;min-width:280px;}
+.status{padding:.7em 1em;border-radius:6px;font-weight:500;background:#E0F0ED;border-left:4px solid #7BA7AD;min-height:2.6em;}
+.status.ok{background:#F0F7F0;border-left-color:#3F7A4F;color:#2c5e38;}
+.status.bad{background:#FDF0E6;border-left-color:#D4726A;color:#9e4439;}
+table{border-collapse:collapse;margin:.7em 0;font-family:"JetBrains Mono",monospace;font-size:.85em;width:100%;}
+th,td{border:1px solid #cdd6dd;padding:.3em .4em;text-align:center;}
+th{background:#E0F0ED;}
+td.fin{background:#F0F7F0;font-weight:700;color:#2c5e38;}
+td.relax{background:#FDF0E6;color:#9e4439;}
+.hint{font-size:.84em;color:#888;margin:.3em 0;}
+.legend{font-size:.82em;color:#666;margin-top:.5em;}
+.legend span{display:inline-block;margin-right:1em;}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:3px;}
+</style>
+</head>
+<body>
+<h1>다익스트라 최단경로 실습</h1>
+<div class="intro">
+빈 곳을 클릭하면 꼭지점이 생기고, 두 꼭지점을 차례로 클릭하면 가중치를 입력받아 모서리가 생긴다. <b>출발점 지정</b>을 누른 뒤 한 꼭지점을 클릭하여 출발점을 정한다. <b>계산 시작</b>을 누르면 거리표가 초기화되고, 그 뒤로는 <b>임시 거리가 가장 작은 미확정 꼭지점을 직접 클릭</b>하여 한 단계씩 확정한다. 올바른 꼭지점을 고르면 그 이웃들의 임시 거리가 완화되어 표의 빈칸이 채워진다. 잘못 고르면 안내가 나온다.
+</div>
+
+<div class="controls">
+  <button onclick="loadPreset()">교재 예제 그래프</button>
+  <button class="alt" onclick="clearAll()">전체 지우기</button>
+  <button id="srcBtn" onclick="toggleSrc()">출발점 지정</button>
+  <button id="eraseBtn" onclick="toggleErase()">모서리 지우기: 꺼짐</button>
+  <button onclick="startSolve()">계산 시작</button>
+  <button onclick="autoStep()">한 단계 자동</button>
+</div>
+
+<div class="row">
+  <svg id="svg" viewBox="0 0 560 440"></svg>
+  <div class="side">
+    <div class="status" id="status">그래프를 만들거나 교재 예제를 불러온 뒤 출발점을 지정하라.</div>
+    <div id="tablebox"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#3F7A4F"></span>확정됨</span>
+      <span><span class="dot" style="background:#D4726A"></span>이번에 완화됨</span>
+      <span>∞ 는 아직 도달 못함</span>
+    </div>
+    <div class="hint" id="pathhint" style="display:none">계산이 끝났다. 꼭지점을 클릭하면 출발점에서 그 꼭지점까지의 최단경로가 강조된다.</div>
+  </div>
+</div>
+
+<script>
+let nodes=[];   // {x,y,label}
+let edges=[];   // {a,b,w}
+let sel=-1, src=-1;
+let srcMode=false, eraseMode=false;
+let solving=false, finished=false;
+let dist=[], visited=[], prev=[], stepRows=[], lastRelax=[];
+let pathEdges=new Set();
+
+const svg=document.getElementById('svg');
+const INF=Infinity;
+
+function clearAll(){nodes=[];edges=[];sel=-1;src=-1;resetSolve();render();}
+function resetSolve(){solving=false;finished=false;dist=[];visited=[];prev=[];stepRows=[];lastRelax=[];pathEdges=new Set();document.getElementById('pathhint').style.display='none';}
+
+function loadPreset(){
+  nodes=[
+    {x:70,y:220,label:'a'},{x:200,y:90,label:'b'},{x:200,y:350,label:'c'},
+    {x:360,y:90,label:'d'},{x:360,y:350,label:'e'},{x:490,y:220,label:'z'}
+  ];
+  // a-b4 a-c2 b-c1 b-d5 c-d8 c-e10 d-e2 d-z6 e-z3
+  edges=[
+    {a:0,b:1,w:4},{a:0,b:2,w:2},{a:1,b:2,w:1},{a:1,b:3,w:5},{a:2,b:3,w:8},
+    {a:2,b:4,w:10},{a:3,b:4,w:2},{a:3,b:5,w:6},{a:4,b:5,w:3}
+  ];
+  src=0; sel=-1; resetSolve(); setStatus('출발점은 a이다. 계산 시작을 누르라.'); render();
+}
+
+// ===== 좌표/히트 =====
+function svgPoint(evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());return{x:p.x,y:p.y};}
+function hitNode(p){for(let i=0;i<nodes.length;i++){const dx=p.x-nodes[i].x,dy=p.y-nodes[i].y;if(dx*dx+dy*dy<=225)return i;}return -1;}
+function nextLabel(){return 'v'+(nodes.length+1);}
+
+// ===== 렌더 =====
+function setStatus(html,cls){const s=document.getElementById('status');s.className='status'+(cls?(' '+cls):'');s.innerHTML=html;}
+function render(){
+  let s='';
+  edges.forEach((e,k)=>{
+    const A=nodes[e.a],B=nodes[e.b];
+    const inPath=pathEdges.has(k);
+    const col=inPath?'#D4726A':'#7BA7AD', w=inPath?5:2.5;
+    s+=`<path d="M${A.x},${A.y} L${B.x},${B.y}" stroke="transparent" stroke-width="16" data-edge="${k}" style="cursor:${eraseMode?'pointer':'default'}"/>`;
+    s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${col}" stroke-width="${w}" style="pointer-events:none"/>`;
+    const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;
+    s+=`<rect x="${mx-12}" y="${my-11}" width="24" height="18" rx="3" fill="#fff" stroke="#cdd6dd" style="pointer-events:none"/>`;
+    s+=`<text x="${mx}" y="${my+3}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#2D5E5E" style="pointer-events:none">${e.w}</text>`;
+  });
+  nodes.forEach((v,i)=>{
+    let col='#333';
+    if(solving&&visited[i]) col='#3F7A4F';
+    if(i===src) col='#2D5E5E';
+    if(i===sel) col='#D4726A';
+    s+=`<circle cx="${v.x}" cy="${v.y}" r="14" fill="${col}" data-node="${i}" style="cursor:pointer"/>`;
+    s+=`<text x="${v.x}" y="${v.y+4}" text-anchor="middle" font-family="JetBrains Mono" font-size="13" fill="#fff" style="pointer-events:none">${v.label}</text>`;
+    if(i===src) s+=`<text x="${v.x}" y="${v.y-20}" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#2D5E5E" style="pointer-events:none">출발</text>`;
+    if(solving){
+      const dtxt = dist[i]===INF?'∞':dist[i];
+      s+=`<text x="${v.x+18}" y="${v.y-12}" text-anchor="start" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#D4726A" style="pointer-events:none">${dtxt}</text>`;
+    }
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll('[data-node]').forEach(c=>c.addEventListener('click',ev=>{ev.stopPropagation();onNode(+c.dataset.node);}));
+  svg.querySelectorAll('[data-edge]').forEach(p=>p.addEventListener('click',ev=>{ev.stopPropagation();onEdge(+p.dataset.edge);}));
+  renderTable();
+}
+function renderTable(){
+  const box=document.getElementById('tablebox');
+  if(!solving){box.innerHTML='';return;}
+  let s='<table><tr><th>단계</th>';
+  nodes.forEach(v=>s+=`<th>${v.label}</th>`);
+  s+='</tr>';
+  stepRows.forEach((rowObj,r)=>{
+    s+=`<tr><td>${rowObj.label}</td>`;
+    rowObj.dist.forEach((d,i)=>{
+      let cls='';
+      if(rowObj.fin===i)cls='fin';
+      else if(rowObj.relax.includes(i))cls='relax';
+      s+=`<td class="${cls}">${d===INF?'∞':d}</td>`;
+    });
+    s+='</tr>';
+  });
+  s+='</table>';
+  box.innerHTML=s;
+}
+
+// ===== 편집 상호작용 =====
+function onNode(i){
+  if(solving&&!finished){ pickVertex(i); return; }
+  if(finished){ showPath(i); return; }
+  if(srcMode){ src=i; srcMode=false; document.getElementById('srcBtn').classList.remove('on'); setStatus(`출발점은 ${nodes[i].label}이다. 계산 시작을 누르라.`); render(); return; }
+  if(eraseMode) return;
+  if(sel===-1){ sel=i; }
+  else if(sel===i){ sel=-1; }
+  else {
+    const w=prompt(`${nodes[sel].label} - ${nodes[i].label} 모서리의 가중치(양의 정수)를 입력하라.`,'1');
+    const wn=parseInt(w,10);
+    if(!isNaN(wn)&&wn>0) edges.push({a:sel,b:i,w:wn});
+    sel=-1;
+  }
+  render();
+}
+function onEdge(k){ if(eraseMode){edges.splice(k,1);render();} }
+svg.addEventListener('click',ev=>{
+  if(solving||srcMode||eraseMode) return;
+  const p=svgPoint(ev);
+  if(hitNode(p)===-1){ nodes.push({x:Math.round(p.x),y:Math.round(p.y),label:nextLabel()}); render(); }
+});
+function toggleSrc(){srcMode=!srcMode;eraseMode=false;document.getElementById('eraseBtn').textContent='모서리 지우기: 꺼짐';document.getElementById('eraseBtn').classList.remove('on');sel=-1;document.getElementById('srcBtn').classList.toggle('on',srcMode);if(srcMode)setStatus('출발점으로 쓸 꼭지점을 클릭하라.');render();}
+function toggleErase(){eraseMode=!eraseMode;srcMode=false;document.getElementById('srcBtn').classList.remove('on');sel=-1;document.getElementById('eraseBtn').textContent='모서리 지우기: '+(eraseMode?'켜짐':'꺼짐');document.getElementById('eraseBtn').classList.toggle('on',eraseMode);render();}
+
+// ===== 다익스트라 단계 =====
+function neighbors(u){const r=[];edges.forEach(e=>{if(e.a===u)r.push({v:e.b,w:e.w});else if(e.b===u)r.push({v:e.a,w:e.w});});return r;}
+function startSolve(){
+  if(nodes.length===0){setStatus('꼭지점이 없다.','bad');return;}
+  if(src===-1){setStatus('먼저 출발점을 지정하라.','bad');return;}
+  solving=true;finished=false;
+  dist=nodes.map(()=>INF);visited=nodes.map(()=>false);prev=nodes.map(()=>null);
+  dist[src]=0;stepRows=[];pathEdges=new Set();
+  stepRows.push({label:'초기', dist:dist.slice(), fin:-1, relax:[]});
+  setStatus('초기화 완료. 임시 거리가 가장 작은 미확정 꼭지점(현재 출발점)을 클릭하라.');
+  render();
+}
+function minUnvisited(){
+  let m=INF,idx=-1;
+  for(let i=0;i<nodes.length;i++) if(!visited[i]&&dist[i]<m){m=dist[i];idx=i;}
+  return idx;
+}
+function pickVertex(u){
+  if(visited[u]){setStatus(`${nodes[u].label}는 이미 확정된 꼭지점이다. 아직 확정되지 않은 꼭지점을 고르라.`,'bad');return;}
+  if(dist[u]===INF){setStatus(`${nodes[u].label}는 아직 도달하지 못한 꼭지점(거리 ∞)이다. 도달 가능한 꼭지점 중에서 고르라.`,'bad');return;}
+  const best=minUnvisited();
+  if(dist[u]!==dist[best]){
+    setStatus(`아직 ${nodes[u].label}를 고를 때가 아니다. 미확정 꼭지점 중 임시 거리가 더 작은 ${nodes[best].label}(거리 ${dist[best]})가 있다. 가장 작은 것을 먼저 확정해야 한다.`,'bad');
+    return;
+  }
+  // 확정 + 완화
+  visited[u]=true;
+  const relaxed=[];
+  neighbors(u).forEach(({v,w})=>{
+    if(!visited[v] && dist[u]+w<dist[v]){ dist[v]=dist[u]+w; prev[v]=u; relaxed.push(v); }
+  });
+  lastRelax=relaxed;
+  stepRows.push({label:nodes[u].label+' 확정', dist:dist.slice(), fin:u, relax:relaxed});
+  // 다음 안내
+  const nxt=minUnvisited();
+  if(nxt===-1){
+    finished=true;
+    let summary=nodes.map((v,i)=>`${v.label}:${dist[i]===INF?'∞':dist[i]}`).join(', ');
+    setStatus(`모든 도달 가능한 꼭지점이 확정되었다. 출발점 ${nodes[src].label}로부터의 최단 거리: ${summary}.`,'ok');
+    document.getElementById('pathhint').style.display='block';
+  } else {
+    let rtxt = relaxed.length? `${nodes[u].label}의 이웃 ${relaxed.map(i=>nodes[i].label).join(', ')}의 임시 거리가 완화되었다. ` : `${nodes[u].label}에서 완화된 이웃은 없다. `;
+    setStatus(`${rtxt}다음으로 임시 거리가 가장 작은 미확정 꼭지점을 클릭하라.`);
+  }
+  render();
+}
+function autoStep(){
+  if(!solving){startSolve();return;}
+  if(finished)return;
+  const u=minUnvisited();
+  if(u===-1)return;
+  pickVertex(u);
+}
+function showPath(target){
+  if(!finished)return;
+  pathEdges=new Set();
+  if(dist[target]===INF){setStatus(`${nodes[target].label}는 출발점에서 도달할 수 없다.`,'bad');render();return;}
+  // prev 사슬을 따라 모서리 강조
+  let cur=target, chain=[target];
+  while(prev[cur]!==null){
+    const p=prev[cur];
+    // p-cur 모서리 인덱스 찾기
+    edges.forEach((e,k)=>{ if((e.a===p&&e.b===cur)||(e.a===cur&&e.b===p)) pathEdges.add(k); });
+    cur=p; chain.push(cur);
+  }
+  chain.reverse();
+  setStatus(`${nodes[src].label}에서 ${nodes[target].label}까지 최단경로: ${chain.map(i=>nodes[i].label).join(' → ')} (거리 ${dist[target]}).`,'ok');
+  render();
+}
+
+loadPreset();
+</script>
+</body>
+</html>

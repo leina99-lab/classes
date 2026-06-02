@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인접행렬과 동형 판정</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;}
+body{font-family:"Noto Sans KR",sans-serif;color:#333;background:#fcfcfc;max-width:1000px;margin:0 auto;padding:1.5em 1.5em 4em;line-height:1.7;}
+h1{font-size:1.6em;color:#2D5E5E;border-bottom:3px solid #7BA7AD;padding-bottom:.3em;}
+h2{font-size:1.15em;color:#2D5E5E;margin-top:1.6em;}
+.intro{background:#E0F0ED;border-left:4px solid #7BA7AD;padding:.8em 1.2em;border-radius:0 4px 4px 0;font-size:.95em;}
+.row{display:flex;gap:1.5em;flex-wrap:wrap;}
+.panel{flex:1;min-width:300px;}
+svg{width:100%;height:300px;border:1px dashed #cdd6dd;border-radius:6px;background:#fff;}
+.gtitle{font-weight:700;color:#D4726A;margin:.4em 0;}
+table{border-collapse:collapse;margin:.6em 0;font-family:"JetBrains Mono",monospace;font-size:.9em;}
+th,td{border:1px solid #cdd6dd;padding:.3em .55em;text-align:center;min-width:2em;}
+th{background:#E0F0ED;}
+.controls{margin:1em 0;display:flex;gap:.6em;flex-wrap:wrap;align-items:center;}
+button{background:#7BA7AD;color:#fff;border:none;border-radius:5px;padding:.5em 1.1em;font-family:inherit;font-size:.92em;cursor:pointer;}
+button:hover{background:#5e8d93;}
+button.alt{background:#D4726A;}
+button.alt:hover{background:#bb5f57;}
+select{font-family:"JetBrains Mono",monospace;padding:.25em .4em;border:1px solid #cdd6dd;border-radius:4px;}
+.map-row{display:flex;align-items:center;gap:.5em;margin:.3em 0;font-family:"JetBrains Mono",monospace;}
+.verdict{margin-top:1em;padding:.8em 1.1em;border-radius:6px;font-weight:500;}
+.ok{background:#F0F7F0;border-left:4px solid #3F7A4F;color:#2c5e38;}
+.bad{background:#FDF0E6;border-left:4px solid #D4726A;color:#9e4439;}
+.inv{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#f5f5f5;padding:.5em .8em;border-radius:4px;margin:.5em 0;}
+.hint{font-size:.85em;color:#888;}
+vertex{cursor:pointer;}
+</style>
+</head>
+<body>
+<h1>인접행렬과 동형 판정 실습</h1>
+<div class="intro">
+두 그래프 <b>G</b>와 <b>H</b>가 그려져 있다. 각 그래프 아래에 인접행렬이 자동으로 계산되어 나타난다. 아래 대응표에서 G의 각 꼭지점을 H의 꼭지점에 짝지은 뒤 <b>동형 판정</b>을 누르면, 그 대응이 인접 관계를 보존하는 동형사상인지 검사한다. 모서리를 추가하거나 지우려면 한 꼭지점을 클릭한 뒤 다른 꼭지점을 클릭한다.
+</div>
+
+<div class="controls">
+  <button onclick="loadPreset('iso')">동형인 예제 불러오기</button>
+  <button class="alt" onclick="loadPreset('noniso')">동형이 아닌 예제 불러오기</button>
+  <span class="hint">꼭지점 두 개를 차례로 클릭하면 모서리가 토글된다.</span>
+</div>
+
+<div class="row">
+  <div class="panel">
+    <div class="gtitle">그래프 G</div>
+    <svg id="svgG" viewBox="0 0 320 300"></svg>
+    <div id="matG"></div>
+  </div>
+  <div class="panel">
+    <div class="gtitle">그래프 H</div>
+    <svg id="svgH" viewBox="0 0 320 300"></svg>
+    <div id="matH"></div>
+  </div>
+</div>
+
+<div class="inv" id="invariants"></div>
+
+<h2>동형사상 대응 f: G → H</h2>
+<div id="mapping"></div>
+<div class="controls">
+  <button onclick="checkIso()">동형 판정</button>
+</div>
+<div id="verdict"></div>
+
+<script>
+// ===== 그래프 자료구조 =====
+// 각 그래프: {n: 꼭지점수, pos:[{x,y}], adj: 2차원 0/1 행렬}
+function emptyGraph(positions){
+  const n=positions.length;
+  const adj=Array.from({length:n},()=>Array(n).fill(0));
+  return {n, pos:positions.map(p=>({x:p.x,y:p.y})), adj};
+}
+let G, H, selG=-1, selH=-1;
+
+const POS4 = [ {x:80,y:70},{x:240,y:70},{x:80,y:230},{x:240,y:230} ]; // 사각 배치
+
+function loadPreset(kind){
+  G = emptyGraph(POS4);
+  H = emptyGraph([ {x:160,y:50},{x:60,y:160},{x:260,y:160},{x:160,y:260} ]); // 마름모 배치
+  // G: 4-사이클 g1-g2-g4-g3-g1  (인덱스 0,1,3,2)
+  addEdge(G,0,1); addEdge(G,1,3); addEdge(G,3,2); addEdge(G,2,0);
+  if(kind==='iso'){
+    // H: 4-사이클 다르게 그림 h1-h2-h4-h3-h1
+    addEdge(H,0,1); addEdge(H,1,3); addEdge(H,3,2); addEdge(H,2,0);
+  } else {
+    // H: 삼각형+꼬리 (차수수열 다름 -> 동형 아님)
+    addEdge(H,0,1); addEdge(H,0,2); addEdge(H,1,2); addEdge(H,2,3);
+  }
+  selG=selH=-1;
+  render();
+}
+function addEdge(g,i,j){ if(i!==j){ g.adj[i][j]=1; g.adj[j][i]=1; } }
+function toggleEdge(g,i,j){ if(i!==j){ const v=g.adj[i][j]?0:1; g.adj[i][j]=v; g.adj[j][i]=v; } }
+
+function degree(g,i){ return g.adj[i].reduce((a,b)=>a+b,0); }
+function edgeCount(g){ let m=0; for(let i=0;i<g.n;i++)for(let j=i+1;j<g.n;j++)m+=g.adj[i][j]; return m; }
+function degSeq(g){ const d=[]; for(let i=0;i<g.n;i++)d.push(degree(g,i)); return d.sort((a,b)=>a-b); }
+
+// ===== 렌더링 =====
+const LABELS_G=['g1','g2','g3','g4'], LABELS_H=['h1','h2','h3','h4'];
+function drawGraph(svgId, g, labels, sel, which){
+  const svg=document.getElementById(svgId);
+  let s='';
+  // 모서리
+  for(let i=0;i<g.n;i++)for(let j=i+1;j<g.n;j++) if(g.adj[i][j]){
+    s+=`<line x1="${g.pos[i].x}" y1="${g.pos[i].y}" x2="${g.pos[j].x}" y2="${g.pos[j].y}" stroke="#7BA7AD" stroke-width="2.5"/>`;
+  }
+  // 꼭지점
+  for(let i=0;i<g.n;i++){
+    const c = (i===sel) ? '#D4726A' : '#333';
+    s+=`<circle class="vtx" cx="${g.pos[i].x}" cy="${g.pos[i].y}" r="11" fill="${c}" data-which="${which}" data-i="${i}" style="cursor:pointer"/>`;
+    s+=`<text x="${g.pos[i].x}" y="${g.pos[i].y-16}" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-style="italic" fill="#D4726A">${labels[i]}</text>`;
+  }
+  svg.innerHTML=s;
+  svg.querySelectorAll('.vtx').forEach(c=>{
+    c.addEventListener('click',()=>onVertexClick(c.dataset.which, +c.dataset.i));
+  });
+}
+function matrixHTML(g, labels){
+  let s='<table><tr><th></th>';
+  for(let j=0;j<g.n;j++) s+=`<th>${labels[j]}</th>`;
+  s+='</tr>';
+  for(let i=0;i<g.n;i++){
+    s+=`<tr><th>${labels[i]}</th>`;
+    for(let j=0;j<g.n;j++) s+=`<td>${g.adj[i][j]}</td>`;
+    s+='</tr>';
+  }
+  s+='</table>';
+  return s;
+}
+function render(){
+  drawGraph('svgG',G,LABELS_G,selG,'G');
+  drawGraph('svgH',H,LABELS_H,selH,'H');
+  document.getElementById('matG').innerHTML='<b>G의 인접행렬</b>'+matrixHTML(G,LABELS_G);
+  document.getElementById('matH').innerHTML='<b>H의 인접행렬</b>'+matrixHTML(H,LABELS_H);
+  // 불변량
+  document.getElementById('invariants').innerHTML =
+    `불변량 비교 &nbsp; | &nbsp; 꼭지점 수: G=${G.n}, H=${H.n} &nbsp; | &nbsp; 모서리 수: G=${edgeCount(G)}, H=${edgeCount(H)} &nbsp; | &nbsp; `+
+    `차수수열: G=(${degSeq(G).join(',')}), H=(${degSeq(H).join(',')})`;
+  buildMapping();
+}
+function onVertexClick(which,i){
+  const g = which==='G'?G:H;
+  let sel = which==='G'?selG:selH;
+  if(sel===-1){ if(which==='G')selG=i; else selH=i; }
+  else if(sel===i){ if(which==='G')selG=-1; else selH=-1; }
+  else { toggleEdge(g,sel,i); if(which==='G')selG=-1; else selH=-1; }
+  render();
+}
+
+// ===== 동형 대응 UI =====
+function buildMapping(){
+  let s='';
+  for(let i=0;i<G.n;i++){
+    s+=`<div class="map-row">f(${LABELS_G[i]}) = <select id="map${i}">`;
+    for(let j=0;j<H.n;j++) s+=`<option value="${j}">${LABELS_H[j]}</option>`;
+    s+='</select></div>';
+  }
+  document.getElementById('mapping').innerHTML=s;
+  // 기본 대응 g_i -> h_i
+  for(let i=0;i<G.n;i++) document.getElementById('map'+i).value=i;
+}
+function checkIso(){
+  const f=[]; for(let i=0;i<G.n;i++) f.push(+document.getElementById('map'+i).value);
+  const v=document.getElementById('verdict');
+  // 전단사 확인
+  if(new Set(f).size!==G.n){
+    v.className='verdict bad';
+    v.innerHTML='대응 f가 일대일이 아니다. 서로 다른 G의 꼭지점이 H의 같은 꼭지점에 배정되었다. 동형사상은 전단사여야 한다.';
+    return;
+  }
+  // 먼저 필요조건(불변량) 점검
+  if(edgeCount(G)!==edgeCount(H) || degSeq(G).join()!==degSeq(H).join()){
+    v.className='verdict bad';
+    v.innerHTML='불변량이 이미 다르다(모서리 수 또는 차수수열). 불변량이 다르면 어떤 대응으로도 동형이 될 수 없으므로 두 그래프는 동형이 아니다.';
+    return;
+  }
+  // 인접 보존 검사: 모든 i<j 에 대해 G의 인접 == H에서 f(i),f(j)의 인접
+  let fails=[];
+  for(let i=0;i<G.n;i++)for(let j=i+1;j<G.n;j++){
+    if(G.adj[i][j]!==H.adj[f[i]][f[j]]){
+      fails.push(`${LABELS_G[i]}-${LABELS_G[j]} (G:${G.adj[i][j]?'인접':'비인접'}) ↔ ${LABELS_H[f[i]]}-${LABELS_H[f[j]]} (H:${H.adj[f[i]][f[j]]?'인접':'비인접'})`);
+    }
+  }
+  if(fails.length===0){
+    v.className='verdict ok';
+    v.innerHTML='이 대응 f는 동형사상이다. 모든 꼭지점 쌍에서 G의 인접 관계와 H의 인접 관계가 정확히 일치한다. 따라서 두 그래프는 동형이다.';
+  } else {
+    v.className='verdict bad';
+    v.innerHTML='이 대응은 인접 관계를 보존하지 못한다. 어긋나는 쌍:<br>'+fails.map(x=>'· '+x).join('<br>')+
+      '<br><span class="hint">대응을 바꿔 다시 시도해 보라. 불변량이 같아도 올바른 대응을 찾아야 동형이 증명된다.</span>';
+  }
+}
+
+loadPreset('iso');
+</script>
+</body>
+</html>

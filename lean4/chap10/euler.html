@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오일러 회로 판정</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;}
+body{font-family:"Noto Sans KR",sans-serif;color:#333;background:#fcfcfc;max-width:1000px;margin:0 auto;padding:1.5em 1.5em 4em;line-height:1.7;}
+h1{font-size:1.6em;color:#2D5E5E;border-bottom:3px solid #7BA7AD;padding-bottom:.3em;}
+.intro{background:#E0F0ED;border-left:4px solid #7BA7AD;padding:.8em 1.2em;border-radius:0 4px 4px 0;font-size:.95em;}
+.controls{margin:1em 0;display:flex;gap:.6em;flex-wrap:wrap;align-items:center;}
+button{background:#7BA7AD;color:#fff;border:none;border-radius:5px;padding:.5em 1.1em;font-family:inherit;font-size:.92em;cursor:pointer;}
+button:hover{background:#5e8d93;}
+button.alt{background:#D4726A;}button.alt:hover{background:#bb5f57;}
+button.on{background:#2D5E5E;}
+.row{display:flex;gap:1.2em;flex-wrap:wrap;}
+svg{flex:1;min-width:420px;height:420px;border:1px dashed #cdd6dd;border-radius:6px;background:#fff;touch-action:none;}
+.side{width:300px;min-width:260px;}
+.deg{font-family:"JetBrains Mono",monospace;font-size:.9em;background:#f5f5f5;padding:.6em .8em;border-radius:4px;}
+.verdict{margin-top:.8em;padding:.8em 1.1em;border-radius:6px;font-weight:500;}
+.ok{background:#F0F7F0;border-left:4px solid #3F7A4F;color:#2c5e38;}
+.warn{background:#FDF0E6;border-left:4px solid #D4726A;color:#9e4439;}
+.neutral{background:#E0F0ED;border-left:4px solid #7BA7AD;}
+.hint{font-size:.85em;color:#888;margin:.4em 0;}
+.trace{font-family:"JetBrains Mono",monospace;font-size:.9em;background:#fff;border:1px solid #cdd6dd;border-radius:4px;padding:.6em .8em;min-height:2em;}
+</style>
+</head>
+<body>
+<h1>오일러 회로 판정 실습</h1>
+<div class="intro">
+연결 다중그래프가 오일러 회로를 가질 필요충분조건은 모든 꼭지점의 차수가 짝수인 것이고, 오일러 경로만 가질 조건은 홀수 차수 꼭지점이 정확히 두 개인 것이다. 아래에서 빈 곳을 클릭하면 꼭지점이 생기고, 두 꼭지점을 차례로 클릭하면 모서리가 추가된다(같은 쌍을 여러 번 누르면 다중모서리). 오른쪽에 차수와 판정이 실시간으로 갱신된다. <b>트레이스 모드</b>에서는 모서리를 차례로 클릭하여 직접 회로를 그어 볼 수 있다.
+</div>
+
+<div class="controls">
+  <button onclick="loadPreset('konig')">쾨니히스베르크</button>
+  <button onclick="loadPreset('even')">차수 모두 짝수</button>
+  <button onclick="loadPreset('twoodd')">홀수 꼭지점 2개</button>
+  <button class="alt" onclick="clearAll()">전체 지우기</button>
+  <button id="eraseBtn" onclick="toggleErase()">모서리 지우기: 꺼짐</button>
+  <button id="traceBtn" onclick="toggleTrace()">트레이스 모드: 꺼짐</button>
+</div>
+
+<div class="row">
+  <svg id="svg" viewBox="0 0 520 420"></svg>
+  <div class="side">
+    <div class="deg" id="degbox"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="hint" id="tracehint" style="display:none">현재 꼭지점에 붙은, 아직 쓰지 않은 모서리를 클릭하라.</div>
+    <div class="trace" id="tracebox" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+let verts=[];      // [{x,y}]
+let edges=[];      // [{a,b}]  무방향, 중복 허용(다중모서리)
+let sel=-1;
+let eraseMode=false, traceMode=false;
+let trace={start:-1, cur:-1, used:[], seq:[]};
+
+const svg=document.getElementById('svg');
+
+function clearAll(){ verts=[];edges=[];sel=-1;resetTrace();render(); }
+function resetTrace(){ trace={start:-1,cur:-1,used:[],seq:[]}; }
+
+function loadPreset(kind){
+  verts=[];edges=[];sel=-1;resetTrace();
+  if(kind==='konig'){
+    // 쾨니히스베르크: A(상), B(좌), C(우), D(하), 7개 다리(다중모서리)
+    verts=[{x:260,y:70},{x:120,y:210},{x:400,y:210},{x:260,y:350}];
+    // A-B x2, A-C x2, A-D x1, B-D x1, C-D x1
+    edges=[{a:0,b:1},{a:0,b:1},{a:0,b:2},{a:0,b:2},{a:0,b:3},{a:1,b:3},{a:2,b:3}];
+  } else if(kind==='even'){
+    // 두 삼각형이 꼭지점 공유 (모든 차수 짝수)
+    verts=[{x:120,y:120},{x:120,y:300},{x:260,y:210},{x:400,y:120},{x:400,y:300}];
+    edges=[{a:0,b:1},{a:0,b:2},{a:1,b:2},{a:2,b:3},{a:2,b:4},{a:3,b:4}];
+  } else {
+    // 홀수 꼭지점 2개: 경로형
+    verts=[{x:120,y:210},{x:250,y:120},{x:250,y:300},{x:390,y:210}];
+    edges=[{a:0,b:1},{a:0,b:2},{a:1,b:2},{a:1,b:3},{a:2,b:3},{a:3,b:0}];
+    // 차수: 0->3, 1->3, 2->3? 조정: 정확히 2개 홀수가 되도록 단순화
+    edges=[{a:0,b:1},{a:1,b:2},{a:2,b:3},{a:1,b:3},{a:2,b:0}];
+  }
+  render();
+}
+
+// ===== 차수/연결성 =====
+function degree(i){ let d=0; edges.forEach(e=>{ if(e.a===i)d++; if(e.b===i)d++; }); return d; }
+function neighborsEdges(i){ // i에 붙은 모서리 인덱스
+  const r=[]; edges.forEach((e,k)=>{ if(e.a===i||e.b===i)r.push(k); }); return r;
+}
+function connectedIgnoringIsolated(){
+  // 모서리가 있는 꼭지점들만으로 연결성 확인
+  const used=new Set(); edges.forEach(e=>{used.add(e.a);used.add(e.b);});
+  if(used.size===0) return true;
+  const adj={}; [...used].forEach(v=>adj[v]=[]);
+  edges.forEach(e=>{ adj[e.a].push(e.b); adj[e.b].push(e.a); });
+  const start=[...used][0]; const seen=new Set([start]); const q=[start];
+  while(q.length){ const u=q.pop(); adj[u].forEach(w=>{ if(!seen.has(w)){seen.add(w);q.push(w);} }); }
+  return seen.size===used.size;
+}
+
+// ===== 좌표 =====
+function svgPoint(evt){
+  const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+  const m=svg.getScreenCTM().inverse(); const p=pt.matrixTransform(m);
+  return {x:p.x,y:p.y};
+}
+function hitVertex(p){
+  for(let i=0;i<verts.length;i++){ const dx=p.x-verts[i].x,dy=p.y-verts[i].y; if(dx*dx+dy*dy<=196) return i; }
+  return -1;
+}
+
+// ===== 모서리 그룹(다중모서리 곡선) =====
+function edgePath(e,k){
+  // 같은 쌍의 몇 번째 모서리인지로 곡률 결정
+  const a=Math.min(e.a,e.b),b=Math.max(e.a,e.b);
+  let idx=0,total=0;
+  edges.forEach((o,j)=>{ const oa=Math.min(o.a,o.b),ob=Math.max(o.a,o.b); if(oa===a&&ob===b){ if(j<k)idx++; total++; } });
+  const A=verts[e.a],B=verts[e.b];
+  if(total===1){ return {d:`M${A.x},${A.y} L${B.x},${B.y}`, mid:{x:(A.x+B.x)/2,y:(A.y+B.y)/2}}; }
+  // 곡선: 수직 방향 오프셋
+  const mx=(A.x+B.x)/2,my=(A.y+B.y)/2, dx=B.x-A.x,dy=B.y-A.y, len=Math.hypot(dx,dy)||1;
+  const off=(idx-(total-1)/2)*36;
+  const nx=-dy/len*off, ny=dx/len*off;
+  const cx=mx+nx, cy=my+ny;
+  return {d:`M${A.x},${A.y} Q${cx},${cy} ${B.x},${B.y}`, mid:{x:(A.x+2*cx+B.x)/4,y:(A.y+2*cy+B.y)/4}};
+}
+
+// ===== 렌더 =====
+function render(){
+  let s='';
+  edges.forEach((e,k)=>{
+    const pp=edgePath(e,k);
+    const usedInTrace = traceMode && trace.used.includes(k);
+    const col = usedInTrace ? '#D4726A' : '#7BA7AD';
+    const w = usedInTrace ? 4 : 2.5;
+    // 넓은 투명 히트영역
+    s+=`<path d="${pp.d}" fill="none" stroke="transparent" stroke-width="16" data-edge="${k}" style="cursor:${traceMode||eraseMode?'pointer':'default'}"/>`;
+    s+=`<path d="${pp.d}" fill="none" stroke="${col}" stroke-width="${w}" data-edge="${k}" style="pointer-events:none"/>`;
+  });
+  verts.forEach((v,i)=>{
+    let col='#333';
+    if(i===sel) col='#D4726A';
+    if(traceMode && i===trace.cur) col='#3F7A4F';
+    const d=degree(i);
+    const ring = (d%2===1)?'<circle cx="'+v.x+'" cy="'+v.y+'" r="15" fill="none" stroke="#D4726A" stroke-width="2" stroke-dasharray="3,2"/>':'';
+    s+=ring;
+    s+=`<circle cx="${v.x}" cy="${v.y}" r="11" fill="${col}" data-vtx="${i}" style="cursor:pointer"/>`;
+    s+=`<text x="${v.x}" y="${v.y+4}" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#fff" style="pointer-events:none">${d}</text>`;
+    s+=`<text x="${v.x}" y="${v.y-16}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#888" style="pointer-events:none">v${i+1}</text>`;
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll('[data-vtx]').forEach(c=>c.addEventListener('click',ev=>{ev.stopPropagation();onVertex(+c.dataset.vtx);}));
+  svg.querySelectorAll('[data-edge]').forEach(p=>p.addEventListener('click',ev=>{ev.stopPropagation();onEdge(+p.dataset.edge);}));
+  updatePanel();
+}
+
+function updatePanel(){
+  const degs=verts.map((_,i)=>degree(i));
+  const odd=degs.filter(d=>d%2===1).length;
+  let degtxt = verts.map((_,i)=>`deg(v${i+1})=${degs[i]}`).join(', ') || '(꼭지점 없음)';
+  document.getElementById('degbox').innerHTML=`<b>차수</b><br>${degtxt}<br><br>홀수 차수 꼭지점 수: <b>${odd}</b>`;
+  const v=document.getElementById('verdict');
+  const conn=connectedIgnoringIsolated();
+  if(edges.length===0){ v.className='verdict neutral'; v.innerHTML='모서리를 추가하면 판정이 나타난다.'; return; }
+  if(!conn){
+    v.className='verdict warn';
+    v.innerHTML='그래프가 연결되어 있지 않다. 오일러 정리는 연결 그래프에 적용되므로, 먼저 모든 모서리 있는 꼭지점이 연결되어야 한다.';
+    return;
+  }
+  if(odd===0){ v.className='verdict ok'; v.innerHTML='모든 꼭지점의 차수가 짝수이다. 따라서 <b>오일러 회로가 존재한다.</b>'; }
+  else if(odd===2){ v.className='verdict warn'; v.innerHTML='홀수 차수 꼭지점이 정확히 2개이다. 오일러 회로는 없고 <b>오일러 경로만 존재</b>하며, 그 경로는 두 홀수 차수 꼭지점을 양 끝으로 한다.'; }
+  else { v.className='verdict warn'; v.innerHTML=`홀수 차수 꼭지점이 ${odd}개이다. 오일러 경로도 회로도 <b>존재하지 않는다</b>(0개 또는 2개여야 함).`; }
+}
+
+// ===== 상호작용 =====
+function onVertex(i){
+  if(traceMode){ traceClickVertex(i); return; }
+  if(eraseMode) return;
+  if(sel===-1){ sel=i; }
+  else if(sel===i){ sel=-1; }
+  else { edges.push({a:sel,b:i}); sel=-1; }
+  render();
+}
+function onEdge(k){
+  if(eraseMode){ edges.splice(k,1); render(); return; }
+  if(traceMode){ traceClickEdge(k); return; }
+}
+svg.addEventListener('click',ev=>{
+  if(traceMode||eraseMode) return;
+  const p=svgPoint(ev);
+  if(hitVertex(p)===-1){ verts.push({x:Math.round(p.x),y:Math.round(p.y)}); render(); }
+});
+
+function toggleErase(){
+  eraseMode=!eraseMode; if(eraseMode){traceMode=false;updateTraceUI();}
+  sel=-1;
+  document.getElementById('eraseBtn').textContent='모서리 지우기: '+(eraseMode?'켜짐':'꺼짐');
+  document.getElementById('eraseBtn').classList.toggle('on',eraseMode);
+  render();
+}
+function toggleTrace(){
+  traceMode=!traceMode; if(traceMode){eraseMode=false;document.getElementById('eraseBtn').textContent='모서리 지우기: 꺼짐';document.getElementById('eraseBtn').classList.remove('on');}
+  sel=-1; resetTrace(); updateTraceUI(); render();
+}
+function updateTraceUI(){
+  document.getElementById('traceBtn').textContent='트레이스 모드: '+(traceMode?'켜짐':'꺼짐');
+  document.getElementById('traceBtn').classList.toggle('on',traceMode);
+  document.getElementById('tracehint').style.display=traceMode?'block':'none';
+  document.getElementById('tracebox').style.display=traceMode?'block':'none';
+  if(traceMode) renderTrace();
+}
+function traceClickVertex(i){
+  if(trace.start===-1){ trace.start=i; trace.cur=i; trace.seq=[i]; renderTrace(); render(); }
+}
+function traceClickEdge(k){
+  if(trace.start===-1){ document.getElementById('tracebox').innerHTML='먼저 출발 꼭지점을 클릭하라.'; return; }
+  if(trace.used.includes(k)){ return; }
+  const e=edges[k];
+  let next=-1;
+  if(e.a===trace.cur) next=e.b; else if(e.b===trace.cur) next=e.a; else { return; } // 현재 꼭지점에 붙지 않음
+  trace.used.push(k); trace.cur=next; trace.seq.push(next);
+  renderTrace(); render();
+}
+function renderTrace(){
+  const box=document.getElementById('tracebox');
+  if(trace.start===-1){ box.innerHTML='출발 꼭지점을 클릭하여 트레이스를 시작하라.'; return; }
+  const path=trace.seq.map(i=>'v'+(i+1)).join(' → ');
+  let msg=`경로: ${path}<br>사용한 모서리: ${trace.used.length} / ${edges.length}`;
+  if(trace.used.length===edges.length){
+    if(trace.cur===trace.start) msg+='<br><b style="color:#3F7A4F">완성. 모든 모서리를 한 번씩 지나 출발점으로 돌아왔으므로 오일러 회로이다.</b>';
+    else msg+='<br><b style="color:#9e4439">모든 모서리를 썼으나 출발점으로 돌아오지 못했다. 오일러 경로이다(회로는 아님).</b>';
+  }
+  box.innerHTML=msg;
+}
+
+loadPreset('konig');
+</script>
+</body>
+</html>
