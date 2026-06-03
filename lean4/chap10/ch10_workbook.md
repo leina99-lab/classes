@@ -406,7 +406,7 @@ L(v) <- min( ____, ____ + w(u, v) )
 <details>
 <summary>정답</summary>
 
-L(v) <- min( **L(v)**, **L(u)** + w(u, v) )
+$L(v)$ <- $\text{min}(L(v), L(u) + w(u, v) )$
 
 이 갱신을 **완화**(relaxation)라 부른다.
 
