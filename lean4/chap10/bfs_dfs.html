@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BFS와 DFS 그래프 탐색 실습</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;}
+body{font-family:"Noto Sans KR",sans-serif;color:#333;background:#fcfcfc;max-width:1040px;margin:0 auto;padding:1.5em 1.5em 4em;line-height:1.7;}
+h1{font-size:1.6em;color:#2D5E5E;border-bottom:3px solid #7BA7AD;padding-bottom:.3em;}
+.intro{background:#E0F0ED;border-left:4px solid #7BA7AD;padding:.8em 1.2em;border-radius:0 4px 4px 0;font-size:.95em;}
+.controls{margin:.8em 0;display:flex;gap:.5em;flex-wrap:wrap;align-items:center;}
+button{background:#7BA7AD;color:#fff;border:none;border-radius:5px;padding:.5em 1.0em;font-family:inherit;font-size:.9em;cursor:pointer;}
+button:hover{background:#5e8d93;}
+button.alt{background:#D4726A;}button.alt:hover{background:#bb5f57;}
+button.on{background:#2D5E5E;}
+button:disabled{background:#bbb;cursor:default;}
+.tabs{display:flex;gap:.4em;margin:.5em 0;}
+.tab{background:#e8eef0;color:#555;border:none;border-radius:5px 5px 0 0;padding:.5em 1.2em;cursor:pointer;font-family:inherit;font-size:.95em;font-weight:500;}
+.tab.sel{background:#2D5E5E;color:#fff;}
+.row{display:flex;gap:1.2em;flex-wrap:wrap;}
+svg{flex:1;min-width:440px;height:430px;border:1px dashed #cdd6dd;border-radius:6px;background:#fff;touch-action:none;}
+.side{width:330px;min-width:280px;}
+.status{padding:.7em 1em;border-radius:6px;font-weight:500;background:#E0F0ED;border-left:4px solid #7BA7AD;min-height:2.5em;}
+.status.ok{background:#F0F7F0;border-left-color:#3F7A4F;color:#2c5e38;}
+.status.bad{background:#FDF0E6;border-left-color:#D4726A;color:#9e4439;}
+.ds{font-family:"JetBrains Mono",monospace;font-size:.9em;background:#f5f5f5;padding:.5em .8em;border-radius:4px;margin:.5em 0;}
+.ds b{color:#2D5E5E;}
+.cells{display:flex;gap:.3em;flex-wrap:wrap;margin-top:.3em;}
+.cell{background:#7BA7AD;color:#fff;border-radius:4px;padding:.15em .55em;font-weight:600;}
+.order{font-family:"JetBrains Mono",monospace;font-size:.95em;}
+.hint{font-size:.84em;color:#888;margin:.3em 0;}
+details{background:#FAFAFA;border:1px solid #DDE3EA;border-radius:6px;padding:.5em .9em;margin:.7em 0;font-size:.92em;}
+summary{cursor:pointer;font-weight:600;color:#2D5E5E;}
+.expl{margin-top:1.2em;}
+.legend{font-size:.82em;color:#666;margin-top:.4em;}
+.legend span{margin-right:1em;}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:3px;}
+</style>
+</head>
+<body>
+<h1>BFS와 DFS 그래프 탐색 실습</h1>
+<div class="intro">
+같은 그래프를 두 가지 방식으로 탐색해 본다. 너비 우선 탐색(BFS)은 큐를 써서 가까운 곳부터 한 겹씩 퍼지고, 깊이 우선 탐색(DFS)은 스택을 써서 한 길을 끝까지 파고든 뒤 되돌아온다. 위 탭에서 알고리즘을 고르고, 출발점을 지정한 뒤 진행한다. <b>자동 모드</b>는 버튼으로 한 단계씩 진행하고, <b>직접 모드</b>는 다음에 방문할 꼭지점을 직접 클릭해 본다. 오른쪽에 큐 또는 스택의 내용과 방문 순서가 함께 표시된다.
+</div>
+
+<div class="tabs">
+  <button class="tab sel" id="tabBFS" onclick="setAlgo('bfs')">너비 우선 탐색 (BFS, 큐)</button>
+  <button class="tab" id="tabDFS" onclick="setAlgo('dfs')">깊이 우선 탐색 (DFS, 스택)</button>
+</div>
+
+<div class="controls">
+  <button onclick="loadPreset('tree')">예제 그래프 1</button>
+  <button onclick="loadPreset('grid')">예제 그래프 2</button>
+  <button class="alt" onclick="clearAll()">전체 지우기</button>
+  <button id="srcBtn" onclick="toggleSrc()">출발점 지정</button>
+  <button id="edgeBtn" onclick="toggleEdge()">모서리 그리기: 꺼짐</button>
+</div>
+
+<div class="controls">
+  <button onclick="startSearch()">탐색 시작 / 초기화</button>
+  <button onclick="autoStep()">한 단계 진행(자동)</button>
+  <button onclick="runAll()">끝까지 자동 실행</button>
+  <button id="manualBtn" onclick="toggleManual()">직접 모드: 꺼짐</button>
+</div>
+
+<div class="row">
+  <svg id="svg" viewBox="0 0 560 430"></svg>
+  <div class="side">
+    <div class="status" id="status">탭에서 알고리즘을 고르고 출발점을 지정한 뒤 탐색 시작을 누르라.</div>
+    <div class="ds" id="dsbox"></div>
+    <div class="ds" id="orderbox"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#3F7A4F"></span>방문 완료</span>
+      <span><span class="dot" style="background:#E0B84C"></span>자료구조에 대기 중</span>
+      <span><span class="dot" style="background:#D4726A"></span>현재 처리</span>
+    </div>
+  </div>
+</div>
+
+<div class="expl">
+<details>
+<summary>BFS와 DFS는 무엇이 다른가?</summary>
+<p>두 탐색 모두 출발점에서 시작해 그래프의 모든 꼭지점을 한 번씩 방문한다. 차이는 다음에 어디를 갈지 정하는 자료구조에 있다.</p>
+<p><b>BFS</b>는 큐(먼저 넣은 것을 먼저 꺼냄)를 쓴다. 한 꼭지점을 방문하면 그 이웃들을 큐 뒤에 넣고, 큐 앞에서 하나씩 꺼낸다. 그 결과 출발점에서 가까운 꼭지점부터 한 겹씩 차례로 방문한다. 가중치가 없는 그래프에서 최단 거리를 구할 때 쓰인다.</p>
+<p><b>DFS</b>는 스택(나중에 넣은 것을 먼저 꺼냄)을 쓴다. 한 꼭지점을 방문하면 이웃을 스택 위에 쌓고, 스택 위에서 꺼내므로 가장 최근에 발견한 길을 끝까지 파고든다. 막히면 되돌아와 다른 길을 시도한다. 미로 탐색, 위상 정렬, 연결성분 분해에 쓰인다.</p>
+<p>같은 그래프, 같은 출발점이라도 큐를 쓰느냐 스택을 쓰느냐에 따라 방문 순서가 완전히 달라진다. 오른쪽 자료구조 상자의 변화를 보며 그 차이를 확인하라.</p>
+</details>
+</div>
+
+<script>
+let nodes=[];   // {x,y}
+let edges=[];   // {a,b}
+let sel=-1, srcMode=false, edgeMode=false, manualMode=false;
+let src=-1, algo='bfs';
+let searching=false, visited=[], ds=[], order=[], current=-1, parentEdge={};
+const svg=document.getElementById('svg');
+
+function clearAll(){nodes=[];edges=[];sel=-1;src=-1;resetSearch();render();}
+function resetSearch(){searching=false;visited=[];ds=[];order=[];current=-1;parentEdge={};}
+
+function loadPreset(kind){
+  nodes=[];edges=[];sel=-1;resetSearch();
+  if(kind==='tree'){
+    nodes=[{x:280,y:60},{x:150,y:170},{x:410,y:170},{x:90,y:300},{x:210,y:300},{x:350,y:300},{x:470,y:300}];
+    edges=[{a:0,b:1},{a:0,b:2},{a:1,b:3},{a:1,b:4},{a:2,b:5},{a:2,b:6}];
+    src=0;
+  } else {
+    nodes=[{x:130,y:110},{x:280,y:110},{x:430,y:110},{x:130,y:250},{x:280,y:250},{x:430,y:250},{x:280,y:370}];
+    edges=[{a:0,b:1},{a:1,b:2},{a:0,b:3},{a:1,b:4},{a:2,b:5},{a:3,b:4},{a:4,b:5},{a:4,b:6}];
+    src=0;
+  }
+  setStatus(`예제를 불러왔다. 출발점은 ${label(src)}이다. 탐색 시작을 누르라.`);
+  render();
+}
+
+function label(i){return i<0?'?':('v'+(i+1));}
+function svgPoint(evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());return{x:p.x,y:p.y};}
+function hitNode(p){for(let i=0;i<nodes.length;i++){const dx=p.x-nodes[i].x,dy=p.y-nodes[i].y;if(dx*dx+dy*dy<=225)return i;}return -1;}
+function neighbors(i){const r=[];edges.forEach(e=>{if(e.a===i)r.push(e.b);else if(e.b===i)r.push(e.a);});return r.sort((a,b)=>a-b);}
+function setStatus(html,cls){const s=document.getElementById('status');s.className='status'+(cls?' '+cls:'');s.innerHTML=html;}
+
+function setAlgo(a){
+  algo=a;
+  document.getElementById('tabBFS').classList.toggle('sel',a==='bfs');
+  document.getElementById('tabDFS').classList.toggle('sel',a==='dfs');
+  resetSearch();
+  setStatus(`${a==='bfs'?'너비 우선 탐색(BFS)':'깊이 우선 탐색(DFS)'}을 선택했다. 탐색 시작을 누르라.`);
+  render();
+}
+
+function render(){
+  let s='';
+  edges.forEach((e,k)=>{
+    const A=nodes[e.a],B=nodes[e.b];
+    const inTree=parentEdge[e.a]===e.b||parentEdge[e.b]===e.a;
+    const col=inTree?'#3F7A4F':'#aab6bd', w=inTree?4:2.5;
+    s+=`<path d="M${A.x},${A.y} L${B.x},${B.y}" stroke="transparent" stroke-width="16" data-edge="${k}" style="cursor:${edgeMode&&!searching?'pointer':'default'}"/>`;
+    s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${col}" stroke-width="${w}" style="pointer-events:none"/>`;
+  });
+  nodes.forEach((v,i)=>{
+    let fill='#fff', txtcol='#333';
+    if(searching){
+      if(i===current){fill='#D4726A';txtcol='#fff';}
+      else if(visited[i]){fill='#3F7A4F';txtcol='#fff';}
+      else if(ds.includes(i)){fill='#E0B84C';txtcol='#fff';}
+    }
+    if(i===src&&!searching){fill='#2D5E5E';txtcol='#fff';}
+    const stroke=i===sel?'#D4726A':'#333';
+    s+=`<circle cx="${v.x}" cy="${v.y}" r="14" fill="${fill}" stroke="${stroke}" stroke-width="${i===sel?4:2}" data-node="${i}" style="cursor:pointer"/>`;
+    s+=`<text x="${v.x}" y="${v.y+4}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="${txtcol}" style="pointer-events:none">${i+1}</text>`;
+    // 방문 순서 번호
+    const ord=order.indexOf(i);
+    if(ord>=0) s+=`<text x="${v.x+16}" y="${v.y-12}" font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#D4726A" style="pointer-events:none">${ord+1}</text>`;
+    if(i===src) s+=`<text x="${v.x}" y="${v.y-20}" text-anchor="middle" font-family="Noto Sans KR" font-size="11" fill="#2D5E5E" style="pointer-events:none">출발</text>`;
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll('[data-node]').forEach(c=>c.addEventListener('click',ev=>{ev.stopPropagation();onNode(+c.dataset.node);}));
+  svg.querySelectorAll('[data-edge]').forEach(p=>p.addEventListener('click',ev=>{ev.stopPropagation();onEdge(+p.dataset.edge);}));
+  renderDS();
+}
+function renderDS(){
+  const name=algo==='bfs'?'큐(앞에서 꺼냄)':'스택(위에서 꺼냄)';
+  let cells = ds.map(i=>`<span class="cell">${label(i)}</span>`).join('');
+  if(algo==='dfs') cells = ds.slice().reverse().map((i,idx)=>`<span class="cell">${label(i)}</span>`).join('');
+  document.getElementById('dsbox').innerHTML = searching ? `<b>${name}</b>${algo==='dfs'?' [위쪽이 다음 차례]':' [왼쪽이 다음 차례]'}<div class="cells">${cells||'<span style="color:#999">비어 있음</span>'}</div>` : '';
+  document.getElementById('orderbox').innerHTML = searching ? `<b>방문 순서</b><div class="order">${order.map(i=>label(i)).join(' → ')||'(아직 없음)'}</div>` : '';
+}
+
+// 편집 상호작용
+function onNode(i){
+  if(searching){ if(manualMode) manualPick(i); return; }
+  if(srcMode){src=i;srcMode=false;document.getElementById('srcBtn').classList.remove('on');setStatus(`출발점은 ${label(i)}이다. 탐색 시작을 누르라.`);render();return;}
+  if(edgeMode){ if(sel===-1)sel=i; else if(sel===i)sel=-1; else {edges.push({a:sel,b:i});sel=-1;} render();return; }
+}
+function onEdge(k){ if(edgeMode&&!searching){edges.splice(k,1);render();} }
+svg.addEventListener('click',ev=>{
+  if(searching||!edgeMode)return;
+  const p=svgPoint(ev);
+  if(hitNode(p)===-1){nodes.push({x:Math.round(p.x),y:Math.round(p.y)});render();}
+});
+function toggleSrc(){srcMode=!srcMode;edgeMode=false;document.getElementById('edgeBtn').textContent='모서리 그리기: 꺼짐';document.getElementById('edgeBtn').classList.remove('on');sel=-1;document.getElementById('srcBtn').classList.toggle('on',srcMode);if(srcMode)setStatus('출발점으로 쓸 꼭지점을 클릭하라.');render();}
+function toggleEdge(){edgeMode=!edgeMode;srcMode=false;document.getElementById('srcBtn').classList.remove('on');sel=-1;document.getElementById('edgeBtn').textContent='모서리 그리기: '+(edgeMode?'켜짐':'꺼짐');document.getElementById('edgeBtn').classList.toggle('on',edgeMode);render();}
+function toggleManual(){manualMode=!manualMode;document.getElementById('manualBtn').textContent='직접 모드: '+(manualMode?'켜짐':'꺼짐');document.getElementById('manualBtn').classList.toggle('on',manualMode);if(searching)promptManual();}
+
+// 탐색
+function startSearch(){
+  if(nodes.length===0){setStatus('꼭지점이 없다.','bad');return;}
+  if(src===-1){setStatus('먼저 출발점을 지정하라.','bad');return;}
+  searching=true;visited=nodes.map(()=>false);ds=[src];order=[];current=-1;parentEdge={};
+  setStatus(`${algo==='bfs'?'BFS':'DFS'} 시작. 출발점 ${label(src)}를 ${algo==='bfs'?'큐':'스택'}에 넣었다. ${manualMode?'다음에 방문할 꼭지점을 직접 클릭하라.':'한 단계 진행을 누르라.'}`);
+  render();
+}
+// 한 단계: 자료구조에서 하나 꺼내 방문하고 이웃을 넣는다
+function popNext(){ return algo==='bfs' ? ds.shift() : ds.pop(); }
+function pushNeighbors(u){
+  neighbors(u).forEach(v=>{
+    if(!visited[v] && !ds.includes(v)){ ds.push(v); if(parentEdge[v]===undefined) parentEdge[v]=u; }
+  });
+}
+function step(){
+  if(!searching)return false;
+  // 자료구조에서 이미 방문된 것 제거 (BFS 큐에 중복 들어올 수 있음 - 위에서 막았지만 안전)
+  while(ds.length && visited[algo==='bfs'?ds[0]:ds[ds.length-1]]) popNext();
+  if(ds.length===0){
+    finishSearch(); return false;
+  }
+  const u=popNext();
+  visited[u]=true; order.push(u); current=u;
+  pushNeighbors(u);
+  return true;
+}
+function finishSearch(){
+  current=-1;
+  const reached=order.length, total=nodes.length;
+  let msg=`탐색 완료. 방문 순서: ${order.map(i=>label(i)).join(' → ')}. `;
+  if(reached<total) msg+=`도달하지 못한 꼭지점이 ${total-reached}개 있다(출발점과 연결되지 않음).`;
+  setStatus(msg,'ok');
+  render();
+}
+function autoStep(){
+  if(!searching){startSearch();return;}
+  if(manualMode){setStatus('직접 모드에서는 꼭지점을 클릭해 진행한다. 자동 진행하려면 직접 모드를 끄라.','bad');return;}
+  if(step()){
+    setStatus(`${label(current)}를 방문했다(순서 ${order.length}). 이웃을 ${algo==='bfs'?'큐 뒤':'스택 위'}에 넣었다. ${algo==='bfs'?'큐 앞':'스택 위'}에서 다음을 꺼낸다.`);
+    render();
+  }
+}
+function runAll(){
+  if(!searching)startSearch();
+  if(manualMode){setStatus('직접 모드를 끄고 실행하라.','bad');return;}
+  let guard=0;
+  const timer=setInterval(()=>{
+    if(!step()||++guard>200){clearInterval(timer);} else render();
+  },550);
+}
+// 직접 모드: 학생이 다음에 꺼낼(방문할) 꼭지점을 클릭
+function promptManual(){
+  if(!searching)return;
+  const nextCorrect = algo==='bfs' ? ds[0] : ds[ds.length-1];
+  setStatus(`직접 모드. ${algo==='bfs'?'큐 앞':'스택 위'}에 있는, 다음에 방문할 꼭지점을 클릭하라.`);
+}
+function manualPick(i){
+  while(ds.length && visited[algo==='bfs'?ds[0]:ds[ds.length-1]]) popNext();
+  if(ds.length===0){finishSearch();return;}
+  const correct = algo==='bfs' ? ds[0] : ds[ds.length-1];
+  if(i!==correct){
+    setStatus(`${label(i)}는 지금 차례가 아니다. ${algo==='bfs'?'BFS는 큐 앞':'DFS는 스택 위'}에 있는 ${label(correct)}를 먼저 꺼내야 한다.`,'bad');
+    return;
+  }
+  popNext(); visited[i]=true; order.push(i); current=i; pushNeighbors(i);
+  if(ds.length===0){finishSearch();return;}
+  setStatus(`${label(i)} 방문(순서 ${order.length}). 이웃을 ${algo==='bfs'?'큐 뒤':'스택 위'}에 넣었다. 다음 차례는 ${algo==='bfs'?'큐 앞':'스택 위'}의 ${label(algo==='bfs'?ds[0]:ds[ds.length-1])}이다.`,'ok');
+  render();
+}
+
+setAlgo('bfs');
+loadPreset('tree');
+</script>
+</body>
+</html>
