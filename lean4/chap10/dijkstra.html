@@ -36,11 +36,14 @@ td.relax{background:#FDF0E6;color:#9e4439;}
 <body>
 <h1>다익스트라 최단경로 실습</h1>
 <div class="intro">
-빈 곳을 클릭하면 꼭지점이 생기고, 두 꼭지점을 차례로 클릭하면 가중치를 입력받아 모서리가 생긴다. <b>출발점 지정</b>을 누른 뒤 한 꼭지점을 클릭하여 출발점을 정한다. <b>계산 시작</b>을 누르면 거리표가 초기화되고, 그 뒤로는 <b>임시 거리가 가장 작은 미확정 꼭지점을 직접 클릭</b>하여 한 단계씩 확정한다. 올바른 꼭지점을 고르면 그 이웃들의 임시 거리가 완화되어 표의 빈칸이 채워진다. 잘못 고르면 안내가 나온다.
+빈 곳을 클릭하면 꼭지점이 생기고, 두 꼭지점을 차례로 클릭하면 가중치를 입력받아 모서리가 생긴다. 위의 <b>예제 1~4</b> 버튼으로 교재 그래프, 도시 도로망, 통신망 지연, 항공 요금 등 서로 다른 상황의 그래프를 바로 불러올 수 있다. <b>출발점 지정</b>을 누른 뒤 한 꼭지점을 클릭하여 출발점을 정한다. <b>계산 시작</b>을 누르면 거리표가 초기화되고, 그 뒤로는 <b>임시 거리가 가장 작은 미확정 꼭지점을 직접 클릭</b>하여 한 단계씩 확정한다. 올바른 꼭지점을 고르면 그 이웃들의 임시 거리가 완화되어 표의 빈칸이 채워진다. 잘못 고르면 안내가 나온다. 다익스트라는 <b>단순 연결 그래프</b>를 전제로 하므로, 모서리를 지우다가 그래프의 연결이 끊기면 경고가 나타난다.
 </div>
 
 <div class="controls">
-  <button onclick="loadPreset()">교재 예제 그래프</button>
+  <button onclick="loadPreset(0)">예제 1: 교재 그래프</button>
+  <button onclick="loadPreset(1)">예제 2: 도시 도로망</button>
+  <button onclick="loadPreset(2)">예제 3: 통신망 지연</button>
+  <button onclick="loadPreset(3)">예제 4: 항공 요금</button>
   <button class="alt" onclick="clearAll()">전체 지우기</button>
   <button id="srcBtn" onclick="toggleSrc()">출발점 지정</button>
   <button id="eraseBtn" onclick="toggleErase()">모서리 지우기: 꺼짐</button>
@@ -77,17 +80,52 @@ const INF=Infinity;
 function clearAll(){nodes=[];edges=[];sel=-1;src=-1;resetSolve();render();}
 function resetSolve(){solving=false;finished=false;dist=[];visited=[];prev=[];stepRows=[];lastRelax=[];pathEdges=new Set();document.getElementById('pathhint').style.display='none';}
 
-function loadPreset(){
-  nodes=[
-    {x:70,y:220,label:'a'},{x:200,y:90,label:'b'},{x:200,y:350,label:'c'},
-    {x:360,y:90,label:'d'},{x:360,y:350,label:'e'},{x:490,y:220,label:'z'}
-  ];
-  // a-b4 a-c2 b-c1 b-d5 c-d8 c-e10 d-e2 d-z6 e-z3
-  edges=[
-    {a:0,b:1,w:4},{a:0,b:2,w:2},{a:1,b:2,w:1},{a:1,b:3,w:5},{a:2,b:3,w:8},
-    {a:2,b:4,w:10},{a:3,b:4,w:2},{a:3,b:5,w:6},{a:4,b:5,w:3}
-  ];
-  src=0; sel=-1; resetSolve(); setStatus('출발점은 a이다. 계산 시작을 누르라.'); render();
+const PRESETS=[
+  {
+    name:'교재 그래프 (a에서 z까지)',
+    nodes:[{x:70,y:220,label:'a'},{x:200,y:90,label:'b'},{x:200,y:350,label:'c'},
+           {x:360,y:90,label:'d'},{x:360,y:350,label:'e'},{x:490,y:220,label:'z'}],
+    edges:[{a:0,b:1,w:4},{a:0,b:2,w:2},{a:1,b:2,w:1},{a:1,b:3,w:5},{a:2,b:3,w:8},
+           {a:2,b:4,w:10},{a:3,b:4,w:2},{a:3,b:5,w:6},{a:4,b:5,w:3}],
+    src:0,
+    note:'교재의 표준 예제이다. 출발점 a에서 z까지의 최단 거리는 13이다.'
+  },
+  {
+    name:'도시 도로망 (집에서 회사까지, 분 단위)',
+    nodes:[{x:70,y:220,label:'집'},{x:210,y:110,label:'사거리'},{x:210,y:330,label:'시장'},
+           {x:370,y:110,label:'다리'},{x:370,y:330,label:'공원'},{x:500,y:220,label:'회사'}],
+    edges:[{a:0,b:1,w:7},{a:0,b:2,w:4},{a:1,b:3,w:6},{a:2,b:1,w:2},{a:2,b:4,w:9},
+           {a:3,b:5,w:5},{a:4,b:3,w:3},{a:4,b:5,w:8}],
+    src:0,
+    note:'가중치는 도로 통행 시간(분)이다. 집에서 회사까지 가장 빠른 길을 찾는다.'
+  },
+  {
+    name:'통신망 (라우터 사이 지연, ms)',
+    nodes:[{x:80,y:120,label:'R1'},{x:280,y:70,label:'R2'},{x:480,y:120,label:'R3'},
+           {x:120,y:330,label:'R4'},{x:320,y:360,label:'R5'},{x:500,y:320,label:'R6'}],
+    edges:[{a:0,b:1,w:3},{a:0,b:3,w:5},{a:1,b:2,w:4},{a:1,b:4,w:6},{a:3,b:4,w:2},
+           {a:4,b:5,w:4},{a:2,b:5,w:2},{a:1,b:3,w:7}],
+    src:0,
+    note:'가중치는 두 라우터 사이의 전송 지연(ms)이다. R1에서 패킷이 가장 빨리 닿는 경로를 찾는다.'
+  },
+  {
+    name:'항공 노선 (요금 최소, 만원)',
+    nodes:[{x:80,y:220,label:'서울'},{x:230,y:90,label:'베이징'},{x:230,y:350,label:'상하이'},
+           {x:400,y:90,label:'두바이'},{x:400,y:350,label:'방콕'},{x:520,y:220,label:'파리'}],
+    edges:[{a:0,b:1,w:15},{a:0,b:2,w:12},{a:1,b:3,w:40},{a:2,b:4,w:18},{a:2,b:3,w:38},
+           {a:4,b:3,w:22},{a:3,b:5,w:30},{a:4,b:5,w:60}],
+    src:0,
+    note:'가중치는 항공권 요금(만원)이다. 서울에서 파리까지 가장 싸게 가는 경유 경로를 찾는다.'
+  }
+];
+
+function loadPreset(idx){
+  idx=idx||0; const P=PRESETS[idx];
+  nodes=P.nodes.map(n=>({...n}));
+  edges=P.edges.map(e=>({...e}));
+  src=P.src; sel=-1; resetSolve();
+  setStatus('<b>'+P.name+'</b><br>'+P.note+'<br>출발점은 '+nodes[src].label+'이다. 계산 시작을 누르라.');
+  render();
 }
 
 // ===== 좌표/히트 =====
@@ -156,6 +194,11 @@ function onNode(i){
   if(sel===-1){ sel=i; }
   else if(sel===i){ sel=-1; }
   else {
+    const dup=edges.some(e=>(e.a===sel&&e.b===i)||(e.a===i&&e.b===sel));
+    if(dup){
+      setStatus(`${nodes[sel].label}와 ${nodes[i].label}는 이미 모서리로 이어져 있다. 단순 그래프에서는 두 꼭지점 사이에 모서리가 하나뿐이므로 같은 모서리를 또 만들지 않는다.`,'bad');
+      sel=-1; render(); return;
+    }
     const w=prompt(`${nodes[sel].label} - ${nodes[i].label} 모서리의 가중치(양의 정수)를 입력하라.`,'1');
     const wn=parseInt(w,10);
     if(!isNaN(wn)&&wn>0) edges.push({a:sel,b:i,w:wn});
@@ -163,7 +206,17 @@ function onNode(i){
   }
   render();
 }
-function onEdge(k){ if(eraseMode){edges.splice(k,1);render();} }
+function onEdge(k){
+  if(eraseMode){
+    edges.splice(k,1);
+    resetSolve();
+    render();
+    if(!isConnected()){
+      const lost=disconnectedLabels();
+      setStatus('경고: 모서리를 지워 그래프의 연결이 끊겼다. 다익스트라 알고리즘은 <b>단순 연결 그래프</b>를 전제로 하므로, 출발점에서 닿을 수 없는 꼭지점('+lost.join(', ')+')이 생겼다. 이런 꼭지점의 거리는 ∞로 남는다. 모서리를 다시 잇거나 예제를 다시 불러오라.','bad');
+    }
+  }
+}
 svg.addEventListener('click',ev=>{
   if(solving||srcMode||eraseMode) return;
   const p=svgPoint(ev);
@@ -174,14 +227,40 @@ function toggleErase(){eraseMode=!eraseMode;srcMode=false;document.getElementByI
 
 // ===== 다익스트라 단계 =====
 function neighbors(u){const r=[];edges.forEach(e=>{if(e.a===u)r.push({v:e.b,w:e.w});else if(e.b===u)r.push({v:e.a,w:e.w});});return r;}
+
+// ===== 연결성 검사 (단순 연결 그래프 가정) =====
+function isConnected(){
+  if(nodes.length<=1) return true;
+  const seen=new Array(nodes.length).fill(false);
+  const stack=[0]; seen[0]=true; let cnt=1;
+  while(stack.length){
+    const u=stack.pop();
+    edges.forEach(e=>{
+      let v=-1; if(e.a===u)v=e.b; else if(e.b===u)v=e.a;
+      if(v>=0 && !seen[v]){seen[v]=true;cnt++;stack.push(v);}
+    });
+  }
+  return cnt===nodes.length;
+}
+function disconnectedLabels(){
+  if(nodes.length<=1) return [];
+  const seen=new Array(nodes.length).fill(false);
+  const stack=[0]; seen[0]=true;
+  while(stack.length){const u=stack.pop();edges.forEach(e=>{let v=-1;if(e.a===u)v=e.b;else if(e.b===u)v=e.a;if(v>=0&&!seen[v]){seen[v]=true;stack.push(v);}});}
+  return nodes.filter((n,i)=>!seen[i]).map(n=>n.label);
+}
 function startSolve(){
   if(nodes.length===0){setStatus('꼭지점이 없다.','bad');return;}
   if(src===-1){setStatus('먼저 출발점을 지정하라.','bad');return;}
+  if(!isConnected()){
+    const lost=disconnectedLabels();
+    setStatus('경고: 지금 그래프는 연결되어 있지 않다. 다익스트라는 단순 연결 그래프를 전제로 하므로, 출발점에서 닿을 수 없는 꼭지점('+lost.join(', ')+')은 끝까지 거리가 ∞로 남는다. 계산은 진행하되 이 점을 유의하라.','bad');
+  }
   solving=true;finished=false;
   dist=nodes.map(()=>INF);visited=nodes.map(()=>false);prev=nodes.map(()=>null);
   dist[src]=0;stepRows=[];pathEdges=new Set();
   stepRows.push({label:'초기', dist:dist.slice(), fin:-1, relax:[]});
-  setStatus('초기화 완료. 임시 거리가 가장 작은 미확정 꼭지점(현재 출발점)을 클릭하라.');
+  if(isConnected()) setStatus('초기화 완료. 임시 거리가 가장 작은 미확정 꼭지점(현재 출발점)을 클릭하라.');
   render();
 }
 function minUnvisited(){
