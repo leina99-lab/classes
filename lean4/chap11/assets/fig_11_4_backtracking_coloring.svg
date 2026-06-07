@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430">
+<rect class="bg" x="0" y="0" width="900" height="430"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Backtracking search tree for 3-coloring</text>
+<line class="edge2" x1="450" y1="70" x2="250" y2="150"/>
+<line class="edge2" x1="450" y1="70" x2="450" y2="150"/>
+<line class="edge2" x1="450" y1="70" x2="650" y2="150"/>
+<line class="edge2" x1="250" y1="150" x2="165" y2="245"/>
+<line class="edge2" x1="250" y1="150" x2="250" y2="245"/>
+<line class="edge2" x1="250" y1="150" x2="335" y2="245"/>
+<line class="edge2" x1="250" y1="245" x2="210" y2="340"/>
+<line class="edge2" x1="250" y1="245" x2="290" y2="340"/>
+<rect class="node" x="414" y="53" width="72" height="34" rx="8"/>
+<text class="text" x="450.0" y="75.0" text-anchor="middle">start</text>
+<rect class="node" x="214" y="133" width="72" height="34" rx="8"/>
+<text class="text" x="250.0" y="155.0" text-anchor="middle">A=R</text>
+<rect class="node" x="414" y="133" width="72" height="34" rx="8"/>
+<text class="text" x="450.0" y="155.0" text-anchor="middle">A=G</text>
+<rect class="node" x="614" y="133" width="72" height="34" rx="8"/>
+<text class="text" x="650.0" y="155.0" text-anchor="middle">A=B</text>
+<rect class="bad" x="129" y="228" width="72" height="34" rx="8"/>
+<text class="text" x="165.0" y="250.0" text-anchor="middle">B=R</text>
+<rect class="node" x="214" y="228" width="72" height="34" rx="8"/>
+<text class="text" x="250.0" y="250.0" text-anchor="middle">B=G</text>
+<rect class="node" x="299" y="228" width="72" height="34" rx="8"/>
+<text class="text" x="335.0" y="250.0" text-anchor="middle">B=B</text>
+<rect class="leaf" x="174" y="323" width="72" height="34" rx="8"/>
+<text class="text" x="210.0" y="345.0" text-anchor="middle">C=R</text>
+<rect class="bad" x="254" y="323" width="72" height="34" rx="8"/>
+<text class="text" x="290.0" y="345.0" text-anchor="middle">C=G</text>
+<text class="small" x="80" y="395" text-anchor="start">Red boxes are pruned because an already colored edge has equal colors at its ends.</text>
+</svg>

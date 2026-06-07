@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300">
+<rect class="bg" x="0" y="0" width="760" height="300"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">A tree has exactly one simple path between two vertices</text>
+<line class="selected" x1="360" y1="70" x2="250" y2="135"/>
+<line class="selected" x1="360" y1="70" x2="470" y2="135"/>
+<line class="selected" x1="250" y1="135" x2="190" y2="220"/>
+<line class="edge" x1="250" y1="135" x2="310" y2="220"/>
+<line class="edge" x1="470" y1="135" x2="430" y2="220"/>
+<line class="selected" x1="470" y1="135" x2="545" y2="220"/>
+<circle class="node" cx="360" cy="70" r="17"/>
+<text class="text" x="360" y="75" text-anchor="middle">a</text>
+<circle class="node" cx="250" cy="135" r="17"/>
+<text class="text" x="250" y="140" text-anchor="middle">b</text>
+<circle class="node" cx="470" cy="135" r="17"/>
+<text class="text" x="470" y="140" text-anchor="middle">c</text>
+<circle class="node2" cx="190" cy="220" r="17"/>
+<text class="text" x="190" y="225" text-anchor="middle">d</text>
+<circle class="node" cx="310" cy="220" r="17"/>
+<text class="text" x="310" y="225" text-anchor="middle">e</text>
+<circle class="node" cx="430" cy="220" r="17"/>
+<text class="text" x="430" y="225" text-anchor="middle">f</text>
+<circle class="node2" cx="545" cy="220" r="17"/>
+<text class="text" x="545" y="225" text-anchor="middle">g</text>
+<text class="small" x="45" y="265" text-anchor="start">If there were two different simple paths, their union would create a cycle.</text>
+</svg>

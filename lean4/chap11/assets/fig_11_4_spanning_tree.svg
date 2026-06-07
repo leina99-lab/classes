@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="390" viewBox="0 0 900 390">
+<rect class="bg" x="0" y="0" width="900" height="390"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">A connected graph and one spanning tree</text>
+<line class="selected" x1="145" y1="90" x2="65" y2="180"/>
+<line class="selected" x1="145" y1="90" x2="220" y2="180"/>
+<line class="edge2" x1="65" y1="180" x2="220" y2="180"/>
+<line class="selected" x1="65" y1="180" x2="85" y2="295"/>
+<line class="selected" x1="220" y1="180" x2="230" y2="300"/>
+<line class="edge2" x1="85" y1="295" x2="230" y2="300"/>
+<line class="edge2" x1="220" y1="180" x2="340" y2="185"/>
+<line class="selected" x1="230" y1="300" x2="340" y2="185"/>
+<circle class="node2" cx="145" cy="90" r="18"/>
+<text class="text" x="145" y="95" text-anchor="middle">A</text>
+<circle class="node2" cx="65" cy="180" r="18"/>
+<text class="text" x="65" y="185" text-anchor="middle">B</text>
+<circle class="node2" cx="220" cy="180" r="18"/>
+<text class="text" x="220" y="185" text-anchor="middle">C</text>
+<circle class="node2" cx="85" cy="295" r="18"/>
+<text class="text" x="85" y="300" text-anchor="middle">D</text>
+<circle class="node2" cx="230" cy="300" r="18"/>
+<text class="text" x="230" y="305" text-anchor="middle">E</text>
+<circle class="node2" cx="340" cy="185" r="18"/>
+<text class="text" x="340" y="190" text-anchor="middle">F</text>
+<text class="small" x="65" y="350" text-anchor="start">The highlighted edges use all 6 vertices and have 5 edges, so they form a spanning tree.</text>
+<line class="selected" x1="575" y1="90" x2="495" y2="180"/>
+<line class="selected" x1="575" y1="90" x2="650" y2="180"/>
+<line class="selected" x1="495" y1="180" x2="515" y2="295"/>
+<line class="selected" x1="650" y1="180" x2="660" y2="300"/>
+<line class="selected" x1="660" y1="300" x2="770" y2="185"/>
+<circle class="leaf" cx="575" cy="90" r="18"/>
+<text class="text" x="575" y="95" text-anchor="middle">A</text>
+<circle class="leaf" cx="495" cy="180" r="18"/>
+<text class="text" x="495" y="185" text-anchor="middle">B</text>
+<circle class="leaf" cx="650" cy="180" r="18"/>
+<text class="text" x="650" y="185" text-anchor="middle">C</text>
+<circle class="leaf" cx="515" cy="295" r="18"/>
+<text class="text" x="515" y="300" text-anchor="middle">D</text>
+<circle class="leaf" cx="660" cy="300" r="18"/>
+<text class="text" x="660" y="305" text-anchor="middle">E</text>
+<circle class="leaf" cx="770" cy="185" r="18"/>
+<text class="text" x="770" y="190" text-anchor="middle">F</text>
+<text class="small" x="530" y="350" text-anchor="start">Tree copy: connected and no cycle</text>
+</svg>

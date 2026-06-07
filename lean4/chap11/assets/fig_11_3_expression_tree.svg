@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="410" viewBox="0 0 780 410">
+<rect class="bg" x="0" y="0" width="780" height="410"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Expression tree for (x + 2) * (y - 3)</text>
+<line class="edge" x1="390" y1="75" x2="260" y2="170"/>
+<line class="edge" x1="390" y1="75" x2="520" y2="170"/>
+<line class="edge" x1="260" y1="170" x2="190" y2="270"/>
+<line class="edge" x1="260" y1="170" x2="330" y2="270"/>
+<line class="edge" x1="520" y1="170" x2="450" y2="270"/>
+<line class="edge" x1="520" y1="170" x2="590" y2="270"/>
+<circle class="node3" cx="390" cy="75" r="20"/>
+<text class="text" x="390" y="80" text-anchor="middle">*</text>
+<circle class="node3" cx="260" cy="170" r="20"/>
+<text class="text" x="260" y="175" text-anchor="middle">+</text>
+<circle class="node3" cx="520" cy="170" r="20"/>
+<text class="text" x="520" y="175" text-anchor="middle">-</text>
+<circle class="leaf" cx="190" cy="270" r="20"/>
+<text class="text" x="190" y="275" text-anchor="middle">x</text>
+<circle class="leaf" cx="330" cy="270" r="20"/>
+<text class="text" x="330" y="275" text-anchor="middle">2</text>
+<circle class="leaf" cx="450" cy="270" r="20"/>
+<text class="text" x="450" y="275" text-anchor="middle">y</text>
+<circle class="leaf" cx="590" cy="270" r="20"/>
+<text class="text" x="590" y="275" text-anchor="middle">3</text>
+<text class="small" x="75" y="340" text-anchor="start">Preorder: * + x 2 - y 3</text>
+<text class="small" x="75" y="365" text-anchor="start">Inorder: (x + 2) * (y - 3)</text>
+<text class="small" x="75" y="390" text-anchor="start">Postorder: x 2 + y 3 - *</text>
+</svg>

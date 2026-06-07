@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="360" viewBox="0 0 780 360">
+<rect class="bg" x="0" y="0" width="780" height="360"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Cycle property: the heaviest edge on a cycle is unnecessary</text>
+<line class="edge2" x1="250" y1="110" x2="430" y2="110"/>
+<rect x="328.0" y="99.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="340.0" y="115.0" text-anchor="middle">4</text>
+<line class="edge2" x1="430" y1="110" x2="520" y2="240"/>
+<rect x="463.0" y="164.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="475.0" y="180.0" text-anchor="middle">5</text>
+<line class="skip" x1="520" y1="240" x2="300" y2="260"/>
+<rect x="398.0" y="239.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="410.0" y="255.0" text-anchor="middle">9</text>
+<line class="edge2" x1="300" y1="260" x2="250" y2="110"/>
+<rect x="263.0" y="174.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="275.0" y="190.0" text-anchor="middle">3</text>
+<line class="edge2" x1="250" y1="110" x2="520" y2="240"/>
+<rect x="373.0" y="164.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="385.0" y="180.0" text-anchor="middle">6</text>
+<circle class="node2" cx="250" cy="110" r="18"/>
+<text class="text" x="250" y="115" text-anchor="middle">A</text>
+<circle class="node2" cx="430" cy="110" r="18"/>
+<text class="text" x="430" y="115" text-anchor="middle">B</text>
+<circle class="node2" cx="520" cy="240" r="18"/>
+<text class="text" x="520" y="245" text-anchor="middle">C</text>
+<circle class="node2" cx="300" cy="260" r="18"/>
+<text class="text" x="300" y="265" text-anchor="middle">D</text>
+<text class="small" x="80" y="320" text-anchor="start">If CD is uniquely the heaviest edge on this cycle, some MST avoids CD.</text>
+</svg>

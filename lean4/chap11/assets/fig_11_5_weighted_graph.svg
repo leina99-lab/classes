@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="420" viewBox="0 0 780 420">
+<rect class="bg" x="0" y="0" width="780" height="420"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Weighted connected graph used in MST examples</text>
+<line class="edge2" x1="130" y1="100" x2="330" y2="80"/>
+<rect x="218.0" y="79.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="230.0" y="95.0" text-anchor="middle">4</text>
+<line class="edge2" x1="130" y1="100" x2="210" y2="220"/>
+<rect x="158.0" y="149.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="170.0" y="165.0" text-anchor="middle">2</text>
+<line class="edge2" x1="330" y1="80" x2="210" y2="220"/>
+<rect x="258.0" y="139.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="270.0" y="155.0" text-anchor="middle">1</text>
+<line class="edge2" x1="330" y1="80" x2="460" y2="210"/>
+<rect x="383.0" y="134.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="395.0" y="150.0" text-anchor="middle">5</text>
+<line class="edge2" x1="210" y1="220" x2="460" y2="210"/>
+<rect x="323.0" y="204.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="335.0" y="220.0" text-anchor="middle">8</text>
+<line class="edge2" x1="210" y1="220" x2="630" y2="300"/>
+<rect x="408.0" y="249.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="420.0" y="265.0" text-anchor="middle">10</text>
+<line class="edge2" x1="460" y1="210" x2="610" y2="110"/>
+<rect x="523.0" y="149.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="535.0" y="165.0" text-anchor="middle">2</text>
+<line class="edge2" x1="460" y1="210" x2="630" y2="300"/>
+<rect x="533.0" y="244.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="545.0" y="260.0" text-anchor="middle">6</text>
+<line class="edge2" x1="610" y1="110" x2="630" y2="300"/>
+<rect x="608.0" y="194.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="620.0" y="210.0" text-anchor="middle">3</text>
+<line class="edge2" x1="330" y1="80" x2="610" y2="110"/>
+<rect x="458.0" y="84.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="470.0" y="100.0" text-anchor="middle">7</text>
+<circle class="node2" cx="130" cy="100" r="18"/>
+<text class="text" x="130" y="105" text-anchor="middle">A</text>
+<circle class="node2" cx="330" cy="80" r="18"/>
+<text class="text" x="330" y="85" text-anchor="middle">B</text>
+<circle class="node2" cx="210" cy="220" r="18"/>
+<text class="text" x="210" y="225" text-anchor="middle">C</text>
+<circle class="node2" cx="460" cy="210" r="18"/>
+<text class="text" x="460" y="215" text-anchor="middle">D</text>
+<circle class="node2" cx="610" cy="110" r="18"/>
+<text class="text" x="610" y="115" text-anchor="middle">E</text>
+<circle class="node2" cx="630" cy="300" r="18"/>
+<text class="text" x="630" y="305" text-anchor="middle">F</text>
+<text class="small" x="80" y="380" text-anchor="start">Goal: connect all vertices with 5 edges of minimum total weight.</text>
+</svg>

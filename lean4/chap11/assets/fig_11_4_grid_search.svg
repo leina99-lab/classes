@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360">
+<rect class="bg" x="0" y="0" width="760" height="360"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">A grid graph search can be viewed as tree expansion</text>
+<circle class="node" cx="80" cy="80" r="9"/>
+<line class="edge2" x1="80" y1="80" x2="125" y2="80"/>
+<line class="edge2" x1="80" y1="80" x2="80" y2="125"/>
+<circle class="node" cx="80" cy="125" r="9"/>
+<line class="edge2" x1="80" y1="125" x2="125" y2="125"/>
+<line class="edge2" x1="80" y1="125" x2="80" y2="170"/>
+<circle class="node" cx="80" cy="170" r="9"/>
+<line class="edge2" x1="80" y1="170" x2="125" y2="170"/>
+<line class="edge2" x1="80" y1="170" x2="80" y2="215"/>
+<circle class="node" cx="80" cy="215" r="9"/>
+<line class="edge2" x1="80" y1="215" x2="80" y2="260"/>
+<circle class="node" cx="80" cy="260" r="9"/>
+<line class="edge2" x1="80" y1="260" x2="125" y2="260"/>
+<circle class="node" cx="125" cy="80" r="9"/>
+<line class="edge2" x1="125" y1="80" x2="170" y2="80"/>
+<line class="edge2" x1="125" y1="80" x2="125" y2="125"/>
+<circle class="node" cx="125" cy="125" r="9"/>
+<line class="edge2" x1="125" y1="125" x2="125" y2="170"/>
+<circle class="node" cx="125" cy="170" r="9"/>
+<line class="edge2" x1="125" y1="170" x2="170" y2="170"/>
+<rect class="bad" x="113" y="203" width="24" height="24" rx="8"/>
+<circle class="node" cx="125" cy="260" r="9"/>
+<line class="edge2" x1="125" y1="260" x2="170" y2="260"/>
+<circle class="node" cx="170" cy="80" r="9"/>
+<line class="edge2" x1="170" y1="80" x2="215" y2="80"/>
+<rect class="bad" x="158" y="113" width="24" height="24" rx="8"/>
+<circle class="node" cx="170" cy="170" r="9"/>
+<line class="edge2" x1="170" y1="170" x2="215" y2="170"/>
+<line class="edge2" x1="170" y1="170" x2="170" y2="215"/>
+<circle class="node" cx="170" cy="215" r="9"/>
+<line class="edge2" x1="170" y1="215" x2="215" y2="215"/>
+<line class="edge2" x1="170" y1="215" x2="170" y2="260"/>
+<circle class="node" cx="170" cy="260" r="9"/>
+<line class="edge2" x1="170" y1="260" x2="215" y2="260"/>
+<circle class="node" cx="215" cy="80" r="9"/>
+<line class="edge2" x1="215" y1="80" x2="260" y2="80"/>
+<line class="edge2" x1="215" y1="80" x2="215" y2="125"/>
+<circle class="node" cx="215" cy="125" r="9"/>
+<line class="edge2" x1="215" y1="125" x2="260" y2="125"/>
+<line class="edge2" x1="215" y1="125" x2="215" y2="170"/>
+<circle class="node" cx="215" cy="170" r="9"/>
+<line class="edge2" x1="215" y1="170" x2="215" y2="215"/>
+<circle class="node" cx="215" cy="215" r="9"/>
+<line class="edge2" x1="215" y1="215" x2="260" y2="215"/>
+<line class="edge2" x1="215" y1="215" x2="215" y2="260"/>
+<circle class="node" cx="215" cy="260" r="9"/>
+<line class="edge2" x1="215" y1="260" x2="260" y2="260"/>
+<circle class="node" cx="260" cy="80" r="9"/>
+<line class="edge2" x1="260" y1="80" x2="305" y2="80"/>
+<line class="edge2" x1="260" y1="80" x2="260" y2="125"/>
+<circle class="node" cx="260" cy="125" r="9"/>
+<line class="edge2" x1="260" y1="125" x2="305" y2="125"/>
+<rect class="bad" x="248" y="158" width="24" height="24" rx="8"/>
+<circle class="node" cx="260" cy="215" r="9"/>
+<line class="edge2" x1="260" y1="215" x2="305" y2="215"/>
+<line class="edge2" x1="260" y1="215" x2="260" y2="260"/>
+<circle class="node" cx="260" cy="260" r="9"/>
+<line class="edge2" x1="260" y1="260" x2="305" y2="260"/>
+<circle class="node" cx="305" cy="80" r="9"/>
+<line class="edge2" x1="305" y1="80" x2="305" y2="125"/>
+<circle class="node" cx="305" cy="125" r="9"/>
+<line class="edge2" x1="305" y1="125" x2="305" y2="170"/>
+<circle class="node" cx="305" cy="170" r="9"/>
+<line class="edge2" x1="305" y1="170" x2="305" y2="215"/>
+<circle class="node" cx="305" cy="215" r="9"/>
+<line class="edge2" x1="305" y1="215" x2="305" y2="260"/>
+<circle class="node" cx="305" cy="260" r="9"/>
+<line class="selected" x1="80" y1="80" x2="125" y2="80"/>
+<line class="selected" x1="125" y1="80" x2="125" y2="125"/>
+<line class="selected" x1="125" y1="125" x2="125" y2="170"/>
+<line class="selected" x1="125" y1="170" x2="170" y2="170"/>
+<line class="selected" x1="170" y1="170" x2="215" y2="170"/>
+<line class="selected" x1="215" y1="170" x2="215" y2="215"/>
+<line class="selected" x1="215" y1="215" x2="260" y2="215"/>
+<line class="selected" x1="260" y1="215" x2="305" y2="215"/>
+<line class="selected" x1="305" y1="215" x2="305" y2="260"/>
+<text class="small" x="65" y="325" text-anchor="start">Visited vertices form a search tree; blocked choices become dead ends.</text>
+<line class="edge2" x1="520" y1="80" x2="450" y2="155"/>
+<line class="edge2" x1="520" y1="80" x2="590" y2="155"/>
+<line class="edge2" x1="450" y1="155" x2="420" y2="235"/>
+<line class="edge2" x1="450" y1="155" x2="480" y2="235"/>
+<line class="edge2" x1="590" y1="155" x2="560" y2="235"/>
+<line class="edge2" x1="590" y1="155" x2="625" y2="235"/>
+<line class="edge2" x1="560" y1="235" x2="560" y2="310"/>
+<circle class="node2" cx="520" cy="80" r="13"/>
+<text class="text" x="520" y="85" text-anchor="middle">s</text>
+<circle class="node" cx="450" cy="155" r="13"/>
+<text class="text" x="450" y="160" text-anchor="middle">a</text>
+<circle class="node" cx="590" cy="155" r="13"/>
+<text class="text" x="590" y="160" text-anchor="middle">b</text>
+<circle class="node" cx="420" cy="235" r="13"/>
+<text class="text" x="420" y="240" text-anchor="middle">c</text>
+<circle class="node" cx="480" cy="235" r="13"/>
+<text class="text" x="480" y="240" text-anchor="middle">d</text>
+<circle class="node" cx="560" cy="235" r="13"/>
+<text class="text" x="560" y="240" text-anchor="middle">e</text>
+<circle class="node" cx="625" cy="235" r="13"/>
+<text class="text" x="625" y="240" text-anchor="middle">f</text>
+<circle class="node" cx="560" cy="310" r="13"/>
+<text class="text" x="560" y="315" text-anchor="middle">g</text>
+</svg>

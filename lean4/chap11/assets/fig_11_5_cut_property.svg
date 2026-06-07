@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="360" viewBox="0 0 780 360">
+<rect class="bg" x="0" y="0" width="780" height="360"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Cut property: the lightest crossing edge is safe</text>
+<path class="cut" d="M380 60 C250 70 165 155 190 250 C220 335 410 340 460 250 C515 145 500 70 380 60"/>
+<line class="edge2" x1="240" y1="120" x2="330" y2="220"/>
+<rect x="273.0" y="159.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="285.0" y="175.0" text-anchor="middle">3</text>
+<line class="edge2" x1="450" y1="125" x2="570" y2="220"/>
+<rect x="498.0" y="161.5" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="510.0" y="177.5" text-anchor="middle">2</text>
+<line class="edge2" x1="240" y1="120" x2="450" y2="125"/>
+<rect x="333.0" y="111.5" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="345.0" y="127.5" text-anchor="middle">6</text>
+<line class="selected" x1="330" y1="220" x2="450" y2="125"/>
+<rect x="378.0" y="161.5" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="390.0" y="177.5" text-anchor="middle">4</text>
+<line class="edge2" x1="330" y1="220" x2="570" y2="220"/>
+<rect x="438.0" y="209.0" width="24" height="18" rx="4" fill="#fff" opacity="0.9"/>
+<text class="weight" x="450.0" y="225.0" text-anchor="middle">7</text>
+<circle class="node2" cx="240" cy="120" r="18"/>
+<text class="text" x="240" y="125" text-anchor="middle">A</text>
+<circle class="node2" cx="330" cy="220" r="18"/>
+<text class="text" x="330" y="225" text-anchor="middle">B</text>
+<circle class="node2" cx="450" cy="125" r="18"/>
+<text class="text" x="450" y="130" text-anchor="middle">C</text>
+<circle class="node2" cx="570" cy="220" r="18"/>
+<text class="text" x="570" y="225" text-anchor="middle">D</text>
+<text class="label" x="115" y="305" text-anchor="start">S side</text>
+<text class="label" x="580" y="305" text-anchor="start">V - S side</text>
+<text class="small" x="80" y="335" text-anchor="start">Among crossing edges, BC has weight 4 and is the lightest, so it can be added safely.</text>
+</svg>

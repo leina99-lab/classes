@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="360" viewBox="0 0 800 360">
+<rect class="bg" x="0" y="0" width="800" height="360"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="30" y="32" text-anchor="start">Maximum leaves of an m-ary tree by level</text>
+<line class="edge2" x1="140" y1="70" x2="75.0" y2="135"/>
+<line class="edge2" x1="140" y1="70" x2="205.0" y2="135"/>
+<line class="edge2" x1="75.0" y1="135" x2="42.5" y2="200"/>
+<line class="edge2" x1="75.0" y1="135" x2="107.5" y2="200"/>
+<line class="edge2" x1="205.0" y1="135" x2="172.5" y2="200"/>
+<line class="edge2" x1="205.0" y1="135" x2="237.5" y2="200"/>
+<line class="edge2" x1="42.5" y1="200" x2="26.25" y2="265"/>
+<line class="edge2" x1="42.5" y1="200" x2="58.75" y2="265"/>
+<line class="edge2" x1="107.5" y1="200" x2="91.25" y2="265"/>
+<line class="edge2" x1="107.5" y1="200" x2="123.75" y2="265"/>
+<line class="edge2" x1="172.5" y1="200" x2="156.25" y2="265"/>
+<line class="edge2" x1="172.5" y1="200" x2="188.75" y2="265"/>
+<line class="edge2" x1="237.5" y1="200" x2="221.25" y2="265"/>
+<line class="edge2" x1="237.5" y1="200" x2="253.75" y2="265"/>
+<circle class="node" cx="140" cy="70" r="11"/>
+<circle class="node" cx="75.0" cy="135" r="11"/>
+<circle class="node" cx="205.0" cy="135" r="11"/>
+<circle class="node" cx="42.5" cy="200" r="11"/>
+<circle class="node" cx="107.5" cy="200" r="11"/>
+<circle class="node" cx="172.5" cy="200" r="11"/>
+<circle class="node" cx="237.5" cy="200" r="11"/>
+<circle class="node" cx="26.25" cy="265" r="11"/>
+<circle class="node" cx="58.75" cy="265" r="11"/>
+<circle class="node" cx="91.25" cy="265" r="11"/>
+<circle class="node" cx="123.75" cy="265" r="11"/>
+<circle class="node" cx="156.25" cy="265" r="11"/>
+<circle class="node" cx="188.75" cy="265" r="11"/>
+<circle class="node" cx="221.25" cy="265" r="11"/>
+<circle class="node" cx="253.75" cy="265" r="11"/>
+<text class="small" x="40" y="330" text-anchor="start">m=2, height h=3, at most 2^3=8 leaves</text>
+<line class="edge2" x1="555" y1="85" x2="455.0" y2="175"/>
+<line class="edge2" x1="555" y1="85" x2="555.0" y2="175"/>
+<line class="edge2" x1="555" y1="85" x2="655.0" y2="175"/>
+<line class="edge2" x1="455.0" y1="175" x2="421.66666666666663" y2="265"/>
+<line class="edge2" x1="455.0" y1="175" x2="455.0" y2="265"/>
+<line class="edge2" x1="455.0" y1="175" x2="488.3333333333333" y2="265"/>
+<line class="edge2" x1="555.0" y1="175" x2="521.6666666666666" y2="265"/>
+<line class="edge2" x1="555.0" y1="175" x2="555.0" y2="265"/>
+<line class="edge2" x1="555.0" y1="175" x2="588.3333333333334" y2="265"/>
+<line class="edge2" x1="655.0" y1="175" x2="621.6666666666666" y2="265"/>
+<line class="edge2" x1="655.0" y1="175" x2="655.0" y2="265"/>
+<line class="edge2" x1="655.0" y1="175" x2="688.3333333333334" y2="265"/>
+<circle class="node" cx="555" cy="85" r="10"/>
+<circle class="node" cx="455.0" cy="175" r="10"/>
+<circle class="node" cx="555.0" cy="175" r="10"/>
+<circle class="node" cx="655.0" cy="175" r="10"/>
+<circle class="node" cx="421.66666666666663" cy="265" r="10"/>
+<circle class="node" cx="455.0" cy="265" r="10"/>
+<circle class="node" cx="488.3333333333333" cy="265" r="10"/>
+<circle class="node" cx="521.6666666666666" cy="265" r="10"/>
+<circle class="node" cx="555.0" cy="265" r="10"/>
+<circle class="node" cx="588.3333333333334" cy="265" r="10"/>
+<circle class="node" cx="621.6666666666666" cy="265" r="10"/>
+<circle class="node" cx="655.0" cy="265" r="10"/>
+<circle class="node" cx="688.3333333333334" cy="265" r="10"/>
+<text class="small" x="430" y="330" text-anchor="start">m=3, height h=2, at most 3^2=9 leaves</text>
+</svg>

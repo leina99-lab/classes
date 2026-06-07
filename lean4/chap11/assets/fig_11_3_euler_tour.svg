@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340" viewBox="0 0 760 340">
+<rect class="bg" x="0" y="0" width="760" height="340"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">One tour, three possible visit moments</text>
+<line class="edge2" x1="380" y1="75" x2="250" y2="165"/>
+<line class="edge2" x1="380" y1="75" x2="510" y2="165"/>
+<line class="edge2" x1="250" y1="165" x2="185" y2="260"/>
+<line class="edge2" x1="250" y1="165" x2="315" y2="260"/>
+<line class="edge2" x1="510" y1="165" x2="445" y2="260"/>
+<line class="edge2" x1="510" y1="165" x2="575" y2="260"/>
+<circle class="node" cx="380" cy="75" r="17"/>
+<text class="text" x="380" y="80" text-anchor="middle">A</text>
+<circle class="node" cx="250" cy="165" r="17"/>
+<text class="text" x="250" y="170" text-anchor="middle">B</text>
+<circle class="node" cx="510" cy="165" r="17"/>
+<text class="text" x="510" y="170" text-anchor="middle">C</text>
+<circle class="node" cx="185" cy="260" r="17"/>
+<text class="text" x="185" y="265" text-anchor="middle">D</text>
+<circle class="node" cx="315" cy="260" r="17"/>
+<text class="text" x="315" y="265" text-anchor="middle">E</text>
+<circle class="node" cx="445" cy="260" r="17"/>
+<text class="text" x="445" y="265" text-anchor="middle">F</text>
+<circle class="node" cx="575" cy="260" r="17"/>
+<text class="text" x="575" y="265" text-anchor="middle">G</text>
+<path class="selected" d="M370 57 C245 80 150 150 170 255 C190 320 335 300 380 95 C425 300 580 320 600 255 C625 145 505 78 390 57"/>
+<text class="small" x="55" y="310" text-anchor="start">Preorder marks the first encounter; inorder marks a middle encounter in binary trees; postorder marks the final encounter.</text>
+</svg>

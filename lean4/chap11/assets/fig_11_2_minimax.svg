@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="420" viewBox="0 0 800 420">
+<rect class="bg" x="0" y="0" width="800" height="420"/>
+
+<style>
+  .bg { fill: #ffffff; }
+  .panel { fill: #f8fafc; stroke: #d0d7de; stroke-width: 1; rx: 10; }
+  .edge { stroke: #334155; stroke-width: 2.2; fill: none; }
+  .edge2 { stroke: #64748b; stroke-width: 1.7; fill: none; }
+  .selected { stroke: #2563eb; stroke-width: 4; fill: none; }
+  .skip { stroke: #ef4444; stroke-width: 2.5; stroke-dasharray: 6 4; fill: none; }
+  .cut { stroke: #9333ea; stroke-width: 2; stroke-dasharray: 4 4; fill: none; }
+  .node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; }
+  .node2 { fill: #e0f2fe; stroke: #0369a1; stroke-width: 2; }
+  .node3 { fill: #fef3c7; stroke: #92400e; stroke-width: 2; }
+  .node4 { fill: #dcfce7; stroke: #166534; stroke-width: 2; }
+  .leaf { fill: #f0fdf4; stroke: #166534; stroke-width: 2; }
+  .bad { fill: #fee2e2; stroke: #991b1b; stroke-width: 2; }
+  .text { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 15px; fill: #0f172a; }
+  .small { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 12px; fill: #334155; }
+  .tiny { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 10px; fill: #475569; }
+  .title { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+  .label { font-family: DejaVu Sans, Noto Sans CJK KR, Arial, sans-serif; font-size: 13px; fill: #1e293b; }
+  .weight { font-family: DejaVu Sans, Arial, sans-serif; font-size: 13px; fill: #0f172a; font-weight: 700; }
+</style>
+
+<text class="title" x="25" y="35" text-anchor="start">Game tree with minimax values</text>
+<line class="edge" x1="400" y1="70" x2="230" y2="150"/>
+<line class="edge" x1="400" y1="70" x2="570" y2="150"/>
+<line class="edge" x1="230" y1="150" x2="120" y2="250"/>
+<line class="edge" x1="230" y1="150" x2="250" y2="250"/>
+<line class="edge" x1="230" y1="150" x2="370" y2="250"/>
+<line class="edge" x1="570" y1="150" x2="500" y2="250"/>
+<line class="edge" x1="570" y1="150" x2="620" y2="250"/>
+<line class="edge" x1="570" y1="150" x2="730" y2="250"/>
+<rect class="node2" x="357" y="50" width="86" height="40" rx="8"/>
+<text class="text" x="400.0" y="75.0" text-anchor="middle">MAX=5</text>
+<rect class="node3" x="187" y="130" width="86" height="40" rx="8"/>
+<text class="text" x="230.0" y="155.0" text-anchor="middle">MIN=3</text>
+<rect class="node3" x="527" y="130" width="86" height="40" rx="8"/>
+<text class="text" x="570.0" y="155.0" text-anchor="middle">MIN=2</text>
+<rect class="leaf" x="98" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="120.0" y="255.0" text-anchor="middle">3</text>
+<rect class="leaf" x="228" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="250.0" y="255.0" text-anchor="middle">8</text>
+<rect class="leaf" x="348" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="370.0" y="255.0" text-anchor="middle">5</text>
+<rect class="leaf" x="478" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="500.0" y="255.0" text-anchor="middle">2</text>
+<rect class="leaf" x="598" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="620.0" y="255.0" text-anchor="middle">7</text>
+<rect class="leaf" x="708" y="232" width="44" height="36" rx="8"/>
+<text class="text" x="730.0" y="255.0" text-anchor="middle">4</text>
+<text class="small" x="65" y="360" text-anchor="start">MIN assumes the opponent chooses the smaller value; MAX then chooses the larger guaranteed value.</text>
+</svg>
