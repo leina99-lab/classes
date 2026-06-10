@@ -45,15 +45,17 @@ async function initPyodide() {
       __pyodide = await loadPyodide({
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/"
       });
-      updateAllStatus('⏳ scipy · numpy 패키지 로드 중...', 'loading');
-      await __pyodide.loadPackage(['scipy', 'numpy']);
-      // 기본 import 미리 실행
+      updateAllStatus('⏳ scipy · numpy · matplotlib 로드 중...', 'loading');
+      await __pyodide.loadPackage(['scipy', 'numpy', 'matplotlib']);
+      // 기본 import 미리 실행 (sys.stdout 은 절대 건드리지 않는다)
       await __pyodide.runPythonAsync(`
-import sys, io
+import sys, io, traceback, base64
 import numpy as np
 from scipy import stats
-print(f"Python {sys.version.split()[0]} · scipy {stats.__name__ and __import__('scipy').__version__} · 준비 완료")
-sys.stdout = io.StringIO()  # 출력 초기화
+import matplotlib
+matplotlib.use('AGG')   # 브라우저에서 PNG로 저장하기 위한 백엔드
+import warnings
+warnings.filterwarnings('ignore', message='Matplotlib is currently using agg')
       `);
       updateAllStatus('✓ Python 환경 준비 완료 — 모든 코드 셀 실행 가능 (오프라인)', 'ready');
       setTimeout(() => {
@@ -85,14 +87,55 @@ async function runPyCell(button) {
 
   try {
     const py = await initPyodide();
-    // stdout / stderr 캡처
-    let buf = '';
-    py.setStdout({ batched: (s) => { buf += s; output.textContent = buf; } });
-    py.setStderr({ batched: (s) => { buf += s; output.textContent = buf; } });
-    await py.runPythonAsync(code);
+    // 사용자 코드는 전역 네임스페이스에서 실행하되, 출력은 StringIO 로 직접 캡처한다.
+    // (sys.stdout 을 매 실행마다 새 버퍼로 바꿨다가 되돌려 출력 누락을 원천 차단)
+    py.globals.set('__user_code__', code);
+    const result = await py.runPythonAsync(`
+import sys, io, traceback, json, base64
+__cap = io.StringIO()
+__old_out, __old_err = sys.stdout, sys.stderr
+sys.stdout = __cap
+sys.stderr = __cap
+__imgs = []
+try:
+    exec(__user_code__, globals())
+    # matplotlib 그림이 있으면 PNG(base64)로 수집
+    if 'matplotlib.pyplot' in sys.modules:
+        _plt = sys.modules['matplotlib.pyplot']
+        for _num in _plt.get_fignums():
+            _fig = _plt.figure(_num)
+            _b = io.BytesIO()
+            _fig.savefig(_b, format='png', dpi=110, bbox_inches='tight')
+            __imgs.append(base64.b64encode(_b.getvalue()).decode())
+        _plt.close('all')
+except BaseException:
+    traceback.print_exc()
+finally:
+    sys.stdout = __old_out
+    sys.stderr = __old_err
+json.dumps({"text": __cap.getvalue(), "imgs": __imgs})
+`);
+    let data;
+    try { data = JSON.parse(result); } catch (e) { data = { text: result, imgs: [] }; }
+    output.innerHTML = '';
+    if (data.text && data.text.length) {
+      const span = document.createElement('span');
+      span.style.whiteSpace = 'pre-wrap';
+      span.textContent = data.text;
+      output.appendChild(span);
+    }
+    (data.imgs || []).forEach(b64 => {
+      const img = document.createElement('img');
+      img.src = 'data:image/png;base64,' + b64;
+      img.style.cssText = 'display:block;max-width:100%;margin:0.6em auto 0;border:1px solid #ddd;background:#fff;padding:4px;';
+      output.appendChild(img);
+    });
+    if ((!data.text || !data.text.length) && (!data.imgs || !data.imgs.length)) {
+      output.textContent = '(출력이 없다. 값을 보려면 print(), 그림은 plt 를 사용하라.)';
+    }
     status.textContent = '✓ 완료';
   } catch (e) {
-    output.textContent += '\n❌ ' + e.toString().split('\n').slice(-3).join('\n');
+    output.textContent += '\n❌ 실행 환경 오류: ' + e.toString().split('\n').slice(-3).join('\n');
     status.textContent = '❌ 에러';
   } finally {
     button.disabled = false;
@@ -259,6 +302,163 @@ code{font-family:"JetBrains Mono","D2Coding",Consolas,monospace;font-size:0.92em
 .katex-display{margin:1em 0 !important;}
 .katex-display > .katex{font-size:1.1em !important;}
 </style>
+<style>
+/* ===== 인터랙티브 부품 (5·6·7장 공용) ===== */
+.hts{border:1px solid #bbb;border-radius:6px;background:#fff;margin:1.4em 0;overflow:hidden;font-family:"Noto Sans KR",sans-serif;}
+.hts-head{background:#2c3a2c;color:#eef2e8;padding:0.55em 1.05em;font-weight:500;font-size:0.92em;}
+.hts-body{padding:1em 1.1em;}
+.hts-inputs{display:flex;flex-wrap:wrap;gap:0.7em 1.1em;align-items:flex-end;background:#f7f7f5;border:1px solid #e0e0e0;border-radius:5px;padding:0.8em 1em;margin-bottom:0.9em;}
+.hts-inputs label{display:flex;flex-direction:column;font-size:0.8em;color:#444;gap:0.22em;}
+.hts-inputs input,.hts-inputs select{font-family:"JetBrains Mono",monospace;font-size:0.92em;width:6.6em;padding:0.3em 0.4em;border:1px solid #aaa;border-radius:4px;background:#fff;}
+.hts-inputs select{width:8.2em;}
+.hts-steps{display:flex;flex-wrap:wrap;gap:0.45em;margin-bottom:0.8em;}
+.hts-sbtn{background:#3a4d3a;color:#fff;border:none;padding:0.42em 0.85em;border-radius:4px;font-family:inherit;font-size:0.84em;cursor:pointer;font-weight:500;}
+.hts-sbtn:hover{background:#5a6d5a;}.hts-sbtn.done{background:#8a9a8a;}
+.hts-aux{background:#e8e8e6;color:#333;border:1px solid #bbb;padding:0.42em 0.85em;border-radius:4px;font-family:inherit;font-size:0.84em;cursor:pointer;}
+.hts-card{border-left:4px solid #3a4d3a;background:#fafdf8;padding:0.8em 1.05em;margin:0.6em 0;border-radius:0 4px 4px 0;display:none;}
+.hts-card.show{display:block;}
+.hts-card .lbl{font-weight:700;color:#2c3a2c;font-size:0.88em;display:block;margin-bottom:0.3em;}
+.hts-card .calc{font-family:"JetBrains Mono",monospace;font-size:0.88em;background:#fff;border:1px solid #e0e0e0;border-radius:3px;padding:0.45em 0.65em;margin:0.35em 0;}
+.hts-card .note{font-size:0.84em;color:#444;margin-top:0.35em;}
+.hts-code{font-family:"JetBrains Mono",monospace;font-size:0.82em;background:#2b2b2b;color:#e6e6e6;border-radius:4px;padding:0.55em 0.75em;margin:0.4em 0 0;white-space:pre;overflow-x:auto;line-height:1.5;}
+.hts-code .cm{color:#9aa86f;}
+.hts-v{font-weight:700;padding:0.45em 0.75em;border-radius:4px;display:inline-block;margin-top:0.3em;font-size:0.9em;}
+.hts-v.reject{background:#fbe9e7;color:#9a3324;border:1px solid #e0a89e;}
+.hts-v.fail{background:#eef4ff;color:#234a86;border:1px solid #aac2e8;}
+.hts-v.ok{background:#e9f5ea;color:#2d5a32;border:1px solid #a8d0ac;}
+.hts-v.warn{background:#fff4e0;color:#8b5a00;border:1px solid #d4a647;}
+.pwz{border:1px solid #bbb;border-radius:6px;background:#fff;margin:1.4em 0;overflow:hidden;font-family:"Noto Sans KR",sans-serif;}
+.pwz-head{background:#2c3a2c;color:#eef2e8;padding:0.55em 1.05em;font-weight:500;font-size:0.92em;}
+.pwz-body{padding:1em 1.1em;display:flex;flex-wrap:wrap;gap:1.1em;align-items:flex-start;}
+.pwz canvas{width:100%;height:auto;border:1px solid #ddd;background:#fff;border-radius:4px;}
+.pwz .ctl{flex:1 1 230px;min-width:210px;font-size:0.85em;}
+.pwz .ctl .row{margin:0.6em 0;}
+.pwz .ctl label{display:block;color:#444;margin-bottom:0.2em;}
+.pwz .ctl input[type=range]{width:100%;}
+.pwz .val{font-family:"JetBrains Mono",monospace;color:#2c3a2c;font-weight:700;}
+.pwz .ro{background:#f7f7f5;border:1px solid #e0e0e0;border-radius:5px;padding:0.7em 0.9em;margin-top:0.8em;}
+.pwz .ro table{width:100%;border:none;margin:0;}
+.pwz .ro td{padding:0.16em 0.35em;border:none;text-align:left;}
+.pwz .ro td:last-child{text-align:right;font-family:"JetBrains Mono",monospace;font-weight:700;}
+.pwz .sw{display:inline-block;width:0.85em;height:0.85em;border-radius:2px;vertical-align:middle;margin-right:0.3em;}
+.pwz .ins{font-size:0.85em;background:#f7f5f0;border-left:4px solid #6b5d3f;padding:0.6em 0.9em;margin-top:0.8em;border-radius:0 4px 4px 0;}
+</style>
+<script>
+/* ===== 정규분포 (순수 JS, 5자리 검증) ===== */
+function __erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);
+ const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+const __ncdf=x=>0.5*(1+__erf(x/Math.SQRT2));
+function __nppf(p){const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00],b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01],c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00],d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00],pl=0.02425;let q,r;
+ if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+ if(p<=1-pl){q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+ q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+const __phi=x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+function __km(t){try{return katex.renderToString(t,{throwOnError:false});}catch(e){return t;}}
+
+/* ===== 부품 A: 다중 인스턴스 4단계 솔버 ===== */
+function htsBuild(box,idx){
+  const g=k=>box.dataset[k];
+  box.innerHTML=
+   '<div class="hts-head">▶ 4단계 솔버 — '+(g('label')||'비율 z-검정')+' · 숫자를 바꾸면 풀이가 다시 계산된다</div>'
+  +'<div class="hts-body"><div class="hts-inputs">'
+  +'<label>관측 p̂<input type="number" step="0.01" value="'+(g('phat')||0.55)+'" data-f="phat"></label>'
+  +'<label>표본 n<input type="number" step="10" value="'+(g('n')||400)+'" data-f="n"></label>'
+  +'<label>귀무값 p₀<input type="number" step="0.01" value="'+(g('p0')||0.5)+'" data-f="p0"></label>'
+  +'<label>유의수준 α<input type="number" step="0.01" value="'+(g('alpha')||0.05)+'" data-f="alpha"></label>'
+  +'<label>방향<select data-f="dir">'
+    +'<option value="two">양측 (p≠p₀)</option><option value="right">우측 (p&gt;p₀)</option><option value="left">좌측 (p&lt;p₀)</option>'
+  +'</select></label></div>'
+  +'<div class="hts-steps">'
+  +'<button class="hts-sbtn" data-s="1">1단계·가설</button>'
+  +'<button class="hts-sbtn" data-s="2">2단계·조건</button>'
+  +'<button class="hts-sbtn" data-s="3">3단계·통계량·p값</button>'
+  +'<button class="hts-sbtn" data-s="4">4단계·결론</button>'
+  +'<button class="hts-aux" data-a="all">전체</button><button class="hts-aux" data-a="reset">처음부터</button></div>'
+  +'<div class="hts-card" data-c="1"></div><div class="hts-card" data-c="2"></div><div class="hts-card" data-c="3"></div><div class="hts-card" data-c="4"></div></div>';
+  const sel=q=>box.querySelector(q);
+  box.querySelector('select[data-f="dir"]').value=g('dir')||'two';
+  const read=()=>({phat:+sel('[data-f=phat]').value,n:+sel('[data-f=n]').value,p0:+sel('[data-f=p0]').value,alpha:+sel('[data-f=alpha]').value,dir:sel('[data-f=dir]').value});
+  const C=s=>'<pre class="hts-code">'+s+'</pre>';
+  function step(k){
+    const {phat,n,p0,alpha,dir}=read();
+    const card=sel('[data-c="'+k+'"]'),btn=sel('.hts-sbtn[data-s="'+k+'"]');let h='';
+    if(k===1){const ha=dir==='two'?'p \\neq '+p0:dir==='right'?'p > '+p0:'p < '+p0;
+      const why=dir==='two'?'양쪽 방향이 모두 흥미로우므로 양측.':'단측은 <b>자료 보기 전</b> 방향을 정했고 반대 방향이 무의미할 때만 정당하다.';
+      h='<span class="lbl">1단계 · 가설 설정</span><div class="calc">'+__km('H_0:\\ p = '+p0)+'<br>'+__km('H_A:\\ '+ha)+'</div><div class="note">'+why+'</div>'
+       +C('<span class="cm"># 가설은 계산이 아니라 \'선언\'이다</span>\np0    = '+p0+'   <span class="cm"># 귀무가설 값</span>\nalpha = '+alpha+'   <span class="cm"># 유의수준</span>');}
+    if(k===2){const s1=n*p0,s2=n*(1-p0),ok=s1>=10&&s2>=10;
+      h='<span class="lbl">2단계 · 조건 확인 (독립성 · 성공–실패)</span><div class="calc">'+__km('np_0='+n+'\\times'+p0+'='+s1.toFixed(1))+' &nbsp; '+__km('n(1-p_0)='+s2.toFixed(1))+'</div>'
+       +(ok?'<span class="hts-v ok">두 값 모두 ≥ 10 — 정규근사 가능</span>':'<span class="hts-v warn">10 미만 — 정확검정(이항) 권장</span>')
+       +C('n, p0 = '+n+', '+p0+'\nprint(n*p0, n*(1-p0))   <span class="cm"># 둘 다 >= 10 이면 정규근사 OK</span>');}
+    if(k===3){const SE=Math.sqrt(p0*(1-p0)/n),z=(phat-p0)/SE;let pv,pf,logic,pline;
+      if(dir==='two'){pv=2*(1-__ncdf(Math.abs(z)));pf='2\\times P(Z>|Z|)=2\\,[\\,1-\\Phi(|'+z.toFixed(3)+'|)\\,]';logic='양측이므로 한쪽 꼬리 넓이를 구해 <b>2배</b> 한다.';pline='p_value = 2*(1 - stats.norm.cdf(abs(z)))   <span class="cm"># 양측: 한쪽 x 2</span>';}
+      else if(dir==='right'){pv=1-__ncdf(z);pf='P(Z>'+z.toFixed(3)+')=1-\\Phi('+z.toFixed(3)+')';logic='우측검정이므로 위쪽 꼬리. <b>1에서 Φ를 뺀다.</b>';pline='p_value = 1 - stats.norm.cdf(z)   <span class="cm"># 우측: 1에서 뺀다</span>';}
+      else{pv=__ncdf(z);pf='P(Z<'+z.toFixed(3)+')=\\Phi('+z.toFixed(3)+')';logic='좌측검정이므로 아래쪽 꼬리. Z가 음수이면 <b>Φ(음수)</b> 자체가 곧 p값이다.';pline='p_value = stats.norm.cdf(z)   <span class="cm"># 좌측: Φ 그대로</span>';}
+      h='<span class="lbl">3단계 · 검정통계량과 p값</span>'
+       +'<div class="calc">'+__km('SE_0=\\sqrt{\\tfrac{p_0(1-p_0)}{n}}='+SE.toFixed(4))+'</div>'
+       +'<div class="calc">'+__km('Z=\\dfrac{\\hat p-p_0}{SE_0}=\\dfrac{'+phat+'-'+p0+'}{'+SE.toFixed(4)+'}='+z.toFixed(3))+'</div>'
+       +'<div class="calc">'+__km('\\text{p값}='+pf+'='+(pv<1e-4?pv.toExponential(2):pv.toFixed(4)))+'</div><div class="note">'+logic+'</div>'
+       +C('<span class="cm"># 이 값을 계산할 때 파이썬 코드는 이렇게 쓴다</span>\nfrom scipy import stats\nphat, n, p0 = '+phat+', '+n+', '+p0+'\nSE = (p0*(1-p0)/n)**0.5\nz  = (phat - p0)/SE\n'+pline+'\nprint(z, p_value)');
+      card.dataset.pv=pv;}
+    if(k===4){let pv=sel('[data-c="3"]').dataset.pv;
+      if(pv===undefined){const SE=Math.sqrt(p0*(1-p0)/n),z=(phat-p0)/SE;pv=dir==='two'?2*(1-__ncdf(Math.abs(z))):dir==='right'?1-__ncdf(z):__ncdf(z);}
+      pv=+pv;const rej=pv<alpha;
+      h='<span class="lbl">4단계 · 결론</span><div class="calc">'+__km('\\text{p값}='+(pv<1e-4?pv.toExponential(2):pv.toFixed(4))+(rej?' < ':' \\geq ')+'\\alpha='+alpha)+'</div>'
+       +(rej?'<span class="hts-v reject">p값 &lt; α → H₀ <b>기각</b></span><div class="note">자료가 H₀와 양립하기 어렵다. 효과 크기·신뢰구간도 함께 보고하라.</div>'
+            :'<span class="hts-v fail">p값 ≥ α → H₀ <b>기각 못함</b> (\u201c채택\u201d 아님)</span><div class="note">증거가 부족할 뿐, H₀가 참임을 증명한 것은 아니다.</div>')
+       +C('<span class="cm"># 결정 규칙: p값과 alpha 비교</span>\nalpha = '+alpha+'\nprint("H0 기각" if p_value < alpha else "H0 기각 못함")');}
+    card.innerHTML=h;card.classList.add('show');btn.classList.add('done');
+  }
+  box.querySelectorAll('.hts-sbtn').forEach(b=>b.onclick=()=>step(+b.dataset.s));
+  box.querySelector('[data-a=all]').onclick=()=>[1,2,3,4].forEach(step);
+  box.querySelector('[data-a=reset]').onclick=()=>{[1,2,3,4].forEach(k=>{const c=sel('[data-c="'+k+'"]');c.classList.remove('show');c.innerHTML='';delete c.dataset.pv;});box.querySelectorAll('.hts-sbtn').forEach(b=>b.classList.remove('done'));};
+  box.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',()=>{[1,2,3,4].forEach(k=>{if(sel('[data-c="'+k+'"]').classList.contains('show'))step(k);});}));
+}
+
+/* ===== 부품 B: α·β·검정력 시각화 (효과 d, 표본 n, α 손잡이) ===== */
+function pwzBuild(box){
+  box.innerHTML='<div class="pwz-head">▶ 손잡이를 끌어 분포를 움직여 보라 — 면적이 곧 확률, n을 키우면 β(파랑)가 줄어든다</div>'
+   +'<div class="pwz-body"><div style="flex:1 1 440px;min-width:300px"><canvas width="560" height="320"></canvas></div>'
+   +'<div class="ctl">'
+   +'<div class="row"><label>효과 크기 d (Cohen): <span class="val" data-v="d">0.5</span></label><input type="range" data-r="d" min="0" max="1.2" step="0.01" value="0.5"></div>'
+   +'<div class="row"><label>그룹당 표본 n: <span class="val" data-v="n">50</span></label><input type="range" data-r="n" min="5" max="500" step="1" value="50"></div>'
+   +'<div class="row"><label>유의수준 α: <span class="val" data-v="a">0.050</span></label><input type="range" data-r="a" min="0.001" max="0.2" step="0.001" value="0.05"></div>'
+   +'<div class="ro"><table>'
+   +'<tr><td><span class="sw" style="background:#c0392b"></span>제1종 α</td><td data-o="a"></td></tr>'
+   +'<tr><td><span class="sw" style="background:#2c6fb0"></span>제2종 β</td><td data-o="b"></td></tr>'
+   +'<tr><td><span class="sw" style="background:#3a8a4a"></span>검정력 1−β</td><td data-o="p"></td></tr>'
+   +'<tr><td>표준화 효과 δ</td><td data-o="d"></td></tr></table></div>'
+   +'<div class="ins" data-o="ins"></div></div></div>';
+  const cv=box.querySelector('canvas'),ctx=cv.getContext('2d'),sel=q=>box.querySelector(q);
+  function draw(){
+    const d=+sel('[data-r=d]').value,n=+sel('[data-r=n]').value,al=+sel('[data-r=a]').value;
+    const delta=d*Math.sqrt(n/2);
+    sel('[data-v=d]').textContent=d.toFixed(2);sel('[data-v=n]').textContent=n;sel('[data-v=a]').textContent=al.toFixed(3);
+    const zc=__nppf(1-al/2),beta=__ncdf(zc-delta)-__ncdf(-zc-delta),power=1-beta;
+    const W=cv.width,H=cv.height,pB=28,pT=12,xmin=-4,xmax=Math.max(4,delta+4);
+    const X=x=>(x-xmin)/(xmax-xmin)*W,peak=__phi(0),Y=y=>H-pB-(y/peak)*(H-pB-pT);
+    ctx.clearRect(0,0,W,H);ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,H-pB);ctx.lineTo(W,H-pB);ctx.stroke();
+    const fill=(mu,lo,hi,col)=>{ctx.fillStyle=col;ctx.beginPath();let st=false;for(let px=0;px<=W;px++){const x=xmin+px/W*(xmax-xmin);if(x<lo||x>hi)continue;if(!st){ctx.moveTo(X(x),H-pB);st=true;}ctx.lineTo(X(x),Y(__phi(x-mu)));}if(st){ctx.lineTo(X(Math.min(hi,xmax)),H-pB);ctx.closePath();ctx.fill();}};
+    fill(delta,-zc,zc,'rgba(44,111,176,0.32)');
+    fill(delta,zc,xmax,'rgba(58,138,74,0.40)');fill(delta,xmin,-zc,'rgba(58,138,74,0.40)');
+    fill(0,zc,xmax,'rgba(192,57,43,0.45)');fill(0,xmin,-zc,'rgba(192,57,43,0.45)');
+    ctx.setLineDash([4,3]);ctx.strokeStyle='#555';ctx.beginPath();ctx.moveTo(X(zc),pT);ctx.lineTo(X(zc),H-pB);ctx.moveTo(X(-zc),pT);ctx.lineTo(X(-zc),H-pB);ctx.stroke();ctx.setLineDash([]);
+    const cu=mu=>{ctx.beginPath();for(let px=0;px<=W;px++){const x=xmin+px/W*(xmax-xmin),Yy=Y(__phi(x-mu));px?ctx.lineTo(px,Yy):ctx.moveTo(px,Yy);}ctx.stroke();};
+    ctx.lineWidth=2;ctx.strokeStyle='#444';cu(0);ctx.strokeStyle='#1a6b2a';cu(delta);
+    ctx.fillStyle='#444';ctx.font='12px "Noto Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText('귀무 H₀',X(0),pT+10);ctx.fillStyle='#1a6b2a';ctx.fillText('대립 Hₐ',X(delta),pT+10);
+    sel('[data-o=a]').textContent=al.toFixed(4);sel('[data-o=b]').textContent=beta.toFixed(4);sel('[data-o=p]').textContent=power.toFixed(4);sel('[data-o=d]').textContent=delta.toFixed(3);
+    let m;if(delta<0.4)m='효과가 거의 0 — 두 분포가 포개져 검정력이 α 수준이다.';else if(power<0.5)m='검정력 50% 미만 — 효과가 있어도 절반 넘게 놓친다. n을 키워 보라.';else if(power>=0.8)m='검정력 ≥ 80% — 통상 설계 목표 달성.';else m='α를 줄이면(빨강↓) 임계선이 밀려 β(파랑)가 커진다 — 두 오류는 맞바꿈. β를 줄이려면 n을 키워라.';
+    sel('[data-o=ins]').innerHTML='<b>관찰:</b> '+m;
+  }
+  box.querySelectorAll('input[type=range]').forEach(r=>r.addEventListener('input',draw));draw();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.hts').forEach((b,i)=>htsBuild(b,i));
+  document.querySelectorAll('.pwz').forEach(pwzBuild);
+});
+</script>
+
 </head>
 <body>
 
@@ -345,6 +545,9 @@ class="math inline">p</span>에 관한 확률”을 논할 수 있다. 본 교�
 </blockquote>
 <h3 id="가설검정의-논리-통계적-귀류법">5.0.2 가설검정의 논리: 통계적
 귀류법</h3>
+<blockquote style="background:#eef4ff;border-left:4px solid #234a86">
+<p><strong>예고.</strong> 곧 <strong>p-값</strong>이 정의보다 먼저 등장한다. 정확한 정의는 §5.0.5에서 다루므로, 지금은 <em>“자료가 귀무가설과 얼마나 어긋나는지를 0과 1 사이 숫자로 잰 것”</em>이라는 직관만 가지고 가면 충분하다. p-값이 <strong>작을수록</strong> 자료가 귀무가설과 어긋난다는 뜻이다.</p>
+</blockquote>
 <p>가설검정은 본질적으로 <strong>귀류법</strong>(proof by
 contradiction)이다. 어떤 주장(귀무가설)을 잠정적으로 참이라고 가정한 뒤,
 그 가정 하에서 관측 자료가 얼마나 “이상한지”를 평가한다. 자료가 충분히
@@ -529,7 +732,7 @@ alt="그림 5.0.3: 양측검정과 단측검정의 기각역 비교 (\alpha = 0.
 </ul>
 <h4 id="새로운-시각-단측검정은-의심하라">[새로운 시각] 단측검정은
 의심하라</h4>
-<p>연구자들이 p-값을 0.05 미만으로 만들기 위해 사후적으로 단측검정으로
+<p>(p-값의 정확한 정의와 계산은 §5.0.5에서 다룬다. 여기서는 “단측 p-값은 양측의 절반”이라는 사실만 미리 사용한다.) 연구자들이 p-값을 0.05 미만으로 만들기 위해 사후적으로 단측검정으로
 바꾸는 일이 종종 일어난다. 이는 통계적 부정행위에 해당한다. 단측검정의
 p-값은 양측검정의 정확히 절반이므로, 양측 p-값이 0.08(유의하지 않음)이면
 단측 p-값은 0.04(유의함)가 되어버린다.</p>
@@ -640,17 +843,39 @@ class="math inline">T</span>)를 계산한다: <span class="math inline">Z =
 </tr>
 </tbody>
 </table>
-<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">from scipy import stats
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
 
-# 예: 관측된 Z = 2.1, 양측검정
+# ===== 이 숫자만 바꿔 보라 =====
 z_obs = 2.1
-p_value_two_sided = 2 * (1 - stats.norm.cdf(abs(z_obs)))
-p_value_right = 1 - stats.norm.cdf(z_obs)        # 우측 단측
-p_value_left = stats.norm.cdf(z_obs)             # 좌측 단측
+# ==============================
+x = np.linspace(-4, 4, 600); y = stats.norm.pdf(x)
+za = abs(z_obs)
+p_two   = 2*stats.norm.sf(za)
+p_right = stats.norm.sf(z_obs)
+p_left  = stats.norm.cdf(z_obs)
+print(f"양측 p-값: {p_two:.4f}")
+print(f"우측 p-값: {p_right:.4f}")
+print(f"좌측 p-값: {p_left:.4f}")
 
-print(f"양측 p-값:    {p_value_two_sided:.4f}")  # 0.0357
-print(f"우측 p-값:    {p_value_right:.4f}")      # 0.0179
-print(f"좌측 p-값:    {p_value_left:.4f}")       # 0.9821</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+# 세 방향의 p값 영역을 나란히 본다
+fig, axes = plt.subplots(1, 3, figsize=(8.4, 2.6), sharey=True)
+specs = [("two", f"two-sided\np={p_two:.4f}"),
+         ("right", f"right\np={p_right:.4f}"),
+         ("left", f"left\np={p_left:.4f}")]
+for ax, (d, t) in zip(axes, specs):
+    ax.plot(x, y, color="#333", lw=1.5); ax.axhline(0, color="#999", lw=0.6)
+    if d == "two":
+        ax.fill_between(x, y, where=(x &lt;= -za), color="#c0392b", alpha=0.55)
+        ax.fill_between(x, y, where=(x &gt;=  za), color="#c0392b", alpha=0.55)
+    elif d == "right":
+        ax.fill_between(x, y, where=(x &gt;= z_obs), color="#c0392b", alpha=0.55)
+    else:
+        ax.fill_between(x, y, where=(x &lt;= z_obs), color="#c0392b", alpha=0.55)
+    ax.axvline(z_obs, color="#1a6b2a", lw=1.4, ls="--")
+    ax.set_title(t, fontsize=9); ax.set_yticks([]); ax.margins(x=0)
+fig.suptitle(f"p-value regions for Z = {z_obs}", fontsize=10); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <h4 id="새로운-시각-p-값의-올바른-해석">[새로운 시각] p-값의 올바른
 해석</h4>
 <p>다음은 American Statistical Association(미국통계학회)가 2016년 공식
@@ -736,6 +961,53 @@ class="math inline">\implies</span> <span class="math inline">H_0</span>
 </tr>
 </tbody>
 </table>
+<p>유의수준 <span class="math inline">\alpha</span>가 추상적으로 느껴진다면, 아래 셀에서 직접 확인하라. <code>alpha</code> 한 줄만 0.10, 0.05, 0.01로 바꿔 가며 실행하면 두 가지가 동시에 드러난다. 첫째, <span class="math inline">\alpha</span>가 작아질수록 기각역이 바깥쪽으로 밀려 기각이 어려워진다. 둘째, 모의실험에서 <strong>참인 <span class="math inline">H_0</span>를 잘못 기각하는 비율</strong>이 설정한 <span class="math inline">\alpha</span>와 거의 일치한다. <span class="math inline">\alpha</span>가 단순한 절단값이 아니라 제1종 오류율 그 자체임을 눈으로 보는 셈이다.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# ===== 이 숫자들만 바꿔 보라 =====
+alpha = 0.05      # 유의수준  (0.10 / 0.05 / 0.01 로 바꿔 보라)
+p0    = 0.50      # 귀무가설이 주장하는 참값
+n     = 200       # 표본 크기
+n_sim = 20000     # 모의실험 반복 횟수
+# ================================
+
+# (1) 양측검정의 기각역 — alpha 가 절단값을 어떻게 정하는가
+z_crit = stats.norm.ppf(1 - alpha/2)
+SE = np.sqrt(p0*(1-p0)/n)
+lo, hi = p0 - z_crit*SE, p0 + z_crit*SE
+print(f"[유의수준 alpha = {alpha}]")
+print(f"  표준화 기각역 : |Z| &gt; {z_crit:.3f}")
+print(f"  표본비율 기각역: p-hat &lt; {lo:.3f}  또는  p-hat &gt; {hi:.3f}")
+
+# (2) H_0 가 '참'인 세상에서 모의실험 — 잘못 기각하는 비율이 곧 제1종 오류율
+rng = np.random.default_rng(0)
+phat = rng.binomial(n, p0, size=n_sim) / n
+reject = np.abs((phat - p0) / SE) &gt; z_crit
+print(f"\n모의실험 {n_sim:,}회 (H_0 가 참인 세상):")
+print(f"  H_0 가 참인데도 기각한 비율 = {reject.mean():.4f}")
+print(f"  내가 설정한 alpha          = {alpha}")
+print("  -&gt; 두 값이 거의 같다. alpha 는 곧 '참인 H_0 를 잘못 기각할 확률'이다.")
+
+# (3) 그림: 빨간 기각역 + 모의 표본비율 분포(히스토그램)
+#     빨간 면적(이론상 alpha)과 빨강에 떨어진 표본 비율(모의 기각율)이 거의 같다.
+x = np.linspace(p0 - 4*SE, p0 + 4*SE, 600)
+y = stats.norm.pdf(x, p0, SE)
+fig, ax = plt.subplots(figsize=(6.4, 3.4))
+ax.hist(phat, bins=40, density=True, color="#bcd",
+        alpha=0.55, edgecolor="white", linewidth=0.4)   # 모의 표본비율
+ax.plot(x, y, color="#333", lw=1.8)                      # 귀무 표집분포
+ax.fill_between(x, y, where=(x &lt;= lo), color="#c0392b", alpha=0.55)  # 왼쪽 기각역
+ax.fill_between(x, y, where=(x &gt;= hi), color="#c0392b", alpha=0.55)  # 오른쪽 기각역
+for b in (lo, hi):
+    ax.axvline(b, color="#c0392b", lw=1.2, ls="--")
+ax.axvline(p0, color="#1a6b2a", lw=1.5)                  # 귀무값 p0
+ax.set_title(f"rejection region (red) = alpha = {alpha}   |   "
+             f"simulated reject rate = {reject.mean():.3f}", fontsize=10)
+ax.set_xlabel("sample proportion  p-hat")
+ax.set_yticks([]); ax.margins(x=0)
+# (plt.show 불필요: 그림은 자동 표시된다)</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <h4 id="새로운-시각-α는-자연-상수가-아니다">[새로운 시각] α는 자연
 상수가 아니다</h4>
 <p>“0.05”라는 숫자에는 신성한 의미가 없다. 이 값은 영국 통계학자 R. A.
@@ -846,24 +1118,37 @@ alt="그림 5.0.8: 같은 점추정·표준오차에서 신뢰수준이 높을�
 0.05</span> 양측검정을 별도로 할 필요가 없다. 구간에 귀무값이 들어
 있으면 기각 못함, 들어 있지 않으면 기각이다.</p>
 <div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
 from scipy import stats
 
-# 예: 표본 비율 0.55, n=400, H_0: p=0.5
+# ===== 이 숫자만 바꿔 보라 =====
 p_hat, n, p0 = 0.55, 400, 0.5
-
-# 가설검정 (양측)
-SE_test = np.sqrt(p0*(1-p0)/n)
-z = (p_hat - p0)/SE_test
-p_value = 2*(1 - stats.norm.cdf(abs(z)))
+alpha = 0.05
+# ==============================
+zc = stats.norm.ppf(1 - alpha/2)
+SE_test = np.sqrt(p0*(1-p0)/n); z = (p_hat-p0)/SE_test; p_value = 2*stats.norm.sf(abs(z))
+SE_ci = np.sqrt(p_hat*(1-p_hat)/n); lo = p_hat-zc*SE_ci; hi = p_hat+zc*SE_ci
 print(f"가설검정: Z = {z:.2f}, p-값 = {p_value:.4f}")
-
-# 95% 신뢰구간
-SE_ci = np.sqrt(p_hat*(1-p_hat)/n)
-lo = p_hat - 1.96*SE_ci
-hi = p_hat + 1.96*SE_ci
-print(f"95% CI: ({lo:.4f}, {hi:.4f})")
+print(f"{int((1-alpha)*100)}% CI: ({lo:.4f}, {hi:.4f})")
 print(f"p_0 = {p0}이 CI에 포함? {lo &lt;= p0 &lt;= hi}")
-print(f"두 결과 일치? {(p_value &lt; 0.05) == (not (lo &lt;= p0 &lt;= hi))}")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+print(f"두 결과 일치? {(p_value &lt; alpha) == (not (lo &lt;= p0 &lt;= hi))}")
+
+# 위: 검정의 기각역(빨강)과 관측 p_hat / 아래: 신뢰구간과 p0  — 둘은 동전의 양면
+fig, (a1, a2) = plt.subplots(2, 1, figsize=(6.4, 3.8))
+x = np.linspace(p0-4*SE_test, p0+4*SE_test, 500); y = stats.norm.pdf(x, p0, SE_test)
+a1.plot(x, y, color="#333", lw=1.5)
+a1.fill_between(x, y, where=(x &lt;= p0-zc*SE_test), color="#c0392b", alpha=0.5)
+a1.fill_between(x, y, where=(x &gt;= p0+zc*SE_test), color="#c0392b", alpha=0.5)
+a1.axvline(p_hat, color="#1a6b2a", lw=1.8, ls="--")
+a1.axvline(p0, color="#234a86", lw=1.2)
+a1.set_title(f"test: H0 dist + rejection (red), observed p-hat={p_hat}", fontsize=9)
+a1.set_yticks([]); a1.margins(x=0); a1.set_xlim(x.min(), x.max())
+a2.errorbar(p_hat, 0, xerr=zc*SE_ci, fmt='o', color="#1a6b2a", capsize=5, lw=2)
+a2.axvline(p0, color="#234a86", lw=1.2, ls="--")
+a2.set_xlim(x.min(), x.max()); a2.set_ylim(-1, 1); a2.set_yticks([])
+inside = lo &lt;= p0 &lt;= hi
+a2.set_title(f"CI contains p0? {'yes -&gt; fail to reject' if inside else 'no -&gt; reject'}", fontsize=9)
+a2.set_xlabel("proportion"); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <h3 id="제1종-오류와-제2종-오류">5.0.8 제1종 오류와 제2종 오류</h3>
 <p>가설검정은 본질적으로 두 종류의 오류를 범할 수 있다.</p>
 <figure>
@@ -904,6 +1189,8 @@ alt="그림 5.0.6: 귀무분포와 대립분포에서 \alpha, \beta, 검정력�
 class="math inline">\alpha</span>, <span
 class="math inline">\beta</span>, 검정력의 관계</figcaption>
 </figure>
+<p>제1종 오류 <span class="math inline">\alpha</span>, 제2종 오류 <span class="math inline">\beta</span>, 검정력 <span class="math inline">1-\beta</span>의 관계는 <strong>두 분포가 겹치는 그림</strong>으로 보면 단번에 이해된다. 아래에서 효과 크기 <span class="math inline">d</span>, 표본 크기 <span class="math inline">n</span>, 유의수준 <span class="math inline">\alpha</span> 세 손잡이를 끌어 보라. 특히 <strong>n을 키우면 두 분포가 좁아지며 <span class="math inline">\beta</span>(파랑)가 줄어드는</strong> 모습에 주목하라.</p>
+<div class="pwz"></div>
 <ul>
 <li><span class="math inline">\alpha</span>를 작게 하려면 기각 임계값을
 오른쪽으로 옮긴다 → <span class="math inline">\beta</span>가 커진다</li>
@@ -1000,19 +1287,79 @@ rate 증가)</li>
 나타나야만 유의 절단값을 통과하므로, 살아남은 결과들은 평균적으로
 과장되어 있다.</p>
 <div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
-from scipy import stats
-
-# 예: 효과 크기 d=0.3, alpha=0.05일 때 표본 크기별 검정력
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 def power_two_sample(d, n, alpha=0.05):
     """효과 크기 d, 그룹당 표본 크기 n에서의 검정력"""
     z_alpha = norm.ppf(1 - alpha/2)
-    z_beta = d * np.sqrt(n/2) - z_alpha
-    return norm.cdf(z_beta)
+    return norm.cdf(d*np.sqrt(n/2) - z_alpha)
 
+d, alpha = 0.3, 0.05
 for n in [20, 50, 100, 200, 500]:
-    print(f"n = {n:&gt;3}: 검정력 = {power_two_sample(0.3, n):.3f}")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+    print(f"n = {n:&gt;3}: 검정력 = {power_two_sample(d, n, alpha):.3f}")
+
+# 표본 크기에 따른 검정력 곡선
+ns = np.arange(5, 600)
+fig, ax = plt.subplots(figsize=(6.2, 3.2))
+ax.plot(ns, [power_two_sample(d, nn, alpha) for nn in ns], color="#1a6b2a", lw=2)
+ax.axhline(0.8, color="#c0392b", ls="--", lw=1)
+ax.text(ns[-1], 0.8, " target 0.8", color="#c0392b", va="bottom", ha="right", fontsize=9)
+for n in [20, 50, 100, 200, 500]:
+    ax.plot(n, power_two_sample(d, n, alpha), 'o', color="#234a86")
+ax.set_title(f"power vs sample size  (d={d}, alpha={alpha})", fontsize=10)
+ax.set_xlabel("sample size per group  n"); ax.set_ylabel("power")
+ax.set_ylim(0, 1); ax.margins(x=0); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<p>앞의 셀은 표본 크기 <span class="math inline">n</span> 하나만 움직였다. 그러나 검정력을 좌우하는 손잡이는 모두 세 개다 — <strong>유의수준 <span class="math inline">\alpha</span>, 효과 크기 <span class="math inline">d</span>, 표본 크기 <span class="math inline">n</span></strong>. 아래 탐색기에서 한 번에 하나씩 손잡이를 돌려 보며, 각 요인이 검정력을 어느 방향으로 미는지 직접 확인하라. 코드 가운데 <code>d</code>, <code>n</code>, <code>alpha</code> 세 줄만 바꾸면 된다.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+
+def power(d, n, alpha=0.05):
+    """효과 크기 d(Cohen's d), 그룹당 표본 크기 n, 유의수준 alpha 에서의 양측검정 검정력"""
+    z_a = norm.ppf(1 - alpha/2)
+    ncp = d * np.sqrt(n/2)
+    return norm.cdf(ncp - z_a) + norm.cdf(-ncp - z_a)
+
+# ===== 세 개의 손잡이를 하나씩 돌려 보라 =====
+d     = 0.30
+n     = 100
+alpha = 0.05
+# ===========================================
+print(f"기준 설정: d={d}, n={n}, alpha={alpha}  -&gt;  검정력 = {power(d, n, alpha):.3f}\n")
+print("[손잡이 1] alpha 만 바꿀 때 (d, n 고정):")
+for a in [0.01, 0.05, 0.10]:
+    print(f"   alpha={a:&lt;5}: 검정력 = {power(d, n, a):.3f}")
+print("   -&gt; alpha 를 키우면 검정력은 오르지만, 제1종 오류 위험도 함께 오른다 (상충).\n")
+print("[손잡이 2] 효과 크기 d 만 바꿀 때 (n, alpha 고정):")
+for dd in [0.1, 0.3, 0.5, 0.8]:
+    print(f"   d={dd:&lt;4}: 검정력 = {power(dd, n, alpha):.3f}")
+print("   -&gt; 실제 효과가 클수록 발견하기 쉽다.\n")
+print("[손잡이 3] 표본 크기 n 만 바꿀 때 (d, alpha 고정):")
+for nn in [30, 100, 300, 1000]:
+    print(f"   n={nn:&lt;5}: 검정력 = {power(d, nn, alpha):.3f}")
+print("   -&gt; n 은 연구자가 마음대로 키울 수 있는 거의 유일한 손잡이다.")
+
+# 세 손잡이 각각에 대한 검정력 곡선
+base = power(d, n, alpha)
+fig, axs = plt.subplots(1, 3, figsize=(8.8, 2.7))
+al = np.linspace(0.001, 0.2, 100)
+axs[0].plot(al, [power(d, n, a) for a in al], color="#c0392b", lw=2)
+axs[0].set_title("vs alpha", fontsize=9); axs[0].set_xlabel("alpha")
+dd = np.linspace(0, 1, 100)
+axs[1].plot(dd, [power(x, n, alpha) for x in dd], color="#1a6b2a", lw=2)
+axs[1].set_title("vs effect d", fontsize=9); axs[1].set_xlabel("d")
+nn = np.arange(5, 500)
+axs[2].plot(nn, [power(d, x, alpha) for x in nn], color="#234a86", lw=2)
+axs[2].set_title("vs n", fontsize=9); axs[2].set_xlabel("n")
+for ax in axs:
+    ax.set_ylim(0, 1); ax.axhline(base, color="#999", ls=":", lw=0.9)
+axs[0].set_ylabel("power")
+fig.suptitle(f"power sensitivity (base d={d}, n={n}, alpha={alpha})", fontsize=10); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<h4 id="새로운-시각-검정력은-공짜로-사지-못한다">[새로운 시각] 검정력은 alpha로 “공짜로” 사지 못한다</h4>
+<p>위 탐색기에서 손잡이 1을 돌려 보면 <span class="math inline">\alpha</span>를 키울수록 검정력이 오른다. 그렇다면 <span class="math inline">\alpha</span>를 0.10, 0.20으로 계속 올려 검정력을 손쉽게 확보하면 되지 않을까? 그렇지 않다. <span class="math inline">\alpha</span>를 키워 얻은 검정력은 <strong>제2종 오류를 줄인 대신 제1종 오류를 늘려서 산 것</strong>일 뿐이다. 즉 두 오류의 총량을 줄인 것이 아니라, 어느 쪽 오류를 더 감수할지 저울의 추를 옮긴 데 지나지 않는다.</p>
+<p>두 오류를 <em>동시에</em> 줄이는 길은 손잡이 3, 곧 표본 크기 <span class="math inline">n</span>을 키우는 것뿐이다. <span class="math inline">n</span>이 커지면 귀무분포와 대립분포가 모두 좁아져 겹침이 줄고, <span class="math inline">\alpha</span>를 고정한 채로도 검정력이 오른다. 검정력 분석이 결국 “표본을 얼마나 모을 것인가”라는 설계 단계의 질문으로 귀결되는 이유가 여기에 있다.</p>
+
 <h3 id="통계적-유의성과-실질적-유의성의-차이">5.0.10 통계적 유의성과
 실질적 유의성의 차이</h3>
 <p><strong>통계적 유의성</strong>(statistical significance)과
@@ -1285,10 +1632,23 @@ class="math inline">\pm 0.02</span> 이내에 있을 확률을 구하라. 분포
 \qquad Z_{0.90} = \frac{0.90 - 0.88}{0.010} = 2</span></p>
 <p>표준정규분포에서 <span class="math inline">P(-2 \leq Z \leq 2) =
 0.9544</span>.</p>
-<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">from scipy import stats
-prob = stats.norm.cdf(2) - stats.norm.cdf(-2)
-print(f"P(|Z| ≤ 2) = {prob:.4f}")
-# 0.9545</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# ===== 바꿔 보라 =====
+zb = 2.0
+# ====================
+prob = stats.norm.cdf(zb) - stats.norm.cdf(-zb)
+print(f"P(|Z| &lt;= {zb}) = {prob:.4f}")
+
+x = np.linspace(-4, 4, 600); y = stats.norm.pdf(x)
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.plot(x, y, color="#333", lw=1.6)
+ax.fill_between(x, y, where=(np.abs(x) &lt;= zb), color="#2c6fb0", alpha=0.45)
+ax.axvline(-zb, color="#234a86", ls="--", lw=1); ax.axvline(zb, color="#234a86", ls="--", lw=1)
+ax.set_title(f"P(|Z| &lt;= {zb}) = {prob:.4f}  (blue area)", fontsize=10)
+ax.set_xlabel("Z"); ax.set_yticks([]); ax.margins(x=0); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <p>따라서 표본비율의 약 <strong>95.45%</strong>가 모수의 <span
 class="math inline">\pm 0.02</span> 이내에 들어온다.</p>
 <h4 id="guided-practice-5.5-표준오차-공식의-직관">Guided Practice 5.5:
@@ -1362,11 +1722,25 @@ class="math inline">n</span>이 커질수록 감소한다.</li>
 class="math inline">p(1-p)</span>의 최댓값이 <span
 class="math inline">p=0.5</span>이기 때문이다.</li>
 </ul>
-<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">p_values = [0.1, 0.3, 0.5, 0.7, 0.9]
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+
 n = 100
+p_values = [0.1, 0.3, 0.5, 0.7, 0.9]
 for p in p_values:
     print(f"p = {p}: SE = {(p*(1-p)/n)**0.5:.4f}")
-# p = 0.5에서 SE가 최대</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+print("-&gt; p = 0.5에서 SE가 최대가 된다")
+
+p = np.linspace(0.001, 0.999, 400); SE = np.sqrt(p*(1-p)/n)
+fig, ax = plt.subplots(figsize=(6, 3.2))
+ax.plot(p, SE, color="#1a6b2a", lw=2)
+ax.axvline(0.5, color="#c0392b", ls="--", lw=1.2)
+ax.plot(0.5, np.sqrt(0.25/n), 'o', color="#c0392b")
+ax.text(0.5, np.sqrt(0.25/n), "  max at p=0.5", color="#c0392b", va="bottom", fontsize=9)
+for pv in p_values:
+    ax.plot(pv, np.sqrt(pv*(1-pv)/n), 'o', color="#234a86")
+ax.set_title(f"SE(p) = sqrt(p(1-p)/n),  n={n}", fontsize=10)
+ax.set_xlabel("p"); ax.set_ylabel("SE"); ax.margins(x=0); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <h3 id="다른-통계량으로-확장">5.1.6 다른 통계량으로 확장</h3>
 <p>표본 통계량으로 모수를 추정하는 전략은 비율에 국한되지 않는다.</p>
 <ul>
@@ -1524,11 +1898,17 @@ class="math inline">0.88</span>이 아니라는 뜻인가?</p>
 <p><strong>해석</strong> 태양 에너지 확대를 지지하는 미국 성인의 비율이
 <strong>86.7%에서 90.7% 사이</strong>라고 95% 신뢰한다.</p>
 <div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
 p_hat, n = 0.887, 1000
 SE = np.sqrt(p_hat*(1-p_hat)/n)
 lo, hi = p_hat - 1.96*SE, p_hat + 1.96*SE
 print(f"95% CI: ({lo:.3f}, {hi:.3f})")
-# 95% CI: (0.867, 0.907)</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+
+fig, ax = plt.subplots(figsize=(6, 1.8))
+ax.errorbar(p_hat, 0, xerr=1.96*SE, fmt='o', color="#1a6b2a", capsize=6, lw=2)
+ax.set_xlim(lo-0.02, hi+0.02); ax.set_ylim(-1, 1); ax.set_yticks([])
+ax.set_title(f"95% CI for p-hat={p_hat}: ({lo:.3f}, {hi:.3f})", fontsize=10)
+ax.set_xlabel("proportion"); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <h3 id="다른-신뢰수준">5.2.3 다른 신뢰수준</h3>
 <p>신뢰수준을 90%나 99%로 바꾸려면 <span
 class="math inline">z^\ast</span>만 바꾸면 된다.</p>
@@ -1568,10 +1948,20 @@ class="math inline">z^\ast</span> 찾기</h4>
 <p><strong>문제</strong> 정규변수가 평균의 <span class="math inline">\pm
 2.58</span> 표준편차 안에 있을 확률은?</p>
 <p><strong>풀이</strong></p>
-<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">from scipy import stats
-p = stats.norm.cdf(2.58) - stats.norm.cdf(-2.58)
-print(f"P(|Z|&lt;2.58) = {p:.4f}")
-# 0.9901</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+zb = 2.58
+p = stats.norm.cdf(zb) - stats.norm.cdf(-zb)
+print(f"P(|Z|&lt;{zb}) = {p:.4f}")
+
+x = np.linspace(-4, 4, 600); y = stats.norm.pdf(x)
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.plot(x, y, color="#333", lw=1.6)
+ax.fill_between(x, y, where=(np.abs(x) &lt;= zb), color="#2c6fb0", alpha=0.45)
+ax.axvline(-zb, color="#234a86", ls="--", lw=1); ax.axvline(zb, color="#234a86", ls="--", lw=1)
+ax.set_title(f"P(|Z| &lt;= {zb}) = {p:.4f}  (blue area)", fontsize=10)
+ax.set_xlabel("Z"); ax.set_yticks([]); ax.margins(x=0); fig.tight_layout()</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <p>약 <strong>99%</strong>. 따라서 99% 신뢰구간의 <span
 class="math inline">z^\ast = 2.576 \approx 2.58</span>이다.</p>
 <h4 id="예제-5.10-90-신뢰구간">예제 5.10: 90% 신뢰구간</h4>
@@ -1733,12 +2123,12 @@ class="math inline">SE \propto 1/\sqrt{n}</span>이므로 ME를 절반으로
 </ul>
 <p>유의수준 <span class="math inline">\alpha = 0.05</span>로 정한다.</p>
 </blockquote>
-<h4 id="예제-5.18-5.19-왜-양측검정인가">예제 5.18 &amp; 5.19: 왜
-양측검정인가</h4>
-<p>대학 교육 성인의 정답률이 더 낮을 것이라 짐작하더라도 <strong>자료를
-보기 전부터</strong> 단측을 정하면 안 된다(§5.0.4의 “단측검정을
-의심하라”). 결과가 무작위 추측과 <strong>다르다</strong>는 것만 확인해도
-충분히 흥미롭다.</p>
+<h4 id="예제-5.18-가설-세우기">예제 5.18: 가설 세우기</h4>
+<p><strong>문제.</strong> 위 상황에서 검정할 가설과 유의수준을 명시하라.</p>
+<p><strong>풀이.</strong> 모비율 <span class="math inline">p</span>를 “정답을 맞힐 확률”로 두면, 위 상자와 같이 <span class="math inline">H_0: p = 0.333</span>, <span class="math inline">H_A: p \neq 0.333</span>이며, 유의수준은 <span class="math inline">\alpha = 0.05</span>로 정한다.</p>
+<h4 id="예제-5.19-단측인가-양측인가">예제 5.19: 단측인가 양측인가</h4>
+<p><strong>문제.</strong> 대학 교육을 받은 성인이라면 정답률이 무작위 추측보다 오히려 낮을 것이라 짐작된다. 그렇다면 좌측 단측검정을 써야 하는가?</p>
+<p><strong>풀이.</strong> 아니다. 양측검정을 쓴다. 세 가지 이유가 있다. 첫째, 단측은 <strong>자료를 보기 전에</strong> 방향을 정했을 때만 정당한데(§5.0.4), 여기서는 자료를 본 뒤의 짐작에 불과하다. 둘째, 정답률이 무작위 추측과 <strong>다르다</strong>는 사실만 확인해도 충분히 흥미롭다. 셋째, 단측 p-값은 양측의 정확히 절반이므로, 사후에 단측으로 바꾸는 것은 통계적 부정행위에 해당한다.</p>
 <h3 id="신뢰구간을-통한-가설검정">5.3.2 신뢰구간을 통한 가설검정</h3>
 <p>표본: 12/50 = 24% 정답. <span class="math inline">\hat{p} =
 0.24</span>, <span class="math inline">p_0 = 0.333</span>.</p>
@@ -1815,6 +2205,63 @@ Practice 5.27: 오류율 상충</h4>
 <li>균형 필요 → 표준 <span class="math inline">\alpha = 0.05</span></li>
 </ul>
 <h3 id="p-값으로-공식-검정">5.3.4 p-값으로 공식 검정</h3>
+<p>p-값을 계산할 때 <strong>검정 방향에 따라 공식이 달라진다</strong>. 어느 경우에 1에서 빼고, 어느 경우에 2배 하며, 어느 경우에 <span class="math inline">\Phi</span>를 그대로 쓰는지 아래 셀에서 한눈에 정리한다. <code>z_obs</code> 값만 바꿔(음수도 넣어) 실행해 보라.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">from scipy import stats
+
+# ===== 이 줄만 바꿔 보라 =====
+z_obs = 2.10      # 관측된 검정통계량 Z  &lt;- 바꿔 보라 (음수도 넣어 보라)
+# ============================
+Phi = stats.norm.cdf          # 표준정규 누적분포 Φ
+
+p_right = 1 - Phi(z_obs)             # 우측검정(H_A: p&gt;p0): 위쪽 꼬리 -&gt; "1에서 Φ를 뺀다"
+p_left  = Phi(z_obs)                 # 좌측검정(H_A: p&lt;p0): 아래쪽 꼬리 -&gt; "Φ를 그대로"
+p_two   = 2 * (1 - Phi(abs(z_obs)))  # 양측(H_A: p!=p0): 한쪽 꼬리를 "2배"
+
+print(f"Z = {z_obs}")
+print(f"  우측 p = 1 - Phi(Z)      = {p_right:.4f}   (위쪽 꼬리)")
+print(f"  좌측 p = Phi(Z)          = {p_left:.4f}   (아래쪽 꼬리)")
+print(f"  양측 p = 2*[1-Phi(|Z|)]  = {p_two:.4f}   (한쪽 x 2)")
+print()
+print("핵심: 양측은 방향을 모르므로 한쪽 꼬리를 2배 한다.")
+print("      우측이면 1-Phi(Z), 좌측이면 Phi(Z). Z가 음수면 Phi(Z)가 곧 작은 p값이 된다.")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<p>p값은 결국 <strong>분포의 꼬리 면적</strong>이다. 아래 셀을 실행하면 귀무분포 위에 관측된 <span class="math inline">Z</span>(초록 점선)와 그에 해당하는 <strong>p값 영역(빨강)</strong>이 그려진다. <code>z_obs</code>와 <code>direction</code>을 바꿔 가며, 통계량이 꼬리로 갈수록 빨간 면적(=p값)이 어떻게 줄어드는지 직접 보라.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# ===== 이 두 줄만 바꿔 보라 =====
+z_obs     = 2.10     # 관측된 검정통계량 Z
+direction = "two"    # "two"(양측) / "right"(우측) / "left"(좌측)
+# ================================
+
+lim = max(3.5, abs(z_obs) + 1)
+x = np.linspace(-lim, lim, 600)
+y = stats.norm.pdf(x)
+
+fig, ax = plt.subplots(figsize=(6.2, 3.2))
+ax.plot(x, y, color="#333", lw=1.8)
+ax.axhline(0, color="#999", lw=0.8)
+
+za = abs(z_obs)
+if direction == "two":
+    ax.fill_between(x, y, where=(x &lt;= -za), color="#c0392b", alpha=0.55)
+    ax.fill_between(x, y, where=(x &gt;=  za), color="#c0392b", alpha=0.55)
+    p = 2 * stats.norm.sf(za)
+elif direction == "right":
+    ax.fill_between(x, y, where=(x &gt;= z_obs), color="#c0392b", alpha=0.55)
+    p = stats.norm.sf(z_obs)
+else:
+    ax.fill_between(x, y, where=(x &lt;= z_obs), color="#c0392b", alpha=0.55)
+    p = stats.norm.cdf(z_obs)
+
+ax.axvline(z_obs, color="#1a6b2a", lw=1.8, ls="--")
+ax.set_title(f"p-value (red area) = {p:.4g}", fontsize=11)
+ax.set_xlabel("test statistic  Z")
+ax.set_yticks([]); ax.margins(x=0)
+# (plt.show 불필요: 그림은 자동 표시된다)
+
+print(f"Z = {z_obs},  direction = {direction},  p-value = {p:.4g}")
+print("빨간 면적이 곧 p값이다. alpha(예: 0.05)와 비교해 스스로 판단하라.")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
 <p>§5.0.5의 p-값 정의를 다시 본다.</p>
 <blockquote>
 <p><strong>p-값</strong>은 <span class="math inline">H_0</span>이
@@ -1883,6 +2330,8 @@ class="math inline">SE</span> 계산 → <span class="math inline">Z</span>
 class="math inline">\alpha</span> 비교 후 맥락 해석</li>
 </ol>
 </blockquote>
+<p>아래 솔버에서 같은 문제를 1→4단계로 풀어 보고, 숫자를 바꿔 결과가 어떻게 달라지는지 확인하라.</p>
+<div class="hts" data-label="예제 5.28: 석탄 에너지 지지율" data-phat="0.37" data-n="1000" data-p0="0.5" data-alpha="0.05" data-dir="two"></div>
 <h4 id="guided-practice-5.32-예제-5.33-핵무기-감축">Guided Practice 5.32
 &amp; 예제 5.33: 핵무기 감축</h4>
 <p>2013년 1028명 중 56%가 핵무기 감축 지지. 다수 지지의 증거인가?</p>
@@ -1902,6 +2351,7 @@ p_hat, p0, n = 0.56, 0.5, 1028
 SE = np.sqrt(p0*(1-p0)/n)
 z = (p_hat - p0)/SE
 print(f"Z = {z:.2f}, p-값 = {2*(1-stats.norm.cdf(abs(z))):.4f}")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<div class="hts" data-label="예제 5.33: 핵무기 감축 지지율" data-phat="0.56" data-n="1028" data-p0="0.5" data-alpha="0.05" data-dir="two"></div>
 <h3 id="통계적-유의성-vs-실질적-유의성">5.3.5 통계적 유의성 vs 실질적
 유의성</h3>
 <p>§5.0.10의 핵심 메시지를 다시 강조한다.</p>
@@ -1967,6 +2417,7 @@ p_hat, p0, n = 0.42, 0.5, 1000
 SE = np.sqrt(p0*(1-p0)/n)
 z = (p_hat-p0)/SE
 print(f"Z={z:.2f}, p-값={2*stats.norm.cdf(z):.2e}")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과는 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+<div class="hts" data-label="연습문제 5.21: 최저임금" data-phat="0.42" data-n="1000" data-p0="0.5" data-alpha="0.05" data-dir="two"></div>
 <h4 id="연습문제-5.23-역으로-계산">연습문제 5.23: 역으로 계산</h4>
 <p><span class="math inline">H_0: p = 0.3</span>, <span
 class="math inline">H_A: p \neq 0.3</span>, <span class="math inline">n

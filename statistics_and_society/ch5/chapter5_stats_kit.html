@@ -1,0 +1,554 @@
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인터랙티브 통계 부품 키트 — 5·6·7장 공용</title>
+
+<!-- ===== KaTeX (동기 수식 렌더링) ===== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  if (typeof katex === 'undefined') return;
+  document.querySelectorAll('span.math.inline').forEach(function (el) {
+    try { katex.render(el.textContent, el, { throwOnError: false, displayMode: false }); }
+    catch (e) {}
+  });
+  document.querySelectorAll('span.math.display').forEach(function (el) {
+    try { katex.render(el.textContent, el, { throwOnError: false, displayMode: true }); }
+    catch (e) {}
+  });
+});
+</script>
+
+<!-- ===== Pyodide (브라우저 안의 진짜 Python) ===== -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+// 전역 Pyodide 인스턴스 (단일 공유)
+let __pyodide = null;
+let __pyodideReady = null;
+
+function updateAllStatus(text, cls) {
+  const banner = document.getElementById('pyodide-banner');
+  if (banner) {
+    banner.textContent = text;
+    banner.className = 'pyodide-banner ' + (cls || '');
+  }
+}
+
+async function initPyodide() {
+  if (__pyodideReady) return __pyodideReady;
+  __pyodideReady = (async () => {
+    try {
+      updateAllStatus('⏳ Pyodide 다운로드 중... (한 번만)', 'loading');
+      __pyodide = await loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/"
+      });
+      updateAllStatus('⏳ scipy · numpy · matplotlib 로드 중...', 'loading');
+      await __pyodide.loadPackage(['scipy', 'numpy', 'matplotlib']);
+      // 기본 import 미리 실행 (sys.stdout 은 절대 건드리지 않는다)
+      await __pyodide.runPythonAsync(`
+import sys, io, traceback, base64
+import numpy as np
+from scipy import stats
+import matplotlib
+matplotlib.use('AGG')   # 브라우저에서 PNG로 저장하기 위한 백엔드
+import warnings
+warnings.filterwarnings('ignore', message='Matplotlib is currently using agg')
+      `);
+      updateAllStatus('✓ Python 환경 준비 완료 — 모든 코드 셀 실행 가능 (오프라인)', 'ready');
+      setTimeout(() => {
+        const b = document.getElementById('pyodide-banner');
+        if (b) b.style.display = 'none';
+      }, 4000);
+      return __pyodide;
+    } catch (e) {
+      updateAllStatus('❌ Pyodide 로드 실패: ' + e.message, 'error');
+      throw e;
+    }
+  })();
+  return __pyodideReady;
+}
+
+// 페이지 로드되자마자 백그라운드에서 시작
+window.addEventListener('load', () => { initPyodide(); });
+
+async function runPyCell(button) {
+  const cell = button.closest('.pycell');
+  const code = cell.querySelector('.pycell-code').value;
+  const output = cell.querySelector('.pycell-output');
+  const status = cell.querySelector('.pycell-status');
+
+  button.disabled = true;
+  output.style.display = 'block';
+  output.textContent = '';
+  status.textContent = '⏳ 실행 중...';
+
+  try {
+    const py = await initPyodide();
+    // 사용자 코드는 전역 네임스페이스에서 실행하되, 출력은 StringIO 로 직접 캡처한다.
+    // (sys.stdout 을 매 실행마다 새 버퍼로 바꿨다가 되돌려 출력 누락을 원천 차단)
+    py.globals.set('__user_code__', code);
+    const result = await py.runPythonAsync(`
+import sys, io, traceback, json, base64
+__cap = io.StringIO()
+__old_out, __old_err = sys.stdout, sys.stderr
+sys.stdout = __cap
+sys.stderr = __cap
+__imgs = []
+try:
+    exec(__user_code__, globals())
+    # matplotlib 그림이 있으면 PNG(base64)로 수집
+    if 'matplotlib.pyplot' in sys.modules:
+        _plt = sys.modules['matplotlib.pyplot']
+        for _num in _plt.get_fignums():
+            _fig = _plt.figure(_num)
+            _b = io.BytesIO()
+            _fig.savefig(_b, format='png', dpi=110, bbox_inches='tight')
+            __imgs.append(base64.b64encode(_b.getvalue()).decode())
+        _plt.close('all')
+except BaseException:
+    traceback.print_exc()
+finally:
+    sys.stdout = __old_out
+    sys.stderr = __old_err
+json.dumps({"text": __cap.getvalue(), "imgs": __imgs})
+`);
+    let data;
+    try { data = JSON.parse(result); } catch (e) { data = { text: result, imgs: [] }; }
+    output.innerHTML = '';
+    if (data.text && data.text.length) {
+      const span = document.createElement('span');
+      span.style.whiteSpace = 'pre-wrap';
+      span.textContent = data.text;
+      output.appendChild(span);
+    }
+    (data.imgs || []).forEach(b64 => {
+      const img = document.createElement('img');
+      img.src = 'data:image/png;base64,' + b64;
+      img.style.cssText = 'display:block;max-width:100%;margin:0.6em auto 0;border:1px solid #ddd;background:#fff;padding:4px;';
+      output.appendChild(img);
+    });
+    if ((!data.text || !data.text.length) && (!data.imgs || !data.imgs.length)) {
+      output.textContent = '(출력이 없다. 값을 보려면 print(), 그림은 plt 를 사용하라.)';
+    }
+    status.textContent = '✓ 완료';
+  } catch (e) {
+    output.textContent += '\n❌ 실행 환경 오류: ' + e.toString().split('\n').slice(-3).join('\n');
+    status.textContent = '❌ 에러';
+  } finally {
+    button.disabled = false;
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+}
+
+// textarea 초기화: Tab 키 들여쓰기 + 자동 높이
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.pycell-code').forEach(ta => {
+    // 행 수에 맞춰 높이 조정
+    const lines = ta.value.split('\n').length;
+    ta.rows = Math.min(Math.max(lines + 1, 5), 30);
+    // Tab 키 동작
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = ta.selectionStart, en = ta.selectionEnd;
+        ta.value = ta.value.substring(0, s) + '    ' + ta.value.substring(en);
+        ta.selectionStart = ta.selectionEnd = s + 4;
+      }
+      // Ctrl/Cmd + Enter로 실행
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        const btn = ta.closest('.pycell').querySelector('.pycell-run');
+        if (btn && !btn.disabled) btn.click();
+      }
+    });
+  });
+});
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Noto Serif KR","Times New Roman",Georgia,serif;
+  font-size:16px;line-height:1.75;color:#222;background:#fcfcfc;
+  max-width:920px;margin:0 auto;padding:0 2em 5em;
+}
+
+/* Pyodide 상태 배너 */
+.pyodide-banner{
+  position:sticky;top:0;z-index:50;
+  text-align:center;padding:0.55em 1em;font-size:0.92em;
+  font-family:"Noto Sans KR",sans-serif;font-weight:500;
+  border-bottom:2px solid;
+}
+.pyodide-banner.loading{background:#fff4e0;color:#8b5a00;border-color:#d4a647;}
+.pyodide-banner.ready{background:#e6f5e6;color:#2d4d2d;border-color:#5c9a5c;}
+.pyodide-banner.error{background:#fde0e0;color:#7a2020;border-color:#c04848;}
+
+header.titleblock{
+  text-align:center;border-bottom:3px double #555;
+  padding:2em 0 1em;margin-bottom:1.6em;
+}
+header.titleblock h1{font-size:2em;margin:0 0 0.3em;line-height:1.3;}
+header.titleblock .meta{color:#666;font-size:0.9em;font-style:italic;}
+
+h1,h2,h3,h4{font-family:"Noto Serif KR",Georgia,serif;font-weight:700;color:#1a1a1a;margin-top:2em;margin-bottom:0.7em;line-height:1.35;}
+h1{font-size:1.8em;}
+h2{font-size:1.45em;border-bottom:1.5px solid #888;padding-bottom:0.25em;}
+h3{font-size:1.18em;color:#2c2c2c;}
+h4{font-size:1.04em;color:#3a3a3a;}
+
+p{margin:0.8em 0;text-align:justify;}
+strong{color:#1a1a1a;font-weight:600;}
+em{color:#444;}
+a{color:#2c4a6e;}
+
+nav#TOC{
+  background:#f7f7f5;border:1px solid #ccc;
+  padding:1.2em 1.8em;margin:1.5em 0 2.5em;border-radius:4px;
+  font-family:"Noto Sans KR",sans-serif;font-size:0.94em;
+}
+nav#TOC > ul{padding-left:1.2em;margin:0;}
+nav#TOC ul{padding-left:1.5em;}
+nav#TOC li{margin:0.2em 0;line-height:1.5;}
+nav#TOC a{color:#2c4a6e;text-decoration:none;}
+nav#TOC a:hover{text-decoration:underline;}
+
+blockquote{
+  background:#f7f5f0;border-left:4px solid #6b5d3f;
+  margin:1.5em 0;padding:1em 1.4em;font-size:0.97em;border-radius:0 4px 4px 0;
+}
+blockquote p:first-child{margin-top:0;}
+blockquote p:last-child{margin-bottom:0;}
+
+table{border-collapse:collapse;margin:1.4em auto;font-size:0.94em;border-top:2px solid #333;border-bottom:2px solid #333;}
+th,td{padding:0.5em 1em;text-align:center;border:none;}
+th{border-bottom:1.5px solid #555;background:#f0f0f0;font-weight:700;}
+tr:not(:last-child) td{border-bottom:1px solid #ddd;}
+
+figure{margin:1.8em auto;text-align:center;}
+img{max-width:100%;height:auto;border:1px solid #ddd;background:#fff;padding:6px;}
+
+hr{border:none;border-top:1px solid #bbb;margin:2.5em auto;width:60%;}
+
+code{font-family:"JetBrains Mono","D2Coding",Consolas,monospace;font-size:0.92em;background:#f0f0f0;padding:0.1em 0.35em;border-radius:2px;color:#1a1a1a;}
+
+/* ========== Pyodide 코드 셀 ========== */
+.pycell{
+  margin:1.2em 0;border:1px solid #3a4d3a;border-radius:5px;
+  background:#fbfdf8;overflow:hidden;
+}
+.pycell-label{
+  background:#3a4d3a;color:#e8f0e0;
+  padding:0.42em 1em;font-size:0.85em;
+  font-family:"Noto Sans KR",sans-serif;font-weight:500;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.pycell-label::before{content:"▶ Python";opacity:0.95;}
+.pycell-label .hint{font-size:0.78em;opacity:0.85;font-weight:400;}
+.pycell-code{
+  width:100%;display:block;
+  font-family:"JetBrains Mono","D2Coding",Consolas,monospace;
+  font-size:0.86em;line-height:1.55;
+  border:none;border-top:1px solid #c8d6c8;border-bottom:1px solid #c8d6c8;
+  background:#fafdfa;color:#1a1a1a;
+  padding:0.7em 1em;resize:vertical;
+  white-space:pre;overflow-x:auto;
+  tab-size:4;-moz-tab-size:4;
+}
+.pycell-code:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px #3a4d3a;}
+.pycell-controls{
+  background:#f0f3ed;padding:0.42em 0.8em;
+  display:flex;gap:0.6em;align-items:center;
+}
+.pycell-run{
+  background:#3a4d3a;color:#fff;border:none;
+  padding:0.4em 1.1em;font-family:inherit;font-size:0.86em;
+  cursor:pointer;border-radius:3px;font-weight:500;
+}
+.pycell-run:hover:not(:disabled){background:#5a6d5a;}
+.pycell-run:disabled{background:#888;cursor:wait;}
+.pycell-status{font-size:0.82em;color:#3a4d3a;font-family:"Noto Sans KR",sans-serif;flex:1;}
+.pycell-hint{font-size:0.78em;color:#666;font-style:italic;}
+.pycell-output{
+  margin:0;padding:0.7em 1em;
+  background:#fff;border-top:1px solid #c8c2b0;
+  font-family:"JetBrains Mono",monospace;font-size:0.85em;
+  white-space:pre-wrap;word-break:break-word;
+  color:#222;line-height:1.55;
+  max-height:30em;overflow-y:auto;
+  display:none;
+}
+.pycell-output:not(:empty){display:block;}
+
+@media print{
+  body{max-width:none;padding:1em;font-size:11pt;}
+  .pyodide-banner{display:none;}
+  .pycell-controls,.pycell-output:empty{display:none;}
+  pre,blockquote,table,figure{page-break-inside:avoid;}
+  h2,h3{page-break-after:avoid;}
+}
+
+@media (max-width:720px){
+  body{padding:0 1em 3em;font-size:15px;}
+  h1{font-size:1.55em;}h2{font-size:1.25em;}
+  .pycell-code{font-size:0.82em;}
+}
+
+.katex-display{margin:1em 0 !important;}
+.katex-display > .katex{font-size:1.1em !important;}
+</style>
+<style>
+/* ===== 인터랙티브 부품 (5·6·7장 공용) ===== */
+.hts{border:1px solid #bbb;border-radius:6px;background:#fff;margin:1.4em 0;overflow:hidden;font-family:"Noto Sans KR",sans-serif;}
+.hts-head{background:#2c3a2c;color:#eef2e8;padding:0.55em 1.05em;font-weight:500;font-size:0.92em;}
+.hts-body{padding:1em 1.1em;}
+.hts-inputs{display:flex;flex-wrap:wrap;gap:0.7em 1.1em;align-items:flex-end;background:#f7f7f5;border:1px solid #e0e0e0;border-radius:5px;padding:0.8em 1em;margin-bottom:0.9em;}
+.hts-inputs label{display:flex;flex-direction:column;font-size:0.8em;color:#444;gap:0.22em;}
+.hts-inputs input,.hts-inputs select{font-family:"JetBrains Mono",monospace;font-size:0.92em;width:6.6em;padding:0.3em 0.4em;border:1px solid #aaa;border-radius:4px;background:#fff;}
+.hts-inputs select{width:8.2em;}
+.hts-steps{display:flex;flex-wrap:wrap;gap:0.45em;margin-bottom:0.8em;}
+.hts-sbtn{background:#3a4d3a;color:#fff;border:none;padding:0.42em 0.85em;border-radius:4px;font-family:inherit;font-size:0.84em;cursor:pointer;font-weight:500;}
+.hts-sbtn:hover{background:#5a6d5a;}.hts-sbtn.done{background:#8a9a8a;}
+.hts-aux{background:#e8e8e6;color:#333;border:1px solid #bbb;padding:0.42em 0.85em;border-radius:4px;font-family:inherit;font-size:0.84em;cursor:pointer;}
+.hts-card{border-left:4px solid #3a4d3a;background:#fafdf8;padding:0.8em 1.05em;margin:0.6em 0;border-radius:0 4px 4px 0;display:none;}
+.hts-card.show{display:block;}
+.hts-card .lbl{font-weight:700;color:#2c3a2c;font-size:0.88em;display:block;margin-bottom:0.3em;}
+.hts-card .calc{font-family:"JetBrains Mono",monospace;font-size:0.88em;background:#fff;border:1px solid #e0e0e0;border-radius:3px;padding:0.45em 0.65em;margin:0.35em 0;}
+.hts-card .note{font-size:0.84em;color:#444;margin-top:0.35em;}
+.hts-code{font-family:"JetBrains Mono",monospace;font-size:0.82em;background:#2b2b2b;color:#e6e6e6;border-radius:4px;padding:0.55em 0.75em;margin:0.4em 0 0;white-space:pre;overflow-x:auto;line-height:1.5;}
+.hts-code .cm{color:#9aa86f;}
+.hts-v{font-weight:700;padding:0.45em 0.75em;border-radius:4px;display:inline-block;margin-top:0.3em;font-size:0.9em;}
+.hts-v.reject{background:#fbe9e7;color:#9a3324;border:1px solid #e0a89e;}
+.hts-v.fail{background:#eef4ff;color:#234a86;border:1px solid #aac2e8;}
+.hts-v.ok{background:#e9f5ea;color:#2d5a32;border:1px solid #a8d0ac;}
+.hts-v.warn{background:#fff4e0;color:#8b5a00;border:1px solid #d4a647;}
+.pwz{border:1px solid #bbb;border-radius:6px;background:#fff;margin:1.4em 0;overflow:hidden;font-family:"Noto Sans KR",sans-serif;}
+.pwz-head{background:#2c3a2c;color:#eef2e8;padding:0.55em 1.05em;font-weight:500;font-size:0.92em;}
+.pwz-body{padding:1em 1.1em;display:flex;flex-wrap:wrap;gap:1.1em;align-items:flex-start;}
+.pwz canvas{width:100%;height:auto;border:1px solid #ddd;background:#fff;border-radius:4px;}
+.pwz .ctl{flex:1 1 230px;min-width:210px;font-size:0.85em;}
+.pwz .ctl .row{margin:0.6em 0;}
+.pwz .ctl label{display:block;color:#444;margin-bottom:0.2em;}
+.pwz .ctl input[type=range]{width:100%;}
+.pwz .val{font-family:"JetBrains Mono",monospace;color:#2c3a2c;font-weight:700;}
+.pwz .ro{background:#f7f7f5;border:1px solid #e0e0e0;border-radius:5px;padding:0.7em 0.9em;margin-top:0.8em;}
+.pwz .ro table{width:100%;border:none;margin:0;}
+.pwz .ro td{padding:0.16em 0.35em;border:none;text-align:left;}
+.pwz .ro td:last-child{text-align:right;font-family:"JetBrains Mono",monospace;font-weight:700;}
+.pwz .sw{display:inline-block;width:0.85em;height:0.85em;border-radius:2px;vertical-align:middle;margin-right:0.3em;}
+.pwz .ins{font-size:0.85em;background:#f7f5f0;border-left:4px solid #6b5d3f;padding:0.6em 0.9em;margin-top:0.8em;border-radius:0 4px 4px 0;}
+</style>
+<script>
+/* ===== 정규분포 (순수 JS, 5자리 검증) ===== */
+function __erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);
+ const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+const __ncdf=x=>0.5*(1+__erf(x/Math.SQRT2));
+function __nppf(p){const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00],b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01],c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00],d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00],pl=0.02425;let q,r;
+ if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+ if(p<=1-pl){q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+ q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+const __phi=x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+function __km(t){try{return katex.renderToString(t,{throwOnError:false});}catch(e){return t;}}
+
+/* ===== 부품 A: 다중 인스턴스 4단계 솔버 ===== */
+function htsBuild(box,idx){
+  const g=k=>box.dataset[k];
+  box.innerHTML=
+   '<div class="hts-head">▶ 4단계 솔버 — '+(g('label')||'비율 z-검정')+' · 숫자를 바꾸면 풀이가 다시 계산된다</div>'
+  +'<div class="hts-body"><div class="hts-inputs">'
+  +'<label>관측 p̂<input type="number" step="0.01" value="'+(g('phat')||0.55)+'" data-f="phat"></label>'
+  +'<label>표본 n<input type="number" step="10" value="'+(g('n')||400)+'" data-f="n"></label>'
+  +'<label>귀무값 p₀<input type="number" step="0.01" value="'+(g('p0')||0.5)+'" data-f="p0"></label>'
+  +'<label>유의수준 α<input type="number" step="0.01" value="'+(g('alpha')||0.05)+'" data-f="alpha"></label>'
+  +'<label>방향<select data-f="dir">'
+    +'<option value="two">양측 (p≠p₀)</option><option value="right">우측 (p&gt;p₀)</option><option value="left">좌측 (p&lt;p₀)</option>'
+  +'</select></label></div>'
+  +'<div class="hts-steps">'
+  +'<button class="hts-sbtn" data-s="1">1단계·가설</button>'
+  +'<button class="hts-sbtn" data-s="2">2단계·조건</button>'
+  +'<button class="hts-sbtn" data-s="3">3단계·통계량·p값</button>'
+  +'<button class="hts-sbtn" data-s="4">4단계·결론</button>'
+  +'<button class="hts-aux" data-a="all">전체</button><button class="hts-aux" data-a="reset">처음부터</button></div>'
+  +'<div class="hts-card" data-c="1"></div><div class="hts-card" data-c="2"></div><div class="hts-card" data-c="3"></div><div class="hts-card" data-c="4"></div></div>';
+  const sel=q=>box.querySelector(q);
+  box.querySelector('select[data-f="dir"]').value=g('dir')||'two';
+  const read=()=>({phat:+sel('[data-f=phat]').value,n:+sel('[data-f=n]').value,p0:+sel('[data-f=p0]').value,alpha:+sel('[data-f=alpha]').value,dir:sel('[data-f=dir]').value});
+  const C=s=>'<pre class="hts-code">'+s+'</pre>';
+  function step(k){
+    const {phat,n,p0,alpha,dir}=read();
+    const card=sel('[data-c="'+k+'"]'),btn=sel('.hts-sbtn[data-s="'+k+'"]');let h='';
+    if(k===1){const ha=dir==='two'?'p \\neq '+p0:dir==='right'?'p > '+p0:'p < '+p0;
+      const why=dir==='two'?'양쪽 방향이 모두 흥미로우므로 양측.':'단측은 <b>자료 보기 전</b> 방향을 정했고 반대 방향이 무의미할 때만 정당하다.';
+      h='<span class="lbl">1단계 · 가설 설정</span><div class="calc">'+__km('H_0:\\ p = '+p0)+'<br>'+__km('H_A:\\ '+ha)+'</div><div class="note">'+why+'</div>'
+       +C('<span class="cm"># 가설은 계산이 아니라 \'선언\'이다</span>\np0    = '+p0+'   <span class="cm"># 귀무가설 값</span>\nalpha = '+alpha+'   <span class="cm"># 유의수준</span>');}
+    if(k===2){const s1=n*p0,s2=n*(1-p0),ok=s1>=10&&s2>=10;
+      h='<span class="lbl">2단계 · 조건 확인 (독립성 · 성공–실패)</span><div class="calc">'+__km('np_0='+n+'\\times'+p0+'='+s1.toFixed(1))+' &nbsp; '+__km('n(1-p_0)='+s2.toFixed(1))+'</div>'
+       +(ok?'<span class="hts-v ok">두 값 모두 ≥ 10 — 정규근사 가능</span>':'<span class="hts-v warn">10 미만 — 정확검정(이항) 권장</span>')
+       +C('n, p0 = '+n+', '+p0+'\nprint(n*p0, n*(1-p0))   <span class="cm"># 둘 다 >= 10 이면 정규근사 OK</span>');}
+    if(k===3){const SE=Math.sqrt(p0*(1-p0)/n),z=(phat-p0)/SE;let pv,pf,logic,pline;
+      if(dir==='two'){pv=2*(1-__ncdf(Math.abs(z)));pf='2\\times P(Z>|Z|)=2\\,[\\,1-\\Phi(|'+z.toFixed(3)+'|)\\,]';logic='양측이므로 한쪽 꼬리 넓이를 구해 <b>2배</b> 한다.';pline='p_value = 2*(1 - stats.norm.cdf(abs(z)))   <span class="cm"># 양측: 한쪽 x 2</span>';}
+      else if(dir==='right'){pv=1-__ncdf(z);pf='P(Z>'+z.toFixed(3)+')=1-\\Phi('+z.toFixed(3)+')';logic='우측검정이므로 위쪽 꼬리. <b>1에서 Φ를 뺀다.</b>';pline='p_value = 1 - stats.norm.cdf(z)   <span class="cm"># 우측: 1에서 뺀다</span>';}
+      else{pv=__ncdf(z);pf='P(Z<'+z.toFixed(3)+')=\\Phi('+z.toFixed(3)+')';logic='좌측검정이므로 아래쪽 꼬리. Z가 음수이면 <b>Φ(음수)</b> 자체가 곧 p값이다.';pline='p_value = stats.norm.cdf(z)   <span class="cm"># 좌측: Φ 그대로</span>';}
+      h='<span class="lbl">3단계 · 검정통계량과 p값</span>'
+       +'<div class="calc">'+__km('SE_0=\\sqrt{\\tfrac{p_0(1-p_0)}{n}}='+SE.toFixed(4))+'</div>'
+       +'<div class="calc">'+__km('Z=\\dfrac{\\hat p-p_0}{SE_0}=\\dfrac{'+phat+'-'+p0+'}{'+SE.toFixed(4)+'}='+z.toFixed(3))+'</div>'
+       +'<div class="calc">'+__km('\\text{p값}='+pf+'='+(pv<1e-4?pv.toExponential(2):pv.toFixed(4)))+'</div><div class="note">'+logic+'</div>'
+       +C('<span class="cm"># 이 값을 계산할 때 파이썬 코드는 이렇게 쓴다</span>\nfrom scipy import stats\nphat, n, p0 = '+phat+', '+n+', '+p0+'\nSE = (p0*(1-p0)/n)**0.5\nz  = (phat - p0)/SE\n'+pline+'\nprint(z, p_value)');
+      card.dataset.pv=pv;}
+    if(k===4){let pv=sel('[data-c="3"]').dataset.pv;
+      if(pv===undefined){const SE=Math.sqrt(p0*(1-p0)/n),z=(phat-p0)/SE;pv=dir==='two'?2*(1-__ncdf(Math.abs(z))):dir==='right'?1-__ncdf(z):__ncdf(z);}
+      pv=+pv;const rej=pv<alpha;
+      h='<span class="lbl">4단계 · 결론</span><div class="calc">'+__km('\\text{p값}='+(pv<1e-4?pv.toExponential(2):pv.toFixed(4))+(rej?' < ':' \\geq ')+'\\alpha='+alpha)+'</div>'
+       +(rej?'<span class="hts-v reject">p값 &lt; α → H₀ <b>기각</b></span><div class="note">자료가 H₀와 양립하기 어렵다. 효과 크기·신뢰구간도 함께 보고하라.</div>'
+            :'<span class="hts-v fail">p값 ≥ α → H₀ <b>기각 못함</b> (\u201c채택\u201d 아님)</span><div class="note">증거가 부족할 뿐, H₀가 참임을 증명한 것은 아니다.</div>')
+       +C('<span class="cm"># 결정 규칙: p값과 alpha 비교</span>\nalpha = '+alpha+'\nprint("H0 기각" if p_value < alpha else "H0 기각 못함")');}
+    card.innerHTML=h;card.classList.add('show');btn.classList.add('done');
+  }
+  box.querySelectorAll('.hts-sbtn').forEach(b=>b.onclick=()=>step(+b.dataset.s));
+  box.querySelector('[data-a=all]').onclick=()=>[1,2,3,4].forEach(step);
+  box.querySelector('[data-a=reset]').onclick=()=>{[1,2,3,4].forEach(k=>{const c=sel('[data-c="'+k+'"]');c.classList.remove('show');c.innerHTML='';delete c.dataset.pv;});box.querySelectorAll('.hts-sbtn').forEach(b=>b.classList.remove('done'));};
+  box.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('input',()=>{[1,2,3,4].forEach(k=>{if(sel('[data-c="'+k+'"]').classList.contains('show'))step(k);});}));
+}
+
+/* ===== 부품 B: α·β·검정력 시각화 (효과 d, 표본 n, α 손잡이) ===== */
+function pwzBuild(box){
+  box.innerHTML='<div class="pwz-head">▶ 손잡이를 끌어 분포를 움직여 보라 — 면적이 곧 확률, n을 키우면 β(파랑)가 줄어든다</div>'
+   +'<div class="pwz-body"><div style="flex:1 1 440px;min-width:300px"><canvas width="560" height="320"></canvas></div>'
+   +'<div class="ctl">'
+   +'<div class="row"><label>효과 크기 d (Cohen): <span class="val" data-v="d">0.5</span></label><input type="range" data-r="d" min="0" max="1.2" step="0.01" value="0.5"></div>'
+   +'<div class="row"><label>그룹당 표본 n: <span class="val" data-v="n">50</span></label><input type="range" data-r="n" min="5" max="500" step="1" value="50"></div>'
+   +'<div class="row"><label>유의수준 α: <span class="val" data-v="a">0.050</span></label><input type="range" data-r="a" min="0.001" max="0.2" step="0.001" value="0.05"></div>'
+   +'<div class="ro"><table>'
+   +'<tr><td><span class="sw" style="background:#c0392b"></span>제1종 α</td><td data-o="a"></td></tr>'
+   +'<tr><td><span class="sw" style="background:#2c6fb0"></span>제2종 β</td><td data-o="b"></td></tr>'
+   +'<tr><td><span class="sw" style="background:#3a8a4a"></span>검정력 1−β</td><td data-o="p"></td></tr>'
+   +'<tr><td>표준화 효과 δ</td><td data-o="d"></td></tr></table></div>'
+   +'<div class="ins" data-o="ins"></div></div></div>';
+  const cv=box.querySelector('canvas'),ctx=cv.getContext('2d'),sel=q=>box.querySelector(q);
+  function draw(){
+    const d=+sel('[data-r=d]').value,n=+sel('[data-r=n]').value,al=+sel('[data-r=a]').value;
+    const delta=d*Math.sqrt(n/2);
+    sel('[data-v=d]').textContent=d.toFixed(2);sel('[data-v=n]').textContent=n;sel('[data-v=a]').textContent=al.toFixed(3);
+    const zc=__nppf(1-al/2),beta=__ncdf(zc-delta)-__ncdf(-zc-delta),power=1-beta;
+    const W=cv.width,H=cv.height,pB=28,pT=12,xmin=-4,xmax=Math.max(4,delta+4);
+    const X=x=>(x-xmin)/(xmax-xmin)*W,peak=__phi(0),Y=y=>H-pB-(y/peak)*(H-pB-pT);
+    ctx.clearRect(0,0,W,H);ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,H-pB);ctx.lineTo(W,H-pB);ctx.stroke();
+    const fill=(mu,lo,hi,col)=>{ctx.fillStyle=col;ctx.beginPath();let st=false;for(let px=0;px<=W;px++){const x=xmin+px/W*(xmax-xmin);if(x<lo||x>hi)continue;if(!st){ctx.moveTo(X(x),H-pB);st=true;}ctx.lineTo(X(x),Y(__phi(x-mu)));}if(st){ctx.lineTo(X(Math.min(hi,xmax)),H-pB);ctx.closePath();ctx.fill();}};
+    fill(delta,-zc,zc,'rgba(44,111,176,0.32)');
+    fill(delta,zc,xmax,'rgba(58,138,74,0.40)');fill(delta,xmin,-zc,'rgba(58,138,74,0.40)');
+    fill(0,zc,xmax,'rgba(192,57,43,0.45)');fill(0,xmin,-zc,'rgba(192,57,43,0.45)');
+    ctx.setLineDash([4,3]);ctx.strokeStyle='#555';ctx.beginPath();ctx.moveTo(X(zc),pT);ctx.lineTo(X(zc),H-pB);ctx.moveTo(X(-zc),pT);ctx.lineTo(X(-zc),H-pB);ctx.stroke();ctx.setLineDash([]);
+    const cu=mu=>{ctx.beginPath();for(let px=0;px<=W;px++){const x=xmin+px/W*(xmax-xmin),Yy=Y(__phi(x-mu));px?ctx.lineTo(px,Yy):ctx.moveTo(px,Yy);}ctx.stroke();};
+    ctx.lineWidth=2;ctx.strokeStyle='#444';cu(0);ctx.strokeStyle='#1a6b2a';cu(delta);
+    ctx.fillStyle='#444';ctx.font='12px "Noto Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText('귀무 H₀',X(0),pT+10);ctx.fillStyle='#1a6b2a';ctx.fillText('대립 Hₐ',X(delta),pT+10);
+    sel('[data-o=a]').textContent=al.toFixed(4);sel('[data-o=b]').textContent=beta.toFixed(4);sel('[data-o=p]').textContent=power.toFixed(4);sel('[data-o=d]').textContent=delta.toFixed(3);
+    let m;if(delta<0.4)m='효과가 거의 0 — 두 분포가 포개져 검정력이 α 수준이다.';else if(power<0.5)m='검정력 50% 미만 — 효과가 있어도 절반 넘게 놓친다. n을 키워 보라.';else if(power>=0.8)m='검정력 ≥ 80% — 통상 설계 목표 달성.';else m='α를 줄이면(빨강↓) 임계선이 밀려 β(파랑)가 커진다 — 두 오류는 맞바꿈. β를 줄이려면 n을 키워라.';
+    sel('[data-o=ins]').innerHTML='<b>관찰:</b> '+m;
+  }
+  box.querySelectorAll('input[type=range]').forEach(r=>r.addEventListener('input',draw));draw();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.hts').forEach((b,i)=>htsBuild(b,i));
+  document.querySelectorAll('.pwz').forEach(pwzBuild);
+});
+</script>
+
+</head>
+<body>
+<div id="pyodide-banner" class="pyodide-banner loading">⏳ Python 환경 준비 중...</div>
+<h1>인터랙티브 통계 부품 키트</h1>
+<p style="color:#555;font-style:italic;text-align:center;margin:0 0 2em;">5·6·7장에 그대로 끼워 넣는 재사용 부품 — 클릭으로 단계를 밟고, 손잡이를 돌리고, 파이썬으로 직접 계산·작도한다</p>
+<p style="font-family:'Noto Sans KR';font-size:0.9em;background:#fff4e0;border:1px solid #d4a647;border-radius:5px;padding:0.7em 1em;">
+이 파일의 파이썬 셀은 <strong>브라우저 안에서 실제로 실행</strong>된다. 페이지 상단 띠가 “준비 완료”로 바뀌면 <code>▶ 실행</code>을 누르거나 <code>Ctrl+Enter</code>로 돌린다(최초 1회 패키지 다운로드에 시간이 걸린다).</p>
+
+<h2>부품 1. 가설검정 4단계 솔버 — 계산마다 파이썬 코드 동반</h2>
+<p>각 단계의 검은 박스가 <strong>그 값을 어떻게 계산하는지 파이썬 코드</strong>를 보여준다. 숫자를 바꾸면 풀이가 다시 계산된다.</p>
+<div class="hts" data-label="예제 5.28: 석탄 에너지 지지율" data-phat="0.37" data-n="1000" data-p0="0.5" data-alpha="0.05" data-dir="two"></div>
+<div class="hts" data-label="우측검정 예시 — 방향이 바뀌면 p값 공식도 바뀐다" data-phat="0.58" data-n="200" data-p0="0.5" data-alpha="0.05" data-dir="right"></div>
+
+<h2>부품 2. <span class="math inline">\alpha</span> · <span class="math inline">\beta</span> · 검정력 시각화</h2>
+<p>효과 <span class="math inline">d</span>, 표본 <span class="math inline">n</span>, 유의수준 <span class="math inline">\alpha</span> 세 손잡이를 끈다. <strong>n을 키우면 <span class="math inline">\beta</span>(파랑)가 줄어든다.</strong></p>
+<div class="pwz"></div>
+
+<h2>부품 3. "숫자만 바꿔 실행" 셀 — <span style="color:#9a3324">결론은 학생이 판단</span></h2>
+<p>증거(Z, p값)만 출력하고 기각 여부는 학생이 정한다. 맨 위 숫자를 바꿔 실행해 보라.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false"># ===== 이 숫자만 바꿔 보라 =====
+p_hat = 0.55      # 관측 표본비율  &lt;- 바꿔 보라
+n     = 400       # 표본 크기      &lt;- 바꿔 보라
+p0    = 0.50      # 귀무가설 값
+# ================================
+from scipy import stats
+SE = (p0*(1-p0)/n)**0.5
+z  = (p_hat - p0)/SE
+p_value = 2*(1 - stats.norm.cdf(abs(z)))   # 양측
+print(f"Z = {z:.3f},  p값 = {p_value:.4f}")
+print("이 p값을 alpha와 직접 비교해, 기각할지 스스로 판단하라.")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과·그림이 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+
+<h2>부품 4. p값 영역 그림 + 경우별 함수 가이드 (실행되는 matplotlib)</h2>
+<p><code>z_obs</code>와 <code>direction</code>을 바꿔 실행하면, 귀무분포 위에 관측 <span class="math inline">Z</span>(초록 점선)와 <strong>p값 영역(빨강)</strong>이 그려지고, <strong>그 경우에 어떤 scipy 함수를 썼는지</strong>까지 출력된다.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+# ===== 이 두 줄만 바꿔 보라 =====
+z_obs     = 2.10     # 관측된 검정통계량 Z  (음수도 넣어 보라)
+direction = "two"    # "two"(양측) / "right"(우측 H_A:p&gt;p0) / "left"(좌측 H_A:p&lt;p0)
+# ================================
+
+# --- 경우별로 어떤 함수를 쓰는가 (핵심) ---
+#   우측 꼬리 P(Z&gt;z) -&gt; stats.norm.sf(z)        ( = 1 - cdf(z) )
+#   좌측 꼬리 P(Z&lt;z) -&gt; stats.norm.cdf(z)
+#   양측            -&gt; 2 * stats.norm.sf(abs(z))   (한쪽 꼬리 x 2)
+if direction == "right":
+    p = stats.norm.sf(z_obs);            used = "stats.norm.sf(z)        # 위쪽 꼬리"
+elif direction == "left":
+    p = stats.norm.cdf(z_obs);           used = "stats.norm.cdf(z)       # 아래쪽 꼬리"
+else:
+    p = 2 * stats.norm.sf(abs(z_obs));   used = "2*stats.norm.sf(abs(z)) # 한쪽 꼬리 x 2"
+
+# --- 그림: 빨간 면적이 곧 p값 ---
+lim = max(3.5, abs(z_obs) + 1)
+x = np.linspace(-lim, lim, 600); y = stats.norm.pdf(x)
+fig, ax = plt.subplots(figsize=(6.2, 3.2))
+ax.plot(x, y, color="#333", lw=1.8); ax.axhline(0, color="#999", lw=0.8)
+za = abs(z_obs)
+if direction == "two":
+    ax.fill_between(x, y, where=(x &lt;= -za), color="#c0392b", alpha=0.55)
+    ax.fill_between(x, y, where=(x &gt;=  za), color="#c0392b", alpha=0.55)
+elif direction == "right":
+    ax.fill_between(x, y, where=(x &gt;= z_obs), color="#c0392b", alpha=0.55)
+else:
+    ax.fill_between(x, y, where=(x &lt;= z_obs), color="#c0392b", alpha=0.55)
+ax.axvline(z_obs, color="#1a6b2a", lw=1.8, ls="--")
+ax.set_title(f"p-value (red area) = {p:.4g}", fontsize=11)
+ax.set_xlabel("test statistic  Z"); ax.set_yticks([]); ax.margins(x=0)
+# (plt.show 불필요: 그림은 자동 표시된다)
+
+print(f"방향 = {direction},  Z = {z_obs}")
+print(f"사용 함수: p = {used}")
+print(f"p-value = {p:.4g}")
+print("빨간 면적이 곧 p값이다. alpha와 비교해 스스로 판단하라.")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과·그림이 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+
+<h2>부품 5. scipy 함수 치트시트 — 경우별로 무엇을 쓰는가</h2>
+<p>우측/좌측/양측, 임계값, 신뢰구간에서 각각 어떤 함수를 쓰는지 한 셀로 정리한다. <code>z</code>, <code>alpha</code>를 바꿔 확인하라.</p>
+<div class="pycell"><div class="pycell-label"><span></span><span class="hint">Ctrl+Enter로 실행 · Tab으로 들여쓰기</span></div><textarea class="pycell-code" spellcheck="false">from scipy import stats
+
+# ===== 예시 값 (바꿔 보라) =====
+z, alpha = 2.10, 0.05
+# ===============================
+print("자주 쓰는 scipy 함수 — 경우별 정리")
+print("-" * 50)
+print(f"우측 꼬리 P(Z&gt;z)  = stats.norm.sf(z)         = {stats.norm.sf(z):.4f}")
+print(f"좌측 꼬리 P(Z&lt;z)  = stats.norm.cdf(z)        = {stats.norm.cdf(z):.4f}")
+print(f"양측 p값         = 2*stats.norm.sf(|z|)      = {2*stats.norm.sf(abs(z)):.4f}")
+print(f"양측 임계값 z*    = stats.norm.ppf(1-a/2)    = {stats.norm.ppf(1-alpha/2):.4f}")
+print(f"단측 임계값 z*    = stats.norm.ppf(1-a)      = {stats.norm.ppf(1-alpha):.4f}")
+print()
+print("참고: sf(z) = 1 - cdf(z) 로 값은 같지만, 꼬리가 아주 작을 때 sf 가 더 정확하다.")
+print("     신뢰구간:  p_hat +/- stats.norm.ppf(1-a/2) * SE")</textarea><div class="pycell-controls"><button class="pycell-run" onclick="runPyCell(this)">▶ 실행</button><span class="pycell-status"></span><span class="pycell-hint">결과·그림이 아래에 출력됨</span></div><pre class="pycell-output"></pre></div>
+</body>
+</html>
