@@ -7,16 +7,55 @@
 본 교재의 모든 그림은 `figs/` 폴더에서 가져오며, 모든 코드는 그대로 복사해서 Jupyter Notebook이나 Google Colab에서 실행할 수 있다. 데이터 로딩과 전처리는 1부의 표준 패턴을 그대로 쓴다.
 
 ```python
-# 환경 준비 (한 번만 실행)
-# !pip install pandas numpy matplotlib scikit-learn koreanize-matplotlib
-
+# 환경 준비 (한 번만 실행) — 이 셀을 실행하지 않으면 아래 모든 실습이 동작하지 않는다
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import koreanize_matplotlib   # 한글 폰트(NanumGothic) 자동 설정
 
+# (1) 한글 폰트 — koreanize-matplotlib가 없으면 자동 설치를 시도하고,
+#     그래도 실패하면 시스템 한글 폰트로 대체한다. 어느 경우에도 오류로 멈추지 않는다.
+try:
+    import koreanize_matplotlib
+except ModuleNotFoundError:
+    try:
+        import subprocess, sys
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q",
+                        "koreanize-matplotlib"], check=True)
+        import koreanize_matplotlib
+    except Exception:
+        plt.rcParams["font.family"] = ["NanumGothic", "Malgun Gothic",
+                                       "AppleGothic", "DejaVu Sans"]
+plt.rcParams["axes.unicode_minus"] = False
+
+# (2) Ames 데이터 로딩 — GitHub에서 받되, 인터넷이 안 되면 합성 데이터로 자동 대체한다
 URL = "https://raw.githubusercontent.com/leina99-lab/classes/main/AI%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D/data/AmesHousing.csv"
-df_raw = pd.read_csv(URL)
+
+def make_synthetic_ames(n_rows=2900, seed=42):
+    """오프라인 환경용 Ames 모사 데이터. 변수 간 상관 구조를 실제와 비슷하게 만든다."""
+    rng = np.random.default_rng(seed)
+    qual   = rng.integers(1, 11, n_rows).astype(float)          # Overall Qual (지배 변수)
+    gr_liv = rng.normal(1500, 450, n_rows).clip(400, 3950)      # Gr Liv Area
+    flr1   = gr_liv * rng.uniform(0.55, 1.0, n_rows)            # 1st Flr SF
+    flr2   = np.clip(gr_liv - flr1, 0, None)                    # 2nd Flr SF
+    bsmt   = np.clip(flr1 * rng.uniform(0.7, 1.05, n_rows), 0, None)
+    cars   = np.clip(np.round(qual / 3 + rng.normal(0, 0.6, n_rows)), 0, 4)
+    garage = cars * 250 + rng.normal(0, 40, n_rows)             # Garage Area (Cars의 사촌 변수)
+    year   = rng.integers(1900, 2011, n_rows).astype(float)
+    price  = (qual * 18000 + gr_liv * 55 + bsmt * 15 + cars * 6000
+              + (year - 1900) * 300 + rng.normal(0, 18000, n_rows)).clip(35000, None)
+    return pd.DataFrame({
+        "Overall Qual": qual, "Gr Liv Area": gr_liv,
+        "1st Flr SF": flr1, "2nd Flr SF": flr2, "Total Bsmt SF": bsmt,
+        "Garage Cars": cars, "Garage Area": garage,
+        "Year Built": year, "SalePrice": price,
+    })
+
+try:
+    df_raw = pd.read_csv(URL)
+    print("GitHub에서 Ames 데이터를 받았다.")
+except Exception:
+    df_raw = make_synthetic_ames()
+    print("인터넷 연결이 없어 합성 데이터로 대체한다. 수치는 본문과 다를 수 있으나 결론은 같다.")
 
 def prepare_ames(df_in):
     df = df_in.copy()
@@ -34,15 +73,18 @@ def prepare_ames(df_in):
         df = df[df["Gr Liv Area"] < 4000].copy()
     if all(c in df.columns for c in ["1st Flr SF", "2nd Flr SF", "Total Bsmt SF"]):
         df["Total SF"] = df["1st Flr SF"] + df["2nd Flr SF"] + df["Total Bsmt SF"]
-    return df
+    # 행을 걸러낸 뒤에는 반드시 인덱스를 0부터 다시 매긴다.
+    # 이렇게 해야 위치 기반 인덱싱(iloc)과 행 번호가 항상 일치한다.
+    return df.reset_index(drop=True)
 
 df = prepare_ames(df_raw)
 y = np.log1p(df["SalePrice"])
 X = df.select_dtypes("number").drop(columns=["SalePrice"])
+n = len(X)
 print(f"준비 완료: {X.shape[0]}채 × {X.shape[1]}개 변수")
 ```
 
-위 코드를 한 번 실행해 두면 0장부터 8장까지의 모든 실습이 같은 `X`와 `y` 위에서 진행된다.
+위 코드를 한 번 실행해 두면 0장부터 8장까지의 모든 실습이 같은 `X`와 `y` 위에서 진행된다. 환경 준비 셀에는 두 가지 안전장치가 들어 있다. 첫째, 한글 폰트 패키지가 없는 환경(Colab 기본 상태 포함)에서는 자동 설치를 시도하고, 실패해도 시스템 폰트로 대체하여 멈추지 않는다. 둘째, 인터넷이 끊긴 환경에서는 실제 Ames 데이터와 같은 상관 구조를 가진 합성 데이터로 자동 전환된다. 또한 `prepare_ames` 끝의 `reset_index(drop=True)`가 중요하다. 4,000평방피트 이상의 집을 걸러내면 행 인덱스에 빈 번호가 생기는데, 인덱스를 0부터 다시 매겨 두면 뒤에서 쓸 위치 기반 인덱싱 `X.iloc[idx]`가 행 번호와 정확히 일치하여 인덱싱 오류가 원천적으로 차단된다.
 
 ---
 
@@ -126,7 +168,7 @@ print(f"줄어든 양:     {gain:.4f}  (전체의 {gain/mse_before*100:.0f}%)")
 학습된 트리를 그림으로 보면 분기의 흐름이 한눈에 보인다.
 
 ```python
-from sklearn.tree import plot_tree
+from sklearn.tree import DecisionTreeRegressor, plot_tree
 
 tree_small = DecisionTreeRegressor(max_depth=3, random_state=42)
 tree_small.fit(X, y)
@@ -151,6 +193,7 @@ plt.tight_layout(); plt.show()
 깊이를 바꿔 가며 학습 성능과 검증 성능의 차이를 보면, 트리가 **어디까지 자라야 적당한지**가 한 눈에 드러난다.
 
 ```python
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score
 
 depths = [1, 3, 5, 8, 12, 20, None]
@@ -204,7 +247,7 @@ from sklearn.tree import DecisionTreeRegressor
 from collections import Counter
 
 rng = np.random.default_rng(42)
-n = len(X)
+n = len(X)            # 환경 준비 셀의 X를 사용한다 (반드시 환경 준비 셀을 먼저 실행)
 
 first_splits = []
 for seed in range(20):
@@ -243,7 +286,7 @@ for var, cnt in Counter(first_splits).most_common():
 
 ```python
 rng = np.random.default_rng(42)
-n = len(X)
+n = len(X)            # 이 셀만 단독 실행해도 되도록 다시 정의한다
 
 boot_idx = rng.choice(n, size=n, replace=True)        # 복원 추출
 unique_idx = np.unique(boot_idx)
@@ -272,9 +315,11 @@ print(f"OOB 행 수:       {len(oob_idx)}   ({len(oob_idx)/n*100:.1f}%)")
 부트스트랩 표본으로 트리를 학습시키고, OOB 표본으로 그 트리를 평가하면 별도의 검증 데이터 없이도 일반화 성능을 추정할 수 있다.
 
 ```python
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score
 
 rng = np.random.default_rng(42)
+n = len(X)            # 이 셀만 단독 실행해도 되도록 다시 정의한다
 oob_scores = []
 
 for b in range(5):
@@ -320,9 +365,11 @@ print(f"\nOOB 점수 평균: {np.mean(oob_scores):.4f}")
 여러 그루의 트리를 누적해서 평균을 내면 R²가 어떻게 변하는지 본다.
 
 ```python
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import r2_score
 
 rng = np.random.default_rng(42)
+n = len(X)            # 이 셀만 단독 실행해도 되도록 다시 정의한다
 val_idx = rng.choice(n, size=int(n * 0.2), replace=False)
 train_idx = np.setdiff1d(np.arange(n), val_idx)
 X_train, y_train = X.iloc[train_idx], y.iloc[train_idx]
@@ -457,19 +504,23 @@ print(f"속도 차이:     CV가 약 {cv_time/oob_time:.1f}배 느림")
 `warm_start`를 켜면 트리를 **추가만** 하면서 OOB 점수의 변화를 관찰할 수 있다.
 
 ```python
-rf = RandomForestRegressor(n_estimators=10, oob_score=True,
+from sklearn.ensemble import RandomForestRegressor
+
+# 트리가 10그루 이하로 너무 적으면 일부 행이 OOB 예측을 한 번도 받지 못해
+# 경고가 출력되므로, 20그루부터 시작한다.
+rf = RandomForestRegressor(n_estimators=20, oob_score=True,
                             warm_start=True, random_state=42, n_jobs=-1)
 
 oob_curve = []
-n_list = list(range(10, 201, 10))
+n_list = list(range(20, 201, 10))
 for n_tr in n_list:
     rf.set_params(n_estimators=n_tr)
     rf.fit(X, y)
     oob_curve.append(rf.oob_score_)
 
-print(f"10그루:  {oob_curve[0]:.4f}")
-print(f"50그루:  {oob_curve[4]:.4f}")
-print(f"100그루: {oob_curve[9]:.4f}")
+print(f"20그루:  {oob_curve[0]:.4f}")
+print(f"50그루:  {oob_curve[3]:.4f}")
+print(f"100그루: {oob_curve[8]:.4f}")
 print(f"200그루: {oob_curve[-1]:.4f}")
 
 fig, ax = plt.subplots(figsize=(9, 5))
@@ -522,6 +573,8 @@ MDI 관점에서 보면, 트리가 분할마다 **둘 중 하나를 골라 사�
 #### 실습 — MDI 측정
 
 ```python
+from sklearn.ensemble import RandomForestRegressor
+
 rf = RandomForestRegressor(n_estimators=200, random_state=42, n_jobs=-1)
 rf.fit(X, y)
 
@@ -546,6 +599,9 @@ plt.tight_layout(); plt.show()
 `Garage Cars`와 `Garage Area`를 **한 쪽만 제거** 했을 때와 **둘 다 제거** 했을 때 R²를 비교한다.
 
 ```python
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+
 results = []
 for name, drop_cols in [("전체", []),
                          ("Cars 제거", ["Garage Cars"]),
@@ -618,15 +674,19 @@ for name, m in models.items():
 
 ```python
 import time
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
 
 print(f"{'그루 수':>8s}  {'CV R²':>8s}  {'시간':>8s}")
 print("-" * 28)
-for n in [10, 50, 100, 200, 500]:
-    rf = RandomForestRegressor(n_estimators=n, random_state=42, n_jobs=-1)
+# 주의: 루프 변수 이름을 n으로 쓰면 위에서 만든 표본 크기 n = len(X)를
+# 덮어써서 이후 셀의 인덱싱이 어긋난다. 반드시 다른 이름(n_tr)을 쓴다.
+for n_tr in [10, 50, 100, 200, 500]:
+    rf = RandomForestRegressor(n_estimators=n_tr, random_state=42, n_jobs=-1)
     t0 = time.time()
     r2 = cross_val_score(rf, X, y, cv=5, scoring="r2", n_jobs=-1).mean()
     dt = time.time() - t0
-    print(f"{n:>8d}  {r2:>8.4f}  {dt:>6.1f}s")
+    print(f"{n_tr:>8d}  {r2:>8.4f}  {dt:>6.1f}s")
 ```
 
 500그루는 100그루의 **5배 시간** 이 걸리지만 R²는 거의 같다. **시간을 5배 더 쓸 가치가 없다**는 신호다.
