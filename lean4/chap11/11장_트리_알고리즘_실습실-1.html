@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11장 트리 알고리즘 실습실</title>
+<style>
+  @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css");
+  :root{
+    --bg:#FFFFFF;--fg:#333;--muted:#7BA7AD;--muted-deep:#2D5E5E;--accent:#D4726A;
+    --accent-soft:#F0F5F4;--thm-bg:#E0F0ED;--try-bg:#F0F7F0;--try-fg:#3F7A4F;
+    --warn-bg:#FDF0E6;--warn-fg:#B85F3D;--code-bg:#F5F5F5;--divider:#DDE3EA;
+    --node:#fff;--node-line:#7BA7AD;--node-current:#D4726A;--node-done:#7BA7AD;
+    --edge:#B9C4CC;--edge-tree:#D4726A;--edge-active:#7BA7AD;
+    --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR",sans-serif;
+    --mono:"JetBrains Mono","D2Coding","Consolas",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);
+    line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .app{display:flex;min-height:100vh;}
+  .side{width:262px;flex:0 0 262px;background:linear-gradient(180deg,#7BA7AD,#5E8E94);
+    color:#fff;padding:26px 16px 40px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .side h1{font-size:18px;font-weight:800;line-height:1.4;margin:0 0 4px;}
+  .side .sub{font-size:12px;opacity:.85;margin:0 0 20px;}
+  .navgrp{margin-bottom:16px;}
+  .navgrp .lab{font-size:10.5px;font-weight:700;letter-spacing:1.3px;opacity:.7;margin:0 8px 7px;}
+  .navbtn{display:block;width:100%;text-align:left;border:none;cursor:pointer;
+    background:rgba(255,255,255,.06);color:#fff;font:600 13.5px/1.4 var(--font);
+    padding:10px 13px;border-radius:11px;margin-bottom:6px;border-left:3px solid transparent;
+    transition:background .16s,transform .16s;}
+  .navbtn:hover{background:rgba(255,255,255,.16);transform:translateX(2px);}
+  .navbtn.on{background:#fff;color:var(--muted-deep);border-left:3px solid var(--accent);}
+  .navbtn .sec{font-size:10.5px;font-weight:700;opacity:.7;display:block;}
+  .navbtn.on .sec{color:var(--accent);opacity:1;}
+  .main{flex:1;min-width:0;padding:30px 40px 90px;max-width:1120px;}
+  .crumb{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px;margin-bottom:5px;}
+  .ttl{font-size:28px;font-weight:800;letter-spacing:-.5px;margin:0 0 5px;color:#222;}
+  .lede{font-size:15px;color:#555;margin:0 0 22px;max-width:780px;}
+  .sect-h{font-size:12px;font-weight:800;letter-spacing:1px;color:var(--muted-deep);
+    text-transform:uppercase;margin:26px 0 10px;display:flex;align-items:center;gap:8px;}
+  .sect-h::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;}
+  /* 입력/편집 */
+  .panelbox{background:#fff;border:1px solid var(--divider);border-radius:16px;padding:18px 20px;margin-bottom:16px;}
+  .field{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;}
+  .field label{font-size:13.5px;font-weight:700;color:#444;}
+  input[type=text],input[type=number],select{font:600 14px/1 var(--mono);padding:9px 12px;
+    border:1.6px solid var(--divider);border-radius:10px;background:#fff;color:#222;outline:none;}
+  input[type=text]{min-width:240px;}
+  input[type=number]{width:74px;}
+  input:focus,select:focus{border-color:var(--muted);}
+  .btn{font:700 13.5px/1 var(--font);cursor:pointer;border:none;border-radius:10px;
+    padding:10px 16px;background:var(--muted);color:#fff;transition:filter .15s,transform .1s;}
+  .btn:hover{filter:brightness(1.08);}.btn:active{transform:scale(.97);}
+  .btn.ghost{background:#fff;color:var(--muted-deep);border:1.5px solid var(--muted);}
+  .btn.coral{background:var(--accent);}
+  .btn.small{padding:7px 11px;font-size:12.5px;border-radius:8px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none;}
+  .presets{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:2px 0 6px;}
+  .presets .lab{font-size:12.5px;color:#888;font-weight:600;}
+  .chip{font:600 12.5px/1 var(--font);padding:7px 12px;border-radius:9px;background:var(--code-bg);
+    border:1.5px solid var(--divider);color:#333;cursor:pointer;transition:.15s;}
+  .chip:hover{border-color:var(--muted);background:var(--accent-soft);}
+  .chip.codey{font-family:var(--mono);}
+  .hint{font-size:12.5px;color:#8a8a8a;margin:4px 0 0;}
+  .err{background:var(--warn-bg);color:var(--warn-fg);border-radius:10px;padding:10px 14px;
+    font-size:13.5px;font-weight:600;margin-top:8px;}
+  /* 무대 */
+  .stage{background:var(--accent-soft);border:1px solid var(--divider);border-radius:16px;
+    padding:14px;margin-bottom:14px;position:relative;}
+  svg{display:block;width:100%;height:auto;touch-action:none;}
+  .narr{background:var(--thm-bg);border-left:5px solid var(--muted);border-radius:0 12px 12px 0;
+    padding:13px 18px;margin-bottom:14px;min-height:60px;font-size:15px;color:#244;}
+  .narr b{color:var(--accent);}
+  .ctrl{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:14px;}
+  .prog{flex:1;min-width:140px;height:8px;background:#e6eeec;border-radius:5px;overflow:hidden;}
+  .prog>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s;}
+  .stepno{font-size:12.5px;font-weight:700;color:var(--muted-deep);white-space:nowrap;}
+  /* 결과/해석 */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr;}}
+  .card{border:1px solid var(--divider);border-radius:14px;padding:14px 18px;background:#fff;}
+  .card h3{font-size:12.5px;font-weight:800;letter-spacing:.5px;color:var(--muted-deep);
+    margin:0 0 9px;text-transform:uppercase;}
+  .seqbox{font:800 18px/1.5 var(--mono);letter-spacing:1px;color:#222;word-break:break-all;min-height:24px;}
+  .seqbox .new{color:var(--accent);}
+  table.mini{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.mini th,table.mini td{border:1px solid var(--divider);padding:6px 9px;text-align:center;}
+  table.mini th{background:var(--accent-soft);color:var(--muted-deep);font-weight:700;}
+  table.mini tr.hl td{background:#fdeee9;font-weight:700;}
+  .stat{display:flex;gap:22px;flex-wrap:wrap;}
+  .stat .it{text-align:center;}
+  .stat .n{font:800 26px/1 var(--mono);color:var(--accent);}
+  .stat .l{font-size:12px;color:#777;margin-top:3px;}
+  .interp{background:var(--try-bg);border-left:5px solid var(--try-fg);border-radius:0 12px 12px 0;
+    padding:14px 18px;margin-bottom:14px;font-size:14.5px;color:#2c4a35;}
+  .interp h4{margin:0 0 7px;font-size:13.5px;color:var(--try-fg);font-weight:800;letter-spacing:.3px;}
+  .interp ul{margin:6px 0 0;padding-left:18px;}.interp li{margin:4px 0;}
+  .interp b{color:var(--try-fg);}
+  .explore{background:var(--warn-bg);border-left:5px solid var(--warn-fg);border-radius:0 12px 12px 0;
+    padding:14px 18px;margin-bottom:14px;font-size:14.5px;color:#5a3320;}
+  .explore h4{margin:0 0 7px;font-size:13.5px;color:var(--warn-fg);font-weight:800;}
+  .explore ol{margin:6px 0 0;padding-left:20px;}.explore li{margin:5px 0;}
+  .stack{display:flex;flex-direction:column-reverse;gap:5px;align-items:center;min-height:150px;}
+  .scell{font:700 16px/1 var(--mono);background:var(--thm-bg);border:2px solid var(--muted);
+    color:var(--muted-deep);border-radius:8px;padding:8px 0;width:80px;text-align:center;}
+  .scell.top{border-color:var(--accent);background:#fdeee9;color:var(--accent);}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .qchip{font:600 13px/1 var(--mono);padding:6px 11px;border-radius:9px;background:var(--code-bg);
+    border:1.5px solid var(--divider);}
+  .qchip.hl{border-color:var(--accent);background:#fdeee9;color:var(--accent);}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:#666;padding:2px 2px 10px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:13px;height:13px;border-radius:50%;border:2px solid;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:8px;}
+  .editbl td{padding:3px 4px;}
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:15px;}
+  .home-card{border:1px solid var(--divider);border-radius:16px;padding:17px 19px;cursor:pointer;
+    background:#fff;transition:.18s;}
+  .home-card:hover{box-shadow:0 10px 26px rgba(123,167,173,.22);transform:translateY(-3px);border-color:var(--muted);}
+  .home-card .s{font:800 11px/1 var(--font);color:var(--accent);letter-spacing:.4px;}
+  .home-card .t{font-size:16.5px;font-weight:800;margin:3px 0 6px;color:#222;}
+  .home-card .d{font-size:13px;color:#666;line-height:1.55;}
+  .note{font-size:12.5px;color:var(--warn-fg);background:var(--warn-bg);border-radius:10px;padding:11px 15px;}
+  text{font-family:var(--font);}
+  .ed-w{font-family:var(--mono);}
+  .selectable{cursor:pointer;}
+  .draggable{cursor:grab;}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side">
+    <h1>트리 알고리즘 실습실</h1>
+    <p class="sub">로젠 이산수학 8판 · 11장 트리</p>
+    <div class="navgrp"><p class="lab">11.3 트리 탐방</p>
+      <button class="navbtn" data-mod="trav"><span class="sec">11.3</span>탐방 실습 (트리 편집)</button>
+      <button class="navbtn" data-mod="expr"><span class="sec">11.3</span>수식 트리·표기법 실습</button>
+      <button class="navbtn" data-mod="postfix"><span class="sec">11.3</span>후위 계산·변환 실습</button>
+    </div>
+    <div class="navgrp"><p class="lab">11.2 트리의 응용</p>
+      <button class="navbtn" data-mod="bst"><span class="sec">11.2</span>이진 탐색 트리 실습</button>
+      <button class="navbtn" data-mod="huffman"><span class="sec">11.2</span>허프만 코드 실습</button>
+    </div>
+    <div class="navgrp"><p class="lab">11.4 신장 트리</p>
+      <button class="navbtn" data-mod="dfsbfs"><span class="sec">11.4</span>DFS·BFS 실습 (그래프 편집)</button>
+    </div>
+    <div class="navgrp"><p class="lab">11.5 최소 신장 트리</p>
+      <button class="navbtn" data-mod="mst"><span class="sec">11.5</span>프림·크루스칼 실습</button>
+    </div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+<script>
+/* ====================== 알고리즘 엔진 (순수 함수) ====================== */
+
+/* ---- 1. 중위 수식 파서 (토크나이저 + 션팅야드 → 트리) ---- */
+function tokenize(s){
+  const t=[];let i=0;
+  const prec={"+":1,"-":1,"*":2,"/":2,"^":3};
+  while(i<s.length){
+    const c=s[i];
+    if(c===" "){i++;continue;}
+    if("+-*/^".includes(c)){t.push({k:"op",v:c});i++;continue;}
+    if(c==="("){t.push({k:"lp"});i++;continue;}
+    if(c===")"){t.push({k:"rp"});i++;continue;}
+    if(/[A-Za-z0-9_.]/.test(c)){
+      let j=i;while(j<s.length&&/[A-Za-z0-9_.]/.test(s[j]))j++;
+      t.push({k:"id",v:s.slice(i,j)});i=j;continue;
+    }
+    return {error:"알 수 없는 문자: '"+c+"'"};
+  }
+  return {tokens:t,prec:prec};
+}
+function parseInfix(s){
+  const tk=tokenize(s);
+  if(tk.error)return {error:tk.error};
+  const {tokens,prec}=tk;
+  const out=[],ops=[];
+  const rightAssoc=c=>c==="^";
+  for(const t of tokens){
+    if(t.k==="id")out.push({op:false,label:t.v,l:null,r:null});
+    else if(t.k==="op"){
+      while(ops.length){
+        const top=ops[ops.length-1];
+        if(top.k==="op" && (prec[top.v]>prec[t.v] ||
+           (prec[top.v]===prec[t.v] && !rightAssoc(t.v)))){
+          pop();
+        }else break;
+      }
+      ops.push(t);
+    }else if(t.k==="lp")ops.push(t);
+    else if(t.k==="rp"){
+      while(ops.length && ops[ops.length-1].k!=="lp")pop();
+      if(!ops.length)return {error:"괄호가 맞지 않는다."};
+      ops.pop();
+    }
+  }
+  while(ops.length){
+    if(ops[ops.length-1].k==="lp")return {error:"괄호가 맞지 않는다."};
+    pop();
+  }
+  function pop(){
+    const o=ops.pop();
+    if(out.length<2)return {error:"피연산자가 부족하다."};
+    const r=out.pop(),l=out.pop();
+    out.push({op:true,label:o.v,l,r});
+  }
+  if(out.length!==1)return {error:"수식 형태가 올바르지 않다."};
+  return {tree:out[0]};
+}
+function traverse(t,order){ // 'pre' | 'in' | 'post'
+  const o=[];
+  (function go(n){
+    if(!n)return;
+    if(order==="pre")o.push(n.label);
+    go(n.l);
+    if(order==="in")o.push(n.label);
+    go(n.r);
+    if(order==="post")o.push(n.label);
+  })(t);
+  return o;
+}
+function infixString(t){ // 괄호 포함 중위
+  return (function go(n){
+    if(!n.op)return n.label;
+    return "("+go(n.l)+" "+n.label+" "+go(n.r)+")";
+  })(t);
+}
+
+/* ---- 2. 후위 계산 + 중위→후위 ---- */
+function evalPostfix(tokens){
+  const st=[],steps=[{stack:[],tok:-1,msg:"시작: 왼쪽부터 토큰을 읽는다."}];
+  const isOp=x=>"+-*/^".includes(x);
+  for(let i=0;i<tokens.length;i++){
+    const t=tokens[i];
+    if(isOp(t)){
+      if(st.length<2)return {error:"연산자 "+t+" 앞에 피연산자가 부족하다."};
+      const b=st.pop(),a=st.pop();
+      let r;
+      if(t==="+")r=a+b;else if(t==="-")r=a-b;else if(t==="*")r=a*b;
+      else if(t==="/"){if(b===0)return {error:"0으로 나눌 수 없다."};r=a/b;}
+      else r=Math.pow(a,b);
+      st.push(r);
+      steps.push({stack:[...st],tok:i,
+        msg:"연산자 "+t+": 위의 두 값 "+a+", "+b+" 를 꺼내 "+a+" "+t+" "+b+" = "+r});
+    }else{
+      const v=Number(t);
+      if(Number.isNaN(v))return {error:"피연산자가 숫자가 아니다: '"+t+"'"};
+      st.push(v);
+      steps.push({stack:[...st],tok:i,msg:"피연산자 "+t+" 를 스택에 쌓는다."});
+    }
+  }
+  if(st.length!==1)return {error:"식이 완전하지 않다(남은 값 "+st.length+"개)."};
+  return {steps,result:st[0]};
+}
+function infixToPostfix(s){
+  const tk=tokenize(s);if(tk.error)return {error:tk.error};
+  const {tokens,prec}=tk;const out=[],ops=[],steps=[];
+  const rightAssoc=c=>c==="^";
+  function snap(msg){steps.push({out:out.join(" "),ops:ops.map(o=>o.v||"(").join(" "),msg});}
+  snap("시작");
+  for(const t of tokens){
+    if(t.k==="id"){out.push(t.v);snap("피연산자 "+t.v+" 는 곧바로 출력한다.");}
+    else if(t.k==="op"){
+      while(ops.length){const top=ops[ops.length-1];
+        if(top.k==="op"&&(prec[top.v]>prec[t.v]||(prec[top.v]===prec[t.v]&&!rightAssoc(t.v)))){out.push(ops.pop().v);}
+        else break;}
+      ops.push(t);snap("연산자 "+t.v+" 는 우선순위를 비교한 뒤 스택에 넣는다.");
+    }else if(t.k==="lp"){ops.push(t);snap("여는 괄호는 스택에 넣는다.");}
+    else if(t.k==="rp"){
+      while(ops.length&&ops[ops.length-1].k!=="lp")out.push(ops.pop().v);
+      if(!ops.length)return {error:"괄호 불일치"};
+      ops.pop();snap("닫는 괄호: 여는 괄호까지 연산자를 출력한다.");
+    }
+  }
+  while(ops.length){if(ops[ops.length-1].k==="lp")return {error:"괄호 불일치"};out.push(ops.pop().v);}
+  snap("남은 연산자를 모두 출력한다.");
+  return {output:out,steps};
+}
+
+/* ---- 3. BST ---- */
+function bstBuild(keys){
+  let root=null;const steps=[];
+  for(const k of keys){
+    const path=[];
+    if(root===null){root={k,l:null,r:null};steps.push({k,path:[],placed:k});continue;}
+    let cur=root;
+    while(true){path.push(cur.k);
+      if(k===cur.k){steps.push({k,path:[...path],dup:true,placed:null});break;}
+      if(k<cur.k){if(cur.l)cur=cur.l;else{cur.l={k,l:null,r:null};steps.push({k,path:[...path],placed:k});break;}}
+      else{if(cur.r)cur=cur.r;else{cur.r={k,l:null,r:null};steps.push({k,path:[...path],placed:k});break;}}
+    }
+  }
+  return {root,steps,height:bstHeight(root),count:bstCount(root)};
+}
+function bstHeight(n){return n?1+Math.max(bstHeight(n.l),bstHeight(n.r)):0;}
+function bstCount(n){return n?1+bstCount(n.l)+bstCount(n.r):0;}
+function bstSearch(root,key){
+  const steps=[{cur:null,vis:[],msg:"루트에서 시작한다."}];
+  let cur=root,vis=[],cmp=0;
+  while(cur){vis.push(cur.k);cmp++;
+    if(key===cur.k){steps.push({cur:cur.k,vis:[...vis],found:true,cmp,msg:key+" = "+cur.k+" : 찾았다. (비교 "+cmp+"회)"});return {steps,found:true,cmp};}
+    const left=key<cur.k;
+    steps.push({cur:cur.k,vis:[...vis],cmp,msg:key+(left?" < ":" > ")+cur.k+" → "+(left?"왼쪽":"오른쪽")+"으로 이동"});
+    cur=left?cur.l:cur.r;
+  }
+  steps.push({cur:null,vis:[...vis],found:false,cmp,msg:key+" 를 찾지 못했다. (비교 "+cmp+"회)"});
+  return {steps,found:false,cmp};
+}
+
+/* ---- 4. 허프만 ---- */
+function huffman(freq){ // [[ch,w],...]
+  if(freq.length<2)return {error:"문자가 2개 이상 필요하다."};
+  let nodes=freq.map(([c,w],idx)=>({w,ch:c,l:null,r:null,_o:idx}));
+  const steps=[{forest:snap(nodes),hl:[]}];
+  let seq=freq.length;
+  while(nodes.length>1){
+    nodes.sort((a,b)=>a.w-b.w||a._o-b._o);
+    const x=nodes.shift(),y=nodes.shift();
+    const m={w:x.w+y.w,ch:null,l:x,r:y,_o:seq++};
+    nodes.push(m);
+    steps.push({forest:snap([...nodes].sort((a,b)=>a.w-b.w||a._o-b._o)),
+      hl:[leaves(x),leaves(y)],merged:x.w+y.w,a:leaves(x),b:leaves(y),wa:x.w,wb:y.w});
+  }
+  const tree=nodes[0],codes={};
+  (function go(n,c){if(!n)return;if(n.ch!==null){codes[n.ch]=c||"0";return;}go(n.l,c+"0");go(n.r,c+"1");})(tree,"");
+  steps.push({final:true});
+  const totBits=freq.reduce((s,[c,w])=>s+w*codes[c].length,0);
+  const totW=freq.reduce((s,[c,w])=>s+w,0);
+  const fixed=Math.ceil(Math.log2(freq.length))||1;
+  return {tree,codes,steps,totBits,totW,fixed,avg:totBits/totW};
+  function leaves(n){const o=[];(function g(m){if(!m)return;if(m.ch!==null)o.push(m.ch);g(m.l);g(m.r);})(n);return o.join("");}
+  function snap(arr){return arr.map(n=>({w:n.w,leaves:leaves(n)}));}
+}
+
+/* ---- 5. DFS / BFS ---- */
+function dfs(adj,start,asc){
+  const vis=new Set(),tree=[],order=[],steps=[];
+  const nb=v=>[...adj[v]].sort((a,b)=>asc?a.localeCompare(b):b.localeCompare(a));
+  steps.push({vis:[],tree:[],cur:null,order:[],stack:[],msg:"DFS 시작: "+start});
+  const stk=[];
+  (function go(v,via){vis.add(v);order.push(v);stk.push(v);if(via)tree.push(via);
+    steps.push({vis:[...vis],tree:tree.map(e=>e.join("")),cur:v,order:[...order],stack:[...stk],
+      msg:(via?via.join("→")+" 로 ":"")+v+" 방문"});
+    nb(v).forEach(w=>{if(!vis.has(w))go(w,[v,w]);});
+    stk.pop();
+  })(start,null);
+  steps.push({vis:[...vis],tree:tree.map(e=>e.join("")),cur:null,order:[...order],stack:[],
+    msg:"완료. 방문 순서 "+order.join(", ")});
+  return {steps,order,tree:tree.map(e=>e.join(""))};
+}
+function bfs(adj,start,asc){
+  const vis=new Set([start]),tree=[],order=[start],q=[start],steps=[];
+  const nb=v=>[...adj[v]].sort((a,b)=>asc?a.localeCompare(b):b.localeCompare(a));
+  steps.push({vis:[start],tree:[],cur:start,order:[start],queue:[start],msg:"BFS 시작: "+start+" 를 큐에 넣음"});
+  while(q.length){const v=q.shift();const f=[];
+    nb(v).forEach(w=>{if(!vis.has(w)){vis.add(w);tree.push([v,w]);order.push(w);q.push(w);f.push(w);}});
+    steps.push({vis:[...vis],tree:tree.map(e=>e.join("")),cur:v,order:[...order],queue:[...q],
+      msg:v+" 를 꺼냄. "+(f.length?"이웃 "+f.join(", ")+" 발견":"새 이웃 없음")});
+  }
+  steps.push({vis:[...vis],tree:tree.map(e=>e.join("")),cur:null,order:[...order],queue:[],
+    msg:"완료. 방문 순서 "+order.join(", ")});
+  return {steps,order,tree:tree.map(e=>e.join(""))};
+}
+
+/* ---- 6. 프림 / 크루스칼 (edges: [[a,b,w],...]) ---- */
+function prim(verts,edges,start){
+  const inT=new Set([start]),tree=[],steps=[];
+  steps.push({inT:[start],tree:[],active:[],pick:null,msg:"프림 시작: "+start});
+  while(inT.size<verts.length){
+    const cross=edges.filter(([a,b])=>inT.has(a)!==inT.has(b)).sort((x,y)=>x[2]-y[2]);
+    if(!cross.length)return {error:"그래프가 연결되어 있지 않다."};
+    const p=cross[0],nv=inT.has(p[0])?p[1]:p[0];
+    inT.add(nv);tree.push(p);
+    steps.push({inT:[...inT],tree:tree.map(e=>e[0]+e[1]),active:cross.map(e=>e[0]+e[1]),pick:p[0]+p[1],
+      msg:"횡단 간선 중 최소 "+p[0]+p[1]+"("+p[2]+") 선택 → "+nv+" 연결"});
+  }
+  const total=tree.reduce((s,e)=>s+e[2],0);
+  steps.push({inT:[...inT],tree:tree.map(e=>e[0]+e[1]),active:[],pick:null,msg:"완료. 총 비용 "+total});
+  return {steps,total,tree};
+}
+function kruskal(verts,edges){
+  const sorted=[...edges].sort((a,b)=>a[2]-b[2]);
+  const par={};verts.forEach(v=>par[v]=v);
+  const find=x=>par[x]===x?x:(par[x]=find(par[x]));
+  const tree=[],steps=[];
+  steps.push({tree:[],row:-1,reject:null,comp:comp(),msg:"크루스칼 시작: 간선을 가중치 오름차순으로 본다."});
+  sorted.forEach((e,i)=>{const[a,b,w]=e;const same=find(a)===find(b);
+    if(!same){par[find(a)]=find(b);tree.push(e);}
+    steps.push({tree:tree.map(x=>x[0]+x[1]),row:i,reject:same?a+b:null,comp:comp(),
+      msg:same?a+b+"("+w+") 는 순환을 만들므로 버린다.":a+b+"("+w+") 선택, 두 성분을 합친다."});
+  });
+  const total=tree.reduce((s,e)=>s+e[2],0);
+  steps.push({tree:tree.map(x=>x[0]+x[1]),row:sorted.length,reject:null,comp:comp(),msg:"완료. 총 비용 "+total});
+  return {steps,total,tree,sorted};
+  function comp(){const m={};verts.forEach(v=>{const r=find(v);(m[r]=m[r]||[]).push(v);});return Object.values(m).map(g=>g.sort().join(""));}
+}
+
+/* ===================== 공통 UI 유틸 ===================== */
+const SVGNS="http://www.w3.org/2000/svg";
+function E(t,a,k){const e=document.createElementNS(SVGNS,t);if(a)for(const x in a)e.setAttribute(x,a[x]);
+  if(k)k.forEach(c=>e.appendChild(c));return e;}
+function H(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild);}
+const $=id=>document.getElementById(id);
+
+function svgNode(g,x,y,label,state,r){
+  r=r||21;
+  const fill=state==="current"?"var(--node-current)":state==="done"?"var(--node-done)"
+    :state==="visited"?"var(--thm-bg)":(state&&state[0]==="#")?state:"var(--node)";
+  const txt=(state==="current"||state==="done")?"#fff":"#244";
+  g.appendChild(E("circle",{cx:x,cy:y,r,fill,stroke:"var(--node-line)","stroke-width":2.5}));
+  const t=E("text",{x,y:y+5.5,"text-anchor":"middle","font-size":15,"font-weight":700,fill:txt});
+  t.textContent=label;g.appendChild(t);
+}
+function svgEdge(g,x1,y1,x2,y2,state,weight){
+  const col=state==="tree"?"var(--edge-tree)":state==="active"?"var(--edge-active)":"var(--edge)";
+  const w=state==="tree"?5:state==="active"?4:2.4;
+  g.appendChild(E("line",{x1,y1,x2,y2,stroke:col,"stroke-width":w,"stroke-linecap":"round"}));
+  if(weight!=null){const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const wc=state==="tree"?"var(--accent)":state==="active"?"var(--muted-deep)":"#789";
+    g.appendChild(E("rect",{x:mx-15,y:my-13,width:30,height:22,rx:6,fill:"#fff",stroke:wc,"stroke-width":1.6}));
+    const wt=E("text",{x:mx,y:my+3,"text-anchor":"middle","font-size":14,"font-weight":800,fill:wc,class:"ed-w"});
+    wt.textContent=weight;g.appendChild(wt);}
+}
+
+/* 스텝 플레이어 */
+class Player{
+  constructor(steps,render,refs){this.s=steps;this.render=render;this.r=refs;this.i=0;this.timer=null;this.bind();this.go(0);}
+  bind(){const r=this.r;r.prev.onclick=()=>this.go(this.i-1);r.next.onclick=()=>this.go(this.i+1);
+    r.reset.onclick=()=>{this.stop();this.go(0);};r.play.onclick=()=>this.toggle();}
+  go(i){if(i<0||i>=this.s.length)return;this.i=i;this.render(this.s[i],i);
+    const r=this.r;r.prev.disabled=i===0;r.next.disabled=i===this.s.length-1;
+    r.bar.style.width=(i/(this.s.length-1||1)*100)+"%";r.no.textContent="단계 "+(i+1)+" / "+this.s.length;
+    if(i===this.s.length-1)this.stop();}
+  toggle(){this.timer?this.stop():this.play();}
+  play(){this.r.play.textContent="일시정지";this.timer=setInterval(()=>{
+    if(this.i>=this.s.length-1){this.stop();return;}this.go(this.i+1);},1000);}
+  stop(){if(this.timer){clearInterval(this.timer);this.timer=null;}this.r.play.textContent="자동 재생";}
+}
+function stepperBar(){
+  const c=H("div","ctrl");
+  const prev=H("button","btn ghost","이전"),next=H("button","btn","다음"),
+    play=H("button","btn coral","자동 재생"),reset=H("button","btn ghost","처음으로");
+  const prog=H("div","prog"),bar=H("i");prog.appendChild(bar);const no=H("span","stepno","");
+  c.append(prev,next,play,reset,prog,no);
+  return {bar:c,refs:{prev,next,play,reset,bar,no}};
+}
+function header(host,crumb,title,lede){
+  host.appendChild(H("div","crumb",crumb));host.appendChild(H("h1","ttl",title));
+  host.appendChild(H("p","lede",lede));
+}
+function sectH(host,t){host.appendChild(H("div","sect-h",t));}
+function presetRow(host,items,onPick){
+  const r=H("div","presets");r.appendChild(H("span","lab","예시 불러오기:"));
+  items.forEach(([label,val])=>{const c=H("button","chip codey",label);c.onclick=()=>onPick(val);r.appendChild(c);});
+  host.appendChild(r);
+}
+
+/* 일반 트리 레이아웃 (children[]) */
+function layoutTree(root,W){
+  const leaves=[];let maxd=0;
+  (function col(n,d){n._d=d;maxd=Math.max(maxd,d);
+    if(n.children.length)n.children.forEach(c=>col(c,d+1));else leaves.push(n);})(root,0);
+  leaves.forEach((lf,i)=>lf._lx=i);
+  (function setx(n){if(n.children.length){n.children.forEach(setx);
+    n._lx=(n.children[0]._lx+n.children[n.children.length-1]._lx)/2;}})(root);
+  const gap=Math.min(110,(W-90)/Math.max(1,leaves.length-1));
+  const x0=(W-(leaves.length-1)*gap)/2;
+  (function pos(n){n._x=x0+n._lx*gap;n._y=46+n._d*78;n.children.forEach(pos);})(root);
+  return maxd;
+}
+function drawTree(svg,root,opts){
+  opts=opts||{};clear(svg);
+  (function ed(n){n.children.forEach(c=>{svgEdge(svg,n._x,n._y,c._x,c._y,"plain");ed(c);});})(root);
+  (function dn(n){
+    let st="none";
+    if(opts.cur===n.id)st="current";else if(opts.done&&opts.done.has(n.id))st="done";
+    if(opts.sel===n.id){svg.appendChild(E("circle",{cx:n._x,cy:n._y,r:27,fill:"none",
+      stroke:"var(--accent)","stroke-width":2.5,"stroke-dasharray":"4 3"}));}
+    svgNode(svg,n._x,n._y,n.label,st);
+    if(opts.onClick){const hit=E("circle",{cx:n._x,cy:n._y,r:23,fill:"transparent",class:"selectable"});
+      hit.addEventListener("click",()=>opts.onClick(n));svg.appendChild(hit);}
+    n.children.forEach(dn);
+  })(root);
+}
+
+/* ===================== 11.3-A 트리 편집 탐방 ===================== */
+function MOD_trav(){
+  const m=$("main");clear(m);
+  header(m,"11.3 트리 탐방","탐방 실습 — 트리를 직접 만들고 탐방하라",
+    "정점을 클릭해 선택한 뒤 자식을 붙이거나 지워 나만의 트리를 만든다. 그런 다음 전위·중위·후위로 탐방하여 방문 순서가 어떻게 달라지는지 직접 확인한다.");
+  let uid=0;const mk=l=>({id:uid++,label:l,children:[]});
+  function preset(){ // 학생노트 예제 트리 A,B,C,D / B:E,F / C:G / D:H,I
+    uid=0;const A=mk("A"),B=mk("B"),C=mk("C"),D=mk("D");
+    A.children=[B,C,D];B.children=[mk("E"),mk("F")];C.children=[mk("G")];D.children=[mk("H"),mk("I")];
+    return A;}
+  function binPreset(){uid=0;const r=mk("A");const b=mk("B"),c=mk("C");
+    r.children=[b,c];b.children=[mk("D"),mk("E")];c.children=[mk("F"),mk("G")];return r;}
+  let root=preset();let sel=null;
+
+  sectH(m,"트리 편집기");
+  const tb=H("div","toolbar");
+  const bAdd=H("button","btn small","자식 추가"),bSib=H("button","btn small ghost","형제 추가"),
+    bRen=H("button","btn small ghost","이름 변경"),bDel=H("button","btn small ghost","선택 삭제"),
+    bP1=H("button","chip","일반 트리 예시"),bP2=H("button","chip","이진 트리 예시"),
+    bClr=H("button","chip","루트만 남기기");
+  tb.append(bAdd,bSib,bRen,bDel,document.createTextNode("   "),bP1,bP2,bClr);
+  m.appendChild(tb);
+  m.appendChild(H("p","hint","정점을 클릭해 선택(점선 원)한 뒤 버튼을 누른다. 형제·삭제는 루트에는 적용되지 않는다."));
+  const selInfo=H("p","hint","선택된 정점: 없음");m.appendChild(selInfo);
+
+  const stage=H("div","stage");const svg=E("svg",{viewBox:"0 0 760 360"});stage.appendChild(svg);m.appendChild(stage);
+
+  sectH(m,"탐방 실행");
+  const runbar=H("div","toolbar");
+  const bPre=H("button","btn coral","전위 탐방"),bIn=H("button","btn","중위 탐방"),bPost=H("button","btn","후위 탐방");
+  runbar.append(bPre,bIn,bPost);m.appendChild(runbar);
+  const narr=H("div","narr","탐방 버튼을 누르면 한 단계씩 방문 과정을 보여 준다.");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+  const seqCard=H("div","card");seqCard.appendChild(H("h3",null,"방문 순서"));
+  const seqBox=H("div","seqbox","");seqCard.appendChild(seqBox);m.appendChild(seqCard);
+
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li>잎 하나를 골라 자식을 두 개 더 붙여 보라. 전위 순서에서 그 잎은 어디로 이동하는가?</li>"
+    +"<li>같은 트리를 전위와 후위로 각각 실행해 보라. 루트 A는 각각 순서의 어디에 나타나는가? 왜 그런가?</li>"
+    +"<li>이진 트리 예시를 불러와 중위 탐방을 실행해 보라. 일반 트리(자식 3개)에서는 중위가 왜 모호한가?</li></ol>";
+  m.appendChild(exp);
+  let player=null;
+
+  function selectNode(n){sel=n.id;selInfo.textContent="선택된 정점: "+n.label;redraw();}
+  function findSel(){let f=null;(function go(n){if(n.id===sel)f=n;n.children.forEach(go);})(root);return f;}
+  function redraw(){drawTree(svg,(layoutTree(root,760),root),{sel,onClick:selectNode});}
+  function relabelAuto(){ // 자동 라벨 A,B,C... 안 겹치게 보장
+    const used=new Set();(function go(n){used.add(n.label);n.children.forEach(go);})(root);
+    for(let i=0;i<26;i++){const c=String.fromCharCode(65+i);if(!used.has(c))return c;}
+    return "X"+uid;}
+  bAdd.onclick=()=>{const n=findSel();if(!n)return alert("먼저 정점을 클릭해 선택하라.");
+    n.children.push(mk(relabelAuto()));redraw();};
+  bSib.onclick=()=>{const n=findSel();if(!n)return;let par=null;
+    (function go(p){p.children.forEach(c=>{if(c.id===n.id)par=p;go(c);});})(root);
+    if(!par)return alert("루트에는 형제를 추가할 수 없다.");par.children.push(mk(relabelAuto()));redraw();};
+  bRen.onclick=()=>{const n=findSel();if(!n)return;const v=prompt("새 이름:",n.label);if(v)n.label=v.trim()||n.label;redraw();};
+  bDel.onclick=()=>{const n=findSel();if(!n)return;if(n.id===root.id)return alert("루트는 삭제할 수 없다.");
+    (function go(p){p.children=p.children.filter(c=>c.id!==n.id);p.children.forEach(go);})(root);sel=null;
+    selInfo.textContent="선택된 정점: 없음";redraw();};
+  bP1.onclick=()=>{root=preset();sel=null;narr.textContent="일반 트리 예시를 불러왔다.";redraw();};
+  bP2.onclick=()=>{root=binPreset();sel=null;narr.textContent="이진 트리 예시를 불러왔다.";redraw();};
+  bClr.onclick=()=>{uid=0;root=mk("A");sel=null;redraw();};
+
+  function localTrav(order){
+    const o=[];let ok=true;
+    (function go(n){
+      if(order==="pre")o.push({id:n.id,label:n.label});
+      if(order==="in"){
+        if(n.children.length===0){o.push({id:n.id,label:n.label});return;}
+        if(n.children.length!==2){ok=false;}
+        go(n.children[0]);o.push({id:n.id,label:n.label});
+        for(let i=1;i<n.children.length;i++)go(n.children[i]);return;
+      }
+      n.children.forEach(go);
+      if(order==="post")o.push({id:n.id,label:n.label});
+    })(root);
+    return {seq:o,ok};
+  }
+  function run(order,name){
+    const {seq,ok}=localTrav(order);
+    const steps=[{done:new Set(),cur:null,labels:[],msg:name+" 탐방을 시작한다."}];
+    const done=new Set();
+    seq.forEach((v,i)=>{done.add(v.id);
+      steps.push({done:new Set(done),cur:v.id,labels:seq.slice(0,i+1).map(x=>x.label),
+        msg:"정점 <b>"+v.label+"</b> 를 방문하여 기록한다."});});
+    steps.push({done:new Set(done),cur:null,labels:seq.map(x=>x.label),
+      msg:name+" 순서: <b>"+seq.map(x=>x.label).join(", ")+"</b>"
+        +(order==="in"&&!ok?"  (주의: 자식이 2개가 아닌 정점이 있어 중위는 표준 정의가 모호하다. 첫 자식 다음에 루트를 둔 확장 규칙으로 계산했다.)":"")});
+    layoutTree(root,760);
+    player=new Player(steps,(st)=>{
+      drawTree(svg,root,{cur:st.cur,done:st.done,sel,onClick:selectNode});
+      narr.innerHTML=st.msg;
+      seqBox.innerHTML=st.labels.map((l,i)=>i===st.labels.length-1&&st.cur?"<span class='new'>"+l+"</span>":l).join("  ");
+    },sp.refs);
+  }
+  const _hlT=b=>{[bPre,bIn,bPost].forEach(x=>x.classList.remove("coral"));b.classList.add("coral");};bPre.onclick=()=>{_hlT(bPre);run("pre","전위");};bIn.onclick=()=>{_hlT(bIn);run("in","중위");};bPost.onclick=()=>{_hlT(bPost);run("post","후위");};
+  redraw();
+}
+
+/* ===================== 11.3-B 수식 트리 입력 ===================== */
+function layoutBin(root,W){
+  const leaves=[];let maxd=0;
+  (function col(n,d){n._d=d;maxd=Math.max(maxd,d);if(n.op){col(n.l,d+1);col(n.r,d+1);}else leaves.push(n);})(root,0);
+  leaves.forEach((lf,i)=>lf._lx=i);
+  (function sx(n){if(n.op){sx(n.l);sx(n.r);n._lx=(n.l._lx+n.r._lx)/2;}})(root);
+  const gap=Math.min(120,(W-90)/Math.max(1,leaves.length-1));
+  const x0=(W-(leaves.length-1)*gap)/2;
+  (function pos(n){n._x=x0+n._lx*gap;n._y=46+n._d*82;if(n.op){pos(n.l);pos(n.r);}})(root);
+}
+function MOD_expr(){
+  const m=$("main");clear(m);
+  header(m,"11.3 트리 탐방","수식 트리·표기법 실습 — 식을 입력하라",
+    "중위 수식을 입력하면 수식 트리를 만들고 전위·중위·후위 표기를 모두 보여 준다. 직접 만든 식이 어떤 트리가 되는지, 그리고 같은 트리에서 세 표기가 어떻게 갈라지는지 관찰한다.");
+  sectH(m,"식 입력");
+  const fld=H("div","field");
+  const inp=H("input");inp.type="text";inp.value="(x+2)*(y-3)";inp.placeholder="예: (x+2)*(y-3)";
+  const go=H("button","btn coral","트리 만들기");fld.append(H("label",null,"중위 수식"),inp,go);m.appendChild(fld);
+  presetRow(m,[["(x+2)*(y-3)","(x+2)*(y-3)"],["a+b*c","a+b*c"],["a*b+c","a*b+c"],
+    ["(a+b)/(c-d)","(a+b)/(c-d)"],["a+b-c*d","a+b-c*d"]],v=>{inp.value=v;build();});
+  m.appendChild(H("p","hint","사용 가능: 변수/숫자, 연산자 + - * / ^, 괄호 ( ). 우선순위는 ^ > * / > + - 이다."));
+  const errBox=H("div");m.appendChild(errBox);
+
+  const runbar=H("div","toolbar");
+  const bPre=H("button","btn coral","전위로 단계 보기"),bIn=H("button","btn","중위로 단계 보기"),bPost=H("button","btn","후위로 단계 보기");
+  runbar.append(bPre,bIn,bPost);m.appendChild(runbar);
+  const stage=H("div","stage");const svg=E("svg",{viewBox:"0 0 760 360"});stage.appendChild(svg);m.appendChild(stage);
+  const narr=H("div","narr","");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+  const card=H("div","card");card.innerHTML="<h3>세 가지 표기법</h3>";
+  const out=H("div");out.style.cssText="font:600 15px/2 var(--mono);color:#222";card.appendChild(out);m.appendChild(card);
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li><code>a+b*c</code> 와 <code>(a+b)*c</code> 를 각각 입력해 트리와 후위 표기를 비교하라. 괄호가 트리를 어떻게 바꾸는가?</li>"
+    +"<li>전위 표기와 후위 표기에는 괄호가 없다. 그런데도 식이 모호하지 않은 이유를 중위와 비교해 설명해 보라.</li>"
+    +"<li><code>a^b^c</code> 를 입력해 보라. ^ 가 오른쪽 우선(우결합)임이 트리에서 어떻게 드러나는가?</li></ol>";
+  m.appendChild(exp);
+  let tree=null,player=null;
+
+  function build(){
+    const res=parseInfix(inp.value);clear(errBox);clear(out);
+    if(res.error){errBox.appendChild(H("div","err","입력 오류: "+res.error));clear(svg);narr.textContent="";return;}
+    tree=res.tree;layoutBin(tree,760);
+    drawTree2(null);
+    const pre=traverse(tree,"pre").join(" "),ino=infixString(tree),post=traverse(tree,"post").join(" ");
+    out.innerHTML="전위(prefix): <b style='color:var(--accent)'>"+pre+"</b><br>"
+      +"중위(infix, 괄호 포함): <b style='color:var(--accent)'>"+ino+"</b><br>"
+      +"후위(postfix): <b style='color:var(--accent)'>"+post+"</b>";
+    narr.textContent="트리를 만들었다. 위 버튼으로 특정 표기가 만들어지는 과정을 단계별로 볼 수 있다.";
+  }
+  function drawTree2(curId,doneSet){clear(svg);
+    (function ed(n){if(n.op){svgEdge(svg,n._x,n._y,n.l._x,n.l._y,"plain");svgEdge(svg,n._x,n._y,n.r._x,n.r._y,"plain");ed(n.l);ed(n.r);}})(tree);
+    (function dn(n){const st=n._k===curId?"current":(doneSet&&doneSet.has(n._k))?"done":"none";
+      n._k=n._k;svgNode(svg,n._x,n._y,n.label,st);if(n.op){dn(n.l);dn(n.r);}})(tree);}
+  // 키 부여(노드 식별)
+  function keyify(){let i=0;(function go(n){n._k=i++;if(n.op){go(n.l);go(n.r);}})(tree);}
+  function run(order,name){
+    if(!tree)return;keyify();
+    const order2=[];(function go(n){
+      if(order==="pre")order2.push(n);
+      if(n.op)go(n.l);if(order==="in")order2.push(n);if(n.op)go(n.r);
+      if(order==="post")order2.push(n);})(tree);
+    const steps=[{cur:null,done:new Set(),labels:[],msg:name+" 탐방을 시작한다."}];
+    const done=new Set();
+    order2.forEach((n,i)=>{done.add(n._k);
+      steps.push({cur:n._k,done:new Set(done),labels:order2.slice(0,i+1).map(x=>x.label),
+        msg:(n.op?"연산자 ":"피연산자 ")+"<b>"+n.label+"</b> 를 기록한다."});});
+    player=new Player(steps,(st)=>{drawTree2(st.cur,st.done);
+      narr.innerHTML=st.msg+"<br>현재까지: <b style='color:var(--accent)'>"+st.labels.join(" ")+"</b>";},sp.refs);
+  }
+  go.onclick=build;inp.addEventListener("keydown",e=>{if(e.key==="Enter")build();});
+  const _hlT=b=>{[bPre,bIn,bPost].forEach(x=>x.classList.remove("coral"));b.classList.add("coral");};bPre.onclick=()=>{_hlT(bPre);run("pre","전위");};bIn.onclick=()=>{_hlT(bIn);run("in","중위");};bPost.onclick=()=>{_hlT(bPost);run("post","후위");};
+  build();
+}
+
+/* ===================== 11.3-C 후위 계산 / 중위→후위 ===================== */
+function MOD_postfix(){
+  const m=$("main");clear(m);
+  header(m,"11.3 트리 탐방","후위 계산·변환 실습 — 직접 입력하라",
+    "후위 표기식을 입력해 스택으로 계산하거나, 중위식을 후위식으로 변환하는 과정을 단계별로 본다. 자기 식을 넣어 결과를 확인한다.");
+  const tabs=H("div","toolbar");
+  const t1=H("button","btn coral","후위식 계산"),t2=H("button","btn ghost","중위 → 후위 변환");
+  tabs.append(t1,t2);m.appendChild(tabs);
+  const area=H("div");m.appendChild(area);
+  function evalTab(){
+    t1.className="btn coral";t2.className="btn ghost";clear(area);
+    sectH(area,"후위식 입력 (공백으로 구분)");
+    const fld=H("div","field");const inp=H("input");inp.type="text";inp.value="2 3 + 4 5 - *";
+    const go=H("button","btn coral","계산");fld.append(H("label",null,"후위식"),inp,go);area.appendChild(fld);
+    presetRow(area,[["2 3 + 4 5 - *","2 3 + 4 5 - *"],["6 2 / 3 +","6 2 / 3 +"],
+      ["5 1 2 + 4 * + 3 -","5 1 2 + 4 * + 3 -"],["2 3 ^ 4 +","2 3 ^ 4 +"]],v=>{inp.value=v;run();});
+    const err=H("div");area.appendChild(err);
+    const strip=H("div");strip.style.cssText="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px";area.appendChild(strip);
+    const narr=H("div","narr","");area.appendChild(narr);
+    const sp=stepperBar();area.appendChild(sp.bar);
+    const g=H("div","grid2");const c1=H("div","card");c1.innerHTML="<h3>스택 (아래=바닥)</h3>";
+    const stk=H("div","stack");c1.appendChild(stk);const c2=H("div","card");c2.innerHTML="<h3>결과</h3>";
+    const rv=H("div","seqbox","");rv.style.fontSize="26px";c2.appendChild(rv);g.append(c1,c2);area.appendChild(g);
+    let tokEls=[];
+    function run(){clear(err);const toks=inp.value.trim().split(/\s+/);
+      const r=evalPostfix(toks);
+      if(r.error){err.appendChild(H("div","err","오류: "+r.error));return;}
+      clear(strip);tokEls=toks.map(t=>{const c=H("div","qchip",t);strip.appendChild(c);return c;});
+      new Player(r.steps,(st,idx)=>{
+        tokEls.forEach((e,i)=>e.className="qchip"+(i===st.tok?" hl":""));
+        clear(stk);st.stack.forEach((v,i)=>stk.appendChild(H("div","scell"+(i===st.stack.length-1?" top":""),String(v))));
+        narr.innerHTML=st.msg;
+        rv.innerHTML=idx===r.steps.length-1?"<b style='color:var(--accent)'>"+r.result+"</b>":"<span style='color:#bbb'>계산 중</span>";
+      },sp.refs);}
+    go.onclick=run;inp.addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+    const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+      +"<li><code>4 5 -</code> 와 <code>5 4 -</code> 의 결과를 비교하라. 스택에서 꺼내는 두 값 중 어느 쪽이 왼쪽 피연산자인가?</li>"
+      +"<li>중위식 (5+(1+2)*4)-3 을 손으로 후위식으로 바꾼 뒤 입력해 값을 확인하라.</li></ol>";area.appendChild(exp);
+    run();
+  }
+  function convTab(){
+    t1.className="btn ghost";t2.className="btn coral";clear(area);
+    sectH(area,"중위식 입력");
+    const fld=H("div","field");const inp=H("input");inp.type="text";inp.value="(x+2)*(y-3)";
+    const go=H("button","btn coral","후위로 변환");fld.append(H("label",null,"중위식"),inp,go);area.appendChild(fld);
+    presetRow(area,[["(x+2)*(y-3)","(x+2)*(y-3)"],["a+b*c","a+b*c"],["(a+b)*c","(a+b)*c"],["a+b-c","a+b-c"]],
+      v=>{inp.value=v;run();});
+    const err=H("div");area.appendChild(err);
+    const narr=H("div","narr","");area.appendChild(narr);
+    const sp=stepperBar();area.appendChild(sp.bar);
+    const g=H("div","grid2");const c1=H("div","card");c1.innerHTML="<h3>출력(후위식)</h3>";
+    const o=H("div","seqbox","");c1.appendChild(o);const c2=H("div","card");c2.innerHTML="<h3>연산자 스택</h3>";
+    const os=H("div","seqbox","");c2.appendChild(os);g.append(c1,c2);area.appendChild(g);
+    function run(){clear(err);const r=infixToPostfix(inp.value);
+      if(r.error){err.appendChild(H("div","err","오류: "+r.error));return;}
+      new Player(r.steps,(st,idx)=>{narr.innerHTML=st.msg;
+        o.textContent=st.out||"—";os.textContent=st.ops||"(비어 있음)";
+        if(idx===r.steps.length-1)o.innerHTML="<b style='color:var(--accent)'>"+(st.out)+"</b>";
+      },sp.refs);}
+    go.onclick=run;inp.addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+    const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+      +"<li>변환 결과를 위의 [후위식 계산] 탭에 그대로 붙여 넣어 보라(변수 대신 숫자를 넣어). 두 도구가 일관되는가?</li>"
+      +"<li>괄호를 넣고 빼며 연산자 스택이 언제 비워지는지 관찰하라.</li></ol>";area.appendChild(exp);
+    run();
+  }
+  t1.onclick=evalTab;t2.onclick=convTab;evalTab();
+}
+
+/* ===================== 11.2-A 이진 탐색 트리 ===================== */
+function bstLayout(root,W){
+  let i=0;(function ino(n,d){if(!n)return;ino(n.l,d+1);n._idx=i++;n._d=d;ino(n.r,d+1);})(root,0);
+  const cnt=i;(function pos(n){if(!n)return;n._x=44+n._idx*((W-88)/Math.max(1,cnt-1));n._y=44+n._d*72;pos(n.l);pos(n.r);})(root);
+}
+function drawBST(svg,root,opts){opts=opts||{};clear(svg);
+  (function ed(n){if(!n)return;if(n.l){svgEdge(svg,n._x,n._y,n.l._x,n.l._y,"plain");ed(n.l);}
+    if(n.r){svgEdge(svg,n._x,n._y,n.r._x,n.r._y,"plain");ed(n.r);}})(root);
+  (function dn(n){if(!n)return;const st=opts.cur===n.k?"current":(opts.vis&&opts.vis.includes(n.k))?"done":"none";
+    svgNode(svg,n._x,n._y,String(n.k),st);dn(n.l);dn(n.r);})(root);}
+function MOD_bst(){
+  const m=$("main");clear(m);
+  header(m,"11.2 트리의 응용","이진 탐색 트리 실습 — 삽입 순서를 바꿔 보라",
+    "키를 직접 입력해 트리를 만들고 탐색한다. 특히 같은 키라도 삽입 순서에 따라 트리 높이가 크게 달라진다는 사실을 직접 확인하는 것이 이 실습의 핵심이다.");
+  sectH(m,"키 입력");
+  const fld=H("div","field");const inp=H("input");inp.type="text";inp.value="8, 3, 10, 1, 6, 14, 4, 7, 13";
+  const go=H("button","btn coral","트리 만들기");const goStep=H("button","btn ghost","삽입 과정 보기");
+  fld.append(H("label",null,"삽입할 키(쉼표/공백 구분)"),inp,go,goStep);m.appendChild(fld);
+  presetRow(m,[["균형 잡힌 순서","8, 4, 12, 2, 6, 10, 14"],["정렬된 순서","1, 2, 3, 4, 5, 6, 7"],
+    ["역순","7, 6, 5, 4, 3, 2, 1"],["무작위","50, 30, 70, 20, 40, 60, 80, 10"]],v=>{inp.value=v;build();});
+  const err=H("div");m.appendChild(err);
+  const stage=H("div","stage");const svg=E("svg",{viewBox:"0 0 760 320"});stage.appendChild(svg);m.appendChild(stage);
+  const narr=H("div","narr","");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+
+  const g=H("div","grid2");
+  const stCard=H("div","card");stCard.innerHTML="<h3>트리 통계</h3>";const stEl=H("div","stat");stCard.appendChild(stEl);
+  const seCard=H("div","card");seCard.innerHTML="<h3>키 탐색</h3>";
+  const sfld=H("div","field");const sin=H("input");sin.type="number";sin.value="7";
+  const sgo=H("button","btn","탐색 실행");sfld.append(H("label",null,"찾을 키"),sin,sgo);seCard.appendChild(sfld);
+  const scnt=H("p","hint","");seCard.appendChild(scnt);
+  g.append(stCard,seCard);m.appendChild(g);
+
+  const interp=H("div","interp");m.appendChild(interp);
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li>[정렬된 순서] 예시를 불러와 트리를 만들어 보라. 높이가 왜 노드 수와 같아지는가? 이때 탐색은 무엇과 비슷한 속도가 되는가?</li>"
+    +"<li>같은 키 집합 {1..7}을 [균형 잡힌 순서]로 다시 넣어 높이를 비교하라. 삽입 순서가 탐색 효율을 어떻게 좌우하는가?</li>"
+    +"<li>트리에 없는 키(예: 99)를 탐색해 보라. 탐색이 어디서 멈추는가?</li></ol>";m.appendChild(exp);
+
+  let cur=null;
+  function parseKeys(){return inp.value.trim().split(/[\s,]+/).filter(x=>x!=="").map(Number).filter(x=>!Number.isNaN(x));}
+  function build(){clear(err);const keys=parseKeys();
+    if(keys.length===0){err.appendChild(H("div","err","숫자 키를 하나 이상 입력하라."));return;}
+    cur=bstBuild(keys);bstLayout(cur.root,760);drawBST(svg,cur.root,{});
+    narr.innerHTML="키 "+keys.join(", ")+" 로 트리를 만들었다.";
+    // 통계 + 정렬삽입 비교
+    const sortedH=bstBuild([...new Set(keys)].sort((a,b)=>a-b)).height;
+    stEl.innerHTML="<div class='it'><div class='n'>"+cur.height+"</div><div class='l'>높이</div></div>"
+      +"<div class='it'><div class='n'>"+cur.count+"</div><div class='l'>노드 수</div></div>"
+      +"<div class='it'><div class='n'>"+Math.ceil(Math.log2(cur.count+1))+"</div><div class='l'>이상적 최소 높이</div></div>";
+    interp.innerHTML="<h4>결과 해석</h4>이 삽입 순서의 트리 높이는 <b>"+cur.height+"</b> 이다. "
+      +"같은 키들을 <b>오름차순으로</b> 넣으면 높이가 <b>"+sortedH+"</b> 까지 늘어난다(한쪽으로 치우친 사슬). "
+      +"노드 수가 "+cur.count+"개일 때 이상적인 최소 높이는 약 "+Math.ceil(Math.log2(cur.count+1))+" 이다. "
+      +"즉 <b>같은 데이터라도 넣는 순서가 탐색 속도를 좌우한다.</b>";
+    scnt.textContent="";
+  }
+  function buildStep(){clear(err);const keys=parseKeys();if(!keys.length)return;
+    cur=bstBuild(keys);bstLayout(cur.root,760);
+    const steps=[{n:0,msg:"키 "+keys.join(", ")+" 를 차례로 삽입한다."}];
+    cur.steps.forEach((s,i)=>steps.push({n:i+1,placed:s.placed,path:s.path,dup:s.dup,
+      msg:s.dup?"키 "+s.k+" 는 이미 있으므로 무시한다.":"키 <b>"+s.k+"</b> 삽입: "
+        +(s.path.length?s.path.map(p=>s.k+(s.k<p?"<":">")+p).join(", ")+" 경로로 내려가 빈 자리에 넣는다.":"루트로 놓는다.")}));
+    new Player(steps,(st)=>{
+      const present=new Set(keys.slice(0,st.n));
+      clear(svg);
+      (function ed(n){if(!n)return;if(n.l&&present.has(n.l.k)){svgEdge(svg,n._x,n._y,n.l._x,n.l._y,"plain");ed(n.l);}
+        if(n.r&&present.has(n.r.k)){svgEdge(svg,n._x,n._y,n.r._x,n.r._y,"plain");ed(n.r);}})(cur.root);
+      (function dn(n){if(!n||!present.has(n.k))return;
+        const stt=n.k===st.placed?"current":(st.path&&st.path.includes(n.k))?"done":"none";
+        svgNode(svg,n._x,n._y,String(n.k),stt);dn(n.l);dn(n.r);})(cur.root);
+      narr.innerHTML=st.msg;},sp.refs);}
+  function search(){if(!cur)build();const key=Number(sin.value);
+    const r=bstSearch(cur.root,key);
+    new Player(r.steps,(st)=>{drawBST(svg,cur.root,{cur:st.cur,vis:st.vis});narr.innerHTML=st.msg;},sp.refs);
+    scnt.textContent=r.found?"키 "+key+" 를 비교 "+r.cmp+"회 만에 찾았다.":"키 "+key+" 는 없다(비교 "+r.cmp+"회).";}
+  go.onclick=build;goStep.onclick=buildStep;sgo.onclick=search;
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")build();});
+  build();
+}
+
+/* ===================== 11.2-B 허프만 ===================== */
+function MOD_huffman(){
+  const m=$("main");clear(m);
+  header(m,"11.2 트리의 응용","허프만 코드 실습 — 빈도를 바꿔 보라",
+    "문자와 빈도를 직접 편집해 허프만 트리를 만든다. 빈도 분포를 바꾸면 코드 길이와 압축률이 어떻게 달라지는지 직접 확인한다.");
+  sectH(m,"빈도표 편집");
+  const tblWrap=H("div");m.appendChild(tblWrap);
+  const tbtn=H("div","toolbar");const bAdd=H("button","btn small ghost","문자 추가");tbtn.appendChild(bAdd);m.appendChild(tbtn);
+  presetRow(m,[["치우친 분포","A:5,B:9,C:12,D:13,E:16,F:45"],["균등 분포","A:10,B:10,C:10,D:10,E:10,F:10"],
+    ["영어 근사","E:13,T:9,A:8,O:8,I:7,N:7"],["극단 치우침","A:1,B:1,C:1,D:1,E:1,F:95"]],v=>{loadStr(v);build();});
+  const go=H("button","btn coral","코드 만들기");const goStep=H("button","btn ghost","병합 과정 보기");
+  const gobar=H("div","toolbar");gobar.append(go,goStep);m.appendChild(gobar);
+  const err=H("div");m.appendChild(err);
+  const stage=H("div","stage");const svg=E("svg",{viewBox:"0 0 760 360"});stage.appendChild(svg);m.appendChild(stage);
+  const narr=H("div","narr","");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+  const chipWrap=H("div","card");chipWrap.innerHTML="<h3>현재 트리들(무게순)</h3>";
+  const chips=H("div","chips");chipWrap.appendChild(chips);chipWrap.style.display="none";m.appendChild(chipWrap);
+
+  const g=H("div","grid2");const codeCard=H("div","card");codeCard.innerHTML="<h3>코드표</h3>";
+  const codeTbl=H("div");codeCard.appendChild(codeTbl);
+  const statCard=H("div","card");statCard.innerHTML="<h3>압축 통계</h3>";const statEl=H("div");statCard.appendChild(statEl);
+  g.append(codeCard,statCard);m.appendChild(g);
+  const interp=H("div","interp");m.appendChild(interp);
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li>[균등 분포]로 코드를 만들어 보라. 절감률이 거의 0인 이유는 무엇인가? 고정 길이 코드와 비교하라.</li>"
+    +"<li>[극단 치우침]에서 빈도 95인 문자의 코드 길이는 얼마인가? 자주 나오는 문자가 짧아지는 것을 확인하라.</li>"
+    +"<li>한 문자의 빈도만 크게 키워 보라. 트리의 모양이 한쪽으로 얕아지는가 깊어지는가?</li></ol>";m.appendChild(exp);
+
+  let rows=[];
+  function rowEl(ch,w){const tr=H("tr");
+    const c1=H("td"),c2=H("td"),c3=H("td");
+    const ci=H("input");ci.type="text";ci.value=ch;ci.style.width="56px";ci.style.textAlign="center";
+    const wi=H("input");wi.type="number";wi.value=w;wi.min="1";
+    const del=H("button","btn small ghost","삭제");del.onclick=()=>{tr.remove();};
+    c1.appendChild(ci);c2.appendChild(wi);c3.appendChild(del);tr.append(c1,c2,c3);
+    tr._get=()=>[ci.value.trim(),Number(wi.value)];return tr;}
+  function renderTable(data){clear(tblWrap);
+    const t=H("table","mini editbl");t.style.maxWidth="360px";
+    t.innerHTML="<tr><th>문자</th><th>빈도</th><th></th></tr>";
+    const tb=H("tbody");data.forEach(([c,w])=>tb.appendChild(rowEl(c,w)));t.appendChild(tb);tblWrap.appendChild(t);
+    tblWrap._rows=()=>[...tb.querySelectorAll("tr")].map(tr=>tr._get());}
+  function loadStr(s){const data=s.split(",").map(p=>{const[c,w]=p.split(":");return [c.trim(),Number(w)];});renderTable(data);}
+  bAdd.onclick=()=>{const tb=tblWrap.querySelector("tbody");if(tb)tb.appendChild(rowEl("?",1));};
+
+  function getFreq(){return tblWrap._rows().filter(([c,w])=>c!==""&&!Number.isNaN(w)&&w>0);}
+  function layoutH(t){const lv=[];(function c(n){if(!n)return;if(n.ch!==null){lv.push(n);return;}c(n.l);c(n.r);})(t);
+    lv.forEach((l,i)=>l._x=60+i*((700)/Math.max(1,lv.length-1)));
+    let md=0;(function d(n,dep){if(!n)return;n._d=dep;md=Math.max(md,dep);d(n.l,dep+1);d(n.r,dep+1);})(t,0);
+    (function sx(n){if(!n)return;if(n.ch===null){sx(n.l);sx(n.r);n._x=(n.l._x+n.r._x)/2;}})(t);
+    (function sy(n){if(!n)return;n._y=40+n._d*(290/Math.max(1,md));sy(n.l);sy(n.r);})(t);}
+  function drawFinal(t,codes){clear(svg);layoutH(t);
+    (function dr(n){if(!n)return;[["l","0"],["r","1"]].forEach(([s,bit])=>{const c=n[s];if(c){
+      svgEdge(svg,n._x,n._y,c._x,c._y,"tree");const mx=(n._x+c._x)/2,my=(n._y+c._y)/2;
+      const b=E("text",{x:mx+(bit==="0"?-12:12),y:my,"font-size":15,"font-weight":800,fill:"var(--muted-deep)","text-anchor":"middle"});
+      b.textContent=bit;svg.appendChild(b);dr(c);}});})(t);
+    (function dn(n){if(!n)return;svgNode(svg,n._x,n._y,n.ch!==null?n.ch:String(n.w),n.ch!==null?"current":"done");dn(n.l);dn(n.r);})(t);}
+  function showResult(res){
+    let html="<table class='mini'><tr><th>문자</th><th>빈도</th><th>코드</th><th>길이</th></tr>";
+    getFreq().forEach(([c,w])=>html+="<tr><td>"+c+"</td><td>"+w+"</td><td class='ed-w'>"+res.codes[c]+"</td><td>"+res.codes[c].length+"</td></tr>");
+    html+="</table>";codeTbl.innerHTML=html;
+    const fixedBits=res.totW*res.fixed;const save=((1-res.totBits/fixedBits)*100);
+    statEl.innerHTML="<div class='stat'><div class='it'><div class='n'>"+res.avg.toFixed(2)+"</div><div class='l'>평균 코드 길이(비트)</div></div>"
+      +"<div class='it'><div class='n'>"+res.totBits+"</div><div class='l'>허프만 총 비트</div></div></div>"
+      +"<p style='font-size:13px;color:#555;margin:10px 0 0'>고정 길이("+res.fixed+"비트) 코드라면 "+fixedBits+"비트가 필요하다. "
+      +"허프만은 "+res.totBits+"비트로, 약 <b style='color:var(--accent)'>"+save.toFixed(1)+"%</b> 절감한다.</p>";
+    interp.innerHTML="<h4>결과 해석</h4>가장 빈도가 높은 문자가 가장 짧은 코드를 받았는지 코드표에서 확인하라. "
+      +"분포가 한쪽으로 치우칠수록 절감률이 커지고, 균등 분포일수록 고정 길이 코드와 거의 같아져 절감이 작아진다.";
+  }
+  function build(){clear(err);const freq=getFreq();
+    if(freq.length<2){err.appendChild(H("div","err","서로 다른 문자가 2개 이상 필요하다."));return;}
+    const res=huffman(freq);if(res.error){err.appendChild(H("div","err",res.error));return;}
+    chipWrap.style.display="none";svg.style.display="block";
+    drawFinal(res.tree,res.codes);narr.textContent="허프만 트리를 완성했다. 루트에서 잎까지 0/1을 읽으면 코드가 된다.";
+    showResult(res);
+    sp.refs.prev.disabled=true;sp.refs.next.disabled=true;sp.refs.bar.style.width="100%";sp.refs.no.textContent="완성";
+  }
+  function buildStep(){clear(err);const freq=getFreq();if(freq.length<2)return;
+    const res=huffman(freq);chipWrap.style.display="block";
+    new Player(res.steps,(st)=>{
+      if(st.final){svg.style.display="block";chipWrap.style.display="none";drawFinal(res.tree,res.codes);
+        narr.textContent="완성된 허프만 트리이다.";showResult(res);return;}
+      svg.style.display="none";chipWrap.style.display="block";clear(chips);
+      const hl=new Set(st.hl);st.forest.forEach(f=>chips.appendChild(H("div","qchip"+(hl.has(f.leaves)?" hl":""),f.leaves+":"+f.w)));
+      narr.innerHTML=st.merged?"가장 가벼운 두 트리 <b>"+st.a+"("+st.wa+")</b> 와 <b>"+st.b+"("+st.wb+")</b> 를 합쳐 무게 <b>"+st.merged+"</b> 를 만든다.":"각 문자를 낱개 트리로 둔다.";
+    },sp.refs);}
+  go.onclick=build;goStep.onclick=buildStep;
+  loadStr("A:5,B:9,C:12,D:13,E:16,F:45");build();
+}
+
+/* ===================== 그래프 편집기 (DFS/BFS·MST 공용) ===================== */
+class GraphEditor{
+  constructor(svg,weighted){this.svg=svg;this.weighted=weighted;this.mode="move";
+    this.sel=null;this.drag=null;this.lastOpts={};this.onChange=null;
+    this.nodes={};this.edges=[];this.statusEl=null;}
+  setData(nodes,edges){this.nodes={};for(const k in nodes)this.nodes[k]={x:nodes[k][0],y:nodes[k][1]};
+    this.edges=edges.map(e=>({a:e[0],b:e[1],w:e.length>2?e[2]:null}));this.sel=null;this.render();}
+  verts(){return Object.keys(this.nodes);}
+  adj(){const a={};this.verts().forEach(v=>a[v]=[]);this.edges.forEach(({a:x,b:y})=>{a[x].push(y);a[y].push(x);});return a;}
+  edgeList(){return this.edges.map(e=>this.weighted?[e.a,e.b,e.w]:[e.a,e.b]);}
+  setMode(mexp){this.mode=mexp;this.sel=null;if(this.statusEl)this.statusEl.textContent=
+    mexp==="edge"?"간선 추가: 두 정점을 차례로 클릭하라.":mexp==="delv"?"정점 삭제: 지울 정점을 클릭하라.":mexp==="addv"?"정점 추가: 빈 곳을 클릭해 정점을 추가하라.":"이동: 정점을 드래그하라.";
+    this.render();}
+  clientPt(evt){const p=this.svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;
+    const m=this.svg.getScreenCTM();return m?p.matrixTransform(m.inverse()):{x:evt.clientX,y:evt.clientY};}
+  addVertex(){const used=new Set(this.verts());let lab="A";for(let i=0;i<26;i++){const c=String.fromCharCode(65+i);if(!used.has(c)){lab=c;break;}}
+    this.nodes[lab]=[120+Math.random()*400,90+Math.random()*220];this.nodes[lab]={x:120+Math.random()*400,y:90+Math.random()*220};
+    this.changed();}
+  addVertexAt(x,y){const used=new Set(this.verts());let lab="A";for(let i=0;i<26;i++){const c=String.fromCharCode(65+i);if(!used.has(c)){lab=c;break;}}this.nodes[lab]={x:Math.max(30,Math.min(730,x)),y:Math.max(30,Math.min(390,y))};this.changed();}
+  delVertex(v){delete this.nodes[v];this.edges=this.edges.filter(e=>e.a!==v&&e.b!==v);this.sel=null;this.changed();}
+  toggleEdge(a,b){if(a===b)return;const idx=this.edges.findIndex(e=>(e.a===a&&e.b===b)||(e.a===b&&e.b===a));
+    if(idx>=0){this.edges.splice(idx,1);}
+    else{let w=null;if(this.weighted){const v=prompt("간선 "+a+"-"+b+" 의 가중치:","1");if(v===null)return;w=Number(v);if(Number.isNaN(w))w=1;}
+      this.edges.push({a,b,w});}this.changed();}
+  editWeight(e){if(!this.weighted)return;const v=prompt("간선 "+e.a+"-"+e.b+" 가중치(빈칸이면 삭제):",e.w);
+    if(v===null)return;if(v.trim()===""){this.edges=this.edges.filter(x=>x!==e);}else{const n=Number(v);if(!Number.isNaN(n))e.w=n;}this.changed();}
+  changed(){this.render();if(this.onChange)this.onChange();}
+  render(opts){opts=opts||this.lastOpts||{};this.lastOpts=opts;const svg=this.svg;clear(svg);
+    const self=this;
+    if(!opts.lock&&this.mode==="addv"){const _bg=E("rect",{x:0,y:0,width:760,height:420,fill:"transparent",class:"selectable"});_bg.addEventListener("click",ev=>{const p=self.clientPt(ev);self.addVertexAt(p.x,p.y);});svg.appendChild(_bg);}
+    this.edges.forEach(e=>{const A=this.nodes[e.a],B=this.nodes[e.b];if(!A||!B)return;
+      const st=opts.edgeState?opts.edgeState(e.a,e.b):"plain";
+      svgEdge(svg,A.x,A.y,B.x,B.y,st,this.weighted?e.w:null);
+      // 간선 클릭 영역(편집)
+      if(!opts.lock&&this.mode==="move"){const hit=E("line",{x1:A.x,y1:A.y,x2:B.x,y2:B.y,
+        stroke:"transparent","stroke-width":14,class:"selectable"});
+        hit.addEventListener("click",()=>self.weighted?self.editWeight(e):self.toggleEdge(e.a,e.b));svg.appendChild(hit);}});
+    this.verts().forEach(v=>{const n=this.nodes[v];
+      let st=opts.nodeState?opts.nodeState(v):"none";
+      if(this.sel===v){svg.appendChild(E("circle",{cx:n.x,cy:n.y,r:27,fill:"none",stroke:"var(--accent)","stroke-width":2.5,"stroke-dasharray":"4 3"}));}
+      svgNode(svg,n.x,n.y,v,st);
+      if(!opts.lock){const hit=E("circle",{cx:n.x,cy:n.y,r:23,fill:"transparent",
+        class:this.mode==="move"?"draggable":"selectable"});
+        hit.addEventListener("mousedown",ev=>self.onDown(ev,v));
+        hit.addEventListener("click",ev=>self.onClick(ev,v));svg.appendChild(hit);}});
+  }
+  onDown(ev,v){if(this.mode!=="move")return;ev.preventDefault();const self=this;this.drag=v;
+    const move=e=>{const p=self.clientPt(e);self.nodes[v].x=Math.max(30,Math.min(730,p.x));self.nodes[v].y=Math.max(30,Math.min(390,p.y));self.render(self.lastOpts);};
+    const up=()=>{self.drag=null;window.removeEventListener("mousemove",move);window.removeEventListener("mouseup",up);};
+    window.addEventListener("mousemove",move);window.addEventListener("mouseup",up);}
+  onClick(ev,v){if(this.mode==="delv"){this.delVertex(v);return;}
+    if(this.mode==="edge"){if(this.sel===null){this.sel=v;this.render();}
+      else{const a=this.sel;this.sel=null;this.toggleEdge(a,v);if(this.statusEl)this.statusEl.textContent="간선 추가: 두 정점을 차례로 클릭하라.";}}}
+}
+function graphToolbar(ed,extra){
+  const tb=H("div","toolbar");
+  const bMove=H("button","btn small coral","이동"),bEdge=H("button","btn small ghost","간선 추가"),
+    bAdd=H("button","btn small ghost","정점 추가"),bDel=H("button","btn small ghost","정점 삭제");
+  function setBtns(){[ ["move",bMove],["edge",bEdge],["addv",bAdd],["delv",bDel] ].forEach(([m,b])=>b.className="btn small "+(ed.mode===m?"coral":"ghost"));}
+  bMove.onclick=()=>{ed.setMode("move");setBtns();};
+  bEdge.onclick=()=>{ed.setMode("edge");setBtns();};
+  bAdd.onclick=()=>{ed.setMode("addv");setBtns();};
+  bDel.onclick=()=>{ed.setMode("delv");setBtns();};
+  tb.append(bMove,bEdge,bAdd,bDel);if(extra)extra.forEach(x=>tb.appendChild(x));
+  return tb;
+}
+
+/* ===================== 11.4 DFS / BFS ===================== */
+function MOD_dfsbfs(){
+  const m=$("main");clear(m);
+  header(m,"11.4 신장 트리","DFS·BFS 실습 — 그래프를 직접 그려라",
+    "정점을 드래그하고 간선을 추가·삭제해 나만의 그래프를 만든 뒤, 시작 정점과 이웃 순서를 정해 DFS와 BFS를 실행한다. 같은 그래프에서 두 탐색이 서로 다른 신장 트리를 만드는 것을 직접 확인한다.");
+  const svg=E("svg",{viewBox:"0 0 760 420"});
+  const ed=new GraphEditor(svg,false);
+  sectH(m,"그래프 편집기");
+  const startSel=H("select"),ordSel=H("select");
+  ordSel.innerHTML="<option value='asc'>이웃: 오름차순</option><option value='desc'>이웃: 내림차순</option>";
+  const tb=graphToolbar(ed,[H("span",null,"&nbsp;시작:"),startSel,ordSel]);m.appendChild(tb);
+  const status=H("p","hint","이동: 정점을 드래그하라.");ed.statusEl=status;m.appendChild(status);
+  m.appendChild(H("p","hint","간선을 클릭하면 삭제된다(이동 모드). [간선 추가]로 새 간선을 만든다."));
+  const stage=H("div","stage");stage.appendChild(svg);m.appendChild(stage);
+  m.appendChild(H("div","legend","<span><i class='dot' style='border-color:var(--accent);background:var(--accent)'></i>현재</span>"
+    +"<span><i class='dot' style='border-color:var(--muted);background:var(--muted)'></i>방문함</span><span style='color:var(--accent)'>━ 트리 간선</span>"));
+
+  sectH(m,"탐색 실행");
+  const rb=H("div","toolbar");const bD=H("button","btn coral","DFS 실행"),bB=H("button","btn","BFS 실행");rb.append(bD,bB);m.appendChild(rb);
+  const narr=H("div","narr","");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+  const g=H("div","grid2");const c1=H("div","card");c1.innerHTML="<h3>방문 순서</h3>";const ord=H("div","seqbox","");c1.appendChild(ord);
+  const c2=H("div","card");const qh=H("h3",null,"큐 / 스택");c2.appendChild(qh);const qel=H("div","chips");c2.appendChild(qel);
+  g.append(c1,c2);m.appendChild(g);
+  const interp=H("div","interp");m.appendChild(interp);
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li>같은 시작 정점으로 DFS와 BFS를 각각 실행해 트리 간선을 비교하라. 두 트리가 다른 이유는?</li>"
+    +"<li>이웃 순서를 오름→내림으로 바꾸고 다시 실행하라. 방문 순서가 왜 달라지는가?</li>"
+    +"<li>간선 하나를 지우고 다시 실행하라. 신장 트리는 어떻게 바뀌는가? 그래프가 끊기면 무슨 일이 생기는가?</li></ol>";m.appendChild(exp);
+
+  function refreshStart(){const cur=startSel.value;startSel.innerHTML="";ed.verts().sort().forEach(v=>{
+    const o=H("option");o.value=v;o.textContent="시작 "+v;startSel.appendChild(o);});
+    if([...startSel.options].some(o=>o.value===cur))startSel.value=cur;}
+  ed.onChange=refreshStart;
+  ed.setData({A:[80,210],B:[250,118],C:[250,300],D:[440,86],E:[480,210],F:[440,332]},
+    [["A","B"],["A","C"],["B","D"],["B","E"],["C","F"],["D","E"],["E","F"]]);
+  refreshStart();
+
+  function run(kind){const adj=ed.adj();const start=startSel.value||ed.verts().sort()[0];const asc=ordSel.value==="asc";
+    if(!start)return;const r=(kind==="dfs"?dfs:bfs)(adj,start,asc);
+    qh.textContent=kind==="dfs"?"스택(되돌아갈 경로)":"큐(앞 → 뒤)";
+    new Player(r.steps,(st)=>{const tset=new Set(st.tree);
+      ed.render({lock:true,
+        edgeState:(a,b)=>tset.has(a+b)||tset.has(b+a)?"tree":"plain",
+        nodeState:v=>v===st.cur?"current":st.vis.includes(v)?"done":"none"});
+      narr.innerHTML=st.msg;ord.innerHTML=st.order.map((v,i)=>i===st.order.length-1?"<span class='new'>"+v+"</span>":v).join("  ");
+      clear(qel);(st.queue||st.stack||[]).forEach(v=>qel.appendChild(H("div","qchip",v)));},sp.refs);
+    interp.innerHTML="<h4>결과 해석</h4>"+(kind==="dfs"
+      ?"DFS는 한 경로를 끝까지 파고든 뒤 막히면 되돌아온다(스택 구조). 깊은 정점을 일찍 만난다."
+      :"BFS는 시작점에서 가까운 정점을 층별로 방문한다(큐 구조). 먼저 발견한 경로가 간선 수 기준 최단 경로이다.");}
+  bD.onclick=()=>{bD.classList.add("coral");bB.classList.remove("coral");run("dfs");};bB.onclick=()=>{bB.classList.add("coral");bD.classList.remove("coral");run("bfs");};
+}
+
+/* ===================== 11.5 프림 / 크루스칼 ===================== */
+function MOD_mst(){
+  const m=$("main");clear(m);
+  header(m,"11.5 최소 신장 트리","프림·크루스칼 실습 — 가중치를 바꿔 보라",
+    "가중 그래프를 직접 편집하고(간선을 클릭하면 가중치 수정) 프림과 크루스칼을 실행한다. 두 탐욕 알고리즘이 같은 최소 비용에 도달하는지, 가중치가 같을 때 무슨 일이 생기는지 직접 실험한다.");
+  const svg=E("svg",{viewBox:"0 0 760 420"});const ed=new GraphEditor(svg,true);
+  sectH(m,"가중 그래프 편집기");
+  const startSel=H("select");
+  const tb=graphToolbar(ed,[H("span",null,"&nbsp;프림 시작:"),startSel]);m.appendChild(tb);
+  const status=H("p","hint","이동: 정점을 드래그하라.");ed.statusEl=status;m.appendChild(status);
+  m.appendChild(H("p","hint","간선을 클릭하면 가중치를 고치거나(빈칸 입력 시) 삭제할 수 있다. [간선 추가]로 새 간선을 만들면 가중치를 입력받는다."));
+  const stage=H("div","stage");stage.appendChild(svg);m.appendChild(stage);
+  m.appendChild(H("div","legend","<span style='color:var(--accent)'>━ 선택된 트리 간선</span>"
+    +"<span style='color:var(--muted-deep)'>━ 후보(횡단) 간선</span><span>같은 색 정점 = 같은 성분(크루스칼)</span>"));
+
+  sectH(m,"알고리즘 실행");
+  const rb=H("div","toolbar");const bP=H("button","btn coral","프림 실행"),bK=H("button","btn","크루스칼 실행");rb.append(bP,bK);m.appendChild(rb);
+  const narr=H("div","narr","");m.appendChild(narr);
+  const sp=stepperBar();m.appendChild(sp.bar);
+  const g=H("div","grid2");const c1=H("div","card");c1.innerHTML="<h3>선택 간선·비용</h3>";const sel=H("div","seqbox","");c1.appendChild(sel);
+  const c2=H("div","card");c2.innerHTML="<h3>간선 처리(크루스칼)</h3>";const krt=H("div");c2.appendChild(krt);
+  g.append(c1,c2);m.appendChild(g);
+  const interp=H("div","interp");m.appendChild(interp);
+  const exp=H("div","explore");exp.innerHTML="<h4>직접 탐구</h4><ol>"
+    +"<li>프림과 크루스칼을 차례로 실행해 총 비용이 같은지 확인하라. 선택한 간선 집합도 항상 같은가?</li>"
+    +"<li>두 간선의 가중치를 같게 만들어 보라(예: 둘 다 2). 두 알고리즘이 서로 다른 트리를 고를 수 있는가? 비용은 그래도 같은가?</li>"
+    +"<li>한 간선의 가중치를 아주 크게 키워 보라. 그 간선이 최소 신장 트리에서 빠지는 이유를 컷·순환 성질로 설명하라.</li></ol>";m.appendChild(exp);
+  const COLORS=["#D4726A","#7BA7AD","#5E8E94","#B85F3D","#3F7A4F","#9C6FB0","#C99A4E"];
+
+  function refreshStart(){const cur=startSel.value;startSel.innerHTML="";ed.verts().sort().forEach(v=>{const o=H("option");o.value=v;o.textContent=v;startSel.appendChild(o);});
+    if([...startSel.options].some(o=>o.value===cur))startSel.value=cur;}
+  ed.onChange=refreshStart;
+  ed.setData({A:[120,110],B:[330,90],C:[220,260],D:[480,150],E:[580,300],F:[680,180]},
+    [["A","B",4],["A","C",2],["B","C",1],["B","D",5],["D","E",2],["E","F",3]]);
+  refreshStart();
+
+  function showCost(tree){const cost=tree.reduce((s,k)=>{const e=ed.edges.find(x=>x.a+x.b===k||x.b+x.a===k);return s+(e?e.w:0);},0);
+    return cost;}
+  function runPrim(){krt.innerHTML="";const V=ed.verts(),EE=ed.edgeList(),start=startSel.value||V.sort()[0];
+    const r=prim(V,EE,start);if(r.error){narr.innerHTML="<b>"+r.error+"</b>";return;}
+    new Player(r.steps,(st,idx)=>{const tset=new Set(st.tree),aset=new Set(st.active);
+      ed.render({lock:true,edgeState:(a,b)=>tset.has(a+b)||tset.has(b+a)?"tree":(st.pick===a+b||st.pick===b+a)?"tree":(aset.has(a+b)||aset.has(b+a))?"active":"plain",
+        nodeState:v=>st.inT.includes(v)?"done":"none"});
+      narr.innerHTML=st.msg;const cost=showCost(st.tree);
+      sel.innerHTML=(st.tree.join(", ")||"<span style='color:#bbb'>아직 없음</span>")+"<div style='font-size:13px;color:#555;margin-top:6px'>누적 비용 = <b style='color:var(--accent)'>"+cost+"</b>"+(idx===r.steps.length-1?" (완성)":"")+"</div>";
+    },sp.refs);
+    interp.innerHTML="<h4>결과 해석</h4>프림은 현재 트리에서 바깥으로 나가는(횡단) 간선 중 가장 가벼운 것을 고른다. "
+      +"이는 컷 성질로 정당화된다. 총 비용은 <b>"+r.total+"</b> 이다. 크루스칼도 실행해 같은 비용인지 비교하라.";}
+  function runKruskal(){const V=ed.verts(),EE=ed.edgeList();const r=kruskal(V,EE);
+    let th="<table class='mini'><tr><th>순서</th><th>간선</th><th>가중치</th><th>판단</th></tr>";
+    r.sorted.forEach((e,i)=>th+="<tr id='kr"+i+"'><td>"+(i+1)+"</td><td>"+e[0]+e[1]+"</td><td>"+e[2]+"</td><td id='krs"+i+"'>—</td></tr>");
+    th+="</table>";krt.innerHTML=th;
+    new Player(r.steps,(st,idx)=>{const tset=new Set(st.tree);
+      const colOf={};st.comp.forEach((grp,gi)=>grp.split("").forEach(v=>colOf[v]=COLORS[gi%COLORS.length]));
+      ed.render({lock:true,edgeState:(a,b)=>tset.has(a+b)||tset.has(b+a)?"tree":(st.reject===a+b||st.reject===b+a)?"active":"plain",
+        nodeState:v=>st.comp.length>=ed.verts().length?"none":(colOf[v]||"none")});
+      narr.innerHTML=st.msg;const cost=showCost(st.tree);
+      sel.innerHTML=(st.tree.join(", ")||"<span style='color:#bbb'>아직 없음</span>")+"<div style='font-size:13px;color:#555;margin-top:6px'>누적 비용 = <b style='color:var(--accent)'>"+cost+"</b>"+(idx===r.steps.length-1?" (완성)":"")+"</div>";
+      r.sorted.forEach((e,i)=>{const tr=$("kr"+i),sc=$("krs"+i);if(!tr)return;tr.className=i===st.row?"hl":"";
+        if(i<=st.row){const acc=tset.has(e[0]+e[1])||tset.has(e[1]+e[0]);sc.textContent=acc?"선택":"버림(순환)";sc.style.color=acc?"var(--try-fg)":"var(--warn-fg)";}
+        else{sc.textContent="—";sc.style.color="#aaa";}});
+    },sp.refs);
+    interp.innerHTML="<h4>결과 해석</h4>크루스칼은 가장 싼 간선부터 보되 같은 성분을 잇는(순환을 만드는) 간선만 건너뛴다. "
+      +"총 비용은 <b>"+r.total+"</b> 이다. 프림과 같은 비용에 도달했는지 확인하라.";}
+  bP.onclick=()=>{bP.classList.add("coral");bK.classList.remove("coral");runPrim();};bK.onclick=()=>{bK.classList.add("coral");bP.classList.remove("coral");runKruskal();};
+}
+
+/* ===================== 홈 + 라우터 ===================== */
+const MODS={trav:MOD_trav,expr:MOD_expr,postfix:MOD_postfix,bst:MOD_bst,huffman:MOD_huffman,dfsbfs:MOD_dfsbfs,mst:MOD_mst};
+const HOME=[
+  ["trav","11.3","탐방 실습 (트리 편집)","정점을 붙이고 지워 나만의 트리를 만든 뒤 전위·중위·후위로 탐방한다."],
+  ["expr","11.3","수식 트리·표기법 실습","중위 수식을 입력해 트리를 만들고 세 표기법을 직접 비교한다."],
+  ["postfix","11.3","후위 계산·변환 실습","후위식을 입력해 스택으로 계산하거나 중위식을 후위식으로 변환한다."],
+  ["bst","11.2","이진 탐색 트리 실습","삽입 순서를 바꿔 가며 트리 높이와 탐색 비교 횟수의 변화를 관찰한다."],
+  ["huffman","11.2","허프만 코드 실습","빈도표를 편집해 압축 트리와 절감률이 어떻게 달라지는지 실험한다."],
+  ["dfsbfs","11.4","DFS·BFS 실습 (그래프 편집)","그래프를 직접 그리고 시작점·이웃 순서를 바꿔 두 탐색을 비교한다."],
+  ["mst","11.5","프림·크루스칼 실습","가중치를 편집하며 두 알고리즘이 같은 최소 비용에 이르는지 검증한다."],
+];
+function showHome(){const m=$("main");clear(m);
+  header(m,"로젠 이산수학 8판 · 11장 트리","트리 알고리즘 실습실",
+    "이 실습실의 모든 도구는 학생이 직접 입력하고 편집하며 실행하도록 만들어졌다. 트리와 그래프를 자기 손으로 만들고, 값을 바꿔 가며 결과가 어떻게 달라지는지 해석하는 것이 목표이다. 각 도구에는 직접 해 볼 탐구 과제가 함께 있다.");
+  const grid=H("div","home-grid");
+  HOME.forEach(([id,sec,t,d])=>{const c=H("div","home-card");
+    c.innerHTML="<div class='s'>"+sec+"</div><div class='t'>"+t+"</div><div class='d'>"+d+"</div>";
+    c.onclick=()=>select(id);grid.appendChild(c);});
+  m.appendChild(grid);
+  m.appendChild(H("div","note","모든 도구는 입력값을 자유롭게 바꿀 수 있다. 잘못된 입력에는 안내 메시지가 나타나며, 기본 예시는 학생 안내노트·워크북의 예제와 같은 값으로 맞추어 두었다."));
+}
+function select(id){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("on",b.dataset.mod===id));
+  MODS[id]();window.scrollTo(0,0);}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>select(b.dataset.mod));
+showHome();
+</script>
+</body>
+</html>
